@@ -12,6 +12,18 @@ Players can:
 
 This repository contains the game contract, RPC/backend integration, frontend product surface, and deployment docs for the current ProofArcade beta.
 
+## Tech Stack
+
+ProofArcade is a mixed-stack project:
+- `Go` for the core node, RPC backend, and broader Canopy infrastructure
+- `TypeScript` for the 2048 contract/plugin logic
+- `React + TypeScript` for the user-facing frontend
+
+In practice:
+- gameplay verification and reward logic live in the TypeScript plugin layer
+- frontend product pages live in the React explorer app
+- runtime integration, RPC, and node behavior live in the Go codebase
+
 ## What ProofArcade Is
 
 ProofArcade is built around a simple idea:
