@@ -44,8 +44,8 @@ const (
 
 	game2048StopPlayerStopped = 1
 
-	game2048DefaultClassicFee               = 90
-	game2048DefaultDailyFee                 = 240
+	game2048DefaultClassicFee               = 2
+	game2048DefaultDailyFee                 = 25
 	game2048DefaultDailyMoves               = 80
 	game2048DefaultDailyPlatformFeeBps      = 500
 	game2048DefaultDailyRewardFeeBps        = 8000

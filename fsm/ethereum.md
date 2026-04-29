@@ -331,7 +331,7 @@ Canopy only includes valid transactions in blocks, so to maintain compatibility 
 
 - When a transaction hash is first seen (via `eth_sendRawTransaction` or `eth_getTransactionReceipt`), the node maps it to the current block height.
 - If the transaction is queried again and more than 15 blocks have passed without it appearing in the canonical indexer, the RPC layer simulates a failed transaction.
-- Every minute, a background service evicts transactions that are older than 1080 blocks (approximately 6 hours at 20s block times).
+- Every minute, a background service evicts transactions that are older than 1080 blocks (approximately 90 minutes at 5s block times).
 
 This mechanism ensures compatibility with Ethereum clients while maintaining Canopy’s constraint that only valid transactions are saved in blocks.
 
@@ -345,7 +345,7 @@ This mechanism ensures compatibility with Ethereum clients while maintaining Can
 - This enables safe pruning and replay protection without requiring persistent per-account nonces.
 
 *BlockAcceptanceRange:*
-- Transactions are only valid if their `created_at_height` is within ±4320 blocks of the current chain height. (Assuming 20s block times, this represents roughly 24 hours of leeway).
+- Transactions are only valid if their `created_at_height` is within ±4320 blocks of the current chain height. (Assuming 5s block times, this represents roughly 6 hours of leeway).
 
 *Implementation:*
 

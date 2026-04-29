@@ -170,7 +170,7 @@ const (
 	// the number of tokens in micro denomination that are initially (before halvenings) minted per block
 	DefaultInitialTokensPerBlock = uint64(80 * 1000000) // 80 CNPY
 	// the number of blocks between each halvening (block reward is cut in half) event
-	DefaultBlocksPerHalvening = uint64(3150000) // ~ 2 years - 20 second blocks
+	DefaultBlocksPerHalvening = uint64(12600000) // ~ 2 years - 5 second blocks
 )
 
 // StateMachineConfig houses FSM level options
@@ -211,14 +211,14 @@ type ConsensusConfig struct {
 // DefaultConsensusConfig() configures the block time
 func DefaultConsensusConfig() ConsensusConfig {
 	return ConsensusConfig{
-		NewHeightTimeoutMs:     4500, // 4.5 seconds
-		ElectionTimeoutMS:      1500, // 1.5 seconds
-		ElectionVoteTimeoutMS:  1500, // 1.5 seconds
-		ProposeTimeoutMS:       2500, // 2.5 seconds
-		ProposeVoteTimeoutMS:   4000, // 4 seconds
-		PrecommitTimeoutMS:     2000, // 2 seconds
-		PrecommitVoteTimeoutMS: 2000, // 2 seconds
-		CommitTimeoutMS:        2000, // 2 seconds
+		NewHeightTimeoutMs:     1125, // 1.125 seconds
+		ElectionTimeoutMS:      375,  // 0.375 seconds
+		ElectionVoteTimeoutMS:  375,  // 0.375 seconds
+		ProposeTimeoutMS:       625,  // 0.625 seconds
+		ProposeVoteTimeoutMS:   1000, // 1 second
+		PrecommitTimeoutMS:     500,  // 0.5 seconds
+		PrecommitVoteTimeoutMS: 500,  // 0.5 seconds
+		CommitTimeoutMS:        500,  // 0.5 seconds
 	}
 }
 

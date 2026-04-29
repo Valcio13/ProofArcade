@@ -382,7 +382,7 @@
               "icon": "Coins"
             },
             {
-              "label": "Allow 20 seconds for confirmation.",
+              "label": "Allow 5 seconds for confirmation.",
               "icon": "Timer"
             }
           ]

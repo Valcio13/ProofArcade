@@ -91,7 +91,7 @@ function Play2048Page() {
     label: 'Connecting backend',
     detail: 'Checking whether live 2048 endpoints are available on this node.',
   })
-  const [config, setConfig] = useState<ChainConfig>({ dailyFee: 240, classicFee: 90, dailyMaxMoves: 80 })
+  const [config, setConfig] = useState<ChainConfig>({ dailyFee: 25, classicFee: 2, dailyMaxMoves: 80 })
   const [isLoadingClient, setIsLoadingClient] = useState(true)
   const [player, setPlayer] = useState<PlayerStats | null>(null)
   const [leaderboards, setLeaderboards] = useState<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>({ daily: [], classic: [] })

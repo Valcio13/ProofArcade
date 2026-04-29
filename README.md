@@ -156,6 +156,20 @@ Core gameplay/economy systems:
 - reward claims
 - wallet import/export
 
+## Current Beta Parameters
+
+The current beta economy and chain timing are configured as:
+- `Classic` entry fee: `2 PROOF`
+- `Daily Challenge` entry fee: `25 PROOF`
+- shop redemption: `300 classic points = 1 PROOF`
+- classic daily earn cap: `2000` points per wallet per UTC day
+- target block time: `5 seconds`
+
+This means:
+- `Classic` is the lower-friction progression lane
+- `Daily Challenge` remains the premium competitive lane
+- chain-backed confirmations and game actions are expected to settle against a faster `5s` block target instead of the older `20s` defaults
+
 ## How A Run Works
 
 ### 1. Start

@@ -139,8 +139,8 @@ interface MockChainState {
 const STORAGE_KEY = 'canopy-2048-mock-chain'
 
 const defaultConfig: ChainConfig = {
-  dailyFee: 240,
-  classicFee: 90,
+  dailyFee: 25,
+  classicFee: 2,
   dailyMaxMoves: 80,
   dailyPlatformFeeBps: 500,
   dailyRewardFeeBps: 8000,

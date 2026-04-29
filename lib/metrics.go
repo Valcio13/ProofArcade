@@ -22,7 +22,7 @@ import (
 // --------------------------------------------------------------------------------------------------------------------------------------
 // NodeStatus           | 0           | n/a        |
 // TotalPeers           | 0 peers     | 1 peer     |
-// LastHeightTime       | n/a         | 5 min      | Just over 3 rounds at 20s blocks
+// LastHeightTime       | n/a         | 5 min      | Roughly 60 rounds at 5s blocks
 // ValidatorStatus      | n/a         | not 1      | Monitor unexpected Pause or Unstaking
 // BFTRound             | n/a         | 3 rounds   | Soft = Just below the 'LastHeight' time
 // BFTElectionTime      | 2 secs      | 1.5 secs   | Hard = config, Soft = 75% of config timing
