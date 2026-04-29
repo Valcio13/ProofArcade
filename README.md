@@ -12,6 +12,23 @@ Players can:
 
 This repository contains the game contract, RPC/backend integration, frontend product surface, and deployment docs for the current ProofArcade beta.
 
+## What ProofArcade Is
+
+ProofArcade is built around a simple idea:
+- let people play 2048 normally
+- let the chain verify what they actually achieved
+- attach a real reward loop to verified runs
+
+Instead of trusting a client-reported score directly, ProofArcade records a seeded game session and validates the submitted move list with deterministic replay. That lets the product support:
+- leaderboard-backed daily competition
+- classic progression and points
+- claimable daily rewards
+- shop redemption
+
+The product is intentionally split into two lanes:
+- `Playtest` for frictionless free local practice
+- onchain `Classic` and `Daily Challenge` for verified runs and rewards
+
 ## Current Product Shape
 
 Main user surfaces:
@@ -32,6 +49,100 @@ Core gameplay/economy systems:
 - treasury buckets
 - reward claims
 - wallet import/export
+
+## How A Run Works
+
+### 1. Start
+
+For `Classic` or `Daily Challenge`, the player starts a run through the backend.
+
+That creates:
+- a seeded game session
+- a mode-specific run record
+- fee routing into the correct treasury buckets
+
+### 2. Play
+
+The player plays the board in the browser.
+
+For `Playtest`:
+- everything stays local
+- no wallet is required
+- nothing is written onchain
+
+For `Classic` and `Daily`:
+- the session is tied to the wallet
+- moves are collected for later replay validation
+
+### 3. Submit
+
+When the run ends, the player submits:
+- score
+- max tile
+- stop reason
+- move list
+
+The contract replays the run deterministically and checks:
+- session existence
+- ownership
+- no session reuse
+- move validity
+- score sanity
+
+Only a valid run is accepted.
+
+### 4. Reward / Progress
+
+Depending on mode:
+- `Classic` grants spendable points
+- `Daily Challenge` writes to the leaderboard and later becomes claimable
+- `Check-In` updates streak progress and can boost that day’s classic earning
+
+## Architecture Overview
+
+ProofArcade spans three main layers:
+
+### Frontend
+
+Main frontend lives in:
+- [cmd/rpc/web/explorer](cmd/rpc/web/explorer)
+
+That product surface includes:
+- landing page
+- play
+- playtest
+- check-in
+- profile
+- settings
+- shop
+- explorer views
+
+### RPC / Backend
+
+Main backend integration lives in:
+- [cmd/rpc](cmd/rpc)
+
+This layer exposes:
+- public query routes
+- admin wallet/game routes
+- 2048-specific read/write endpoints
+- frontend-facing game/player/reward/shop data
+
+### Contract / Plugin
+
+Core game logic lives in:
+- [plugin/typescript](plugin/typescript)
+
+This layer handles:
+- session lifecycle
+- deterministic replay
+- anti-cheat checks
+- points minting
+- daily reward finalization
+- treasury accounting
+- shop redemption burns
+
+## Economy And Reward Model
 
 ## Game Modes
 
@@ -55,12 +166,25 @@ Core gameplay/economy systems:
 - daily reward pool shared across actual ranked players
 - rewards become claimable after the UTC day ends
 
-## Economy Summary
-
 ### Classic points
 - earned from successful classic submits
 - daily earning cap applies
 - usable in the shop
+
+Current classic point model:
+- points are awarded only on successful classic submit
+- low-score runs do not earn much
+- a daily cap exists to limit farming
+
+### Shop
+
+The shop currently allows:
+- redeeming spendable classic points for `PROOF`
+
+At the moment:
+- points are burned
+- payout comes from the dedicated shop treasury bucket
+- redemption is intentionally conservative for beta
 
 ### Check-In
 - one claim per UTC day
@@ -68,10 +192,45 @@ Core gameplay/economy systems:
 - same classic points currency
 - day 7 unlocks a same-day classic-points bonus
 
+Current streak ladder:
+- day 1 through day 7 increase point rewards gradually
+- day 7 is the special day with the same-day classic bonus
+
 ### Daily rewards
 - funded from daily entry fees
 - distributed to ranked daily finishers
 - if fewer than 10 players finish, the reward weights are renormalized across actual winners
+
+That means:
+- a 10-player day uses the full payout table
+- a 3-player day redistributes the full reward pool across those 3 actual winners
+- a 1-player day gives that single winner the full daily reward pool
+
+## Treasury Model
+
+ProofArcade uses explicit bucket accounting.
+
+### Daily fee routing
+
+Daily entry fees are split into:
+- platform
+- daily reward pool
+- reserve
+- shop
+
+### Classic fee routing
+
+Classic entry fees are split into:
+- platform
+- reserve
+- shop
+
+This keeps:
+- daily competition funding separate from
+- long-term point redemption funding
+
+See:
+- [docs/2048-treasury-v1.md](docs/2048-treasury-v1.md)
 
 ## Wallet Model
 
@@ -89,6 +248,38 @@ Recommended beta posture:
 - export backup immediately
 - avoid storing meaningful value until custody is fully client-side
 
+### What works today
+
+- create wallet
+- import encrypted backup
+- export encrypted backup
+- log in locally
+- use the wallet for game and reward actions
+
+### What still needs hardening
+
+- fully client-side wallet generation/unlock
+- removal of admin-route dependence for signing
+- stronger production wallet trust guarantees
+
+## Anti-Cheat And Validation
+
+ProofArcade already includes a core anti-cheat layer.
+
+Daily and classic submits are checked for:
+- session existence
+- wallet ownership
+- session reuse
+- invalid move values
+- deterministic score replay
+- daily submission recording
+
+This is the main security foundation behind:
+- leaderboard integrity
+- point minting
+- reward claims
+- shop economy
+
 ## Repository Map
 
 Important project areas:
@@ -105,7 +296,23 @@ Underlying protocol modules still live here too:
 - [p2p/README.md](p2p/README.md)
 - [store/README.md](store/README.md)
 
+Helpful product docs:
+- [docs/2048-daily-prize-pool-v1.md](docs/2048-daily-prize-pool-v1.md)
+- [docs/2048-shop-redemption-v1.md](docs/2048-shop-redemption-v1.md)
+- [docs/2048-treasury-v1.md](docs/2048-treasury-v1.md)
+- [docs/proofarcade-launch-checklist.md](docs/proofarcade-launch-checklist.md)
+- [docs/proofarcade-beta-deployment.md](docs/proofarcade-beta-deployment.md)
+
 ## Local Development
+
+### Recommended dev flow
+
+1. build the explorer frontend
+2. run plugin tests
+3. rebuild `canopy.exe`
+4. restart the node
+
+This order matters because the frontend is embedded into the Go binary.
 
 ### Frontend
 
@@ -137,6 +344,11 @@ go build -buildvcs=false -a -o .\canopy.exe .\cmd\main
 .\canopy.exe start
 ```
 
+### Useful helper
+
+There is also a rebuild helper script:
+- [tools/rebuild-proofarcade.ps1](tools/rebuild-proofarcade.ps1)
+
 ## Launch / Deployment Docs
 
 Recommended reading for launch prep:
@@ -159,6 +371,15 @@ Recommended launch posture:
 - keep wallet messaging conservative
 - keep production config explicit
 - freeze feature churn close to launch
+
+## What Is Still Missing
+
+Important future work:
+- fully client-side wallet custody
+- stronger production auth model
+- more launch-safe admin route isolation
+- more polish around animation and feedback
+- deployment finalization and launch smoke-test discipline
 
 ## Built On Canopy
 
