@@ -6,6 +6,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import FieldCard from '../components/app/FieldCard'
 import PageShell from '../components/app/PageShell'
 import ProductHero from '../components/app/ProductHero'
+import BetaWalletNotice from '../components/app/BetaWalletNotice'
 import { shortAddress } from '../lib/address'
 import { createGame2048Client, type Game2048ClientStatus } from '../lib/chain2048'
 import {
@@ -229,6 +230,8 @@ function AuthPage() {
 
       <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
         <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+          <BetaWalletNotice />
+
           <div className="mb-6 inline-flex rounded-full border border-white/10 bg-white/5 p-1">
             <button
               onClick={() => switchTab('login')}
@@ -316,7 +319,7 @@ function AuthPage() {
               <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Register</p>
               <h2 className="mt-3 text-[2rem] font-bold text-white">Create your wallet</h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
-                This creates a wallet in the live node keystore and signs it in locally on this device so you can go straight into the game.
+                This beta flow creates a wallet in the live node keystore and signs it in locally on this device so you can go straight into the game.
               </p>
 
               <div className="mt-6 grid gap-4 md:grid-cols-3">

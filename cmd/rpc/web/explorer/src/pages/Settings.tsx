@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 
+import BetaWalletNotice from '../components/app/BetaWalletNotice'
 import SectionCard from '../components/app/SectionCard'
 import { shortAddress } from '../lib/address'
 import { createGame2048Client, type Game2048ClientStatus } from '../lib/chain2048'
@@ -234,6 +235,8 @@ function SettingsPage() {
       </section>
 
       <div className="mt-6 space-y-6">
+        <BetaWalletNotice body="Wallet backup and restore are available, but this is still a beta hosted-wallet model. Export your encrypted backup immediately and avoid treating this as fully self-custodial yet." />
+
         <section className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
             <SectionCard

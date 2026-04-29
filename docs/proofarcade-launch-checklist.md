@@ -180,7 +180,7 @@ From repo root:
 Run the explicit build:
 
 ```powershell
-& 'C:\Users\valci\go\bin\go1.24.6.exe' build -a -o .\canopy.exe .\cmd\main
+& 'C:\Users\valci\go\bin\go1.24.6.exe' build -buildvcs=false -a -o .\canopy.exe .\cmd\main
 ```
 
 Do not rely on older wildcard build variants for the final launch workflow.
@@ -289,7 +289,7 @@ Run this after the final deploy build is live.
 1. Open `/shop`
 2. Confirm spendable points visible
 3. Redeem a valid amount
-4. Confirm point burn and CNPY payout
+4. Confirm point burn and PROOF payout
 
 ### Daily flow
 
@@ -325,4 +325,3 @@ For a launch in a few days:
 - keep admin exposure tight
 - run the smoke test checklist on the exact deployed binary
 - freeze feature work and only take fixes after this point
-

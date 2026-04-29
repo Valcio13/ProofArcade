@@ -1,0 +1,42 @@
+# ProofArcade beta Caddy config
+#
+# Before using this file:
+# 1. Replace proofarcade.example.com with your real domain
+# 2. Replace the basicauth hash with a real hash from:
+#      caddy hash-password --plaintext "your-strong-password"
+# 3. Keep ports 50001, 50002, 50003, and 6060 private on the host firewall
+
+{
+	auto_https on
+}
+
+(proofarcade_common) {
+	encode gzip zstd
+
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}
+
+proofarcade.example.com {
+	import proofarcade_common
+
+	@rpc path /rpc/*
+	handle @rpc {
+		reverse_proxy 127.0.0.1:50002
+	}
+
+	@admin path /admin/*
+	handle @admin {
+		basicauth {
+			beta $2a$14$replace_this_with_a_real_caddy_hash
+		}
+		reverse_proxy 127.0.0.1:50003
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:50001
+	}
+}
