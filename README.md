@@ -29,6 +29,100 @@ The product is intentionally split into two lanes:
 - `Playtest` for frictionless free local practice
 - onchain `Classic` and `Daily Challenge` for verified runs and rewards
 
+## How ProofArcade Uses The Blockchain
+
+ProofArcade does not use the chain just as a payment rail. The blockchain is part of the game logic itself.
+
+### Classic mode
+
+For `Classic`, the chain is used to create a fresh deterministic session for each paid run.
+
+That means:
+- the player starts an onchain session
+- the game uses a blockchain-derived random seed for that session
+- the board can later be replayed from the same seed
+- the final move list can be verified instead of blindly trusting the submitted score
+
+So `Classic` is not just "pay, play, and hope the backend believes you."  
+It is "pay, get a seeded run, and let the contract verify what happened."
+
+### Daily Challenge
+
+For `Daily Challenge`, the chain is used to anchor a shared daily competition.
+
+That means:
+- the game uses a deterministic daily seed derived for that UTC day
+- all players for that day are effectively competing against the same daily challenge setup
+- the final leaderboard is built from verified submitted runs
+- reward distribution is finalized from onchain daily results
+
+This is what makes daily mode feel like a real shared contest instead of just isolated single-player runs.
+
+### Session ownership
+
+The blockchain is also used to bind a run to a wallet.
+
+For a real run, the chain records:
+- which wallet started it
+- which mode it belongs to
+- which session/game ID it belongs to
+- whether it has already been submitted
+
+That is what prevents:
+- submitting a fake game ID
+- submitting someone else's session
+- submitting the same session twice
+
+### Replay verification
+
+The chain/plugin layer validates runs through deterministic replay.
+
+Instead of trusting only:
+- `score`
+- `max tile`
+- `moves`
+
+the system replays the move list from the recorded seed and checks whether the submitted result is actually possible.
+
+That is the core anti-cheat model behind:
+- score verification
+- points minting
+- leaderboard integrity
+- daily reward claims
+
+### Economy and rewards
+
+The blockchain also drives the reward economy.
+
+It tracks:
+- daily fee splits
+- classic fee splits
+- treasury buckets
+- daily reward pools
+- claimable daily rewards
+- classic point balances
+- shop redemption burns and payouts
+
+So when a player:
+- earns classic points
+- claims a daily reward
+- redeems points for `PROOF`
+
+those actions are tied to verifiable chain state rather than just frontend bookkeeping.
+
+### What stays local
+
+Not everything needs to touch the chain.
+
+`Playtest` stays local on purpose:
+- no wallet required
+- no fee
+- no onchain session
+- no rewards
+- no leaderboard writes
+
+That gives new users a zero-friction practice mode, while the blockchain-backed modes remain the verified competitive and economic part of the product.
+
 ## Current Product Shape
 
 Main user surfaces:
@@ -96,7 +190,7 @@ Only a valid run is accepted.
 Depending on mode:
 - `Classic` grants spendable points
 - `Daily Challenge` writes to the leaderboard and later becomes claimable
-- `Check-In` updates streak progress and can boost that day’s classic earning
+- `Check-In` updates streak progress and can boost that day's classic earning
 
 ## Architecture Overview
 
@@ -384,3 +478,4 @@ Important future work:
 ## Built On Canopy
 
 ProofArcade is built on top of the Canopy codebase and protocol stack. The repo still contains the broader Canopy implementation, but the primary product surface in this fork is ProofArcade.
+
