@@ -1,6 +1,5 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { toCNPY } from '../../lib/utils'
 
 interface FeeTrendsProps {
     fromBlock: string
@@ -102,8 +101,8 @@ const FeeTrends: React.FC<FeeTrendsProps> = ({ fromBlock, toBlock, loading, para
     const getFeeData = () => {
         if (!transactionsData?.results || !Array.isArray(transactionsData.results) || transactionsData.results.length === 0) {
             return {
-                feeRange: '0.000 - 0.000 CNPY',
-                totalFees: '0.000 CNPY',
+                feeRange: '0.000 - 0.000 PROOF',
+                totalFees: '0.000 PROOF',
                 avgFee: 0,
                 minFee: 0,
                 maxFee: 0,
@@ -127,8 +126,8 @@ const FeeTrends: React.FC<FeeTrendsProps> = ({ fromBlock, toBlock, loading, para
 
         if (filteredTransactions.length === 0) {
             return {
-                feeRange: '0.000 - 0.000 CNPY',
-                totalFees: '0.000 CNPY',
+                feeRange: '0.000 - 0.000 PROOF',
+                totalFees: '0.000 PROOF',
                 avgFee: 0,
                 minFee: 0,
                 maxFee: 0,
@@ -146,8 +145,8 @@ const FeeTrends: React.FC<FeeTrendsProps> = ({ fromBlock, toBlock, loading, para
 
         if (fees.length === 0) {
             return {
-                feeRange: '0.000 - 0.000 CNPY',
-                totalFees: '0.000 CNPY',
+                feeRange: '0.000 - 0.000 PROOF',
+                totalFees: '0.000 PROOF',
                 avgFee: 0,
                 minFee: 0,
                 maxFee: 0,
@@ -161,14 +160,15 @@ const FeeTrends: React.FC<FeeTrendsProps> = ({ fromBlock, toBlock, loading, para
         const maxFee = Math.max(...fees)
         const avgFee = totalFees / fees.length
 
-        const minFeeCNPY = toCNPY(minFee)
-        const maxFeeCNPY = toCNPY(maxFee)
-        const totalFeesCNPY = toCNPY(totalFees)
-        const avgFeeCNPY = toCNPY(avgFee)
+        // Convert from micro denomination to PROOF
+        const minFeeCNPY = minFee / 1000000
+        const maxFeeCNPY = maxFee / 1000000
+        const totalFeesCNPY = totalFees / 1000000
+        const avgFeeCNPY = avgFee / 1000000
 
         return {
-            feeRange: `${formatNumber(minFeeCNPY)} - ${formatNumber(maxFeeCNPY)} CNPY`,
-            totalFees: `${formatNumber(totalFeesCNPY)} CNPY`,
+            feeRange: `${formatNumber(minFeeCNPY)} - ${formatNumber(maxFeeCNPY)} PROOF`,
+            totalFees: `${formatNumber(totalFeesCNPY)} PROOF`,
             avgFee: avgFeeCNPY,
             minFee: minFeeCNPY,
             maxFee: maxFeeCNPY,
@@ -181,10 +181,10 @@ const FeeTrends: React.FC<FeeTrendsProps> = ({ fromBlock, toBlock, loading, para
 
     if (loading) {
         return (
-            <div className="bg-card rounded-xl p-6 border border-white/5 hover:border-white/8 transition-colors duration-200">
+            <div className="bg-card rounded-xl p-6 border border-gray-800/30 hover:border-gray-800/50 transition-colors duration-200">
                 <div className="animate-pulse">
-                    <div className="h-4 bg-white/10 rounded w-1/2 mb-4"></div>
-                    <div className="h-32 bg-white/10 rounded"></div>
+                    <div className="h-4 bg-gray-700 rounded w-1/2 mb-4"></div>
+                    <div className="h-32 bg-gray-700 rounded"></div>
                 </div>
             </div>
         )
@@ -195,7 +195,7 @@ const FeeTrends: React.FC<FeeTrendsProps> = ({ fromBlock, toBlock, loading, para
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.7 }}
-            className="bg-card rounded-xl p-6 border border-white/5 hover:border-white/8 transition-colors duration-200"
+            className="bg-card rounded-xl p-6 border border-gray-800/30 hover:border-gray-800/50 transition-colors duration-200"
         >
             <div className="mb-4">
                 <h3 className="text-lg font-semibold text-white">
@@ -209,9 +209,9 @@ const FeeTrends: React.FC<FeeTrendsProps> = ({ fromBlock, toBlock, loading, para
             {/* Real fee data display */}
             <div className="h-32 flex flex-col justify-center items-center text-center">
                 <div className="text-gray-400 space-y-2">
-                    <div className="text-sm">Fee Range: <span className="text-primary">{feeData.feeRange}</span></div>
-                    <div className="text-sm">Total Fees: <span className="text-primary">{feeData.totalFees}</span></div>
-                    <div className="text-sm">Avg Fee: <span className="text-primary">{formatNumber(feeData.avgFee)} CNPY</span></div>
+                    <div className="text-sm">Fee Range: <span className="text-green-400">{feeData.feeRange}</span></div>
+                    <div className="text-sm">Total Fees: <span className="text-green-400">{feeData.totalFees}</span></div>
+                    <div className="text-sm">Avg Fee: <span className="text-green-400">{formatNumber(feeData.avgFee)} PROOF</span></div>
                     {feeData.txCount > 0 && (
                         <div className="text-xs text-gray-500 mt-1">({feeData.txCount} transactions)</div>
                     )}

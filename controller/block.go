@@ -148,6 +148,11 @@ func (c *Controller) ProduceProposal(evidence *bft.ByzantineEvidence, vdf *crypt
 	}
 	// get the proposal cached in the mempool
 	p := c.GetProposalBlockFromMempool()
+	if p == nil {
+		err = lib.ErrInvalidArgument()
+		c.log.Warn("No cached proposal available from mempool")
+		return
+	}
 	// load the last block from the indexer
 	lastBlock, err := c.FSM.LoadBlock(c.FSM.Height() - 1)
 	if err != nil {
@@ -600,7 +605,15 @@ func (c *Controller) HandlePeerBlock(msg *lib.BlockMessage, syncing bool) (*lib.
 // NOTE: This must come before ApplyBlock in order to have the proposers 'lastCertificate' which is used for distributing rewards
 func (c *Controller) CheckAndSetLastCertificate(candidate *lib.BlockHeader) lib.ErrorI {
 	if candidate.Height > 1 {
-		// load the last quorum certificate from state
+		// load the full last quorum certificate from state so BeginBlock can still access
+		// the prior certificate results during proposal validation.
+		fullLastCertificate, err := c.FSM.LoadCertificate(candidate.Height - 1)
+		if err != nil {
+			// exit with error
+			return err
+		}
+		// use a hashes-only copy for payload equality checks because the candidate header
+		// intentionally omits the embedded block/results bytes.
 		lastCertificate, err := c.FSM.LoadCertificateHashesOnly(candidate.Height - 1)
 		// if an error occurred
 		if err != nil {
@@ -636,8 +649,10 @@ func (c *Controller) CheckAndSetLastCertificate(candidate *lib.BlockHeader) lib.
 				return lib.ErrNoMaj23()
 			}
 		}
-		// update the LastQuorumCertificate in the ephemeral store to ensure deterministic last-COMMIT-QC (multiple valid versions can exist)
-		if err = c.FSM.Store().(lib.StoreI).IndexQC(candidate.LastQuorumCertificate); err != nil {
+		// update the LastQuorumCertificate in the ephemeral store to ensure deterministic
+		// last-COMMIT-QC (multiple valid versions can exist) while preserving the full
+		// certificate payload needed by BeginBlock().
+		if err = c.FSM.Store().(lib.StoreI).IndexQC(fullLastCertificate); err != nil {
 			// exit with error
 			return err
 		}

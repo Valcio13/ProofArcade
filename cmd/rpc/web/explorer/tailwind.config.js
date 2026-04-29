@@ -7,17 +7,17 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ["Inter", "system-ui", "sans-serif"],
+                sans: ["DM Sans", "sans-serif"],
             },
             colors: {
-                primary: "#45ca46",
-                'primary-light': "#86EFAC",
-                card: "#1a1a1a",
-                background: "#0f0f0f",
+                primary: "#4ADE80",
+                'primary-light': "#86EFAC", // Lighter tone for border
+                card: "#22232E",
+                background: "#1A1B23",
                 red: "#EF4444",
-                navbar: "#141414",
-                back: "#6b7280",
-                input: '#242424'
+                navbar: "#14151C",
+                back: "#9CA3AF",
+                input: '#2B2C38'
             },
         },
     },

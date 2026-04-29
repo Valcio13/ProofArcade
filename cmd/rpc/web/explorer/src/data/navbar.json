@@ -35,12 +35,20 @@
           {
             "label": "Staking",
             "path": "/staking"
+          },
+          {
+            "label": "Validators",
+            "path": "/validators"
+          },
+          {
+            "label": "Delegators",
+            "path": "/delegators"
           }
         ]
       },
       {
         "label": "Analytics",
-        "path": "/supply",
+        "path": "/analytics",
         "children": [
           {
             "label": "Supply",
@@ -49,6 +57,10 @@
           {
             "label": "Governance",
             "path": "/governance"
+          },
+          {
+            "label": "Network Charts",
+            "path": "/analytics"
           }
         ]
       }

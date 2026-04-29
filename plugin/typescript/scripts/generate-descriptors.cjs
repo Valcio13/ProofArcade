@@ -15,6 +15,7 @@ async function main() {
         'account.proto',
         'event.proto',
         'tx.proto',
+        'game2048.proto',
         'plugin.proto',
     ];
 

@@ -1,6 +1,7 @@
 /* This file contains boilerplate logic to interact with the Canopy FSM via socket file */
 
 import * as net from 'net';
+import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import Long from 'long';
@@ -31,6 +32,7 @@ import {
     ErrFromAny,
     ErrInvalidMessageCast
 } from './error.js';
+import { decodeGame2048Any } from './game2048.js';
 
 // Forward declaration - Contract will be set after import
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,6 +44,7 @@ let ContractAsyncClass: any;
 
 // socketPath is the name of the plugin socket exposed by the base SDK
 const socketPath = 'plugin.sock';
+const defaultWindowsPluginAddress = '127.0.0.1:50004';
 
 // CONFIG IMPLEMENTATION
 
@@ -50,11 +53,26 @@ export interface Config {
     DataDirPath: string;
 }
 
+function pluginNetwork(): 'unix' | 'tcp' {
+    return process.env.CANOPY_PLUGIN_NETWORK === 'tcp' ? 'tcp' : 'unix';
+}
+
+function pluginAddress(c: Config): string {
+    return process.env.CANOPY_PLUGIN_ADDRESS
+        || (pluginNetwork() === 'tcp'
+            ? defaultWindowsPluginAddress
+            : path.join(c.DataDirPath, socketPath));
+}
+
 // DefaultConfig() returns the default configuration
 export function DefaultConfig(): Config {
+    const defaultDataDir = process.env.CANOPY_PLUGIN_DATA_DIR
+        || (process.platform === 'win32'
+            ? path.join(os.tmpdir(), 'canopy-plugin')
+            : '/tmp/plugin/');
     return {
         ChainId: 1,
-        DataDirPath: '/tmp/plugin/'
+        DataDirPath: defaultDataDir
     };
 }
 
@@ -328,13 +346,18 @@ export class Plugin {
 
 // StartPlugin() creates and starts a plugin
 export function StartPlugin(c: Config): void {
-    const sockPath = path.join(c.DataDirPath, socketPath);
+    const address = pluginAddress(c);
 
     const tryConnect = (): void => {
-        const conn = net.createConnection(sockPath);
+        const conn = pluginNetwork() === 'tcp'
+            ? net.createConnection({
+                host: address.split(':')[0],
+                port: Number(address.split(':')[1])
+            })
+            : net.createConnection(address);
 
         conn.on('connect', () => {
-            console.log('Connected to plugin socket');
+            console.log(`Connected to plugin transport: ${pluginNetwork()} ${address}`);
             const p = new Plugin(c, conn, ContractConfigValue);
             p.ListenForInbound();
             p.Handshake().then((err) => {
@@ -346,7 +369,7 @@ export function StartPlugin(c: Config): void {
         });
 
         conn.on('error', (err) => {
-            console.log(`Failed to connect to plugin socket: ${err.message}`);
+            console.log(`Failed to connect to plugin transport ${pluginNetwork()} ${address}: ${err.message}`);
             setTimeout(tryConnect, 1000);
         });
     };
@@ -408,7 +431,13 @@ export function FromAny(any: any): [any | null, string | null, IPluginError | nu
         if (typeUrl.includes('MessageSend')) {
             return [types.MessageSend.decode(any.value), 'MessageSend', null];
         }
-        // NOTE: To add new message types, see TUTORIAL.md
+        const [customMsg, customMsgType, customErr] = decodeGame2048Any(any);
+        if (customErr) {
+            return [null, null, customErr];
+        }
+        if (customMsg && customMsgType) {
+            return [customMsg, customMsgType, null];
+        }
         return [null, null, ErrInvalidMessageCast()];
     } catch (err) {
         return [null, null, ErrFromAny(err as Error)];

@@ -9,7 +9,7 @@ import { fetchRewardEventsInRange, sumRewards } from "./stakingRewardsEvents";
  */
 export function useValidatorRewardsHistory(address?: string) {
     const dsFetch = useDSFetcher();
-    const { currentHeight, secondsPerBlock, isReady, periodLabel } = useHistoryCalculation();
+    const { currentHeight, secondsPerBlock, isReady } = useHistoryCalculation();
 
     return useQuery({
         queryKey: ['validatorRewardsHistory', address, currentHeight],
@@ -17,39 +17,26 @@ export function useValidatorRewardsHistory(address?: string) {
         staleTime: 30_000,
 
         queryFn: async (): Promise<HistoryResult> => {
-            if (secondsPerBlock == null) {
-                return { current: 0, previous24h: 0, change24h: 0, changePercentage: 0, progressPercentage: 0, periodLabel };
-            }
-            try {
-                const { events } = await fetchRewardEventsInRange(dsFetch, {
-                    address: address || "",
-                    toHeight: currentHeight,
-                    secondsPerBlock,
-                    hours: 24,
-                    perPage: 100,
-                    maxPages: 100,
-                });
+            const { events } = await fetchRewardEventsInRange(dsFetch, {
+                address: address || "",
+                toHeight: currentHeight,
+                secondsPerBlock,
+                hours: 24,
+                perPage: 100,
+                maxPages: 100,
+            });
 
-                const rewardsLast24h = sumRewards(events);
+            const rewardsLast24h = sumRewards(events);
 
-                return {
-                    current: rewardsLast24h,
-                    previous24h: 0,
-                    change24h: rewardsLast24h,
-                    changePercentage: 0,
-                    progressPercentage: 100,
-                    periodLabel,
-                };
-            } catch {
-                return {
-                    current: 0,
-                    previous24h: 0,
-                    change24h: 0,
-                    changePercentage: 0,
-                    progressPercentage: 0,
-                    periodLabel,
-                };
-            }
+            // Return the total as both current and change24h
+            // This will display the actual rewards earned in the last 24h
+            return {
+                current: rewardsLast24h,
+                previous24h: 0,
+                change24h: rewardsLast24h,
+                changePercentage: 0,
+                progressPercentage: 100
+            };
         }
     });
 }

@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Validators",
-    "description": "Complete list of Canopy network validators ranked by stake",
+    "description": "Complete list of ProofArcade network validators ranked by stake",
     "totalValidators": "Total Validators:",
     "validatorsUnit": "validators"
   },
@@ -18,10 +18,10 @@
       "Rank",
       "Validator Name/Address",
       "Reward % (24h)",
-      "Status",
+      "Reward Change",
       "Chains Restaked",
       "Stake Weight",
-      "Total Stake (CNPY)",
+      "Total Stake (PROOF)",
       "Staking Power"
     ],
     "controls": {
@@ -29,7 +29,7 @@
       "filter": "Filter"
     },
     "units": {
-      "cnpy": "CNPY",
+      "cnpy": "PROOF",
       "percent": "%",
       "blocks": "blocks",
       "chains": "chains"

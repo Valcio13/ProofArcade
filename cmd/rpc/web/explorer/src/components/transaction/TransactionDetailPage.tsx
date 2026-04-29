@@ -1,62 +1,39 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Copy } from 'lucide-react'
-import { useTxByHash, useBlockByHeight, useLatestBlock } from '../../hooks/useApi'
+import { useTxByHash, useBlockByHeight, useParams as useParamsHook, useAllBlocksCache } from '../../hooks/useApi'
 import toast from 'react-hot-toast'
 import { format, formatDistanceToNow, parseISO, isValid } from 'date-fns'
+import {
+    formatTxTypeLabel,
+    getExplorerAmountMicro,
+    getExplorerDecodedData,
+    getExplorerDecodedTopics,
+    getExplorerDetailRows,
+    getExplorerFromAddress,
+    getExplorerToAddress,
+    getTxTypeColor,
+    getTxTypeIcon,
+    isGameLikeAction,
+} from '../../lib/transactionPresentation'
 
-import { toCNPY, extractAmountMicro } from '../../lib/utils'
-import TransactionTypeBadge from './TransactionTypeBadge'
+// Helper function to convert micro denomination to PROOF
+const toCNPY = (micro: number): number => {
+    return micro / 1000000
+}
 
-// Helper function to format fee - shows in CNPY (converted from micro denomination)
+// Helper function to format fee - shows in PROOF (converted from micro denomination)
 const formatFee = (micro: number): string => {
-    if (micro === 0) return '0 CNPY'
+    if (micro === 0) return '0 PROOF'
     const cnpy = toCNPY(micro)
-    return `${cnpy.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} CNPY`
+    return `${cnpy.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} PROOF`
 }
 
-// Helper function to format amount - shows in CNPY (converted from micro denomination)
+// Helper function to format amount - shows in PROOF (converted from micro denomination)
 const formatAmount = (micro: number): string => {
-    if (micro === 0) return '0 CNPY'
+    if (micro === 0) return '0 PROOF'
     const cnpy = toCNPY(micro)
-    return `${cnpy.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} CNPY`
-}
-
-const CopySymbol = () => <Copy aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={2} />
-
-const truncateMiddle = (value: string, leading = 12, trailing = 8) => {
-    if (!value || value === 'N/A') return value || 'N/A'
-    return value.length > leading + trailing ? `${value.slice(0, leading)}…${value.slice(-trailing)}` : value
-}
-
-type PaymentPercent = {
-    chainId?: number | string
-    percent?: number
-    percents?: number
-}
-
-const getRewardTotalsByChain = (paymentPercents: PaymentPercent[]) => {
-    const totals = new Map<string, number>()
-
-    paymentPercents.forEach((recipient) => {
-        const chainId = String(recipient.chainId ?? 'Unknown')
-        const percent = Number(recipient.percents ?? recipient.percent ?? 0)
-
-        totals.set(chainId, (totals.get(chainId) ?? 0) + percent)
-    })
-
-    return Array.from(totals.entries())
-        .map(([chainId, total]) => ({ chainId, total }))
-        .sort((a, b) => {
-            const aChain = Number(a.chainId)
-            const bChain = Number(b.chainId)
-
-            if (Number.isNaN(aChain) || Number.isNaN(bChain)) {
-                return a.chainId.localeCompare(b.chainId)
-            }
-            return aChain - bChain
-        })
+    return `${cnpy.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} PROOF`
 }
 
 const TransactionDetailPage: React.FC = () => {
@@ -69,33 +46,58 @@ const TransactionDetailPage: React.FC = () => {
     // Use the real hook to get transaction data
     const { data: transactionData, isLoading, error } = useTxByHash(transactionHash || '')
 
-    // Get the latest confirmed block height to detect pending transactions.
-    // If the tx height is ahead of the current chain height, it hasn't been
-    // included in a block yet — it's a pending (mempool) transaction.
-    const { data: latestBlockData } = useLatestBlock()
-    const latestHeight = Number(
-        latestBlockData?.results?.[0]?.blockHeader?.height
-        ?? latestBlockData?.results?.[0]?.height
-        ?? latestBlockData?.height
-        ?? 0
-    )
-
     // Get block data to find all transactions in the same block
     const txBlockHeight = transactionData?.result?.height || transactionData?.height || 0
     const { data: blockData } = useBlockByHeight(txBlockHeight)
 
+    // Get latest block height to calculate confirmations
+    const { data: blocksCache } = useAllBlocksCache()
+    const latestBlockHeight = useMemo(() => {
+        if (!blocksCache) return 0
+        const blocks = Array.isArray(blocksCache) ? blocksCache : (blocksCache as any)
+        return blocks[0]?.blockHeader?.height || blocks[0]?.height || 0
+    }, [blocksCache])
+
+    // Get params to access fee information
+    const { data: paramsData } = useParamsHook(0)
+
     // Extract transaction data safely (must be before any conditional returns)
     const transaction = transactionData?.result || transactionData
     const transactionFeeMicro = transaction?.transaction?.fee || transaction?.fee || 0
-    const txType = transaction?.transaction?.type || transaction?.messageType || transaction?.type || 'send'
+    const rawTxType = transaction?.transaction?.type || transaction?.messageType || transaction?.type || 'send'
+    const txType = formatTxTypeLabel(rawTxType)
 
-    const txHeight = transaction?.height || transaction?.blockHeight || transaction?.block || 0
-    const rawStatus = String(transaction?.status || '').toLowerCase()
-    const isPending = txHeight === 0 || rawStatus === 'pending' || (latestHeight > 0 && txHeight > latestHeight)
+    // Get fee params directly from endpoint
+    const feeParams = paramsData?.fee || {}
+
+    // Map transaction type to fee param key (directly from endpoint)
+    const getFeeParamKey = (type: string): string => {
+        const typeMap: Record<string, string> = {
+            'send': 'sendFee',
+            'stake': 'stakeFee',
+            'edit-stake': 'editStakeFee',
+            'editStake': 'editStakeFee',
+            'unstake': 'unstakeFee',
+            'pause': 'pauseFee',
+            'unpause': 'unpauseFee',
+            'changeParameter': 'changeParameterFee',
+            'daoTransfer': 'daoTransferFee',
+            'certificateResults': 'certificateResultsFee',
+            'subsidy': 'subsidyFee',
+            'createOrder': 'createOrderFee',
+            'editOrder': 'editOrderFee',
+            'deleteOrder': 'deleteOrderFee',
+        }
+        return typeMap[type.toLowerCase()] || 'sendFee'
+    }
+
+    // Get minimum fee for this transaction type (directly from endpoint)
+    const minimumFeeForTxType = feeParams[getFeeParamKey(txType)] || feeParams.sendFee || 0
 
     // Helper function to normalize hash for comparison
     const normalizeHash = (hash: string): string => {
         if (!hash) return ''
+        // Remove '0x' prefix if present and convert to lowercase
         return hash.replace(/^0x/i, '').toLowerCase()
     }
 
@@ -137,9 +139,9 @@ const TransactionDetailPage: React.FC = () => {
         toast.success('Copied to clipboard!', {
             icon: '📋',
             style: {
-                background: '#1a1a1a',
-                color: '#fafafa',
-                border: '1px solid #45ca46',
+                background: '#1f2937',
+                color: '#f9fafb',
+                border: '1px solid #4ade80',
             },
         })
     }
@@ -219,7 +221,7 @@ const TransactionDetailPage: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="w-full">
+            <div className="mx-auto px-4 sm:px-6 lg:px-8 py-10 max-w-[100rem]">
                 <div className="animate-pulse">
                     <div className="h-8 bg-gray-700/50 rounded w-1/3 mb-4"></div>
                     <div className="h-32 bg-gray-700/50 rounded mb-6"></div>
@@ -241,7 +243,7 @@ const TransactionDetailPage: React.FC = () => {
 
     if (error || !transactionData) {
         return (
-            <div className="w-full">
+            <div className="mx-auto px-4 sm:px-6 lg:px-8 py-10 max-w-[100rem]">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-white mb-4">Transaction not found</h1>
                     <p className="text-gray-400 mb-6">The requested transaction could not be found.</p>
@@ -257,23 +259,29 @@ const TransactionDetailPage: React.FC = () => {
     }
 
     // Extract data from the API response (using transaction already extracted above)
-    const blockHeight = txHeight
+    const status = transaction?.status || 'success'
+    const blockHeight = transaction?.height || transaction?.blockHeight || transaction?.block || 0
     const timestamp = transaction?.transaction?.time || transaction?.timestamp || transaction?.time || new Date().toISOString()
     const fee = formatFee(transactionFeeMicro)
 
-    const from = transaction.sender || transaction.from || 'N/A'
-    const to = transaction.recipient || transaction.to || 'N/A'
-    const position = transaction?.index ?? null
+    const from = getExplorerFromAddress(transaction)
+    const to = getExplorerToAddress(transaction)
+    const nonce = transaction.nonce || 0
+    // Extract real data from endpoint
+    const position = transaction?.index ?? null // Position in block (index field from endpoint)
     const createdHeight = transaction?.transaction?.createdHeight ?? null
     const networkID = transaction?.transaction?.networkID ?? null
     const chainID = transaction?.transaction?.chainID ?? null
     const memo = transaction?.transaction?.memo ?? null
+    // Calculate confirmations: latest block height - transaction height
+    const confirmations = blockHeight > 0 && latestBlockHeight > 0 ? Math.max(0, latestBlockHeight - blockHeight + 1) : null
     const txHash = transaction.txHash || transactionHash || ''
 
-    const amountMicro = extractAmountMicro(transaction as Record<string, unknown>)
-    const value = amountMicro > 0 ? formatAmount(amountMicro) : '0 CNPY'
-    const rewardPaymentPercents = transaction.transaction?.msg?.qc?.results?.rewardRecipients?.paymentPercents ?? []
-    const rewardTotalsByChain = getRewardTotalsByChain(rewardPaymentPercents)
+    // Extract amount from transaction according to message type (from README)
+    const amountMicro = getExplorerAmountMicro(transaction)
+    const value = amountMicro > 0 ? formatAmount(amountMicro) : '0 PROOF'
+    const detailRows = getExplorerDetailRows(transaction)
+    const is2048Action = isGameLikeAction(transaction)
 
     return (
         <motion.div
@@ -281,12 +289,16 @@ const TransactionDetailPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="explorer-detail-page w-full"
+            className="mx-auto px-4 sm:px-6 lg:px-8 py-10 max-w-[100rem]"
         >
             {/* Header */}
             <div className="mb-8">
                 {/* Breadcrumb */}
                 <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-400 mb-4">
+                    <button onClick={() => navigate('/')} className="hover:text-primary transition-colors">
+                        Home
+                    </button>
+                    <i className="fa-solid fa-chevron-right text-xs"></i>
                     <button onClick={() => navigate('/transactions')} className="hover:text-primary transition-colors">
                         Transactions
                     </button>
@@ -302,20 +314,26 @@ const TransactionDetailPage: React.FC = () => {
                         <div className="flex items-center gap-3">
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                                        <i className="fa-solid fa-left-right text-lg text-white/80"></i>
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${is2048Action ? 'bg-[#f0cf52] text-[#2b2410]' : 'bg-primary text-background'}`}>
+                                        <i className={`${getTxTypeIcon(txType)} text-lg`}></i>
                                     </div>
                                     <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white break-words">
                                         Transaction Details
                                     </h1>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-3 mt-2">
-                                    <span className={`inline-flex min-w-[6.25rem] items-center justify-center rounded-md border px-1.5 py-0.5 text-center text-[10px] font-medium tracking-tight ${isPending ? 'border-yellow-500/30 bg-yellow-500/12 text-yellow-500' : 'border-[#35cd48]/30 bg-[#35cd48]/12 text-[#35cd48]'}`}>
-                                        {isPending ? 'Pending' : 'Success'}
-                                    </span>
-                                    <span className="text-gray-400 text-sm">
-                                        {isPending ? 'Awaiting block inclusion' : `Confirmed ${getTimeAgo(timestamp)}`}
-                                    </span>
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${status === 'success' || status === 'Success'
+                                            ? 'bg-green-500/20 text-green-400'
+                                            : 'bg-yellow-500/20 text-yellow-400'
+                                            }`}>
+                                            {status === 'success' || status === 'Success' ? 'Success' : 'Pending'}
+                                        </span>
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getTxTypeColor(txType)}`}>
+                                            {txType}
+                                        </span>
+                                        <span className="text-gray-400 text-sm">
+                                            Confirmed {getTimeAgo(timestamp)}
+                                        </span>
                                 </div>
                             </div>
                         </div>
@@ -325,7 +343,7 @@ const TransactionDetailPage: React.FC = () => {
                     <div className="flex items-center gap-2 self-start md:self-center">
                         <button
                             onClick={handlePreviousTx}
-                            className="flex items-center gap-1 sm:gap-2 rounded-lg border border-[#272729] bg-[#171717] px-2 py-2 text-xs font-medium text-[#ffffff] transition-colors hover:border-[#35cd48] hover:bg-[#0f0f0f] disabled:cursor-not-allowed disabled:border-[#272729] disabled:bg-[#0f0f0f] disabled:text-[#272729] disabled:hover:border-[#272729] disabled:hover:bg-[#0f0f0f] sm:px-4 sm:text-sm"
+                            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors bg-gray-700/50 text-white hover:bg-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={currentTxIndex <= 0}
                         >
                             <i className="fa-solid fa-chevron-left"></i>
@@ -334,7 +352,7 @@ const TransactionDetailPage: React.FC = () => {
                         </button>
                         <button
                             onClick={handleNextTx}
-                            className="flex items-center gap-1 sm:gap-2 rounded-lg border border-[#35cd48] bg-[#35cd48] px-2 py-2 text-xs font-medium text-[#0f0f0f] transition-colors hover:bg-[#0f0f0f] hover:text-[#35cd48] disabled:cursor-not-allowed disabled:border-[#272729] disabled:bg-[#0f0f0f] disabled:text-[#272729] disabled:hover:bg-[#0f0f0f] disabled:hover:text-[#272729] sm:px-4 sm:text-sm"
+                            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors bg-primary text-black hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={currentTxIndex >= blockTransactions.length - 1}
                         >
                             <span className="hidden sm:inline">Next Tx</span>
@@ -354,7 +372,7 @@ const TransactionDetailPage: React.FC = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="bg-card rounded-xl border border-white/10 p-6 mb-6"
+                            className="bg-card rounded-xl border border-gray-800/60 p-6 mb-6"
                         >
                             <h2 className="text-xl font-semibold text-white mb-6">
                                 Transaction Information
@@ -366,66 +384,66 @@ const TransactionDetailPage: React.FC = () => {
                                     <div className="flex flex-col border-b border-gray-400/30 pb-4 gap-2">
                                         <span className="text-gray-400 text-sm">Transaction Hash</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-primary text-sm">
+                                            <span className="text-primary font-mono text-sm">
                                                 {txHash}
                                             </span>
                                             <button
                                                 onClick={() => copyToClipboard(txHash)}
-                                                aria-label="Copy transaction hash"
-                                                className="text-primary hover:text-primary transition-colors flex-shrink-0"
+                                                className="text-primary hover:text-green-400 transition-colors flex-shrink-0"
                                             >
-                                                <CopySymbol />
+                                                <i className="fa-solid fa-copy text-xs"></i>
                                             </button>
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col border-b border-gray-400/30 pb-4 gap-2">
                                         <span className="text-gray-400 text-sm">Status</span>
-                                        <span className={`inline-flex min-w-[6.25rem] items-center justify-center rounded-md border px-1.5 py-0.5 text-center text-[10px] font-medium tracking-tight ${isPending ? 'border-yellow-500/30 bg-yellow-500/12 text-yellow-500' : 'border-[#35cd48]/30 bg-[#35cd48]/12 text-[#35cd48]'}`}>
-                                            {isPending ? 'Pending' : 'Success'}
+                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium w-fit ${status === 'success' || status === 'Success'
+                                            ? 'bg-green-500/20 text-green-400'
+                                            : 'bg-yellow-500/20 text-yellow-400'
+                                            }`}>
+                                            {status === 'success' || status === 'Success' ? 'Success' : 'Pending'}
                                         </span>
                                     </div>
 
                                     <div className="flex flex-col border-b border-gray-400/30 pb-4 gap-2">
                                         <span className="text-gray-400 text-sm">Block</span>
-                                        {isPending ? (
-                                            <span className="text-sm font-medium text-yellow-400">Mempool</span>
-                                        ) : (
-                                            <span className="text-primary">{blockHeight.toLocaleString()}</span>
-                                        )}
+                                        <span className="text-primary font-mono">{blockHeight.toLocaleString()}</span>
                                     </div>
 
                                     <div className="flex flex-col border-b border-gray-400/30 pb-4 gap-2">
                                         <span className="text-gray-400 text-sm">Timestamp</span>
-                                        {isPending ? (
-                                            <span className="text-sm font-medium text-yellow-400">Pending</span>
-                                        ) : (
-                                            <span className="text-white text-sm">{formatTimestamp(timestamp)}</span>
-                                        )}
+                                        <span className="text-white font-mono text-sm">{formatTimestamp(timestamp)}</span>
                                     </div>
 
                                     <div className="flex flex-col border-b border-gray-400/30 pb-4 gap-2">
                                         <span className="text-gray-400 text-sm">Value</span>
-                                        <span className="text-primary">{value}</span>
+                                        <span className="text-primary font-mono">{value}</span>
                                     </div>
 
                                     <div className="flex flex-col border-b border-gray-400/30 pb-4 gap-2">
                                         <span className="text-gray-400 text-sm">Transaction Fee</span>
-                                        <span className="text-orange-400">{fee}</span>
+                                        <span className="text-orange-400 font-mono">{fee}</span>
                                     </div>
+
+                                    {minimumFeeForTxType > 0 && (
+                                        <div className="flex flex-col border-b border-gray-400/30 pb-4 gap-2">
+                                            <span className="text-gray-400 text-sm">Minimum Fee ({getFeeParamKey(txType)})</span>
+                                            <span className="text-green-400 font-mono">{formatFee(minimumFeeForTxType)}</span>
+                                        </div>
+                                    )}
 
                                     <div className="flex flex-col border-b border-gray-400/30 pb-4 gap-2">
                                         <span className="text-gray-400 text-sm">From</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-400 text-sm">
+                                            <span className="text-gray-400 font-mono text-sm">
                                                 {from}
                                             </span>
                                             <button
                                                 onClick={() => copyToClipboard(from)}
-                                                aria-label="Copy from address"
-                                                className="text-primary hover:text-primary transition-colors flex-shrink-0"
+                                                className="text-primary hover:text-green-400 transition-colors flex-shrink-0"
                                             >
-                                                <CopySymbol />
+                                                <i className="fa-solid fa-copy text-xs"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -433,17 +451,21 @@ const TransactionDetailPage: React.FC = () => {
                                     <div className="flex flex-col border-b border-gray-400/30 pb-4 gap-2">
                                         <span className="text-gray-400 text-sm">To</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-400 text-sm">
+                                            <span className="text-gray-400 font-mono text-sm">
                                                 {to}
                                             </span>
                                             <button
                                                 onClick={() => copyToClipboard(to)}
-                                                aria-label="Copy to address"
-                                                className="text-primary hover:text-primary transition-colors flex-shrink-0"
+                                                className="text-primary hover:text-green-400 transition-colors flex-shrink-0"
                                             >
-                                                <CopySymbol />
+                                                <i className="fa-solid fa-copy text-xs"></i>
                                             </button>
                                         </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-gray-400 text-sm">Nonce</span>
+                                        <span className="text-white">{nonce}</span>
                                     </div>
 
                                 </div>
@@ -460,7 +482,7 @@ const TransactionDetailPage: React.FC = () => {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.3 }}
-                                className="bg-card rounded-xl border border-white/10 p-6"
+                                className="bg-card rounded-xl border border-gray-800/60 p-6"
                             >
                                 <h3 className="text-lg font-semibold text-white mb-4">
                                     Transaction Flow
@@ -468,18 +490,17 @@ const TransactionDetailPage: React.FC = () => {
 
                                 <div className="space-y-6">
                                     <div className="flex flex-col items-start gap-2 bg-input rounded-lg p-3">
-                                        <div className="text-white text-sm font-semibold mb-2">From Address</div>
-                                        <div className="flex w-full items-center gap-2 overflow-hidden">
-                                            <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-gray-400 text-xs sm:text-sm" title={from}>
-                                                {truncateMiddle(from)}
+                                        <div className="text-white text-sm mb-2">From Address</div>
+                                        <div className="w-full overflow-hidden">
+                                            <div className="font-mono text-gray-400 text-xs sm:text-sm truncate">
+                                                {from}
                                             </div>
-                                            <div className="shrink-0">
+                                            <div className="flex justify-end mt-1">
                                                 <button
                                                     onClick={() => copyToClipboard(from)}
-                                                    aria-label="Copy from address"
-                                                    className="text-primary hover:text-primary transition-colors px-1 py-0.5"
+                                                    className="text-primary hover:text-green-400 transition-colors text-xs px-1 py-0.5"
                                                 >
-                                                    <CopySymbol />
+                                                    Copy <i className="fa-solid fa-copy text-xs ml-1"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -494,18 +515,17 @@ const TransactionDetailPage: React.FC = () => {
                                     </div>
 
                                     <div className="flex flex-col items-start gap-2 bg-input rounded-lg p-3">
-                                        <div className="text-white text-sm font-semibold mb-2">To Address</div>
-                                        <div className="flex w-full items-center gap-2 overflow-hidden">
-                                            <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-gray-400 text-xs sm:text-sm" title={to}>
-                                                {truncateMiddle(to)}
+                                        <div className="text-white text-sm mb-2">To Address</div>
+                                        <div className="w-full overflow-hidden">
+                                            <div className="font-mono text-gray-400 text-xs sm:text-sm truncate">
+                                                {to}
                                             </div>
-                                            <div className="shrink-0">
+                                            <div className="flex justify-end mt-1">
                                                 <button
                                                     onClick={() => copyToClipboard(to)}
-                                                    aria-label="Copy to address"
-                                                    className="text-primary hover:text-primary transition-colors px-1 py-0.5"
+                                                    className="text-primary hover:text-green-400 transition-colors text-xs px-1 py-0.5"
                                                 >
-                                                    <CopySymbol />
+                                                    Copy <i className="fa-solid fa-copy text-xs ml-1"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -513,27 +533,52 @@ const TransactionDetailPage: React.FC = () => {
                                 </div>
                             </motion.div>
 
-                            {/* Fee Information */}
+                            {/* Gas Information */}
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.3, delay: 0.1 }}
-                                className="bg-card rounded-xl border border-white/10 p-6"
+                                className="bg-card rounded-xl border border-gray-800/60 p-6"
                             >
                                 <h3 className="text-lg font-semibold text-white mb-4">
-                                    Fee Information
+                                    Gas Information
                                 </h3>
 
                                 <div className="space-y-4">
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-gray-400 text-sm">Gas Used</span>
+                                            <span className="text-white font-mono text-sm">{transactionFeeMicro.toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full bg-gray-700/50 rounded-full h-2">
+                                            <div
+                                                className="bg-primary h-2 rounded-full transition-all duration-500"
+                                                style={{ width: '100%' }}
+                                            ></div>
+                                        </div>
+                                        <div className="flex justify-between items-center mt-1 text-xs text-gray-400">
+                                            <span>0</span>
+                                            <span>{transactionFeeMicro.toLocaleString()} (Gas Limit)</span>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-gray-400 text-sm">Fee Paid</span>
-                                            <span className="text-white text-sm">{formatFee(transactionFeeMicro)}</span>
+                                            <span className="text-gray-400 text-sm">Transaction Fee</span>
+                                            <span className="text-white font-mono text-sm">{formatFee(transactionFeeMicro)}</span>
                                         </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-gray-400 text-sm">Fee (uCNPY)</span>
-                                            <span className="text-gray-300 text-sm">{transactionFeeMicro.toLocaleString()}</span>
-                                        </div>
+                                        {minimumFeeForTxType > 0 && (
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-gray-400 text-sm">Minimum Fee ({getFeeParamKey(txType)})</span>
+                                                <span className="text-green-400 font-mono text-sm">{formatFee(minimumFeeForTxType)}</span>
+                                            </div>
+                                        )}
+                                        {transactionFeeMicro > minimumFeeForTxType && minimumFeeForTxType > 0 && (
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-gray-400 text-sm">Priority Fee</span>
+                                                <span className="text-yellow-400 font-mono text-sm">{formatFee(transactionFeeMicro - minimumFeeForTxType)}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </motion.div>
@@ -543,7 +588,7 @@ const TransactionDetailPage: React.FC = () => {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.3, delay: 0.2 }}
-                                className="bg-card rounded-xl border border-white/10 p-6"
+                                className="bg-card rounded-xl border border-gray-800/60 p-6"
                             >
                                 <h3 className="text-lg font-semibold text-white mb-4">
                                     More Details
@@ -552,9 +597,9 @@ const TransactionDetailPage: React.FC = () => {
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-400 text-sm">Transaction Type</span>
-                                        <TransactionTypeBadge type={txType} />
+                                        <span className="text-white text-sm">{txType}</span>
                                     </div>
-                                    {position !== null && !isPending && (
+                                    {position !== null && (
                                         <div className="flex justify-between items-center">
                                             <span className="text-gray-400 text-sm">Position in Block</span>
                                             <span className="text-white text-sm">{position}</span>
@@ -584,6 +629,12 @@ const TransactionDetailPage: React.FC = () => {
                                             <span className="text-white text-sm break-all text-right max-w-[200px]">{memo}</span>
                                         </div>
                                     )}
+                                    {confirmations !== null && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-400 text-sm">Confirmations</span>
+                                            <span className="text-primary text-sm">{confirmations.toLocaleString()}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         </div>
@@ -595,7 +646,7 @@ const TransactionDetailPage: React.FC = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.1 }}
-                    className="bg-card rounded-xl border border-white/10 p-6"
+                    className="bg-card rounded-xl border border-gray-800/60 p-6"
                 >
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-semibold text-white">Message Information</h2>
@@ -604,7 +655,7 @@ const TransactionDetailPage: React.FC = () => {
                                 onClick={() => setActiveTab('decoded')}
                                 className={`px-3 py-1 text-sm rounded transition-colors ${activeTab === 'decoded'
                                     ? 'bg-input text-white'
-                                    : 'text-gray-300 hover:bg-white/5'
+                                    : 'text-gray-300 hover:bg-gray-600/10'
                                     }`}
                             >
                                 Decoded
@@ -613,7 +664,7 @@ const TransactionDetailPage: React.FC = () => {
                                 onClick={() => setActiveTab('raw')}
                                 className={`px-3 py-1 text-sm rounded transition-colors ${activeTab === 'raw'
                                     ? 'bg-input text-white'
-                                    : 'text-gray-300 hover:bg-white/5'
+                                    : 'text-gray-300 hover:bg-gray-600/10'
                                     }`}
                             >
                                 Raw
@@ -624,88 +675,91 @@ const TransactionDetailPage: React.FC = () => {
                     <div className="space-y-4">
                         {activeTab === 'decoded' ? (
                             <div className="space-y-4">
-                                <div className="border border-white/10 rounded-lg p-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <span className="text-gray-400 text-sm">Message Type</span>
-                                        <TransactionTypeBadge type={txType} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between items-start">
-                                            <span className="text-gray-400 text-sm">Sender</span>
+                                <div className="border border-gray-600/60 rounded-lg p-5">
+                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                        <div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-white text-sm">{truncate(from, 10)}</span>
+                                                <span className="text-gray-400 text-sm">Log Index: 0</span>
+                                                <span className={`px-2 py-1 text-xs rounded ${getTxTypeColor(txType)}`}>
+                                                    {txType}
+                                                </span>
+                                            </div>
+                                            <h3 className="mt-3 text-xl font-semibold text-white">{txType}</h3>
+                                            <p className="mt-2 text-sm text-slate-400">{getExplorerDecodedTopics(transaction)}</p>
+                                        </div>
+
+                                        <div className="rounded-xl border border-gray-700/70 bg-input px-4 py-3 min-w-[260px]">
+                                            <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500">Summary</p>
+                                            <p className="mt-2 text-white font-medium">{getExplorerDecodedData(transaction)}</p>
+                                            <div className="mt-3 flex items-center gap-2">
+                                                <span className="text-gray-400 text-sm font-mono truncate">{from}</span>
                                                 <button
                                                     onClick={() => copyToClipboard(from)}
-                                                    aria-label="Copy sender"
                                                     className="text-primary hover:text-primary/80 transition-colors"
                                                 >
-                                                    <CopySymbol />
+                                                    <i className="fa-solid fa-copy text-xs"></i>
                                                 </button>
                                             </div>
-                                        </div>
-                                        <div className="flex justify-between items-start">
-                                            <span className="text-gray-400 text-sm">Recipient</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-white text-sm">{truncate(to, 10)}</span>
-                                                <button
-                                                    onClick={() => copyToClipboard(to)}
-                                                    aria-label="Copy recipient"
-                                                    className="text-primary hover:text-primary/80 transition-colors"
-                                                >
-                                                    <CopySymbol />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-between items-start">
-                                            <span className="text-gray-400 text-sm">Amount</span>
-                                            <span className="text-white text-sm">{value}</span>
                                         </div>
                                     </div>
+
+                                    {detailRows.length > 0 ? (
+                                        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                            {detailRows.map((row) => (
+                                                <div key={row.label} className="rounded-xl border border-gray-700/60 bg-input px-4 py-3">
+                                                    <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500">{row.label}</p>
+                                                    <p className="mt-2 text-sm text-white break-all">{row.value}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="mt-5 grid gap-3 md:grid-cols-2">
+                                            <div className="rounded-xl border border-gray-700/60 bg-input px-4 py-3">
+                                                <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500">Address</p>
+                                                <p className="mt-2 text-sm text-white break-all">{from}</p>
+                                            </div>
+                                            <div className="rounded-xl border border-gray-700/60 bg-input px-4 py-3">
+                                                <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500">Data</p>
+                                                <p className="mt-2 text-sm text-white">{value}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
-                                {txType === 'certificateResults' && rewardPaymentPercents.length > 0 && (
-                                    <div className="border border-white/10 rounded-lg p-4">
+                                {/* Log Index 1 - only if additional data exists */}
+                                {txType === 'certificateResults' && transaction.transaction?.msg?.qc?.results?.rewardRecipients?.paymentPercents && (
+                                    <div className="border border-gray-600/60 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-3">
-                                            <span className="text-gray-400 text-sm">Reward Distribution</span>
-                                            <TransactionTypeBadge type="certificateResults" />
+                                            <span className="text-gray-400 text-sm">Log Index: 1</span>
+                                            <span className="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded">
+                                                Rewards
+                                            </span>
                                         </div>
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-start">
                                                 <span className="text-gray-400 text-sm">Recipients</span>
-                                                <span className="text-white text-sm">
-                                                    {rewardPaymentPercents.length}
+                                                <span className="text-white font-mono text-sm">
+                                                    {transaction.transaction.msg.qc.results.rewardRecipients.paymentPercents.length}
                                                 </span>
                                             </div>
-                                            {rewardTotalsByChain.length === 1 ? (
-                                                <div className="flex justify-between items-start">
-                                                    <span className="text-gray-400 text-sm">Total</span>
-                                                    <span className="text-white text-sm">
-                                                        {rewardTotalsByChain[0].total}%
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    <span className="text-gray-400 text-sm">Total by Chain</span>
-                                                    {rewardTotalsByChain.map(({ chainId, total }) => (
-                                                        <div key={chainId} className="flex justify-between items-start">
-                                                            <span className="text-gray-400 text-sm">Chain {chainId}</span>
-                                                            <span className="text-white text-sm">{total}%</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-gray-400 text-sm">Total</span>
+                                                <span className="text-white font-mono text-sm">
+                                                    {transaction.transaction.msg.qc.results.rewardRecipients.paymentPercents.reduce((sum: number, r: any) => sum + (r.percents || 0), 0)}%
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
                             </div>
                         ) : (
                             // Raw JSON view with syntax highlighting
-                            <div className="border border-white/10 rounded-lg p-4">
-                                <pre className="text-xs overflow-x-auto whitespace-pre-wrap">
+                            <div className="border border-gray-600/60 rounded-lg p-4">
+                                <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                                     <code className="text-gray-300">
                                         {JSON.stringify(transaction, null, 2)
                                             .replace(/(".*?")\s*:/g, '<span class="text-blue-400">$1</span>:')
-                                            .replace(/:\s*(".*?")/g, ': <span class="text-primary">$1</span>')
+                                            .replace(/:\s*(".*?")/g, ': <span class="text-green-400">$1</span>')
                                             .replace(/:\s*(\d+)/g, ': <span class="text-yellow-400">$1</span>')
                                             .replace(/:\s*(true|false|null)/g, ': <span class="text-purple-400">$1</span>')
                                             .replace(/({|}|\[|\])/g, '<span class="text-gray-500">$1</span>')

@@ -36,7 +36,6 @@ const ValidatorsPage: React.FC = () => {
     const [filteredValidators, setFilteredValidators] = useState<Validator[]>([])
     const [loading, setLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageSize, setPageSize] = useState(10)
     const location = useLocation()
 
     // Determine if we're on delegators page
@@ -46,14 +45,15 @@ const ValidatorsPage: React.FC = () => {
 
     // Hook to get validators data with pagination
     // Use useAllDelegators when on delegators page to filter at API level
-    const { data: allValidatorsData, isLoading: isLoadingValidators } = useAllValidators()
-    const { data: delegatorsData, isLoading: isLoadingDelegators } = useAllDelegators()
+    const { data: allValidatorsData, isLoading: isLoadingValidators, refetch: refetchValidators } = useAllValidators()
+    const { data: delegatorsData, isLoading: isLoadingDelegators, refetch: refetchDelegators } = useAllDelegators()
     
     const validatorsData = isDelegatorsPage ? delegatorsData : allValidatorsData
     const isLoading = isDelegatorsPage ? isLoadingDelegators : isLoadingValidators
+    const refetch = isDelegatorsPage ? refetchDelegators : refetchValidators
 
     // Hook to get blocks data to calculate blocks produced
-    const { data: blocksData } = useAllBlocksCache()
+    const { data: blocksData, refetch: refetchBlocks } = useAllBlocksCache()
 
     // Function to get validator name from API
     const getValidatorName = (validator: any): string => {
@@ -71,8 +71,17 @@ const ValidatorsPage: React.FC = () => {
     const normalizedValidators = React.useMemo(() => {
         if (!validatorsData) return []
 
+        // Real structure: { results: [...], totalCount: number }
         let validatorsList = validatorsData.results || []
         if (!Array.isArray(validatorsList)) return []
+
+        // Filter out delegators when on validators page (only show non-delegators)
+        if (!isDelegatorsPage) {
+            validatorsList = validatorsList.filter((validator: any) => {
+                // Exclude delegators (those with delegate: true)
+                return !validator.delegate || validator.delegate === false
+            })
+        }
 
         // Calculate total stake for percentages
         const totalStake = validatorsList.reduce((sum: number, validator: any) =>
@@ -181,34 +190,35 @@ const ValidatorsPage: React.FC = () => {
 
     // Effect to handle pagination of filtered validators
     useEffect(() => {
-        const maxPage = Math.max(1, Math.ceil(filteredValidators.length / pageSize))
-        if (currentPage > maxPage) {
-            setCurrentPage(maxPage)
+        if (allValidators.length > 0) {
+            const pageSize = 10
+            const startIndex = (currentPage - 1) * pageSize
+            const endIndex = startIndex + pageSize
+            const pageValidators = allValidators.slice(startIndex, endIndex)
+            setFilteredValidators(pageValidators)
+            return
         }
-    }, [currentPage, filteredValidators.length, pageSize])
 
-    const pagedValidators = React.useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize
-        const endIndex = startIndex + pageSize
-        return filteredValidators.slice(startIndex, endIndex)
-    }, [currentPage, filteredValidators, pageSize])
+        // Avoid leaving stale rows visible when the current dataset is empty.
+        setFilteredValidators([])
+    }, [allValidators, currentPage])
 
     // Handle filtered validators from filters component
     const handleFilteredValidators = (filtered: Validator[]) => {
         setFilteredValidators(filtered)
-        setCurrentPage(1)
+    }
+
+    // Handle refresh
+    const handleRefresh = () => {
+        setLoading(true)
+        refetch()
+        refetchBlocks()
     }
 
     const totalValidators = allValidators.length
-    const visibleValidatorCount = filteredValidators.length
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page)
-    }
-
-    const handlePageSizeChange = (value: number) => {
-        setPageSize(value)
-        setCurrentPage(1)
     }
 
     return (
@@ -217,24 +227,23 @@ const ValidatorsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="w-full"
+            className="mx-auto px-4 sm:px-6 lg:px-8 py-10 max-w-[100rem]"
         >
             <ValidatorsFilters
                 totalValidators={totalValidators}
                 validators={allValidators}
                 onFilteredValidators={handleFilteredValidators}
+                onRefresh={handleRefresh}
                 initialFilter={initialFilter}
                 pageTitle={pageTitle}
             />
 
             <ValidatorsTable
-                validators={pagedValidators}
+                validators={filteredValidators}
                 loading={loading || isLoading}
-                totalCount={visibleValidatorCount}
+                totalCount={totalValidators}
                 currentPage={currentPage}
-                pageSize={pageSize}
                 onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
                 pageTitle={pageTitle}
             />
         </motion.div>

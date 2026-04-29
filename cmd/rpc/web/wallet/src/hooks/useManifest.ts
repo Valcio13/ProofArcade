@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getPluginBase } from '@/manifest/loader';
 import type { Action, Manifest } from "@/manifest/types";
 
 export const useManifest = () => {
@@ -15,8 +14,11 @@ export const useManifest = () => {
                 setLoading(true);
                 setError(null);
 
-                const pluginBase = getPluginBase();
-                const res = await fetch(`${pluginBase}/manifest.json`, { signal: ac.signal });
+                // Use BASE_URL to construct the path, removing trailing slash if present to avoid double slashes
+                const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+                    ? import.meta.env.BASE_URL.slice(0, -1)
+                    : import.meta.env.BASE_URL;
+                const res = await fetch(`${baseUrl}/plugin/canopy/manifest.json`, { signal: ac.signal });
                 if (!res.ok) {
                     throw new Error(`Failed to load manifest: ${res.status} ${res.statusText}`);
                 }

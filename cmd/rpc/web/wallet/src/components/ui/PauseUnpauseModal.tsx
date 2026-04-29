@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, X } from "lucide-react";
 import { useDSFetcher } from "@/core/dsFetch";
 import { useConfig } from "@/app/providers/ConfigProvider";
 import { useAccounts } from "@/app/providers/AccountsProvider";
-import { useDenom } from "@/hooks/useDenom";
 import { AlertModal } from "./AlertModal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -34,13 +32,11 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
 }) => {
   const { accounts } = useAccounts();
   const { chain } = useConfig();
-  const { symbol, factor } = useDenom();
-  const defaultFee = chain?.fees?.buckets?.avg?.default ? 0.01 : 0.01;
   const [formData, setFormData] = useState({
     account: validatorNickname || accounts[0]?.nickname || "",
     signer: validatorNickname || accounts[0]?.nickname || "",
     memo: "",
-    fee: defaultFee,
+    fee: 0.01,
     password: "",
   });
 
@@ -161,7 +157,7 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
         return;
       }
 
-      const feeInMicroUnits = Math.floor(formData.fee * factor);
+      const feeInMicroUnits = formData.fee * 1000000; // Convert to micro-units
 
       // Process each selected validator
       const promises = selectedValidators.map(async (validatorAddr) => {
@@ -215,7 +211,7 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
           account: validatorNickname || accounts[0]?.nickname || "",
           signer: validatorNickname || accounts[0]?.nickname || "",
           memo: "",
-          fee: defaultFee,
+          fee: 0.01,
           password: "",
         });
         setSelectedValidators([]);
@@ -244,14 +240,14 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-[#0f0f0f]/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-[#171717] rounded-2xl border border-[#272729] p-6 w-full max-w-md shadow-[0_24px_72px_rgba(0,0,0,0.55)]"
+          className="bg-card rounded-xl border border-border p-6 w-full max-w-md"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-6">
@@ -263,9 +259,9 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
               onClick={onClose}
               variant="clear2"
               size="icon"
-              className="border border-[#272729] bg-[#0f0f0f] text-white/60 hover:bg-[#272729] hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
-              <X className="h-4 w-4" />
+              <i className="fa-solid fa-times text-lg"></i>
             </Button>
           </div>
 
@@ -275,8 +271,8 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               className="text-center py-8"
             >
-              <div className="w-16 h-16 bg-[#35cd48]/12 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="h-8 w-8 text-[#35cd48]" />
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fa-solid fa-check text-green-400 text-2xl"></i>
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 Transaction Successful!
@@ -289,12 +285,12 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Validator Selection */}
               {isBulkAction && sortedValidators.length > 0 && (
-                <div className="bg-[#0f0f0f] rounded-lg p-4 border border-[#272729]">
+                <div className="bg-muted/30 rounded-lg p-4 border border-border">
                   <div className="flex items-center justify-between mb-3">
                     <label className="text-sm font-medium text-foreground">
                       Select Validators
                     </label>
-                    <span className="text-xs text-white/60 bg-[#171717] border border-[#272729] px-2 py-1 rounded-full">
+                    <span className="text-xs text-muted-foreground bg-accent px-2 py-1 rounded-full">
                       {selectedValidators.length} of {sortedValidators.length}{" "}
                       selected
                     </span>
@@ -307,7 +303,7 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
                         type="checkbox"
                         checked={selectAll}
                         onChange={handleSelectAll}
-                        className="w-4 h-4 text-[#35cd48] bg-[#171717] border-[#272729] rounded focus:ring-[#35cd48] focus:ring-2"
+                        className="w-4 h-4 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
                       />
                       <span className="text-sm text-foreground font-medium">
                         Select All ({sortedValidators.length} validators)
@@ -332,7 +328,7 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
                       return (
                         <label
                           key={validator.address}
-                          className="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-[#171717] transition-colors"
+                          className="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-accent/30 transition-colors"
                         >
                           <input
                             type="checkbox"
@@ -340,12 +336,12 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
                             onChange={() =>
                               handleValidatorSelect(validator.address)
                             }
-                            className="w-4 h-4 text-[#35cd48] bg-[#171717] border-[#272729] rounded focus:ring-[#35cd48] focus:ring-2"
+                            className="w-4 h-4 text-primary bg-card border-border rounded focus:ring-primary focus:ring-2"
                           />
                           <span className="text-sm text-foreground">
                             {displayName}
                           </span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground font-mono">
                             ({validator.address.substring(0, 8)}...
                             {validator.address.substring(
                               validator.address.length - 4,
@@ -372,7 +368,7 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("account", e.target.value)
                     }
-                    className="w-full px-3 py-2 bg-[#0f0f0f] border border-[#272729] rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#35cd48]/25 transition-colors"
+                    className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
                     required
                   >
                     {accounts.map((account: any) => (
@@ -394,7 +390,7 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("signer", e.target.value)
                     }
-                    className="w-full px-3 py-2 bg-[#0f0f0f] border border-[#272729] rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-[#35cd48]/25 transition-colors"
+                    className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
                     required
                   >
                     {accounts.map((account: any) => (
@@ -417,7 +413,7 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
                   value={formData.memo}
                   onChange={(e) => handleInputChange("memo", e.target.value)}
                   placeholder="Optional note attached with the transaction"
-                  className="w-full px-3 py-2 bg-[#0f0f0f] border border-[#272729] rounded-lg text-foreground"
+                  className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-foreground"
                   maxLength={200}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
@@ -440,17 +436,17 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
                     }
                     step="0.001"
                     min="0"
-                    className="w-full px-3 py-2 pr-12 bg-[#0f0f0f] border border-[#272729] rounded-lg text-foreground"
+                    className="w-full px-3 py-2 pr-12 bg-muted border border-border rounded-lg text-foreground"
                     required
                   />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                     <span className="text-xs text-muted-foreground font-medium">
-                      {symbol}
+                      CNPY
                     </span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Recommended: {defaultFee} {symbol}
+                  Recommended: 0.01 CNPY
                 </p>
               </div>
 
@@ -467,7 +463,7 @@ export const PauseUnpauseModal: React.FC<PauseUnpauseModalProps> = ({
                     handleInputChange("password", e.target.value)
                   }
                   placeholder="Enter your key password"
-                  className="w-full px-3 py-2 bg-[#0f0f0f] border border-[#272729] rounded-lg text-foreground"
+                  className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-foreground"
                   required
                 />
               </div>

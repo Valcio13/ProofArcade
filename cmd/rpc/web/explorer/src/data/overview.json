@@ -1,4 +1,5 @@
 [
+  { "type": "transactions", "title": "Transactions" },
   { "type": "blocks", "title": "Blocks" },
-  { "type": "transactions", "title": "Transactions" }
+  { "type": "swaps", "title": "Swaps" }
 ]

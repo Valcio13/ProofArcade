@@ -271,7 +271,8 @@ export function usePopulateController({
       if (fieldValue != null) {
         try {
           const resolved = templateAny(fieldValue, templateContext);
-          if (resolved !== undefined && resolved !== null && resolved !== '') {
+          if (resolved !== undefined && resolved !== null) {
+            // Only update if value changed
             if (form[fieldName] !== resolved) {
               updates[fieldName] = resolved;
             }

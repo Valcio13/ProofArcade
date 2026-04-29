@@ -12,9 +12,6 @@ on:
       - staging
     paths:
       - '**.go'
-      - 'go.mod'
-      - 'go.sum'
-      - '.github/workflows/**'
 jobs:
   build:
     name: Build
@@ -23,7 +20,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.24
+          go-version: 1.21
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Build Services
@@ -35,7 +32,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.24
+          go-version: 1.21
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Set up cache
@@ -48,4 +45,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Run Unit tests
-        run: make build/canopy-full && go test $(go list ./... | grep -v cmd/auto-update)
+        run: make build/canopy-full && go test ./...

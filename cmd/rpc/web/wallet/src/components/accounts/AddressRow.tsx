@@ -3,8 +3,6 @@ import { motion } from 'framer-motion';
 import { Copy } from 'lucide-react';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { useManifest } from '@/hooks/useManifest';
-import { useDenom } from '@/hooks/useDenom';
-import { WALLET_BADGE_CLASS, WALLET_BADGE_TONE } from '@/components/ui/badgeStyles';
 
 interface Address {
     id: string;
@@ -29,8 +27,8 @@ const formatAddress = (address: string) => {
     return address.substring(0, 5) + '...' + address.substring(address.length - 6);
 };
 
-const formatBalance = (amount: number, factor: number) => {
-    return (amount / factor).toFixed(2);
+const formatBalance = (amount: number) => {
+    return (amount / 1000000).toFixed(2);
 };
 
 export const AddressRow: React.FC<AddressRowProps> = ({
@@ -41,10 +39,18 @@ export const AddressRow: React.FC<AddressRowProps> = ({
                                                           onReceive
                                                       }) => {
     const { copyToClipboard } = useCopyToClipboard();
-    const { symbol, factor } = useDenom();
 
     const getStatusColor = (status: string) => {
-        return WALLET_BADGE_TONE;
+        switch (status) {
+            case 'Active':
+                return 'bg-green-500/20 text-green-400';
+            case 'Inactive':
+                return 'bg-red-500/20 text-red-400';
+            case 'Pending':
+                return 'bg-yellow-500/20 text-yellow-400';
+            default:
+                return 'bg-muted/20 text-muted-foreground';
+        }
     };
 
     return (
@@ -75,16 +81,16 @@ export const AddressRow: React.FC<AddressRowProps> = ({
                 </div>
             </td>
             <td className="p-4">
-                <div className="text-foreground font-medium">{formatBalance(address.totalBalance, factor)} {symbol}</div>
+                <div className="text-foreground font-medium">{formatBalance(address.totalBalance)} CNPY</div>
             </td>
             <td className="p-4">
-                <div className="text-foreground font-medium">{formatBalance(address.staked, factor)} {symbol}</div>
+                <div className="text-foreground font-medium">{formatBalance(address.staked)} CNPY</div>
             </td>
             <td className="p-4">
-                <div className="text-foreground font-medium">{formatBalance(address.liquid, factor)} {symbol}</div>
+                <div className="text-foreground font-medium">{formatBalance(address.liquid)} CNPY</div>
             </td>
             <td className="p-4">
-                <span className={`${WALLET_BADGE_CLASS} ${getStatusColor(address.status)}`}>
+                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(address.status)}`}>
                     {address.status}
                 </span>
             </td>
@@ -113,3 +119,4 @@ export const AddressRow: React.FC<AddressRowProps> = ({
         </motion.tr>
     );
 };
+

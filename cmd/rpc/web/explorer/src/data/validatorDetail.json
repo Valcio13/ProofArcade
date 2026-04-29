@@ -2,8 +2,8 @@
   "page": {
     "title": "Validator Details",
     "description": "Complete validator information and performance metrics",
-    "breadcrumb": "Staking >",
-    "backToValidators": "Back to Staking"
+    "breadcrumb": "Validators >",
+    "backToValidators": "Back to Validators"
   },
   "header": {
     "status": {
@@ -26,17 +26,17 @@
     "aboveAvg": "Above avg",
     "excellent": "Excellent",
     "units": {
-      "cnpy": "CNPY",
+      "cnpy": "PROOF",
       "percent": "%",
       "blocks": "blocks"
     }
   },
   "stakeByChains": {
     "title": "Stake by Nested Chains",
-    "totalDelegated": "Total Staked",
+    "totalDelegated": "Total Delegated",
     "totalNetworkControl": "Total Network Control",
     "chains": {
-      "canopyMain": "Canopy Main Chain",
+      "canopyMain": "ProofArcade Main Chain",
       "ethereumRestaking": "Ethereum Restaking",
       "bitcoinBridge": "Bitcoin Bridge",
       "solanaAVS": "Solana AVS"

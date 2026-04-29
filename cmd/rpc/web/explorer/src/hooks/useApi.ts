@@ -5,7 +5,6 @@ import {
     Transactions,
     AllTransactions,
     getTransactionsWithRealPagination,
-    getRecentTransactionsPreview,
     Accounts,
     Validators,
     ValidatorsWithFilters,
@@ -42,13 +41,13 @@ export const queryKeys = {
     transactions: (page: number, height: number) => ['transactions', page, height],
     allTransactions: (page: number, perPage: number, filters?: any) => ['allTransactions', page, perPage, filters],
     realPaginationTransactions: (page: number, perPage: number, filters?: any) => ['realPaginationTransactions', page, perPage, filters],
-    accounts: (page: number, perPage?: number) => ['accounts', page, perPage],
-    validators: (page: number, perPage?: number) => ['validators', page, perPage],
+    accounts: (page: number) => ['accounts', page],
+    validators: (page: number) => ['validators', page],
     validatorsWithFilters: (page: number, unstaking: number, paused: number, delegate: number, committee: number) => ['validatorsWithFilters', page, unstaking, paused, delegate, committee],
     committee: (page: number, chainId: number) => ['committee', page, chainId],
     dao: (height: number) => ['dao', height],
     account: (height: number, address: string) => ['account', height, address],
-    accountWithTxs: (height: number, address: string, page: number, perPage: number = 10) => ['accountWithTxs', height, address, page, perPage],
+    accountWithTxs: (height: number, address: string, page: number) => ['accountWithTxs', height, address, page],
     params: (height: number) => ['params', height],
     supply: (height: number) => ['supply', height],
     validator: (height: number, address: string) => ['validator', height, address],
@@ -57,7 +56,7 @@ export const queryKeys = {
     txByHash: (hash: string) => ['txByHash', hash],
     transactionsBySender: (page: number, sender: string) => ['transactionsBySender', page, sender],
     transactionsByRec: (page: number, rec: string) => ['transactionsByRec', page, rec],
-    pending: (page: number, perPage: number) => ['pending', page, perPage],
+    pending: (page: number) => ['pending', page],
     ecoParams: (chainId: number) => ['ecoParams', chainId],
     orders: (chainId: number) => ['orders', chainId],
     config: () => ['config'],
@@ -66,31 +65,18 @@ export const queryKeys = {
     tableData: (page: number, category: number, committee?: number) => ['tableData', page, category, committee],
 };
 
-const BLOCKS_POLL_MS = 3000;
-
-// Lightweight hook for the latest block height (polls every 3s)
-export const useLatestBlock = () => {
-    return useQuery({
-        queryKey: ['latestBlock'],
-        queryFn: () => Blocks(1, 0),
-        staleTime: 0,
-        refetchInterval: BLOCKS_POLL_MS,
-        refetchOnWindowFocus: true,
-        refetchOnMount: 'always',
-    });
-};
-
 // Hooks for Blocks
 export const useBlocks = (page: number, perPage: number = 10, filter: string = 'all') => {
+    // Load more blocks if the filter is week or 24h to have enough data to filter
     const blockCount = filter === 'week' ? 50 : filter === '24h' ? 30 : perPage;
 
     return useQuery({
         queryKey: queryKeys.blocks(page, blockCount, filter),
         queryFn: () => Blocks(page, blockCount),
-        staleTime: 0,
-        refetchInterval: BLOCKS_POLL_MS,
-        refetchOnWindowFocus: true,
-        refetchOnMount: 'always',
+        staleTime: 300000, // Cache for 5 minutes (increased from 30 seconds)
+        refetchInterval: REFRESH_INTERVAL_MS,
+        refetchOnWindowFocus: false, // Don't refetch when window regains focus
+        gcTime: 600000 // Keep in cache for 10 minutes
     });
 };
 
@@ -106,23 +92,11 @@ export const useTransactions = (page: number, height: number = 0) => {
     });
 };
 
-// Hook for transactions at a specific block height with configurable perPage
-export const useTransactionsByHeight = (height: number, perPage: number = 1000, enabled: boolean = true) => {
-    return useQuery({
-        queryKey: ['txsByHeight', height, perPage],
-        queryFn: () => Transactions(1, height, perPage),
-        staleTime: 30000,
-        enabled,
-    });
-};
-
 // Hook for all transactions with filters
 export const useAllTransactions = (page: number, perPage: number = 10, filters?: {
     type?: string;
     fromDate?: string;
     toDate?: string;
-    fromBlock?: string;
-    toBlock?: string;
     status?: string;
     address?: string;
     minAmount?: number;
@@ -141,8 +115,6 @@ export const useTransactionsWithRealPagination = (page: number, perPage: number 
     type?: string;
     fromDate?: string;
     toDate?: string;
-    fromBlock?: string;
-    toBlock?: string;
     status?: string;
     address?: string;
     minAmount?: number;
@@ -156,35 +128,20 @@ export const useTransactionsWithRealPagination = (page: number, perPage: number 
     });
 };
 
-export const useRecentTransactionsPreview = (blocks: any[] | undefined, limit: number = 5) => {
-    const latestBlockHeight = Number(blocks?.[0]?.blockHeader?.height ?? blocks?.[0]?.height ?? 0);
-
-    return useQuery({
-        queryKey: ['recentTransactionsPreview', latestBlockHeight, limit],
-        queryFn: () => getRecentTransactionsPreview(limit, blocks),
-        staleTime: 5000,
-        refetchInterval: 10000,
-        refetchOnWindowFocus: true,
-        refetchOnMount: 'always',
-        enabled: Array.isArray(blocks) && blocks.length > 0,
-        placeholderData: (previousData) => previousData,
-    });
-};
-
 // Hooks for Accounts
-export const useAccounts = (page: number, perPage: number = 10) => {
+export const useAccounts = (page: number) => {
     return useQuery({
-        queryKey: queryKeys.accounts(page, perPage),
-        queryFn: () => Accounts(page, 0, perPage),
+        queryKey: queryKeys.accounts(page),
+        queryFn: () => Accounts(page, 0),
         staleTime: 30000,
     });
 };
 
 // Hooks for Validators
-export const useValidators = (page: number, perPage: number = 10) => {
+export const useValidators = (page: number) => {
     return useQuery({
-        queryKey: queryKeys.validators(page, perPage),
-        queryFn: () => Validators(page, 0, perPage),
+        queryKey: queryKeys.validators(page),
+        queryFn: () => Validators(page, 0),
         staleTime: 30000,
     });
 };
@@ -305,10 +262,10 @@ export const useAccount = (height: number, address: string) => {
 };
 
 // Hooks for Account with Transactions
-export const useAccountWithTxs = (height: number, address: string, page: number, perPage: number = 10) => {
+export const useAccountWithTxs = (height: number, address: string, page: number) => {
     return useQuery({
-        queryKey: queryKeys.accountWithTxs(height, address, page, perPage),
-        queryFn: () => AccountWithTxs(height, address, page, perPage),
+        queryKey: queryKeys.accountWithTxs(height, address, page),
+        queryFn: () => AccountWithTxs(height, address, page),
         staleTime: 30000,
         enabled: !!address,
     });
@@ -393,11 +350,11 @@ export const useTransactionsByRec = (page: number, rec: string) => {
 };
 
 // Hooks for Pending Transactions
-export const usePending = (page: number, perPage: number = 10) => {
+export const usePending = (page: number) => {
     return useQuery({
-        queryKey: queryKeys.pending(page, perPage),
-        queryFn: () => Pending(page, perPage),
-        staleTime: 10000,
+        queryKey: queryKeys.pending(page),
+        queryFn: () => Pending(page, 0),
+        staleTime: 10000, // Shorter stale time for pending transactions
     });
 };
 
@@ -432,20 +389,11 @@ export const useModalData = (query: string | number, page: number) => {
 
 // Hooks for Card Data
 export const useCardData = () => {
-    const queryClient = useQueryClient();
-    const queryKey = [...queryKeys.cardData(), rpcURL];
-
     return useQuery({
-        queryKey,
-        queryFn: () => {
-            const previousCardData = queryClient.getQueryData(queryKey);
-            return getCardData(previousCardData);
-        },
-        staleTime: 0,
-        refetchInterval: BLOCKS_POLL_MS,
-        refetchOnWindowFocus: true,
-        refetchOnMount: 'always',
-        placeholderData: (previousData) => previousData,
+        queryKey: [...queryKeys.cardData(), rpcURL], // Include RPC URL to invalidate on network change
+        queryFn: () => getCardData(),
+        staleTime: 5000, // Reduced stale time for more frequent updates
+        refetchOnWindowFocus: true, // Refetch when window regains focus
     });
 };
 
@@ -527,10 +475,10 @@ export const useAllBlocksCache = () => {
                 throw new Error(`Error fetching blocks: ${error.message}`);
             }
         },
-        staleTime: 5000,
-        refetchInterval: 10000,
-        refetchOnWindowFocus: true,
-        refetchOnMount: 'always',
+        staleTime: 300000, // Cache for 5 minutes
+        // Keep this in sync with live widgets (Navbar + Home Blocks table)
+        refetchInterval: REFRESH_INTERVAL_MS,
+        gcTime: 600000, // Keep in cache for 10 minutes
     });
 };
 
@@ -625,8 +573,8 @@ export const useTransactionsInRange = (fromBlock: number, toBlock: number, maxBl
             });
         }
 
-        // limit blocks to the requested max (capped at 100 to stay reasonable)
-        const limitedBlocks = Math.min(maxBlocksToFetch, 100);
+        // Limit to a maximum of 50 blocks to avoid too many requests
+        const limitedBlocks = Math.min(maxBlocksToFetch, 50);
         const finalBlocks = filteredBlocks.slice(0, limitedBlocks);
 
         const allTransactions: any[] = [];
@@ -659,22 +607,24 @@ export const useTransactionsInRange = (fromBlock: number, toBlock: number, maxBl
 };
 
 // Hook for fetching orders (swaps)
-export const useOrders = () => {
+export const useOrders = (chainId: number = 1) => {
     return useQuery({
-        queryKey: ['orders'],
-        queryFn: () => Orders(),
+        queryKey: ['orders', chainId],
+        // Orders() already returns parsed JSON via POST(), not a Response object.
+        queryFn: () => Orders(chainId),
         staleTime: 30000, // Cache for 30 seconds
         refetchInterval: REFRESH_INTERVAL_MS,
     });
 };
 
 // Hook for fetching a specific order
-export const useOrder = (committee: number, orderId: string, height: number = 0) => {
+export const useOrder = (chainId: number, orderId: string, height: number = 0) => {
     return useQuery({
-        queryKey: ['order', committee, orderId, height],
-        queryFn: () => Order(committee, orderId, height),
-        enabled: !!orderId,
-        staleTime: 30000,
+        queryKey: ['order', chainId, orderId, height],
+        // Order() already returns parsed JSON via POST(), not a Response object.
+        queryFn: () => Order(chainId, orderId, height),
+        enabled: !!orderId, // Only run if orderId is provided
+        staleTime: 30000, // Cache for 30 seconds
     });
 };
 
@@ -731,3 +681,5 @@ export const useNetworkChangeHandler = () => {
         };
     }, [queryClient]);
 };
+
+

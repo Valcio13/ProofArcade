@@ -258,8 +258,32 @@ func (c *Controller) IsValidDoubleSigner(rootChainId, rootHeight uint64, address
 
 // PLUGIN CALLS BELOW
 
-const socketDir = "/tmp/plugin"
 const socketFile = "plugin.sock"
+const windowsPluginAddress = "127.0.0.1:50004"
+
+func pluginSocketDir() string {
+	if dir := os.Getenv("CANOPY_PLUGIN_DATA_DIR"); dir != "" {
+		return dir
+	}
+	if runtime.GOOS == "windows" {
+		return filepath.Join(os.TempDir(), "canopy-plugin")
+	}
+	return "/tmp/plugin"
+}
+
+func pluginSocketNetwork() string {
+	if runtime.GOOS == "windows" {
+		return "tcp"
+	}
+	return "unix"
+}
+
+func pluginSocketPath() string {
+	if pluginSocketNetwork() == "tcp" {
+		return windowsPluginAddress
+	}
+	return filepath.Join(pluginSocketDir(), socketFile)
+}
 
 // runPluginCtl() executes a plugin control script action and returns the command output
 func (c *Controller) runPluginCtl(plugin, action string) ([]byte, lib.ErrorI) {
@@ -272,7 +296,19 @@ func (c *Controller) runPluginCtl(plugin, action string) ([]byte, lib.ErrorI) {
 		return nil, lib.NewError(lib.NoCode, lib.MainModule, err.Error())
 	}
 	// create the command using the requested action
-	cmd := exec.Command(cmdPath, action)
+	cmd := execPluginCtlCommand(cmdPath, action)
+	cmd.Env = append(
+		os.Environ(),
+		"CANOPY_PLUGIN_DATA_DIR="+pluginSocketDir(),
+		"CANOPY_PLUGIN_NETWORK="+pluginSocketNetwork(),
+		"CANOPY_PLUGIN_ADDRESS="+pluginSocketPath(),
+	)
+	if runtime.GOOS == "windows" && strings.EqualFold(filepath.Ext(cmdPath), ".cmd") && action == "start" {
+		if err := cmd.Run(); err != nil {
+			return nil, lib.NewError(lib.NoCode, lib.MainModule, fmt.Sprintf("failed to execute plugin %s (%s): %v", plugin, action, err))
+		}
+		return []byte("started"), nil
+	}
 	// execute the command and capture output
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -303,19 +339,21 @@ func (c *Controller) PluginStop(plugin string) lib.ErrorI {
 
 // PluginConnectSync() blocking: enables a unix socket file where plugins can interact with the Canopy FSM
 func (c *Controller) PluginConnectSync() {
-	sockPath := filepath.Join(socketDir, socketFile)
-	// make the path
-	if err := os.MkdirAll(socketDir, 0777); err != nil {
-		c.log.Fatalf("Failed to make the plugin socket path %s: %v", sockPath, err)
+	sockPath := pluginSocketPath()
+	if pluginSocketNetwork() == "unix" {
+		// make the path
+		if err := os.MkdirAll(pluginSocketDir(), 0777); err != nil {
+			c.log.Fatalf("Failed to make the plugin socket path %s: %v", sockPath, err)
+		}
+		// clean old socket
+		if err := os.RemoveAll(sockPath); err != nil {
+			c.log.Fatalf("Failed to remove plugin socket %s: %v", sockPath, err)
+		}
 	}
-	// clean old socket
-	if err := os.RemoveAll(sockPath); err != nil {
-		c.log.Fatalf("Failed to remove plugin socket %s: %v", sockPath, err)
-	}
-	// create a unix listener
-	l, err := net.Listen("unix", sockPath)
+	// create a listener for the plugin bridge
+	l, err := net.Listen(pluginSocketNetwork(), sockPath)
 	if err != nil {
-		c.log.Fatalf("Failed to listen on socket: %v", err)
+		c.log.Fatalf("Failed to listen on plugin transport %s %s: %v", pluginSocketNetwork(), sockPath, err)
 	}
 	defer l.Close()
 	// log the listener
@@ -331,26 +369,51 @@ func (c *Controller) PluginConnectSync() {
 	c.FSM.Plugin, c.Mempool.FSM.Plugin = c.Plugin, c.Plugin
 }
 
+func execPluginCtlCommand(cmdPath, action string) *exec.Cmd {
+	if runtime.GOOS == "windows" && strings.EqualFold(filepath.Ext(cmdPath), ".cmd") && action == "start" {
+		return exec.Command("cmd", "/c", "start", "", "/b", cmdPath, action)
+	}
+	switch strings.ToLower(filepath.Ext(cmdPath)) {
+	case ".cmd", ".bat":
+		return exec.Command("cmd", "/c", cmdPath, action)
+	case ".ps1":
+		return exec.Command("powershell", "-ExecutionPolicy", "Bypass", "-File", cmdPath, action)
+	default:
+		return exec.Command(cmdPath, action)
+	}
+}
+
 // resolvePluginCtlPath() locates the plugin control script from common startup locations
 func resolvePluginCtlPath(plugin string) (string, error) {
-	// construct the relative path for the plugin control script
-	relPath := filepath.Join("plugin", plugin, "pluginctl.sh")
-	// try the current working directory first
-	candidates := []string{
-		relPath,
+	// construct relative paths for supported plugin control launchers
+	relPaths := []string{filepath.Join("plugin", plugin, "pluginctl.sh")}
+	if runtime.GOOS == "windows" {
+		relPaths = []string{
+			filepath.Join("plugin", plugin, "pluginctl.cmd"),
+			filepath.Join("plugin", plugin, "pluginctl.bat"),
+			filepath.Join("plugin", plugin, "pluginctl.ps1"),
+			filepath.Join("plugin", plugin, "pluginctl.sh"),
+		}
 	}
+	// try the current working directory first
+	candidates := make([]string, 0, len(relPaths)*4)
+	candidates = append(candidates, relPaths...)
 	// add paths relative to the running executable if available
 	if exePath, err := os.Executable(); err == nil {
 		exeDir := filepath.Dir(exePath)
-		candidates = append(candidates,
-			filepath.Join(exeDir, relPath),
-			filepath.Join(filepath.Dir(exeDir), relPath),
-		)
+		for _, relPath := range relPaths {
+			candidates = append(candidates,
+				filepath.Join(exeDir, relPath),
+				filepath.Join(filepath.Dir(exeDir), relPath),
+			)
+		}
 	}
 	// add a path relative to the source tree for local development
 	if _, sourceFile, _, ok := runtime.Caller(0); ok {
 		repoRoot := filepath.Dir(filepath.Dir(sourceFile))
-		candidates = append(candidates, filepath.Join(repoRoot, relPath))
+		for _, relPath := range relPaths {
+			candidates = append(candidates, filepath.Join(repoRoot, relPath))
+		}
 	}
 	// return the first existing file path
 	for _, candidate := range candidates {

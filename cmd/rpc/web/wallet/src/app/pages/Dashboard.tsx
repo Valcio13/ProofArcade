@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion';
 import { TotalBalanceCard }       from '@/components/dashboard/TotalBalanceCard';
 import { StakedBalanceCard }      from '@/components/dashboard/StakedBalanceCard';
+import { QuickActionsCard }       from '@/components/dashboard/QuickActionsCard';
+import { AllAddressesCard }       from '@/components/dashboard/AllAddressesCard';
 import { NodeManagementCard }     from '@/components/dashboard/NodeManagementCard';
 import { ErrorBoundary }          from '@/components/ErrorBoundary';
 import { RecentTransactionsCard } from '@/components/dashboard/RecentTransactionsCard';
 import { ActionsModal }           from '@/actions/ActionsModal';
 import { useDashboard }           from '@/hooks/useDashboard';
-import { PageHeader }             from '@/components/layouts/PageHeader';
 
 const item = {
     hidden:  { opacity: 0, y: 14 },
@@ -16,8 +17,10 @@ const item = {
 export const Dashboard = () => {
     const {
         manifestLoading,
+        manifest,
         isTxLoading,
         allTxs,
+        onRunAction,
         isActionModalOpen,
         setIsActionModalOpen,
         selectedActions,
@@ -27,7 +30,7 @@ export const Dashboard = () => {
     if (manifestLoading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm font-body">
                     <span className="relative flex h-1.5 w-1.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-70" />
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
@@ -48,37 +51,55 @@ export const Dashboard = () => {
             >
                 {/* Page heading */}
                 <motion.div variants={item} className="flex items-center justify-between mb-1">
-                    <PageHeader
-                        title="Dashboard"
-                        subtitle="Monitor recent activity, accounts, and overview for all wallets."
-                        className="w-full"
-                    />
+                    <div>
+                        <h1 className="font-display text-xl font-bold text-foreground tracking-tight">
+                            Dashboard
+                        </h1>
+                        <p className="text-xs text-muted-foreground font-body mt-0.5">
+                            Wallet overview & node management
+                        </p>
+                    </div>
                 </motion.div>
 
-                {/* ── Row 1: Balance + Staked ── */}
+                {/* ── Row 1: Balance + Staked + Quick Actions ── */}
                 <motion.div
                     variants={item}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
                 >
+                    <ErrorBoundary>
+                        <TotalBalanceCard />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
+                        <StakedBalanceCard />
+                    </ErrorBoundary>
+                    <div className="md:col-span-2 xl:col-span-1">
                         <ErrorBoundary>
-                            <TotalBalanceCard />
+                            <QuickActionsCard onRunAction={onRunAction} actions={manifest?.actions} />
                         </ErrorBoundary>
-                        <ErrorBoundary>
-                            <StakedBalanceCard />
-                        </ErrorBoundary>
+                    </div>
                 </motion.div>
 
-                {/* ── Row 2: All Accounts ── */}
+                {/* ── Row 2: Transactions + Addresses ── */}
+                <motion.div
+                    variants={item}
+                    className="grid grid-cols-1 lg:grid-cols-12 gap-4"
+                >
+                    <div className="lg:col-span-8">
+                        <ErrorBoundary>
+                            <RecentTransactionsCard transactions={allTxs} isLoading={isTxLoading} />
+                        </ErrorBoundary>
+                    </div>
+                    <div className="lg:col-span-4">
+                        <ErrorBoundary>
+                            <AllAddressesCard />
+                        </ErrorBoundary>
+                    </div>
+                </motion.div>
+
+                {/* ── Row 3: Node Management ── */}
                 <motion.div variants={item} className="w-full">
                     <ErrorBoundary>
                         <NodeManagementCard />
-                    </ErrorBoundary>
-                </motion.div>
-
-                {/* ── Row 3: Recent Transactions ── */}
-                <motion.div variants={item} className="w-full">
-                    <ErrorBoundary>
-                        <RecentTransactionsCard transactions={allTxs} isLoading={isTxLoading} />
                     </ErrorBoundary>
                 </motion.div>
             </motion.div>

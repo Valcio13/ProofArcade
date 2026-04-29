@@ -31,7 +31,9 @@ type orderRequest struct {
 }
 
 type ordersRequest struct {
-	Committee uint64 `json:"committee"`
+	Committee          uint64 `json:"committee"`
+	SellersSendAddress string `json:"sellersSendAddress"`
+	BuyerSendAddress   string `json:"buyerSendAddress"`
 	heightRequest
 	lib.PageParams
 }
@@ -156,6 +158,11 @@ type hashRequest struct {
 
 type addressRequest struct {
 	Address lib.HexBytes `json:"address"`
+}
+
+type faucetRequest struct {
+	addressRequest
+	Amount uint64 `json:"amount"`
 }
 
 type committeesRequest struct {

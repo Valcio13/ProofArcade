@@ -63,43 +63,59 @@ const (
 	RootChainInfoRoutePath         = "/v1/query/root-chain-info"
 	ValidatorSetRoutePath          = "/v1/query/validator-set"
 	CheckpointRoutePath            = "/v1/query/checkpoint"
+	Game2048ConfigRoutePath        = "/v1/query/2048/config"
+	Game2048PlayerRoutePath        = "/v1/query/2048/player"
+	Game2048LeaderboardsRoutePath  = "/v1/query/2048/leaderboards"
+	Game2048DailyPoolRoutePath     = "/v1/query/2048/daily-pool"
+	Game2048TreasuryRoutePath      = "/v1/query/2048/treasury"
+	Game2048ClaimableRewardsPath   = "/v1/query/2048/claimable-rewards"
+	Game2048ShopConfigRoutePath    = "/v1/query/2048/shop-config"
+	Game2048RedeemPreviewRoutePath = "/v1/query/2048/redeem-preview"
+	Game2048RedemptionsRoutePath   = "/v1/query/2048/redemptions"
 	SubscribeRCInfoPath            = "/v1/subscribe-rc-info"
 	// eth
 	EthereumRoutePath = "/v1/eth"
 	// admin
-	KeystoreRoutePath          = "/v1/admin/keystore"
-	KeystoreNewKeyRoutePath    = "/v1/admin/keystore-new-key"
-	KeystoreImportRoutePath    = "/v1/admin/keystore-import"
-	KeystoreImportRawRoutePath = "/v1/admin/keystore-import-raw"
-	KeystoreDeleteRoutePath    = "/v1/admin/keystore-delete"
-	KeystoreGetRoutePath       = "/v1/admin/keystore-get"
-	TxSendRoutePath            = "/v1/admin/tx-send"
-	TxStakeRoutePath           = "/v1/admin/tx-stake"
-	TxEditStakeRoutePath       = "/v1/admin/tx-edit-stake"
-	TxUnstakeRoutePath         = "/v1/admin/tx-unstake"
-	TxPauseRoutePath           = "/v1/admin/tx-pause"
-	TxUnpauseRoutePath         = "/v1/admin/tx-unpause"
-	TxChangeParamRoutePath     = "/v1/admin/tx-change-param"
-	TxDAOTransferRoutePath     = "/v1/admin/tx-dao-transfer"
-	TxCreateOrderRoutePath     = "/v1/admin/tx-create-order"
-	TxEditOrderRoutePath       = "/v1/admin/tx-edit-order"
-	TxDeleteOrderRoutePath     = "/v1/admin/tx-delete-order"
-	TxDexLimitOrderPath        = "/v1/admin/tx-dex-limit-order"
-	TxDexLiquidityDepositPath  = "/v1/admin/tx-dex-liquidity-deposit"
-	TxDexLiquidityWithdrawPath = "/v1/admin/tx-dex-liquidity-withdraw"
-	TxLockOrderRoutePath       = "/v1/admin/tx-lock-order"
-	TxCloseOrderRoutePath      = "/v1/admin/tx-close-order"
-	TxSubsidyRoutePath         = "/v1/admin/tx-subsidy"
-	TxStartPollRoutePath       = "/v1/admin/tx-start-poll"
-	TxVotePollRoutePath        = "/v1/admin/tx-vote-poll"
-	ResourceUsageRoutePath     = "/v1/admin/resource-usage"
-	PeerInfoRoutePath          = "/v1/admin/peer-info"
-	ConsensusInfoRoutePath     = "/v1/admin/consensus-info"
-	PeerBookRoutePath          = "/v1/admin/peer-book"
-	ConfigRoutePath            = "/v1/admin/config"
-	LogsRoutePath              = "/v1/admin/log"
-	AddVoteRoutePath           = "/v1/gov/add-vote"
-	DelVoteRoutePath           = "/v1/gov/del-vote"
+	KeystoreRoutePath            = "/v1/admin/keystore"
+	KeystoreNewKeyRoutePath      = "/v1/admin/keystore-new-key"
+	KeystoreImportRoutePath      = "/v1/admin/keystore-import"
+	KeystoreImportRawRoutePath   = "/v1/admin/keystore-import-raw"
+	KeystoreDeleteRoutePath      = "/v1/admin/keystore-delete"
+	KeystoreGetRoutePath         = "/v1/admin/keystore-get"
+	TxSendRoutePath              = "/v1/admin/tx-send"
+	TxStakeRoutePath             = "/v1/admin/tx-stake"
+	TxEditStakeRoutePath         = "/v1/admin/tx-edit-stake"
+	TxUnstakeRoutePath           = "/v1/admin/tx-unstake"
+	TxPauseRoutePath             = "/v1/admin/tx-pause"
+	TxUnpauseRoutePath           = "/v1/admin/tx-unpause"
+	TxChangeParamRoutePath       = "/v1/admin/tx-change-param"
+	TxDAOTransferRoutePath       = "/v1/admin/tx-dao-transfer"
+	TxCreateOrderRoutePath       = "/v1/admin/tx-create-order"
+	TxEditOrderRoutePath         = "/v1/admin/tx-edit-order"
+	TxDeleteOrderRoutePath       = "/v1/admin/tx-delete-order"
+	TxDexLimitOrderPath          = "/v1/admin/tx-dex-limit-order"
+	TxDexLiquidityDepositPath    = "/v1/admin/tx-dex-liquidity-deposit"
+	TxDexLiquidityWithdrawPath   = "/v1/admin/tx-dex-liquidity-withdraw"
+	TxLockOrderRoutePath         = "/v1/admin/tx-lock-order"
+	TxCloseOrderRoutePath        = "/v1/admin/tx-close-order"
+	TxSubsidyRoutePath           = "/v1/admin/tx-subsidy"
+	TxStartPollRoutePath         = "/v1/admin/tx-start-poll"
+	TxVotePollRoutePath          = "/v1/admin/tx-vote-poll"
+	ResourceUsageRoutePath       = "/v1/admin/resource-usage"
+	PeerInfoRoutePath            = "/v1/admin/peer-info"
+	ConsensusInfoRoutePath       = "/v1/admin/consensus-info"
+	PeerBookRoutePath            = "/v1/admin/peer-book"
+	Tx2048StartDailyRoutePath    = "/v1/admin/tx-2048-start-daily"
+	Tx2048StartClassicRoutePath  = "/v1/admin/tx-2048-start-classic"
+	Tx2048SubmitRoutePath        = "/v1/admin/tx-2048-submit"
+	Tx2048ClaimDailyRoutePath    = "/v1/admin/tx-2048-claim-daily-reward"
+	Tx2048RedeemClassicRoutePath = "/v1/admin/tx-2048-redeem-classic-points"
+	Tx2048ClaimLoginRoutePath    = "/v1/admin/tx-2048-claim-daily-login"
+	DevFaucetRoutePath           = "/v1/admin/dev-faucet"
+	ConfigRoutePath              = "/v1/admin/config"
+	LogsRoutePath                = "/v1/admin/log"
+	AddVoteRoutePath             = "/v1/gov/add-vote"
+	DelVoteRoutePath             = "/v1/gov/del-vote"
 )
 
 const (
@@ -157,6 +173,15 @@ const (
 	LotteryRouteName               = "lottery"
 	RootChainInfoRouteName         = "root-chain-info"
 	CheckpointRouteName            = "checkpoint"
+	Game2048ConfigRouteName        = "2048-config"
+	Game2048PlayerRouteName        = "2048-player"
+	Game2048LeaderboardsRouteName  = "2048-leaderboards"
+	Game2048DailyPoolRouteName     = "2048-daily-pool"
+	Game2048TreasuryRouteName      = "2048-treasury"
+	Game2048ClaimableRewardsName   = "2048-claimable-rewards"
+	Game2048ShopConfigRouteName    = "2048-shop-config"
+	Game2048RedeemPreviewRouteName = "2048-redeem-preview"
+	Game2048RedemptionsRouteName   = "2048-redemptions"
 	// debug
 	DebugBlockedRouteName   = "blocked"
 	DebugHeapRouteName      = "heap"
@@ -194,6 +219,13 @@ const (
 	PeerInfoRouteName               = "peer-info"
 	ConsensusInfoRouteName          = "consensus-info"
 	PeerBookRouteName               = "peer-book"
+	Tx2048StartDailyRouteName       = "2048-start-daily"
+	Tx2048StartClassicRouteName     = "2048-start-classic"
+	Tx2048SubmitRouteName           = "2048-submit"
+	Tx2048ClaimDailyRouteName       = "2048-claim-daily-reward"
+	Tx2048RedeemClassicRouteName    = "2048-redeem-classic-points"
+	Tx2048ClaimLoginRouteName       = "2048-claim-daily-login"
+	DevFaucetRouteName              = "dev-faucet"
 	ConfigRouteName                 = "config"
 	LogsRouteName                   = "logs"
 	AddVoteRouteName                = "add-vote"
@@ -263,6 +295,15 @@ var routePaths = routes{
 	RootChainInfoRouteName:         {Method: http.MethodPost, Path: RootChainInfoRoutePath},
 	ValidatorSetRouteName:          {Method: http.MethodPost, Path: ValidatorSetRoutePath},
 	CheckpointRouteName:            {Method: http.MethodPost, Path: CheckpointRoutePath},
+	Game2048ConfigRouteName:        {Method: http.MethodGet, Path: Game2048ConfigRoutePath},
+	Game2048PlayerRouteName:        {Method: http.MethodPost, Path: Game2048PlayerRoutePath},
+	Game2048LeaderboardsRouteName:  {Method: http.MethodGet, Path: Game2048LeaderboardsRoutePath},
+	Game2048DailyPoolRouteName:     {Method: http.MethodGet, Path: Game2048DailyPoolRoutePath},
+	Game2048TreasuryRouteName:      {Method: http.MethodGet, Path: Game2048TreasuryRoutePath},
+	Game2048ClaimableRewardsName:   {Method: http.MethodPost, Path: Game2048ClaimableRewardsPath},
+	Game2048ShopConfigRouteName:    {Method: http.MethodGet, Path: Game2048ShopConfigRoutePath},
+	Game2048RedeemPreviewRouteName: {Method: http.MethodPost, Path: Game2048RedeemPreviewRoutePath},
+	Game2048RedemptionsRouteName:   {Method: http.MethodPost, Path: Game2048RedemptionsRoutePath},
 	// eth
 	EthereumRouteName: {Method: http.MethodPost, Path: EthereumRoutePath},
 	// admin
@@ -295,6 +336,13 @@ var routePaths = routes{
 	PeerInfoRouteName:               {Method: http.MethodGet, Path: PeerInfoRoutePath},
 	ConsensusInfoRouteName:          {Method: http.MethodGet, Path: ConsensusInfoRoutePath},
 	PeerBookRouteName:               {Method: http.MethodGet, Path: PeerBookRoutePath},
+	Tx2048StartDailyRouteName:       {Method: http.MethodPost, Path: Tx2048StartDailyRoutePath},
+	Tx2048StartClassicRouteName:     {Method: http.MethodPost, Path: Tx2048StartClassicRoutePath},
+	Tx2048SubmitRouteName:           {Method: http.MethodPost, Path: Tx2048SubmitRoutePath},
+	Tx2048ClaimDailyRouteName:       {Method: http.MethodPost, Path: Tx2048ClaimDailyRoutePath},
+	Tx2048RedeemClassicRouteName:    {Method: http.MethodPost, Path: Tx2048RedeemClassicRoutePath},
+	Tx2048ClaimLoginRouteName:       {Method: http.MethodPost, Path: Tx2048ClaimLoginRoutePath},
+	DevFaucetRouteName:              {Method: http.MethodPost, Path: DevFaucetRoutePath},
 	ConfigRouteName:                 {Method: http.MethodGet, Path: ConfigRoutePath},
 	LogsRouteName:                   {Method: http.MethodGet, Path: LogsRoutePath},
 	AddVoteRouteName:                {Method: http.MethodPost, Path: AddVoteRoutePath},
@@ -362,6 +410,15 @@ func createRouter(s *Server) *httprouter.Router {
 		PollRouteName:                  s.Poll,
 		RootChainInfoRouteName:         s.RootChainInfo,
 		CheckpointRouteName:            s.Checkpoint,
+		Game2048ConfigRouteName:        s.Game2048Config,
+		Game2048PlayerRouteName:        s.Game2048Player,
+		Game2048LeaderboardsRouteName:  s.Game2048Leaderboards,
+		Game2048DailyPoolRouteName:     s.Game2048DailyPool,
+		Game2048TreasuryRouteName:      s.Game2048Treasury,
+		Game2048ClaimableRewardsName:   s.Game2048ClaimableRewards,
+		Game2048ShopConfigRouteName:    s.Game2048ShopConfig,
+		Game2048RedeemPreviewRouteName: s.Game2048RedeemPreview,
+		Game2048RedemptionsRouteName:   s.Game2048Redemptions,
 		EthereumRouteName:              s.EthereumHandler,
 		SubscribeRCInfoName:            s.WebSocket,
 	}
@@ -412,6 +469,13 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		PeerInfoRouteName:               s.PeerInfo,
 		ConsensusInfoRouteName:          s.ConsensusInfo,
 		PeerBookRouteName:               s.PeerBook,
+		Tx2048StartDailyRouteName:       s.Game2048StartDaily,
+		Tx2048StartClassicRouteName:     s.Game2048StartClassic,
+		Tx2048SubmitRouteName:           s.Game2048Submit,
+		Tx2048ClaimDailyRouteName:       s.Game2048ClaimDailyReward,
+		Tx2048RedeemClassicRouteName:    s.Game2048RedeemClassicPoints,
+		Tx2048ClaimLoginRouteName:       s.Game2048ClaimDailyLoginReward,
+		DevFaucetRouteName:              s.DevFaucet,
 		ConfigRouteName:                 s.Config,
 		LogsRouteName:                   logsHandler(s),
 		AddVoteRouteName:                s.AddVote,

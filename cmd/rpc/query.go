@@ -272,10 +272,34 @@ func (s *Server) Order(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	})
 }
 
-// Orders retrieves the order book for a committee with pagination
+// Orders retrieves the order book for a committee with optional filters and pagination
 func (s *Server) Orders(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// Invoke helper with the HTTP request, response writer and an inline callback
 	s.ordersParams(w, r, func(s *fsm.StateMachine, req *ordersRequest) (any, lib.ErrorI) {
-		return s.GetOrdersPaginated(req.Committee, req.PageParams)
+		// validate mutual exclusion: cannot filter by both seller and buyer address
+		if req.SellersSendAddress != "" && req.BuyerSendAddress != "" {
+			return nil, lib.NewError(lib.CodeInvalidArgument, lib.RPCModule, "cannot filter by both sellersSendAddress and buyerSendAddress")
+		}
+		// convert seller address if provided
+		var sellerAddr []byte
+		if req.SellersSendAddress != "" {
+			var err lib.ErrorI
+			sellerAddr, err = lib.StringToBytes(req.SellersSendAddress)
+			if err != nil {
+				return nil, err
+			}
+		}
+		// convert buyer address if provided
+		var buyerAddr []byte
+		if req.BuyerSendAddress != "" {
+			var err lib.ErrorI
+			buyerAddr, err = lib.StringToBytes(req.BuyerSendAddress)
+			if err != nil {
+				return nil, err
+			}
+		}
+		// use paginated query
+		return s.GetOrdersPaginated(sellerAddr, buyerAddr, req.Committee, req.PageParams)
 	})
 }
 
@@ -400,34 +424,8 @@ func (s *Server) Blocks(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 
 // TransactionByHash responds with a transaction with the hash h
 func (s *Server) TransactionByHash(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	req := new(hashRequest)
-	if ok := unmarshal(w, r, req); !ok {
-		return
-	}
-	hashBytes, err := lib.StringToBytes(req.Hash)
-	if err != nil {
-		write(w, err, http.StatusBadRequest)
-		return
-	}
-	st, ok := s.setupStore(w)
-	if !ok {
-		return
-	}
-	defer st.Discard()
-	tx, err := st.GetTxByHash(hashBytes)
-	if err != nil {
-		write(w, err, http.StatusBadRequest)
-		return
-	}
-	if tx != nil && tx.GetTxHash() != "" {
-		write(w, tx, http.StatusOK)
-		return
-	}
-	if pendingTx, found := s.controller.GetPendingTxByHash(req.Hash); found {
-		write(w, pendingTx, http.StatusOK)
-		return
-	}
-	write(w, map[string]string{"error": "transaction not found"}, http.StatusNotFound)
+	// Invoke helper with the HTTP request, response writer and an inline callback
+	s.hashIndexer(w, r, func(s lib.StoreI, h lib.HexBytes) (any, lib.ErrorI) { return s.GetTxByHash(h) })
 }
 
 // TransactionsByHeight response with the transactions at block height h

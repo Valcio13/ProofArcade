@@ -38,8 +38,6 @@ interface ValidatorRewardsProps {
 
 const ValidatorRewards: React.FC<ValidatorRewardsProps> = ({ validator }) => {
     const [activeTab, setActiveTab] = useState('rewardsHistory')
-    const [blockRewardsPageSize, setBlockRewardsPageSize] = useState(10)
-    const [crossChainRewardsPageSize, setCrossChainRewardsPageSize] = useState(10)
 
     const formatNumber = (num: number) => {
         return num.toLocaleString()
@@ -50,7 +48,7 @@ const ValidatorRewards: React.FC<ValidatorRewardsProps> = ({ validator }) => {
     }
 
     const formatCommission = (commission: number, percentage: number) => {
-        return `${commission.toFixed(2)} CNPY (${percentage}%)`
+        return `${commission.toFixed(2)} PROOF (${percentage}%)`
     }
 
     const getProgressBarColor = (color: string) => {
@@ -79,7 +77,7 @@ const ValidatorRewards: React.FC<ValidatorRewardsProps> = ({ validator }) => {
             <div className="mb-6">
 
                 {/* Tab navigation */}
-                <div className="flex gap-1 border-b border-white/10">
+                <div className="flex gap-1 border-b border-gray-700">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
@@ -137,7 +135,7 @@ const ValidatorRewards: React.FC<ValidatorRewardsProps> = ({ validator }) => {
                                 <TableCard
                                     title={<div className="flex items-center flex-col justify-center"><div className="flex items-center justify-center gap-2"><div className="text-sm translate-y-3 bg-green-500/10 rounded-lg p-2 py-2 font-normal mr-2">
                                         <i className="fa-solid fa-leaf text-primary text-sm"></i>
-                                    </div>Canopy Main Chain</div><p className="text-xs text-gray-400 font-normal translate-x-5.5 -translate-y-1">Block Production Rewards</p></div>}
+                                    </div>ProofArcade Main Chain</div><p className="text-xs text-gray-400 font-normal translate-x-5.5 -translate-y-1">Block Production Rewards</p></div>}
                                     className="rounded-none border-none shadow-none p-5"
                                     live={false}
                                     columns={[
@@ -155,10 +153,7 @@ const ValidatorRewards: React.FC<ValidatorRewardsProps> = ({ validator }) => {
                                         <span className="text-primary">{formatReward(reward.netReward)} {validatorDetailTexts.metrics.units.cnpy}</span>
                                     ])}
                                     paginate={true}
-                                    pageSize={blockRewardsPageSize}
-                                    showEntriesSelector={true}
-                                    currentEntriesPerPage={blockRewardsPageSize}
-                                    onEntriesPerPageChange={setBlockRewardsPageSize}
+                                    pageSize={10}
                                 />
                             </div>
                         ) : (
@@ -196,23 +191,20 @@ const ValidatorRewards: React.FC<ValidatorRewardsProps> = ({ validator }) => {
                                         </div>,
                                         <span className="text-gray-400">{reward.committeeId}</span>,
                                         <span className="text-gray-400">{reward.timestamp}</span>,
-                                        <span className="text-primary">{formatReward(reward.reward)} {reward.chain.split(' ')[0].toUpperCase()}</span>,
+                                        <span className="text-green-400">{formatReward(reward.reward)} {reward.chain.split(' ')[0].toUpperCase()}</span>,
                                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-normal ${getProgressBarColor(reward.color)}`}>
                                             {validatorDetailTexts.rewards.types.tag}
                                         </span>
                                     ])}
                                     paginate={true}
-                                    pageSize={crossChainRewardsPageSize}
-                                    showEntriesSelector={true}
-                                    currentEntriesPerPage={crossChainRewardsPageSize}
-                                    onEntriesPerPageChange={setCrossChainRewardsPageSize}
+                                    pageSize={10}
                                 />
                             </div>
                         )}
 
                         {/* Daily average */}
                         {validator.rewards && validator.rewards.averageDaily && (
-                            <div className="pt-6 border-t border-white/10">
+                            <div className="pt-6 border-t border-gray-700">
                                 <div className="text-sm text-gray-400 text-center">
                                     {validatorDetailTexts.rewards.averageDaily}: {formatNumber(validator.rewards.averageDaily)} {validatorDetailTexts.metrics.units.cnpy}/day
                                 </div>

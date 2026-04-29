@@ -1,12 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import SwapFilters from './SwapFilters';
-import type { SwapFilterValues } from './SwapFilters';
 import RecentSwapsTable from './RecentSwapsTable';
-import { useOrders } from '../../hooks/useApi'
-import { formatDecimalWithSubscript, formatLocaleNumber, toCNPY } from '../../lib/utils';
-import ExplorerOverviewCards from '../ExplorerOverviewCards';
+import { useOrders } from '../../hooks/useApi';
 
 interface Order {
     id: string;
@@ -20,188 +16,124 @@ interface Order {
     sellersSendAddress: string;
 }
 
-export interface SwapData {
+interface SwapData {
+    hash: string;
+    assetPair: string;
+    action: 'Buy PROOF' | 'Sell PROOF';
+    block: number;
+    age: string;
+    fromAddress: string;
+    toAddress: string;
+    exchangeRate: string;
+    amount: string;
     orderId: string;
     committee: number;
-    fromAddress: string;
-    fromAddressFull: string;
-    toAddress: string;
-    toAddressFull: string;
-    exchangeRate: string;
-    exchangeRateNum: number;
-    amount: string;
-    amountRaw: number;
-    status: 'Active' | 'Locked';
+    status: 'Active' | 'Locked' | 'Completed';
 }
 
-export type SortKey = 'committee' | 'exchangeRate' | 'amount' | 'status';
-export type SortDir = 'asc' | 'desc';
-
-const DEFAULT_FILTERS: SwapFilterValues = { minAmount: '', status: 'All', committee: 'All' };
-const SWAP_DECIMAL_PLACES = 2;
-
 const TokenSwapsPage: React.FC = () => {
-    const navigate = useNavigate();
-    const [filters, setFilters] = useState<SwapFilterValues>(DEFAULT_FILTERS);
-    const [sortKey, setSortKey] = useState<SortKey | null>(null);
-    const [sortDir, setSortDir] = useState<SortDir>('asc');
-    const [pageSize, setPageSize] = useState(10);
+    const [selectedChainId] = useState<number>(1);
+    const [filters, setFilters] = useState({
+        assetPair: 'All Pairs',
+        actionType: 'All Actions',
+        timeRange: 'Last 24 Hours',
+        minAmount: ''
+    });
 
-    const { data: ordersData, isLoading } = useOrders();
+    // Fetch orders data
+    const { data: ordersData, isLoading } = useOrders(selectedChainId);
 
+    // Transform orders data to swaps format
     const swaps = useMemo(() => {
-        const ordersList = Array.isArray((ordersData as Record<string, unknown>)?.orders)
-            ? (ordersData as Record<string, unknown[]>).orders
-            : Array.isArray((ordersData as Record<string, unknown>)?.results)
-                ? (ordersData as Record<string, unknown[]>).results
+        const ordersList = Array.isArray((ordersData as any)?.orders)
+            ? (ordersData as any).orders
+            : Array.isArray((ordersData as any)?.results)
+                ? (ordersData as any).results
                 : [];
 
         if (ordersList.length === 0) return [];
 
-        const truncateAddress = (addr: string) => {
-            if (!addr || addr.length < 10) return addr;
-            return addr.slice(0, 6) + '...' + addr.slice(-4);
-        };
+        return ordersList.map((order: Order) => {
+            // Determine asset pair based on committee (this is a simplified mapping)
+            const assetPairs = ['PROOF/ETH', 'PROOF/BTC', 'PROOF/SOL', 'PROOF/USDC', 'PROOF/AVAX'];
+            const assetPair = assetPairs[order.committee % assetPairs.length] || 'PROOF/UNKNOWN';
 
-        return ordersList.map((rawOrder) => {
-            const order = rawOrder as Order;
-            const exchangeRateNum = order.requestedAmount > 0
-                ? order.amountForSale / order.requestedAmount
-                : 0;
-            const exchangeRate = exchangeRateNum > 0
-                ? `1 : ${formatDecimalWithSubscript(exchangeRateNum, SWAP_DECIMAL_PLACES, SWAP_DECIMAL_PLACES)}`
+            // Calculate exchange rate (PROOF per unit of counter asset)
+            const exchangeRate = order.requestedAmount > 0
+                ? `1 Asset = ${(order.amountForSale / order.requestedAmount).toFixed(6)} PROOF`
                 : 'N/A';
 
-            const status: 'Active' | 'Locked' = order.buyerSendAddress ? 'Locked' : 'Active';
-            const amountRaw = toCNPY(order.amountForSale);
-            const amount = `${formatLocaleNumber(amountRaw, SWAP_DECIMAL_PLACES, SWAP_DECIMAL_PLACES)} CNPY`;
+            // Determine action (all orders are sell orders in the API)
+            const action = 'Sell PROOF';
+
+            // Determine status
+            const status = order.buyerSendAddress ? 'Locked' : 'Active';
+
+            // Format amounts (convert from micro denomination to PROOF)
+            const cnpyAmount = (order.amountForSale / 1000000).toFixed(6);
+            const amount = `-${cnpyAmount} PROOF`;
+
+            // Format addresses
+            const truncateAddress = (addr: string) => {
+                if (!addr || addr.length < 10) return addr;
+                return addr.slice(0, 6) + '...' + addr.slice(-4);
+            };
 
             return {
+                hash: order.id.slice(0, 8) + '...' + order.id.slice(-4),
+                assetPair,
+                action,
+                block: Math.floor(Math.random() * 1000000) + 6000000, // Simulated block number
+                age: 'Unknown', // We don't have timestamp in the API
+                fromAddress: truncateAddress(order.sellersSendAddress),
+                toAddress: truncateAddress(order.sellerReceiveAddress),
+                exchangeRate,
+                amount,
                 orderId: order.id,
                 committee: order.committee,
-                fromAddress: truncateAddress(order.sellersSendAddress),
-                fromAddressFull: order.sellersSendAddress,
-                toAddress: truncateAddress(order.sellerReceiveAddress),
-                toAddressFull: order.sellerReceiveAddress,
-                exchangeRate,
-                exchangeRateNum,
-                amount,
-                amountRaw,
                 status
-            } satisfies SwapData;
+            };
         });
     }, [ordersData]);
 
-    const availableCommittees = useMemo(() => {
-        const set = new Set(swaps.map((s) => s.committee));
-        return Array.from(set).sort((a, b) => a - b);
-    }, [swaps]);
-
-    const overviewCards = useMemo(() => {
-        const activeCount = swaps.filter((swap) => swap.status === 'Active').length;
-        const lockedCount = swaps.filter((swap) => swap.status === 'Locked').length;
-        const totalVolume = swaps.reduce((sum, swap) => sum + swap.amountRaw, 0);
-
-        return [
-            {
-                title: 'Orders',
-                value: swaps.length.toLocaleString(),
-                subValue: 'Open book',
-                icon: 'fa-solid fa-book',
-            },
-            {
-                title: 'Active',
-                value: activeCount.toLocaleString(),
-                subValue: 'Open orders',
-                icon: 'fa-solid fa-unlock',
-            },
-            {
-                title: 'Locked',
-                value: lockedCount.toLocaleString(),
-                subValue: 'Buyer locked',
-                icon: 'fa-solid fa-lock',
-            },
-            {
-                title: 'Open Volume',
-                value: totalVolume.toLocaleString(undefined, { maximumFractionDigits: 2 }),
-                subValue: 'CNPY',
-                icon: 'fa-solid fa-chart-column',
-            },
-        ];
-    }, [swaps]);
-
+    // Apply filters
     const filteredSwaps = useMemo(() => {
-        let result = swaps;
-
-        if (filters.minAmount) {
-            const min = parseFloat(filters.minAmount);
-            if (!isNaN(min)) {
-                result = result.filter((s) => s.amountRaw >= min);
+        return swaps.filter((swap: SwapData) => {
+            if (filters.assetPair !== 'All Pairs' && swap.assetPair !== filters.assetPair) {
+                return false;
             }
-        }
-
-        if (filters.status !== 'All') {
-            result = result.filter((s) => s.status === filters.status);
-        }
-
-        if (filters.committee !== 'All') {
-            const cid = Number(filters.committee);
-            result = result.filter((s) => s.committee === cid);
-        }
-
-        return result;
+            if (filters.actionType !== 'All Actions' && swap.action !== filters.actionType) {
+                return false;
+            }
+            if (filters.minAmount && parseFloat(swap.amount.replace(/[^\d.-]/g, '')) < parseFloat(filters.minAmount)) {
+                return false;
+            }
+            return true;
+        });
     }, [swaps, filters]);
 
-    const sortedSwaps = useMemo(() => {
-        if (!sortKey) return filteredSwaps;
-
-        const sorted = [...filteredSwaps];
-        sorted.sort((a, b) => {
-            let cmp = 0;
-            switch (sortKey) {
-                case 'committee':
-                    cmp = a.committee - b.committee;
-                    break;
-                case 'amount':
-                    cmp = a.amountRaw - b.amountRaw;
-                    break;
-                case 'exchangeRate':
-                    cmp = a.exchangeRateNum - b.exchangeRateNum;
-                    break;
-                case 'status':
-                    cmp = a.status.localeCompare(b.status);
-                    break;
-            }
-            return sortDir === 'asc' ? cmp : -cmp;
-        });
-        return sorted;
-    }, [filteredSwaps, sortKey, sortDir]);
-
-    const handleSort = (key: SortKey) => {
-        if (sortKey === key) {
-            setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortKey(key);
-            setSortDir('asc');
-        }
-    };
-
-    const handleApplyFilters = (newFilters: SwapFilterValues) => {
+    const handleApplyFilters = (newFilters: any) => {
         setFilters(newFilters);
     };
 
     const handleResetFilters = () => {
-        setFilters(DEFAULT_FILTERS);
-        setSortKey(null);
-        setSortDir('asc');
+        setFilters({
+            assetPair: 'All Pairs',
+            actionType: 'All Actions',
+            timeRange: 'Last 24 Hours',
+            minAmount: ''
+        });
     };
 
     const handleExportData = () => {
         const csvContent = [
-            ['Order ID', 'Committee', 'From Address', 'To Address', 'Exchange Rate', 'Amount', 'Status'],
-            ...sortedSwaps.map((swap) => [
-                swap.orderId,
-                swap.committee.toString(),
+            ['Hash', 'Asset Pair', 'Action', 'Block', 'Age', 'From Address', 'To Address', 'Exchange Rate', 'Amount', 'Status'],
+            ...filteredSwaps.map((swap: SwapData) => [
+                swap.hash,
+                swap.assetPair,
+                swap.action,
+                swap.block.toString(),
+                swap.age,
                 swap.fromAddress,
                 swap.toAddress,
                 swap.exchangeRate,
@@ -219,53 +151,42 @@ const TokenSwapsPage: React.FC = () => {
         window.URL.revokeObjectURL(url);
     };
 
-    const handleRowClick = (swap: SwapData) => {
-        navigate(`/order/${swap.committee}/${swap.orderId}`);
-    };
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="w-full"
+            className="mx-auto px-4 sm:px-6 lg:px-8 py-10 max-w-[100rem]"
         >
-            <div className="mb-4 flex items-center justify-between">
+            <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="explorer-page-title">Token Swaps</h1>
-                    <p className="explorer-page-subtitle">Atomic swap orderbook on the Canopy network</p>
+                    <h1 className="text-3xl font-bold text-white mb-2">Token Swaps</h1>
+                    <p className="text-gray-400">Real-time atomic swaps between ProofArcade (PROOF) and other cryptocurrencies</p>
                 </div>
                 <div className="flex items-center space-x-4">
-                    <SwapFilters
-                        compact
-                        onApplyFilters={handleApplyFilters}
-                        onResetFilters={handleResetFilters}
-                        filters={filters}
-                        onFiltersChange={setFilters}
-                        availableCommittees={availableCommittees}
-                    />
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary rounded-lg transition-colors duration-200 font-medium"
+                    >
+                        <i className="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
                     <button
                         onClick={handleExportData}
-                        className="px-4 py-2 bg-card border-white/10 text-gray-300 hover:bg-card/80 rounded-lg transition-colors duration-200 font-medium"
+                        className="px-4 py-2 bg-card border-gray-800/40 text-gray-300 hover:bg-card/80 rounded-lg transition-colors duration-200 font-medium"
                     >
                         <i className="fas fa-download mr-2"></i>Export
                     </button>
                 </div>
             </div>
 
-            <ExplorerOverviewCards cards={overviewCards} className="mb-8" />
-
-            <RecentSwapsTable
-                swaps={sortedSwaps}
-                loading={isLoading && !ordersData}
-                onRowClick={handleRowClick}
-                sortKey={sortKey}
-                sortDir={sortDir}
-                onSort={handleSort}
-                pageSize={pageSize}
-                onPageSizeChange={setPageSize}
+            <SwapFilters
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters}
+                filters={filters}
+                onFiltersChange={setFilters}
             />
+            <RecentSwapsTable swaps={filteredSwaps} loading={isLoading && !ordersData} />
         </motion.div>
     );
 };

@@ -1,0 +1,656 @@
+{
+  "createdAt": "2026-04-27T09:22:46.083Z",
+  "password": "ProofArcade!2026",
+  "results": [
+    {
+      "nickname": "bot01-lrmypt",
+      "address": "64863fdf9f8b41f1362a2e69add39437e2683eba",
+      "funded": 1500,
+      "faucetTxHash": "42e57d5ca2c962882e49f0affa070f311202ec8315a9c5e199b9b6ac237b789e",
+      "daily": {
+        "startTxHash": "a9731923251529952464ca8ce5f644391bde4d9a95f93b26ec7fc8276af37a38",
+        "submitTxHash": "7036692a2a6bd9d83db3c6f1543ef7fccab767252b4d3515bc330a4a8709a629",
+        "submitStage": "indexed",
+        "gameId": "d7927d1d0ab899bec0eedf8b5f528ce67e64cbf6005faa0a2516f09359ac87ca",
+        "score": 392,
+        "maxTile": 64,
+        "moveCount": 49,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "f591b3999e846baa5ae7b18d141940b1ae4d1ddbe001f391713cc68d570eeee6",
+        "submitTxHash": "928f515480a8e178c02463f8010b9dec2ea67d021b2ec1ed2d74f55584ffd736",
+        "submitStage": "indexed",
+        "gameId": "ce08f527aa25ecf69ce6f83f0a37e22a7c85373f5d626ec0cbb29f3c84dda96d",
+        "score": 264,
+        "maxTile": 32,
+        "moveCount": 37,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot02-vtbvyl",
+      "address": "54fe1d5b3b8d872303bdd68c696d18c7189b6c5d",
+      "funded": 1500,
+      "faucetTxHash": "a36e13ac443403f12e213b8b03ede6618e8ea85123fbdba3323158a31da81b6a",
+      "daily": {
+        "startTxHash": "1549aa5c3a4ab74961be273f3c779006ec9eb5dd7423816c8a873c4acbb8aabb",
+        "submitTxHash": "ff9089b89d97e56d91f2d19897cc51cb7d3cc65069d47c342131954208b8557b",
+        "submitStage": "indexed",
+        "gameId": "3e409608825aace4a138e4822251782e08b827926c08689debeae0eedbaa6bda",
+        "score": 160,
+        "maxTile": 32,
+        "moveCount": 27,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "0a80728534f9b6b6f79c21268753a01b53eb26cd2cec827ab3b30658107753de",
+        "submitTxHash": "a5c0dd673b58e04b1b546cd048640153570be0a45c47c98e120b5022efb2db59",
+        "submitStage": "indexed",
+        "gameId": "f52c7b755c9a9dc7321e2ce239d64a39f219bf963f3289055ee87d0d62c995d8",
+        "score": 408,
+        "maxTile": 64,
+        "moveCount": 48,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot03-gfweea",
+      "address": "e05d156e4c3351ef9b6155086fd956d68cb71ec3",
+      "funded": 1500,
+      "faucetTxHash": "83a757983b04ee3d03a8c18321787ea1ae651f94b206b9f657b66b0eeef4236c",
+      "daily": {
+        "startTxHash": "1c83106ed39c1c5b7cd6b83e055cb3726ac84a14033ab39f2dd415ee7b5366ab",
+        "submitTxHash": "2862c206445d13431c470929a96ac7ecc5641d1f2e396822a3d3c1ccc392b654",
+        "submitStage": "indexed",
+        "gameId": "5b2589ac715e9d8c0e1f9bcd16ecab9fb8a03071135ce40ebc49709a569a3949",
+        "score": 164,
+        "maxTile": 32,
+        "moveCount": 26,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "e437587da4e0cd62e043da91f16a5becb79f5ddc14db746303895a2e84a2a6f0",
+        "submitTxHash": "9283e8df784117241aa1b939ef5a597c1ed1a94f583c3ad0597fc1b0ee29d8b7",
+        "submitStage": "indexed",
+        "gameId": "42ec667b8e33031666a8ba52aea2cec47b5922f40fc69ff5ad8f33f3e347f3c6",
+        "score": 120,
+        "maxTile": 16,
+        "moveCount": 24,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot04-hejcxs",
+      "address": "232fc19bf9c25007e64fea5bef5d87ecd4da19a8",
+      "funded": 1500,
+      "faucetTxHash": "6b9a6e1057b3ca57fedc9d891e32b999901187980225b29e642cd00c618cbf82",
+      "daily": {
+        "startTxHash": "84f80713d508e838895b5e15696860a67cc1d4d1322718c6cbd6c3db47fedb87",
+        "submitTxHash": "ed4f67854ff8f47cec2f8a853416a92897e70ebe524990951b48b9ac76719c1f",
+        "submitStage": "indexed",
+        "gameId": "204f8eeef3e1c8dd4b85cd17a62003072edc944f8b66625663a6bc0a7878a175",
+        "score": 180,
+        "maxTile": 32,
+        "moveCount": 28,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "328b7a945926059d80d5f6b28e030036c1412d6e765afa50efa40f2f2833acc1",
+        "submitTxHash": "e47f65caa19335694fe777545146b0a7ed3a368ce1b7f1b4e01be2e6ea06349d",
+        "submitStage": "indexed",
+        "gameId": "48a12598da6a63e9fa9078512e4fd55e06222857851288a86ff97ea84190e9b5",
+        "score": 168,
+        "maxTile": 32,
+        "moveCount": 24,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot05-cakmza",
+      "address": "2a21a7082743336133b7ade5d34695113137d7d6",
+      "funded": 1500,
+      "faucetTxHash": "7ada4c11d68b8ff58969419b6b50aefb90d4554a301b6c9e799b8afc40abed7b",
+      "daily": {
+        "startTxHash": "5c082f47788c20fec46ab357094adb4743d0e6ce5c82cc41e6506929f49f2b70",
+        "submitTxHash": "6e4a643e51aaebedf1656f142aa807af5fbcac93376c708c1ce55ec46b2846af",
+        "submitStage": "indexed",
+        "gameId": "a0d2bb2daf1108bf3abf55bfe576fc4bb803580ad60517bfd38724079869294e",
+        "score": 360,
+        "maxTile": 64,
+        "moveCount": 40,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "455af0279fe3582f46f218d7d9964ac4ee3bd593c8460b2a891740b7fe375730",
+        "submitTxHash": "1023eb43d462239bc63b201aeb73b0777d128b42568d95494da7171b82c7fd36",
+        "submitStage": "indexed",
+        "gameId": "adade5737a7bce81103bd386ff5125181df294cd956f2c3a7d83faee504420d7",
+        "score": 320,
+        "maxTile": 32,
+        "moveCount": 49,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot06-ebwfvc",
+      "address": "40ac809aefaad7dee8996a46eb5387c332f8ccf5",
+      "funded": 1500,
+      "faucetTxHash": "cbf71512d9930c3b157a12efaf1a1d7ee0695d9872636660b36d47f10808ee5d",
+      "daily": {
+        "startTxHash": "cc6e56160f24e464dba7b7f2e86d6d629f7a5460241704033728d64cffaccf24",
+        "submitTxHash": "adcb3a85d43da584c92da572f347a5ad0796f178ffe710d35b7d16472bcc0d8d",
+        "submitStage": "indexed",
+        "gameId": "9f4b790d8e0450c3354e2173ec6ab8457e0640cd73f981396ce3ca1fd1a46476",
+        "score": 384,
+        "maxTile": 64,
+        "moveCount": 49,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "16251ea1b9fa5a893cb7e262d093015ab45733a12ba426f23926dc3834e262f4",
+        "submitTxHash": "cf71938472aceb1649096dbf7ad7b144f08ef69bd315eae899511d71a9d83d59",
+        "submitStage": "indexed",
+        "gameId": "accba0d227da363a2ee8b747996156ce07864bd78b7d5645be5e1348f64ac81c",
+        "score": 196,
+        "maxTile": 32,
+        "moveCount": 32,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot07-kdtaob",
+      "address": "275cf7f35df3f9ca83ce8daca885c41f94ce1f3d",
+      "funded": 1500,
+      "faucetTxHash": "347c3fdb12bdd1b5f2dde1fbeb39c80ab959e4faa20a6dd603e26592497a27cc",
+      "daily": {
+        "startTxHash": "e5ec73b92d21c48eee0e24d20921feebe6d64e340a22494b0ce67f66535a8166",
+        "submitTxHash": "7409b576a16a807a0ff25fd896d86322d80177c0655ee160be7a26778383010c",
+        "submitStage": "indexed",
+        "gameId": "f24dd1b4629ffc7fd31e0286255e8d8c4496058d080820dc0e53c88be576a0f4",
+        "score": 432,
+        "maxTile": 64,
+        "moveCount": 55,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "664913dc52adb1e063d2f8eff8b96721b76c3c1f6cbf9199fb1af679d18f41a4",
+        "submitTxHash": "df38907bf0d0c108b8fd4f90bfcdb93eacce07f2f5cbb81d6a84486ca82d5759",
+        "submitStage": "indexed",
+        "gameId": "91158cc4c85015e5694f08a08b7938b9294b3c26fea1bc53e00a0dccc6f9e9b6",
+        "score": 488,
+        "maxTile": 64,
+        "moveCount": 57,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot08-qzrpmr",
+      "address": "4bc796848e05022320b117769a445c16a53b1ec1",
+      "funded": 1500,
+      "faucetTxHash": "a4056a5ef6c8f3cafae02cad586837e52876b68ecfecd18dff6c3242291d1c7a",
+      "daily": {
+        "startTxHash": "b27a97720e891df5bfc9840e2951de891bb27a289d99ae6efaa0b748a2964fee",
+        "submitTxHash": "5e0890e1cf8add342d9431dabd419572a48e975a0ce11b6f848bb89845c38064",
+        "submitStage": "indexed",
+        "gameId": "93ee924ee7cb92e34aae9c54fb3af13610ec4f64323cfaf72912f2ba3a072ab1",
+        "score": 456,
+        "maxTile": 64,
+        "moveCount": 52,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "0998c9dcc4b8303df4e101902276bc069fa41da6c06e074642f6537666d1266c",
+        "submitTxHash": "6b94f08505bc66cd6d2b929f0bbb83556fbec5780e7bfe0b2b61674c6e962248",
+        "submitStage": "indexed",
+        "gameId": "86f91081e15e6cc3b435c812ffa1214bd042c8b6ab5864273873c51af0a5ab9c",
+        "score": 368,
+        "maxTile": 64,
+        "moveCount": 42,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot09-yjefgc",
+      "address": "294b6f665f9a4c7d28547515c6b96f26dd9e5a33",
+      "funded": 1500,
+      "faucetTxHash": "2f441fa16bc4b54cc70529ca396e107479b6f179ca5ce5d206c65899d2c4e6d1",
+      "daily": {
+        "startTxHash": "4898de1fd3402ffe29f9ec47172ce681a1179fd1eb045a642898b9b8e6acc76d",
+        "submitTxHash": "ccb31dd68ae4441ece3d85560586e6b1019c7e8815a66a592fd14af25554752c",
+        "submitStage": "indexed",
+        "gameId": "8c14e3003d73fe59e9ab78f9a2567c32c8e86bfa80fccba9fcc9cd1507dbfa4d",
+        "score": 432,
+        "maxTile": 64,
+        "moveCount": 55,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "d5b44b66ec9460ae2f858b6f2d84feb3b266b5b814a1eb01cb012616f877c8dd",
+        "submitTxHash": "bcb5c04a605049acc74d99b3d2fa77780929c52163843d6e9af4e2417686b94b",
+        "submitStage": "indexed",
+        "gameId": "51d5d5699e5ecdc13cfe3e0933b4277003f005437692df16996495021f5e8cd7",
+        "score": 396,
+        "maxTile": 64,
+        "moveCount": 51,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot10-vtoyrb",
+      "address": "53619a868e8f3a9528bb7e5b40e879b4a1b7d1af",
+      "funded": 1500,
+      "faucetTxHash": "a021d54b2c23a56e16390ee3c5fe02b951446c073dc43ab6a52c25b0dacfa98e",
+      "daily": {
+        "startTxHash": "efebb81b20d474d9b412c6001d2d5aaa231ff260742e84547117bff05ce91fed",
+        "submitTxHash": "3b0a277031b5789cdb727a6af8903c88ca2434eaf0632c6305faa8c9db8c10d7",
+        "submitStage": "indexed",
+        "gameId": "fb86b0a37c81effb11b65219f734e4266be5b859fa9813069d5588283d7dc4d9",
+        "score": 212,
+        "maxTile": 32,
+        "moveCount": 36,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "d24ff58e17c33fedde9a81c30f3894a592d6330ead3cd88d36e485ff2827dd73",
+        "submitTxHash": "bf9d0943e95aa61c0c7f82b1e01f128e56c677335de2c4687982281c6dbb054a",
+        "submitStage": "indexed",
+        "gameId": "6b411fdaf715139cd1246461db21e9e07640637ecbe870927d5d4569f926d896",
+        "score": 500,
+        "maxTile": 64,
+        "moveCount": 58,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot11-bcmeyf",
+      "address": "9730ba960e7d486b90d53be682d980e7fd71fc76",
+      "funded": 1500,
+      "faucetTxHash": "2241af608f59ab3df634e415ee9e592089a6ee44f2c59ddc47b6637be607489c",
+      "daily": {
+        "startTxHash": "b4ebfe366d5fdcc977578b2a2eadb7aaf6cb8292171ef0b1c5d3daa4fcb5786d",
+        "submitTxHash": "7d51b0b60a3ce4e332d34d94376a36b35daab1b23f8355b884d88c4c1e13f354",
+        "submitStage": "indexed",
+        "gameId": "45e7ab439ccc262571d54ad3a5792731b7ba9f0e9928cb25c1a284866e3dff56",
+        "score": 148,
+        "maxTile": 32,
+        "moveCount": 25,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "83ad493619e3e10896585651bf188a35c04351a49fe78ac9812cc2c458ea95a2",
+        "submitTxHash": "fe3cda2d6065137ee5ea995b31d3a94c6b3fcaca0065790251def0c5e03fd22e",
+        "submitStage": "indexed",
+        "gameId": "5353aef8d06fc434dce51394e8cfe0671528aa93788611bbe4aaab79c826f82e",
+        "score": 432,
+        "maxTile": 64,
+        "moveCount": 56,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot12-eztlxb",
+      "address": "ca7de5a49add208ca4ff5197cdbeaa2b9ab662f7",
+      "funded": 1500,
+      "faucetTxHash": "e4fd7040afc856931c82b14d9ff1bcce4bf621a5248a551e208fb7b05ad053cb",
+      "daily": {
+        "startTxHash": "6584bfb5e24d76807a53da830f1efe557071e7782309f2b3b21ae13b936c720f",
+        "submitTxHash": "63bcac7a4b0024fe262975e632fe2d06ecfe2aafecb144f282acd6887c75f8c9",
+        "submitStage": "indexed",
+        "gameId": "97d563bf6bd3921d8142c35c7ee04a87f7dd3775fdcce17e8e1049beb2e5f721",
+        "score": 148,
+        "maxTile": 32,
+        "moveCount": 25,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "b968a0d0ec035bfdd341da1f716ad3e84755e4cb2da78532b1905fd974721189",
+        "submitTxHash": "c84472a5ea8c694b16570b8cf35d6392672d5071dd03133519341715762ecea3",
+        "submitStage": "indexed",
+        "gameId": "e3ea451bb98629e6f66252727fc868ec00d612ebc8b1ed3f90ff6f4e2d55708a",
+        "score": 440,
+        "maxTile": 64,
+        "moveCount": 57,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot13-npyeru",
+      "address": "28cde23bc0539cc89c595f79fc78b5d02b7808cc",
+      "funded": 1500,
+      "faucetTxHash": "4e6c8e9b19e2ff41a4d84cceba9f6852405e52a839a8aff5bf60a59cea380151",
+      "daily": {
+        "startTxHash": "298baa27c5c5dcb56ae1c5e023329287e862433bd0b45d5bfda9d28703698b8b",
+        "submitTxHash": "9e68f9b33f1be9a070d256b5cfc108d1b66766dec00723cec8da2d2691a571ef",
+        "submitStage": "indexed",
+        "gameId": "4f90afcacdca5d50e04d815665beedaeedd1a43dd60d3de79dae7721c7471a3b",
+        "score": 172,
+        "maxTile": 32,
+        "moveCount": 26,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "a1df33e64e5191c482265f22059292bb9f6ca8a90697a32d9340be83ce6e2b85",
+        "submitTxHash": "8a50dcb280309c873a32ebfc8bba9fa3042ed42309a7b96a06c0fc76fb9d73a2",
+        "submitStage": "indexed",
+        "gameId": "60d7961b01e3c1eba62834485c0317e986f425e2ba036b3c1614a9625686bab6",
+        "score": 328,
+        "maxTile": 64,
+        "moveCount": 36,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot14-stigsk",
+      "address": "b11af97833e00f365a15592185d703a0641b929d",
+      "funded": 1500,
+      "faucetTxHash": "8364ec29da8c4102ba3043abe1f94f08a547df9d5ea29370d67890231268c403",
+      "daily": {
+        "startTxHash": "26b63bce04fd78e16111dad45a3d7857ff78cda085807b7c369530970ac45cbd",
+        "submitTxHash": "2859d13df3d28bd9a89f4cb73752443ec4d159201593d52e62cb0371d8954110",
+        "submitStage": "indexed",
+        "gameId": "0c603965f6e265021db2daa22a482a5097aef0f33e3b8246216010037e42ee61",
+        "score": 180,
+        "maxTile": 32,
+        "moveCount": 28,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "0b857340ba8d4338d561a7169680d380639ea6a15a5920a43401ac75602d9700",
+        "submitTxHash": "864b83b26ab92b1bb7201a01217cfc27df9d4c2e27c85f2324d31b09885b9ec9",
+        "submitStage": "indexed",
+        "gameId": "f66f895b330bb0a6d6bf6f053f761c32132bd963213a3636101cfbc12a7082e7",
+        "score": 156,
+        "maxTile": 32,
+        "moveCount": 25,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot15-fzcwrw",
+      "address": "35e5e1c62773a4765aea6a504bb911abd0d8d7d2",
+      "funded": 1500,
+      "faucetTxHash": "81e77a566e57d91bdc86c196e24cd007c6bb3107a6e5acf1198e5f822cddf32a",
+      "daily": {
+        "startTxHash": "6f9cf0fbcfbdfe672ead1fa284e7e527c6a7ba87334b9a30514db64c6c11dc04",
+        "submitTxHash": "b7325ea563f2b9b8f650b6f6df54e3b30145ef5201ae2a6187b83cc750411d45",
+        "submitStage": "indexed",
+        "gameId": "8be78b47a6247b9ca0783514a7fa2ab94b83b003f641b37857ebf2b6db86b4bf",
+        "score": 172,
+        "maxTile": 32,
+        "moveCount": 26,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "22d5815edc3d76f6d5aa8399c074386abf7765b342e568bcaf8eda81a8ba3871",
+        "submitTxHash": "316ce0ea7a64eb26284247400b2163ff22c929e780f7f9c5780b8b02772cee3f",
+        "submitStage": "indexed",
+        "gameId": "f70d0d51a436d0817fed4580214ff4ee91e4bcf3a4ea223663e287935a433d11",
+        "score": 436,
+        "maxTile": 64,
+        "moveCount": 57,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot16-hynrgr",
+      "address": "a8eef4933e5dc14f2ea7dae20d1863820bc9e7c7",
+      "funded": 1500,
+      "faucetTxHash": "31a8801b595f11bab1f4ee71cee2d114dfd0df4948da42fb1f48c04ecd06c62a",
+      "daily": {
+        "startTxHash": "455466cb8dac596a5a7d85241999527f369bda21d35bef79ee0bfe56f9ec6bc9",
+        "submitTxHash": "c8fa4c8df6b64f1c08da197d2529bf5b475f4ea8579fd9eec4829c6a3f208490",
+        "submitStage": "indexed",
+        "gameId": "3aad725d68e3e893303a1bb188b3483f4e971dbec6053ab244266047180b5316",
+        "score": 396,
+        "maxTile": 64,
+        "moveCount": 51,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "00ee4f33bafb50b6ebbbeaa3898421fa73ccc7578f5ba0a0817eb15d5efa3fff",
+        "submitTxHash": "e9e5e1b9ef40ab27a5659e851007f3587f13d73cc82609a3a4ca60a12135abd7",
+        "submitStage": "indexed",
+        "gameId": "27c7b9aca4e0ec768c117a014e76f1de7797ffc3a96ca0bdadfdd0d1fe7701a1",
+        "score": 312,
+        "maxTile": 32,
+        "moveCount": 43,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot17-ntgmbd",
+      "address": "2982946080cf6ede647ca66a5a90510979759fc6",
+      "funded": 1500,
+      "faucetTxHash": "4d04c77b24c8ffc991546d476f8140633545794c2af55a59166ff8a00088fdf0",
+      "daily": {
+        "startTxHash": "e7655baed599823eadc5dc79b67239039d50db8246ef5b96fde56fe4d8529b4e",
+        "submitTxHash": "a9d0f4f31ef79edc653b7c08229512216cae1fd451c4a4b08efcd0b57cc4a606",
+        "submitStage": "indexed",
+        "gameId": "e3e275d9b48e41f3b54356fbc3bea48dbd6d6395d4921de58e78bc3f58d84780",
+        "score": 368,
+        "maxTile": 64,
+        "moveCount": 43,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "bce6129dcba62277e848f8fded89bdde88a976bfe932607b062ce229dbec5d21",
+        "submitTxHash": "41ce8a80250e22f94c5db5e1b93e93707ac840081183e219059ffc61906049a1",
+        "submitStage": "indexed",
+        "gameId": "bd7b2e05556b64e2afe76eaba0b014478cd4788f360f6fd7745aa8cdc015ea66",
+        "score": 380,
+        "maxTile": 64,
+        "moveCount": 46,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot18-ctztju",
+      "address": "9c98448502dcac45db7a48f57173506cddf0d47a",
+      "funded": 1500,
+      "faucetTxHash": "498ff6ef47f36577cfc1d55eb17c79c1be5c43e1862eb8f40676faa373dccd68",
+      "daily": {
+        "startTxHash": "8bfde0b0e718bf602ccf4dcaf4dcba57b42b5483480786f9e5e1b243e9f8814a",
+        "submitTxHash": "c0da7156a0b75e7fea852e7c2cf3c0731d0b3a65a35462165b0a640d7885d185",
+        "submitStage": "indexed",
+        "gameId": "63948f2c86d48335ff05113e0e6c436894be5c6d64f89dde18d478409c7f03a8",
+        "score": 164,
+        "maxTile": 32,
+        "moveCount": 26,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "a932dbc09317f62c1760156653fb5aa10dd43e37d93f5069aa3e1b5118e0d3a9",
+        "submitTxHash": "b42a4340b85eaa584990ea6221928a5dcf0c6376160bca67380c7d30a50af36f",
+        "submitStage": "indexed",
+        "gameId": "b54d3e324e5914b54235fc0a3eaf5afd8aa5a775cde17c11fbcd363a275840f8",
+        "score": 292,
+        "maxTile": 32,
+        "moveCount": 40,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot19-zniwqg",
+      "address": "92657d8fa7d7011cdb2fe927e2007f907488ed28",
+      "funded": 1500,
+      "faucetTxHash": "20f26f95ea0ac0829a82e1893180d47706c494ced80163de0ca950602a7ca48a",
+      "daily": {
+        "startTxHash": "c1f403ce1af7fec1ab72d13dc8c4c3a18f36c5add4072561fb0b377fd458d578",
+        "submitTxHash": "2c06151c9fb6aa850192fdae864df9b451c4e0fbde496968006ee146bb84261e",
+        "submitStage": "indexed",
+        "gameId": "57c989984e0e5ce167c2ba73f3c98d742cb6188f5e5bc81db7892998a6ec44fc",
+        "score": 360,
+        "maxTile": 64,
+        "moveCount": 40,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "30704a1ce5a7360a574828766e7ef1d778e9067f806d25c9b95584e2ec09cc1e",
+        "submitTxHash": "8b3b2aec41bd8b88575cd1c12ad475cf460823ea6a47831feab3e4ba189eece2",
+        "submitStage": "indexed",
+        "gameId": "28eb35eb5659648a5e9d1ebc55ff16fae485ab709d50321e1668d218beb24405",
+        "score": 352,
+        "maxTile": 64,
+        "moveCount": 44,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot20-dmtslh",
+      "address": "b79a1032e6174b5de45619aa4f4e07762da85ba0",
+      "funded": 1500,
+      "faucetTxHash": "0af62e66e61d756c94e79cb69e3df28761267d2a63c1aceb47cfe198dd76d658",
+      "daily": {
+        "startTxHash": "3fd9d5507a8e0cde8dd171d3a1b165b1d6068c046b7b6173ff7495678d9ac9c0",
+        "submitTxHash": "bf2e9df016c8fa326192c539609c72daa292d07ec1090da4d2e720fa435f7b17",
+        "submitStage": "indexed",
+        "gameId": "081234a400d8ef2b48d4f5b696b208dfc489cd3b5c0b69abcbd1c59e955856f1",
+        "score": 396,
+        "maxTile": 64,
+        "moveCount": 49,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "0415c6fe6442f4e0ffba30156ab26b54ad2820989bad8d051ab9bea6689eb032",
+        "submitTxHash": "0461530fcfad6e72e7eec8606b5f8ef46e4c83127e529802c6ea49fe3bc6dbb2",
+        "submitStage": "indexed",
+        "gameId": "f058a37c0db1f5cff22f71b8dd9eda667c62977d8d77386784549a9c3b1e68b7",
+        "score": 368,
+        "maxTile": 64,
+        "moveCount": 46,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot21-zgmxet",
+      "address": "5ddaac3b1d8f97627d3d2a549615ec8082af1c46",
+      "funded": 1500,
+      "faucetTxHash": "2605ae76517787352613dfe5f507e04d3c3f22544a79d0d56d81f04ae96d4b16",
+      "daily": {
+        "startTxHash": "c1e4e8f3909ed119e2cdfa192356b79154b3868f1a0cac39ae6f4522ad0fa249",
+        "submitTxHash": "017ad245b9609d08f9a48aa05ed94c1d4cd4587d1ef9043f1342be8e7ee4d285",
+        "submitStage": "indexed",
+        "gameId": "a381138e2c01f594aa0c458247930b7de5682b3c97570727e27457ef7f09803f",
+        "score": 364,
+        "maxTile": 64,
+        "moveCount": 42,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "067136ee68191a2958e7bbc42f79bb91ace38302420c575487a8594f6d6af4e4",
+        "submitTxHash": "246aca1593192bcd2702e813d03196f30a5abdf83eb7069fc2231ecc75db94e9",
+        "submitStage": "indexed",
+        "gameId": "5e6fd13b11649aa260d03a4132709d648655c07971ab103c71ae6a188914598a",
+        "score": 412,
+        "maxTile": 64,
+        "moveCount": 51,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot22-wfninu",
+      "address": "1554b5e9fc15c0722e56ab3fdb734240c600d8e8",
+      "funded": 1500,
+      "faucetTxHash": "0fd1fa40ab4ac94391c6e165e339dafac2556c03d6544809244943d54f8ac227",
+      "daily": {
+        "startTxHash": "18a58b7348e9b9e9c8e154bbcf989bd9766539d00ec9a58f0ce487f1bc45505e",
+        "submitTxHash": "81e930e814917b147054af4a445e9e83e512d4ccb26fce04238d21391310c411",
+        "submitStage": "indexed",
+        "gameId": "5993f00c14bd254c72d907e46fa443788d5b46738cc06dba04cf303c72b34bc8",
+        "score": 176,
+        "maxTile": 32,
+        "moveCount": 27,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "f08916a5740315b10f47f881dc42dde5e049e43e260fe385870b4472a4dd3d2c",
+        "submitTxHash": "04ddc6d7ccd489c0a3b9676df975a3b99d703e9f3231f9bbb46c63f9e469b513",
+        "submitStage": "indexed",
+        "gameId": "1cd09f5053dd35ff342703f6f45bb3df35752e1abf6bb16fe629839dfb3e74e5",
+        "score": 236,
+        "maxTile": 32,
+        "moveCount": 38,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot23-mepdwd",
+      "address": "b84aba3472c503329a43fceba7afdd2f596ee034",
+      "funded": 1500,
+      "faucetTxHash": "8d9108d295d6291b5c36dd1c008a6cecaff1049df5a5cdf16b70f4500c7c66b0",
+      "daily": {
+        "startTxHash": "cf78d4d206bec92c99620c488f6e3c31ed6ebe78c083d935fb27d18190a5bab6",
+        "submitTxHash": "92b8d1da8aacc899db793e0987f6b0028debf94677fdc8ae59571a67bf01a29a",
+        "submitStage": "indexed",
+        "gameId": "04aff1c94afe5becf6457d0d2007c17e3e49d1e2017f7c7be7850fcb04103e44",
+        "score": 364,
+        "maxTile": 64,
+        "moveCount": 42,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "bdd5f9a615308c81d67e8fce74bb6859c5d720ed9ec5c9402747ce473ef00500",
+        "submitTxHash": "4fa79faff8a9d52fe6f5f48fbee8566ca8c14d3b1aced62bebcdaa281a738cb3",
+        "submitStage": "indexed",
+        "gameId": "49ce1e1186f63934aa1b51aedb45738a894625d57b7d3019c6b3ee8e7e69bafe",
+        "score": 460,
+        "maxTile": 64,
+        "moveCount": 54,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot24-hxfyyp",
+      "address": "56a6e3ab51137ff27060085d5f52c8a511005adc",
+      "funded": 1500,
+      "faucetTxHash": "4b721d623f40abd15d88eb89e84a89d0b82d3becf1902de58b1874a6747d2af5",
+      "daily": {
+        "startTxHash": "a529cf0165a0be67d33053e59979b40c7ef70a8e3805938663c9d4e73dec28fb",
+        "submitTxHash": "55cf53bb73a723356cb2cf296b9c4ec44df8e8074ec0747a68eceb17a8b44e8c",
+        "submitStage": "indexed",
+        "gameId": "446835405f2094428f8cf2cd9ce8d5d05f1eda012de9fa02d231c399454985fe",
+        "score": 196,
+        "maxTile": 32,
+        "moveCount": 32,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "7a6b919f94b04eb2c32a4936973c88e328241317ef05db0364a3b35abf8b8046",
+        "submitTxHash": "03567bd2efd524d2621541386eb8b8e8037160f7bd7ceab4abd6147f968e56b1",
+        "submitStage": "indexed",
+        "gameId": "bee1d32ffa6e121fd30171f5166b32e95400b333c5fa6f6fb35407ccc9a8fd04",
+        "score": 180,
+        "maxTile": 32,
+        "moveCount": 28,
+        "stopReason": 1
+      }
+    },
+    {
+      "nickname": "bot25-iygewx",
+      "address": "712ec49164fcc966f6f267187a03d9a0e7fd2d54",
+      "funded": 1500,
+      "faucetTxHash": "17326d69879682bc49d2e5c269615d7283f19f42e1a6105ccd6cc36d85c59727",
+      "daily": {
+        "startTxHash": "f06a04f9ef1e0e194797491b6e7df94f555f9cbdaf94f73affd1481df9ba5991",
+        "submitTxHash": "d76aec8accc32f7590c3a4ad97151391d28e80e1dcb8baf65f267b2880020bc6",
+        "submitStage": "indexed",
+        "gameId": "fcb7d3818db3f37649eafe6bcadb233f58589b84f0d9276004a00056c91f451b",
+        "score": 200,
+        "maxTile": 32,
+        "moveCount": 34,
+        "stopReason": 1
+      },
+      "classic": {
+        "startTxHash": "fa9a57081202ad1ac5ebf26dc5a06673f6e04f557a63277cd06d498cc9862217",
+        "submitTxHash": "604e3e2073b75525d9bfe3b073a6768f84ef9371984d67a870f6b9c14934b347",
+        "submitStage": "indexed",
+        "gameId": "0c730ed0e39fdc2159d534f85b67ce465d687413f51a9483cc3fd7fbaa8357ac",
+        "score": 264,
+        "maxTile": 32,
+        "moveCount": 44,
+        "stopReason": 1
+      }
+    }
+  ]
+}

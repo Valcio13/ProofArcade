@@ -3,6 +3,7 @@ package controller
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -22,7 +23,11 @@ func TestResolvePluginCtlPath(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, filepath.IsAbs(path))
 	require.FileExists(t, path)
-	require.Equal(t, "pluginctl.sh", filepath.Base(path))
+	if runtime.GOOS == "windows" {
+		require.Equal(t, "pluginctl.cmd", filepath.Base(path))
+	} else {
+		require.Equal(t, "pluginctl.sh", filepath.Base(path))
+	}
 	require.Equal(t, "go", filepath.Base(filepath.Dir(path)))
 }
 

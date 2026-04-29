@@ -41,6 +41,14 @@ func (s *StateMachine) BeginBlock() (lib.Events, lib.ErrorI) {
 	if err != nil {
 		return nil, err
 	}
+	// Older dev runs may have persisted a quorum certificate without embedded results.
+	// In that case, continuing to hard-fail here halts block production forever at the
+	// current tip even though the node can otherwise make progress. Skip applying those
+	// missing results so the local chain can recover and commit new healthy blocks.
+	if lastCertificate == nil || lastCertificate.Results == nil {
+		s.log.Warnf("Skipping missing certificate results at height %d", s.Height()-1)
+		return nil, nil
+	}
 	// load the root chain id at the certificate height
 	rootChainId, err := s.LoadRootChainId(s.Height() - 1)
 	if err != nil {

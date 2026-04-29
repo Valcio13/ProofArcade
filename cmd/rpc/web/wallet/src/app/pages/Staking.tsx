@@ -16,8 +16,6 @@ import { StatsCards } from "@/components/staking/StatsCards";
 import { Toolbar } from "@/components/staking/Toolbar";
 import { ValidatorList } from "@/components/staking/ValidatorList";
 import { useActionModal } from "@/app/providers/ActionModalProvider";
-import { useSelectedAccount } from "@/app/providers/AccountsProvider";
-import { PageHeader } from "@/components/layouts/PageHeader";
 
 type ValidatorRow = {
   address: string;
@@ -25,7 +23,9 @@ type ValidatorRow = {
   stakedAmount: number;
   status: "Staked" | "Paused" | "Unstaking" | "Delegate";
   rewards24h: number;
+  chains?: string[];
   isSynced: boolean;
+  // Additional validator information
   committees?: number[];
   compound?: boolean;
   delegate?: boolean;
@@ -35,6 +35,8 @@ type ValidatorRow = {
   publicKey?: string;
   unstakingHeight?: number;
 };
+
+const chainLabels = ["DEX", "CAN"] as const;
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -48,11 +50,11 @@ export default function Staking(): JSX.Element {
   const { totalStaked } = useAccountData();
   const { data: validators = [] } = useValidators();
   const { openAction } = useActionModal();
-  const { selectedAccount } = useSelectedAccount();
   const dsFetch = useDSFetcher();
 
   const csvRef = useRef<HTMLAnchorElement>(null);
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [chainCount, setChainCount] = useState<number>(0);
 
   const validatorAddresses = useMemo(
@@ -94,60 +96,60 @@ export default function Staking(): JSX.Element {
 
   // 🧮 Construir filas memoizadas
   const rows: ValidatorRow[] = useMemo(() => {
-    return validators.map((v) => {
-      const extra = v as unknown as Record<string, unknown>;
-      return {
-        address: v.address,
-        nickname: v.nickname,
-        stakedAmount: v.stakedAmount || 0,
-        status: (v.unstaking ? "Unstaking" : v.paused ? "Paused" : v.delegate ? "Delegate" : "Staked") as ValidatorRow["status"],
-        rewards24h: rewardsHistory[v.address]?.rewards24h || 0,
-        isSynced: !v.paused,
-        committees: extra.committees as number[] | undefined,
-        compound: extra.compound as boolean | undefined,
-        delegate: v.delegate,
-        maxPausedHeight: extra.maxPausedHeight as number | undefined,
-        netAddress: extra.netAddress as string | undefined,
-        output: extra.output as string | undefined,
-        publicKey: v.publicKey,
-        unstakingHeight: v.unstakingHeight,
-      };
-    });
+    return validators.map((v: any) => ({
+      address: v.address,
+      nickname: v.nickname,
+      stakedAmount: v.stakedAmount || 0,
+      status: v.unstaking ? "Unstaking" : v.paused ? "Paused" : v.delegate ? "Delegate" : "Staked",
+      rewards24h: rewardsHistory[v.address]?.rewards24h || 0,
+      chains:
+        v.committees?.map(
+          (id: number) => chainLabels[id % chainLabels.length],
+        ) || [],
+      isSynced: !v.paused,
+      // Additional info
+      committees: v.committees,
+      compound: v.compound,
+      delegate: v.delegate,
+      maxPausedHeight: v.maxPausedHeight,
+      netAddress: v.netAddress,
+      output: v.output,
+      publicKey: v.publicKey,
+      unstakingHeight: v.unstakingHeight,
+    }));
   }, [validators, rewardsHistory]);
+
+  const filtered: ValidatorRow[] = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    if (!q) return rows;
+    return rows.filter(
+      (r) =>
+        (r.nickname || "").toLowerCase().includes(q) ||
+        r.address.toLowerCase().includes(q),
+    );
+  }, [rows, searchTerm]);
 
   const prepareCSVData = useCallback(() => {
     const header = [
       "address",
       "nickname",
-      "publicKey",
       "stakedAmount",
       "rewards24h",
       "status",
-      "netAddress",
-      "output",
-      "compound",
-      "committees",
-      "unstakingHeight",
     ];
     const lines = [header.join(",")].concat(
-      rows.map((r) =>
+      filtered.map((r) =>
         [
           r.address,
           r.nickname || "",
-          r.publicKey || "",
           r.stakedAmount,
           r.rewards24h,
           r.status,
-          r.netAddress || "",
-          r.output || "",
-          String(r.compound ?? ""),
-          r.committees?.join(";") ?? "",
-          r.unstakingHeight ?? "",
         ].join(","),
       ),
     );
     return lines.join("\n");
-  }, [rows]);
+  }, [filtered]);
 
   const exportCSV = useCallback(() => {
     const csvContent = prepareCSVData();
@@ -170,51 +172,42 @@ export default function Staking(): JSX.Element {
 
   // Handler to add stake - opens the "stake" action from manifest
   const handleAddStake = useCallback(() => {
-    if (!selectedAccount?.address) {
-      openAction("stake");
-      return;
-    }
-    openAction("stake", {
-      prefilledData: {
-        operator: selectedAccount.address,
-      },
-    });
-  }, [openAction, selectedAccount?.address]);
+    openAction("stake");
+  }, [openAction]);
 
   return (
     <motion.div
-      className="space-y-6"
+      className="min-h-screen bg-background"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
       {/* Hidden link for CSV export */}
-      <a ref={csvRef} hidden aria-hidden="true" />
+      <a ref={csvRef} style={{ display: "none" }} />
 
-      <PageHeader
-        title="Staking"
-        subtitle="Track staked positions, rewards, and validator activity."
-      />
-
-      {/* Top stats */}
-      <StatsCards
-        totalStaked={totalStaked}
-        totalRewards={staking.totalRewards24h || 0}
-        validatorsCount={validators.length}
-        chainCount={chainCount}
-        activeValidatorsCount={activeValidatorsCount}
-      />
-
-      <div className="flex flex-col bg-card rounded-xl border border-border p-5">
-        {/* Toolbar */}
-        <Toolbar
-          onAddStake={handleAddStake}
-          onExportCSV={exportCSV}
+      <div className="px-6 py-8">
+        {/* Top stats */}
+        <StatsCards
+          totalStaked={totalStaked}
+          totalRewards={staking.totalRewards24h || 0}
+          validatorsCount={validators.length}
+          chainCount={chainCount}
           activeValidatorsCount={activeValidatorsCount}
         />
 
-        {/* Validator List */}
-        <ValidatorList validators={rows} />
+        <div className="flex flex-col bg-card rounded-xl p-6 border border-border">
+          {/* Toolbar */}
+          <Toolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onAddStake={handleAddStake}
+            onExportCSV={exportCSV}
+            activeValidatorsCount={activeValidatorsCount}
+          />
+
+          {/* Validator List */}
+          <ValidatorList validators={filtered} />
+        </div>
       </div>
     </motion.div>
   );

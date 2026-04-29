@@ -448,6 +448,2511 @@ export namespace types {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** GameMode enum. */
+    enum GameMode {
+        GAME_MODE_UNSPECIFIED = 0,
+        GAME_MODE_DAILY = 1,
+        GAME_MODE_CLASSIC = 2
+    }
+
+    /** SessionStatus enum. */
+    enum SessionStatus {
+        SESSION_STATUS_UNSPECIFIED = 0,
+        SESSION_STATUS_ACTIVE = 1,
+        SESSION_STATUS_COMPLETED = 2,
+        SESSION_STATUS_EXPIRED = 3
+    }
+
+    /** StopReason enum. */
+    enum StopReason {
+        STOP_REASON_UNSPECIFIED = 0,
+        STOP_REASON_PLAYER_STOPPED = 1,
+        STOP_REASON_NO_MOVES = 2,
+        STOP_REASON_MAX_MOVES = 3
+    }
+
+    /** MoveDirection enum. */
+    enum MoveDirection {
+        MOVE_DIRECTION_UNSPECIFIED = 0,
+        MOVE_DIRECTION_UP = 1,
+        MOVE_DIRECTION_RIGHT = 2,
+        MOVE_DIRECTION_DOWN = 3,
+        MOVE_DIRECTION_LEFT = 4
+    }
+
+    /** Properties of a MessageStartDailyGame. */
+    interface IMessageStartDailyGame {
+
+        /** MessageStartDailyGame playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** MessageStartDailyGame utcDate */
+        utcDate?: (string|null);
+
+        /** MessageStartDailyGame gameId */
+        gameId?: (Uint8Array|null);
+    }
+
+    /** Represents a MessageStartDailyGame. */
+    class MessageStartDailyGame implements IMessageStartDailyGame {
+
+        /**
+         * Constructs a new MessageStartDailyGame.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageStartDailyGame);
+
+        /** MessageStartDailyGame playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** MessageStartDailyGame utcDate. */
+        public utcDate: string;
+
+        /** MessageStartDailyGame gameId. */
+        public gameId: Uint8Array;
+
+        /**
+         * Creates a new MessageStartDailyGame instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageStartDailyGame instance
+         */
+        public static create(properties?: types.IMessageStartDailyGame): types.MessageStartDailyGame;
+
+        /**
+         * Encodes the specified MessageStartDailyGame message. Does not implicitly {@link types.MessageStartDailyGame.verify|verify} messages.
+         * @param message MessageStartDailyGame message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageStartDailyGame, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageStartDailyGame message, length delimited. Does not implicitly {@link types.MessageStartDailyGame.verify|verify} messages.
+         * @param message MessageStartDailyGame message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageStartDailyGame, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageStartDailyGame message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageStartDailyGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageStartDailyGame;
+
+        /**
+         * Decodes a MessageStartDailyGame message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageStartDailyGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageStartDailyGame;
+
+        /**
+         * Verifies a MessageStartDailyGame message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageStartDailyGame message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageStartDailyGame
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageStartDailyGame;
+
+        /**
+         * Creates a plain object from a MessageStartDailyGame message. Also converts values to other types if specified.
+         * @param message MessageStartDailyGame
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageStartDailyGame, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageStartDailyGame to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageStartDailyGame
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageStartClassicGame. */
+    interface IMessageStartClassicGame {
+
+        /** MessageStartClassicGame playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** MessageStartClassicGame gameId */
+        gameId?: (Uint8Array|null);
+    }
+
+    /** Represents a MessageStartClassicGame. */
+    class MessageStartClassicGame implements IMessageStartClassicGame {
+
+        /**
+         * Constructs a new MessageStartClassicGame.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageStartClassicGame);
+
+        /** MessageStartClassicGame playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** MessageStartClassicGame gameId. */
+        public gameId: Uint8Array;
+
+        /**
+         * Creates a new MessageStartClassicGame instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageStartClassicGame instance
+         */
+        public static create(properties?: types.IMessageStartClassicGame): types.MessageStartClassicGame;
+
+        /**
+         * Encodes the specified MessageStartClassicGame message. Does not implicitly {@link types.MessageStartClassicGame.verify|verify} messages.
+         * @param message MessageStartClassicGame message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageStartClassicGame, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageStartClassicGame message, length delimited. Does not implicitly {@link types.MessageStartClassicGame.verify|verify} messages.
+         * @param message MessageStartClassicGame message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageStartClassicGame, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageStartClassicGame message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageStartClassicGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageStartClassicGame;
+
+        /**
+         * Decodes a MessageStartClassicGame message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageStartClassicGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageStartClassicGame;
+
+        /**
+         * Verifies a MessageStartClassicGame message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageStartClassicGame message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageStartClassicGame
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageStartClassicGame;
+
+        /**
+         * Creates a plain object from a MessageStartClassicGame message. Also converts values to other types if specified.
+         * @param message MessageStartClassicGame
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageStartClassicGame, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageStartClassicGame to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageStartClassicGame
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageSubmitGameResult. */
+    interface IMessageSubmitGameResult {
+
+        /** MessageSubmitGameResult playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** MessageSubmitGameResult gameId */
+        gameId?: (Uint8Array|null);
+
+        /** MessageSubmitGameResult moves */
+        moves?: (types.MoveDirection[]|null);
+
+        /** MessageSubmitGameResult declaredScore */
+        declaredScore?: (number|Long|null);
+
+        /** MessageSubmitGameResult declaredMaxTile */
+        declaredMaxTile?: (number|Long|null);
+
+        /** MessageSubmitGameResult stopReason */
+        stopReason?: (types.StopReason|null);
+    }
+
+    /** Represents a MessageSubmitGameResult. */
+    class MessageSubmitGameResult implements IMessageSubmitGameResult {
+
+        /**
+         * Constructs a new MessageSubmitGameResult.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageSubmitGameResult);
+
+        /** MessageSubmitGameResult playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** MessageSubmitGameResult gameId. */
+        public gameId: Uint8Array;
+
+        /** MessageSubmitGameResult moves. */
+        public moves: types.MoveDirection[];
+
+        /** MessageSubmitGameResult declaredScore. */
+        public declaredScore: (number|Long);
+
+        /** MessageSubmitGameResult declaredMaxTile. */
+        public declaredMaxTile: (number|Long);
+
+        /** MessageSubmitGameResult stopReason. */
+        public stopReason: types.StopReason;
+
+        /**
+         * Creates a new MessageSubmitGameResult instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageSubmitGameResult instance
+         */
+        public static create(properties?: types.IMessageSubmitGameResult): types.MessageSubmitGameResult;
+
+        /**
+         * Encodes the specified MessageSubmitGameResult message. Does not implicitly {@link types.MessageSubmitGameResult.verify|verify} messages.
+         * @param message MessageSubmitGameResult message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageSubmitGameResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageSubmitGameResult message, length delimited. Does not implicitly {@link types.MessageSubmitGameResult.verify|verify} messages.
+         * @param message MessageSubmitGameResult message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageSubmitGameResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageSubmitGameResult message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageSubmitGameResult
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageSubmitGameResult;
+
+        /**
+         * Decodes a MessageSubmitGameResult message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageSubmitGameResult
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageSubmitGameResult;
+
+        /**
+         * Verifies a MessageSubmitGameResult message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageSubmitGameResult message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageSubmitGameResult
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageSubmitGameResult;
+
+        /**
+         * Creates a plain object from a MessageSubmitGameResult message. Also converts values to other types if specified.
+         * @param message MessageSubmitGameResult
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageSubmitGameResult, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageSubmitGameResult to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageSubmitGameResult
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageClaimDailyReward. */
+    interface IMessageClaimDailyReward {
+
+        /** MessageClaimDailyReward playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** MessageClaimDailyReward utcDate */
+        utcDate?: (string|null);
+    }
+
+    /** Represents a MessageClaimDailyReward. */
+    class MessageClaimDailyReward implements IMessageClaimDailyReward {
+
+        /**
+         * Constructs a new MessageClaimDailyReward.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageClaimDailyReward);
+
+        /** MessageClaimDailyReward playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** MessageClaimDailyReward utcDate. */
+        public utcDate: string;
+
+        /**
+         * Creates a new MessageClaimDailyReward instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageClaimDailyReward instance
+         */
+        public static create(properties?: types.IMessageClaimDailyReward): types.MessageClaimDailyReward;
+
+        /**
+         * Encodes the specified MessageClaimDailyReward message. Does not implicitly {@link types.MessageClaimDailyReward.verify|verify} messages.
+         * @param message MessageClaimDailyReward message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageClaimDailyReward, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageClaimDailyReward message, length delimited. Does not implicitly {@link types.MessageClaimDailyReward.verify|verify} messages.
+         * @param message MessageClaimDailyReward message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageClaimDailyReward, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageClaimDailyReward message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageClaimDailyReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageClaimDailyReward;
+
+        /**
+         * Decodes a MessageClaimDailyReward message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageClaimDailyReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageClaimDailyReward;
+
+        /**
+         * Verifies a MessageClaimDailyReward message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageClaimDailyReward message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageClaimDailyReward
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageClaimDailyReward;
+
+        /**
+         * Creates a plain object from a MessageClaimDailyReward message. Also converts values to other types if specified.
+         * @param message MessageClaimDailyReward
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageClaimDailyReward, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageClaimDailyReward to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageClaimDailyReward
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageRedeemClassicPoints. */
+    interface IMessageRedeemClassicPoints {
+
+        /** MessageRedeemClassicPoints playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** MessageRedeemClassicPoints burnPoints */
+        burnPoints?: (number|Long|null);
+    }
+
+    /** Represents a MessageRedeemClassicPoints. */
+    class MessageRedeemClassicPoints implements IMessageRedeemClassicPoints {
+
+        /**
+         * Constructs a new MessageRedeemClassicPoints.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageRedeemClassicPoints);
+
+        /** MessageRedeemClassicPoints playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** MessageRedeemClassicPoints burnPoints. */
+        public burnPoints: (number|Long);
+
+        /**
+         * Creates a new MessageRedeemClassicPoints instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageRedeemClassicPoints instance
+         */
+        public static create(properties?: types.IMessageRedeemClassicPoints): types.MessageRedeemClassicPoints;
+
+        /**
+         * Encodes the specified MessageRedeemClassicPoints message. Does not implicitly {@link types.MessageRedeemClassicPoints.verify|verify} messages.
+         * @param message MessageRedeemClassicPoints message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageRedeemClassicPoints, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageRedeemClassicPoints message, length delimited. Does not implicitly {@link types.MessageRedeemClassicPoints.verify|verify} messages.
+         * @param message MessageRedeemClassicPoints message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageRedeemClassicPoints, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageRedeemClassicPoints message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageRedeemClassicPoints
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageRedeemClassicPoints;
+
+        /**
+         * Decodes a MessageRedeemClassicPoints message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageRedeemClassicPoints
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageRedeemClassicPoints;
+
+        /**
+         * Verifies a MessageRedeemClassicPoints message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageRedeemClassicPoints message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageRedeemClassicPoints
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageRedeemClassicPoints;
+
+        /**
+         * Creates a plain object from a MessageRedeemClassicPoints message. Also converts values to other types if specified.
+         * @param message MessageRedeemClassicPoints
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageRedeemClassicPoints, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageRedeemClassicPoints to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageRedeemClassicPoints
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageClaimDailyLoginReward. */
+    interface IMessageClaimDailyLoginReward {
+
+        /** MessageClaimDailyLoginReward playerAddress */
+        playerAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessageClaimDailyLoginReward. */
+    class MessageClaimDailyLoginReward implements IMessageClaimDailyLoginReward {
+
+        /**
+         * Constructs a new MessageClaimDailyLoginReward.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageClaimDailyLoginReward);
+
+        /** MessageClaimDailyLoginReward playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /**
+         * Creates a new MessageClaimDailyLoginReward instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageClaimDailyLoginReward instance
+         */
+        public static create(properties?: types.IMessageClaimDailyLoginReward): types.MessageClaimDailyLoginReward;
+
+        /**
+         * Encodes the specified MessageClaimDailyLoginReward message. Does not implicitly {@link types.MessageClaimDailyLoginReward.verify|verify} messages.
+         * @param message MessageClaimDailyLoginReward message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageClaimDailyLoginReward, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageClaimDailyLoginReward message, length delimited. Does not implicitly {@link types.MessageClaimDailyLoginReward.verify|verify} messages.
+         * @param message MessageClaimDailyLoginReward message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageClaimDailyLoginReward, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageClaimDailyLoginReward message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageClaimDailyLoginReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageClaimDailyLoginReward;
+
+        /**
+         * Decodes a MessageClaimDailyLoginReward message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageClaimDailyLoginReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageClaimDailyLoginReward;
+
+        /**
+         * Verifies a MessageClaimDailyLoginReward message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageClaimDailyLoginReward message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageClaimDailyLoginReward
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageClaimDailyLoginReward;
+
+        /**
+         * Creates a plain object from a MessageClaimDailyLoginReward message. Also converts values to other types if specified.
+         * @param message MessageClaimDailyLoginReward
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageClaimDailyLoginReward, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageClaimDailyLoginReward to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageClaimDailyLoginReward
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a GameConfig. */
+    interface IGameConfig {
+
+        /** GameConfig classicStartFee */
+        classicStartFee?: (number|Long|null);
+
+        /** GameConfig dailyStartFee */
+        dailyStartFee?: (number|Long|null);
+
+        /** GameConfig dailyMaxMoves */
+        dailyMaxMoves?: (number|Long|null);
+
+        /** GameConfig classicLeaderboardSize */
+        classicLeaderboardSize?: (number|Long|null);
+
+        /** GameConfig dailyLeaderboardSize */
+        dailyLeaderboardSize?: (number|Long|null);
+
+        /** GameConfig platformTreasuryAddress */
+        platformTreasuryAddress?: (Uint8Array|null);
+
+        /** GameConfig dailyPlatformFeeBps */
+        dailyPlatformFeeBps?: (number|Long|null);
+
+        /** GameConfig dailyPayoutBps */
+        dailyPayoutBps?: ((number|Long)[]|null);
+
+        /** GameConfig classicDailyPointsCap */
+        classicDailyPointsCap?: (number|Long|null);
+
+        /** GameConfig shopRedemptionRatePoints */
+        shopRedemptionRatePoints?: (number|Long|null);
+
+        /** GameConfig shopRedemptionRateCnpy */
+        shopRedemptionRateCnpy?: (number|Long|null);
+
+        /** GameConfig shopMinRedeemPoints */
+        shopMinRedeemPoints?: (number|Long|null);
+
+        /** GameConfig shopRedeemStepPoints */
+        shopRedeemStepPoints?: (number|Long|null);
+
+        /** GameConfig dailyRewardFeeBps */
+        dailyRewardFeeBps?: (number|Long|null);
+
+        /** GameConfig dailyReserveFeeBps */
+        dailyReserveFeeBps?: (number|Long|null);
+
+        /** GameConfig dailyShopFeeBps */
+        dailyShopFeeBps?: (number|Long|null);
+
+        /** GameConfig classicPlatformFeeBps */
+        classicPlatformFeeBps?: (number|Long|null);
+
+        /** GameConfig classicReserveFeeBps */
+        classicReserveFeeBps?: (number|Long|null);
+
+        /** GameConfig classicShopFeeBps */
+        classicShopFeeBps?: (number|Long|null);
+
+        /** GameConfig dailyLoginRewardPoints */
+        dailyLoginRewardPoints?: ((number|Long)[]|null);
+
+        /** GameConfig dailyLoginBonusBps */
+        dailyLoginBonusBps?: (number|Long|null);
+    }
+
+    /** Represents a GameConfig. */
+    class GameConfig implements IGameConfig {
+
+        /**
+         * Constructs a new GameConfig.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IGameConfig);
+
+        /** GameConfig classicStartFee. */
+        public classicStartFee: (number|Long);
+
+        /** GameConfig dailyStartFee. */
+        public dailyStartFee: (number|Long);
+
+        /** GameConfig dailyMaxMoves. */
+        public dailyMaxMoves: (number|Long);
+
+        /** GameConfig classicLeaderboardSize. */
+        public classicLeaderboardSize: (number|Long);
+
+        /** GameConfig dailyLeaderboardSize. */
+        public dailyLeaderboardSize: (number|Long);
+
+        /** GameConfig platformTreasuryAddress. */
+        public platformTreasuryAddress: Uint8Array;
+
+        /** GameConfig dailyPlatformFeeBps. */
+        public dailyPlatformFeeBps: (number|Long);
+
+        /** GameConfig dailyPayoutBps. */
+        public dailyPayoutBps: (number|Long)[];
+
+        /** GameConfig classicDailyPointsCap. */
+        public classicDailyPointsCap: (number|Long);
+
+        /** GameConfig shopRedemptionRatePoints. */
+        public shopRedemptionRatePoints: (number|Long);
+
+        /** GameConfig shopRedemptionRateCnpy. */
+        public shopRedemptionRateCnpy: (number|Long);
+
+        /** GameConfig shopMinRedeemPoints. */
+        public shopMinRedeemPoints: (number|Long);
+
+        /** GameConfig shopRedeemStepPoints. */
+        public shopRedeemStepPoints: (number|Long);
+
+        /** GameConfig dailyRewardFeeBps. */
+        public dailyRewardFeeBps: (number|Long);
+
+        /** GameConfig dailyReserveFeeBps. */
+        public dailyReserveFeeBps: (number|Long);
+
+        /** GameConfig dailyShopFeeBps. */
+        public dailyShopFeeBps: (number|Long);
+
+        /** GameConfig classicPlatformFeeBps. */
+        public classicPlatformFeeBps: (number|Long);
+
+        /** GameConfig classicReserveFeeBps. */
+        public classicReserveFeeBps: (number|Long);
+
+        /** GameConfig classicShopFeeBps. */
+        public classicShopFeeBps: (number|Long);
+
+        /** GameConfig dailyLoginRewardPoints. */
+        public dailyLoginRewardPoints: (number|Long)[];
+
+        /** GameConfig dailyLoginBonusBps. */
+        public dailyLoginBonusBps: (number|Long);
+
+        /**
+         * Creates a new GameConfig instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns GameConfig instance
+         */
+        public static create(properties?: types.IGameConfig): types.GameConfig;
+
+        /**
+         * Encodes the specified GameConfig message. Does not implicitly {@link types.GameConfig.verify|verify} messages.
+         * @param message GameConfig message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IGameConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified GameConfig message, length delimited. Does not implicitly {@link types.GameConfig.verify|verify} messages.
+         * @param message GameConfig message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IGameConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a GameConfig message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns GameConfig
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.GameConfig;
+
+        /**
+         * Decodes a GameConfig message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns GameConfig
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.GameConfig;
+
+        /**
+         * Verifies a GameConfig message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a GameConfig message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns GameConfig
+         */
+        public static fromObject(object: { [k: string]: any }): types.GameConfig;
+
+        /**
+         * Creates a plain object from a GameConfig message. Also converts values to other types if specified.
+         * @param message GameConfig
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.GameConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this GameConfig to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for GameConfig
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a GameSession. */
+    interface IGameSession {
+
+        /** GameSession gameId */
+        gameId?: (Uint8Array|null);
+
+        /** GameSession playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** GameSession mode */
+        mode?: (types.GameMode|null);
+
+        /** GameSession utcDate */
+        utcDate?: (string|null);
+
+        /** GameSession seed */
+        seed?: (Uint8Array|null);
+
+        /** GameSession status */
+        status?: (types.SessionStatus|null);
+
+        /** GameSession startedHeight */
+        startedHeight?: (number|Long|null);
+
+        /** GameSession startedAtUnix */
+        startedAtUnix?: (number|Long|null);
+
+        /** GameSession feePaid */
+        feePaid?: (number|Long|null);
+
+        /** GameSession maxMoves */
+        maxMoves?: (number|Long|null);
+
+        /** GameSession submittedScore */
+        submittedScore?: (number|Long|null);
+
+        /** GameSession submittedMaxTile */
+        submittedMaxTile?: (number|Long|null);
+
+        /** GameSession finalMoveCount */
+        finalMoveCount?: (number|Long|null);
+
+        /** GameSession stopReason */
+        stopReason?: (types.StopReason|null);
+
+        /** GameSession submittedAtUnix */
+        submittedAtUnix?: (number|Long|null);
+    }
+
+    /** Represents a GameSession. */
+    class GameSession implements IGameSession {
+
+        /**
+         * Constructs a new GameSession.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IGameSession);
+
+        /** GameSession gameId. */
+        public gameId: Uint8Array;
+
+        /** GameSession playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** GameSession mode. */
+        public mode: types.GameMode;
+
+        /** GameSession utcDate. */
+        public utcDate: string;
+
+        /** GameSession seed. */
+        public seed: Uint8Array;
+
+        /** GameSession status. */
+        public status: types.SessionStatus;
+
+        /** GameSession startedHeight. */
+        public startedHeight: (number|Long);
+
+        /** GameSession startedAtUnix. */
+        public startedAtUnix: (number|Long);
+
+        /** GameSession feePaid. */
+        public feePaid: (number|Long);
+
+        /** GameSession maxMoves. */
+        public maxMoves: (number|Long);
+
+        /** GameSession submittedScore. */
+        public submittedScore: (number|Long);
+
+        /** GameSession submittedMaxTile. */
+        public submittedMaxTile: (number|Long);
+
+        /** GameSession finalMoveCount. */
+        public finalMoveCount: (number|Long);
+
+        /** GameSession stopReason. */
+        public stopReason: types.StopReason;
+
+        /** GameSession submittedAtUnix. */
+        public submittedAtUnix: (number|Long);
+
+        /**
+         * Creates a new GameSession instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns GameSession instance
+         */
+        public static create(properties?: types.IGameSession): types.GameSession;
+
+        /**
+         * Encodes the specified GameSession message. Does not implicitly {@link types.GameSession.verify|verify} messages.
+         * @param message GameSession message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IGameSession, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified GameSession message, length delimited. Does not implicitly {@link types.GameSession.verify|verify} messages.
+         * @param message GameSession message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IGameSession, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a GameSession message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns GameSession
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.GameSession;
+
+        /**
+         * Decodes a GameSession message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns GameSession
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.GameSession;
+
+        /**
+         * Verifies a GameSession message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a GameSession message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns GameSession
+         */
+        public static fromObject(object: { [k: string]: any }): types.GameSession;
+
+        /**
+         * Creates a plain object from a GameSession message. Also converts values to other types if specified.
+         * @param message GameSession
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.GameSession, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this GameSession to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for GameSession
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a DailyAttempt. */
+    interface IDailyAttempt {
+
+        /** DailyAttempt utcDate */
+        utcDate?: (string|null);
+
+        /** DailyAttempt playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** DailyAttempt gameId */
+        gameId?: (Uint8Array|null);
+    }
+
+    /** Represents a DailyAttempt. */
+    class DailyAttempt implements IDailyAttempt {
+
+        /**
+         * Constructs a new DailyAttempt.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IDailyAttempt);
+
+        /** DailyAttempt utcDate. */
+        public utcDate: string;
+
+        /** DailyAttempt playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** DailyAttempt gameId. */
+        public gameId: Uint8Array;
+
+        /**
+         * Creates a new DailyAttempt instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns DailyAttempt instance
+         */
+        public static create(properties?: types.IDailyAttempt): types.DailyAttempt;
+
+        /**
+         * Encodes the specified DailyAttempt message. Does not implicitly {@link types.DailyAttempt.verify|verify} messages.
+         * @param message DailyAttempt message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IDailyAttempt, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified DailyAttempt message, length delimited. Does not implicitly {@link types.DailyAttempt.verify|verify} messages.
+         * @param message DailyAttempt message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IDailyAttempt, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a DailyAttempt message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns DailyAttempt
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.DailyAttempt;
+
+        /**
+         * Decodes a DailyAttempt message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns DailyAttempt
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.DailyAttempt;
+
+        /**
+         * Verifies a DailyAttempt message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a DailyAttempt message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns DailyAttempt
+         */
+        public static fromObject(object: { [k: string]: any }): types.DailyAttempt;
+
+        /**
+         * Creates a plain object from a DailyAttempt message. Also converts values to other types if specified.
+         * @param message DailyAttempt
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.DailyAttempt, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this DailyAttempt to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for DailyAttempt
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a DailySubmission. */
+    interface IDailySubmission {
+
+        /** DailySubmission utcDate */
+        utcDate?: (string|null);
+
+        /** DailySubmission playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** DailySubmission gameId */
+        gameId?: (Uint8Array|null);
+
+        /** DailySubmission score */
+        score?: (number|Long|null);
+
+        /** DailySubmission maxTile */
+        maxTile?: (number|Long|null);
+
+        /** DailySubmission moveCount */
+        moveCount?: (number|Long|null);
+
+        /** DailySubmission submittedAtUnix */
+        submittedAtUnix?: (number|Long|null);
+    }
+
+    /** Represents a DailySubmission. */
+    class DailySubmission implements IDailySubmission {
+
+        /**
+         * Constructs a new DailySubmission.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IDailySubmission);
+
+        /** DailySubmission utcDate. */
+        public utcDate: string;
+
+        /** DailySubmission playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** DailySubmission gameId. */
+        public gameId: Uint8Array;
+
+        /** DailySubmission score. */
+        public score: (number|Long);
+
+        /** DailySubmission maxTile. */
+        public maxTile: (number|Long);
+
+        /** DailySubmission moveCount. */
+        public moveCount: (number|Long);
+
+        /** DailySubmission submittedAtUnix. */
+        public submittedAtUnix: (number|Long);
+
+        /**
+         * Creates a new DailySubmission instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns DailySubmission instance
+         */
+        public static create(properties?: types.IDailySubmission): types.DailySubmission;
+
+        /**
+         * Encodes the specified DailySubmission message. Does not implicitly {@link types.DailySubmission.verify|verify} messages.
+         * @param message DailySubmission message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IDailySubmission, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified DailySubmission message, length delimited. Does not implicitly {@link types.DailySubmission.verify|verify} messages.
+         * @param message DailySubmission message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IDailySubmission, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a DailySubmission message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns DailySubmission
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.DailySubmission;
+
+        /**
+         * Decodes a DailySubmission message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns DailySubmission
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.DailySubmission;
+
+        /**
+         * Verifies a DailySubmission message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a DailySubmission message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns DailySubmission
+         */
+        public static fromObject(object: { [k: string]: any }): types.DailySubmission;
+
+        /**
+         * Creates a plain object from a DailySubmission message. Also converts values to other types if specified.
+         * @param message DailySubmission
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.DailySubmission, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this DailySubmission to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for DailySubmission
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a DailyPrizePool. */
+    interface IDailyPrizePool {
+
+        /** DailyPrizePool utcDate */
+        utcDate?: (string|null);
+
+        /** DailyPrizePool entryCount */
+        entryCount?: (number|Long|null);
+
+        /** DailyPrizePool grossFees */
+        grossFees?: (number|Long|null);
+
+        /** DailyPrizePool treasuryFees */
+        treasuryFees?: (number|Long|null);
+
+        /** DailyPrizePool rewardPool */
+        rewardPool?: (number|Long|null);
+
+        /** DailyPrizePool finalized */
+        finalized?: (boolean|null);
+
+        /** DailyPrizePool finalizedAtUnix */
+        finalizedAtUnix?: (number|Long|null);
+
+        /** DailyPrizePool distributedRewards */
+        distributedRewards?: (number|Long|null);
+
+        /** DailyPrizePool treasuryLeftover */
+        treasuryLeftover?: (number|Long|null);
+    }
+
+    /** Represents a DailyPrizePool. */
+    class DailyPrizePool implements IDailyPrizePool {
+
+        /**
+         * Constructs a new DailyPrizePool.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IDailyPrizePool);
+
+        /** DailyPrizePool utcDate. */
+        public utcDate: string;
+
+        /** DailyPrizePool entryCount. */
+        public entryCount: (number|Long);
+
+        /** DailyPrizePool grossFees. */
+        public grossFees: (number|Long);
+
+        /** DailyPrizePool treasuryFees. */
+        public treasuryFees: (number|Long);
+
+        /** DailyPrizePool rewardPool. */
+        public rewardPool: (number|Long);
+
+        /** DailyPrizePool finalized. */
+        public finalized: boolean;
+
+        /** DailyPrizePool finalizedAtUnix. */
+        public finalizedAtUnix: (number|Long);
+
+        /** DailyPrizePool distributedRewards. */
+        public distributedRewards: (number|Long);
+
+        /** DailyPrizePool treasuryLeftover. */
+        public treasuryLeftover: (number|Long);
+
+        /**
+         * Creates a new DailyPrizePool instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns DailyPrizePool instance
+         */
+        public static create(properties?: types.IDailyPrizePool): types.DailyPrizePool;
+
+        /**
+         * Encodes the specified DailyPrizePool message. Does not implicitly {@link types.DailyPrizePool.verify|verify} messages.
+         * @param message DailyPrizePool message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IDailyPrizePool, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified DailyPrizePool message, length delimited. Does not implicitly {@link types.DailyPrizePool.verify|verify} messages.
+         * @param message DailyPrizePool message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IDailyPrizePool, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a DailyPrizePool message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns DailyPrizePool
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.DailyPrizePool;
+
+        /**
+         * Decodes a DailyPrizePool message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns DailyPrizePool
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.DailyPrizePool;
+
+        /**
+         * Verifies a DailyPrizePool message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a DailyPrizePool message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns DailyPrizePool
+         */
+        public static fromObject(object: { [k: string]: any }): types.DailyPrizePool;
+
+        /**
+         * Creates a plain object from a DailyPrizePool message. Also converts values to other types if specified.
+         * @param message DailyPrizePool
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.DailyPrizePool, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this DailyPrizePool to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for DailyPrizePool
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a GameTreasury. */
+    interface IGameTreasury {
+
+        /** GameTreasury platformBalance */
+        platformBalance?: (number|Long|null);
+
+        /** GameTreasury reserveBalance */
+        reserveBalance?: (number|Long|null);
+
+        /** GameTreasury shopBalance */
+        shopBalance?: (number|Long|null);
+
+        /** GameTreasury updatedAtUnix */
+        updatedAtUnix?: (number|Long|null);
+    }
+
+    /** Represents a GameTreasury. */
+    class GameTreasury implements IGameTreasury {
+
+        /**
+         * Constructs a new GameTreasury.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IGameTreasury);
+
+        /** GameTreasury platformBalance. */
+        public platformBalance: (number|Long);
+
+        /** GameTreasury reserveBalance. */
+        public reserveBalance: (number|Long);
+
+        /** GameTreasury shopBalance. */
+        public shopBalance: (number|Long);
+
+        /** GameTreasury updatedAtUnix. */
+        public updatedAtUnix: (number|Long);
+
+        /**
+         * Creates a new GameTreasury instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns GameTreasury instance
+         */
+        public static create(properties?: types.IGameTreasury): types.GameTreasury;
+
+        /**
+         * Encodes the specified GameTreasury message. Does not implicitly {@link types.GameTreasury.verify|verify} messages.
+         * @param message GameTreasury message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IGameTreasury, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified GameTreasury message, length delimited. Does not implicitly {@link types.GameTreasury.verify|verify} messages.
+         * @param message GameTreasury message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IGameTreasury, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a GameTreasury message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns GameTreasury
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.GameTreasury;
+
+        /**
+         * Decodes a GameTreasury message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns GameTreasury
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.GameTreasury;
+
+        /**
+         * Verifies a GameTreasury message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a GameTreasury message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns GameTreasury
+         */
+        public static fromObject(object: { [k: string]: any }): types.GameTreasury;
+
+        /**
+         * Creates a plain object from a GameTreasury message. Also converts values to other types if specified.
+         * @param message GameTreasury
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.GameTreasury, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this GameTreasury to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for GameTreasury
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a LeaderboardEntry. */
+    interface ILeaderboardEntry {
+
+        /** LeaderboardEntry gameId */
+        gameId?: (Uint8Array|null);
+
+        /** LeaderboardEntry playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** LeaderboardEntry score */
+        score?: (number|Long|null);
+
+        /** LeaderboardEntry maxTile */
+        maxTile?: (number|Long|null);
+
+        /** LeaderboardEntry moveCount */
+        moveCount?: (number|Long|null);
+
+        /** LeaderboardEntry endedAtUnix */
+        endedAtUnix?: (number|Long|null);
+    }
+
+    /** Represents a LeaderboardEntry. */
+    class LeaderboardEntry implements ILeaderboardEntry {
+
+        /**
+         * Constructs a new LeaderboardEntry.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.ILeaderboardEntry);
+
+        /** LeaderboardEntry gameId. */
+        public gameId: Uint8Array;
+
+        /** LeaderboardEntry playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** LeaderboardEntry score. */
+        public score: (number|Long);
+
+        /** LeaderboardEntry maxTile. */
+        public maxTile: (number|Long);
+
+        /** LeaderboardEntry moveCount. */
+        public moveCount: (number|Long);
+
+        /** LeaderboardEntry endedAtUnix. */
+        public endedAtUnix: (number|Long);
+
+        /**
+         * Creates a new LeaderboardEntry instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns LeaderboardEntry instance
+         */
+        public static create(properties?: types.ILeaderboardEntry): types.LeaderboardEntry;
+
+        /**
+         * Encodes the specified LeaderboardEntry message. Does not implicitly {@link types.LeaderboardEntry.verify|verify} messages.
+         * @param message LeaderboardEntry message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.ILeaderboardEntry, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified LeaderboardEntry message, length delimited. Does not implicitly {@link types.LeaderboardEntry.verify|verify} messages.
+         * @param message LeaderboardEntry message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.ILeaderboardEntry, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a LeaderboardEntry message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns LeaderboardEntry
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.LeaderboardEntry;
+
+        /**
+         * Decodes a LeaderboardEntry message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns LeaderboardEntry
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.LeaderboardEntry;
+
+        /**
+         * Verifies a LeaderboardEntry message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a LeaderboardEntry message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns LeaderboardEntry
+         */
+        public static fromObject(object: { [k: string]: any }): types.LeaderboardEntry;
+
+        /**
+         * Creates a plain object from a LeaderboardEntry message. Also converts values to other types if specified.
+         * @param message LeaderboardEntry
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.LeaderboardEntry, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this LeaderboardEntry to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for LeaderboardEntry
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a DailyRewardAllocation. */
+    interface IDailyRewardAllocation {
+
+        /** DailyRewardAllocation utcDate */
+        utcDate?: (string|null);
+
+        /** DailyRewardAllocation playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** DailyRewardAllocation gameId */
+        gameId?: (Uint8Array|null);
+
+        /** DailyRewardAllocation rank */
+        rank?: (number|Long|null);
+
+        /** DailyRewardAllocation rewardAmount */
+        rewardAmount?: (number|Long|null);
+
+        /** DailyRewardAllocation score */
+        score?: (number|Long|null);
+
+        /** DailyRewardAllocation maxTile */
+        maxTile?: (number|Long|null);
+
+        /** DailyRewardAllocation moveCount */
+        moveCount?: (number|Long|null);
+
+        /** DailyRewardAllocation endedAtUnix */
+        endedAtUnix?: (number|Long|null);
+    }
+
+    /** Represents a DailyRewardAllocation. */
+    class DailyRewardAllocation implements IDailyRewardAllocation {
+
+        /**
+         * Constructs a new DailyRewardAllocation.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IDailyRewardAllocation);
+
+        /** DailyRewardAllocation utcDate. */
+        public utcDate: string;
+
+        /** DailyRewardAllocation playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** DailyRewardAllocation gameId. */
+        public gameId: Uint8Array;
+
+        /** DailyRewardAllocation rank. */
+        public rank: (number|Long);
+
+        /** DailyRewardAllocation rewardAmount. */
+        public rewardAmount: (number|Long);
+
+        /** DailyRewardAllocation score. */
+        public score: (number|Long);
+
+        /** DailyRewardAllocation maxTile. */
+        public maxTile: (number|Long);
+
+        /** DailyRewardAllocation moveCount. */
+        public moveCount: (number|Long);
+
+        /** DailyRewardAllocation endedAtUnix. */
+        public endedAtUnix: (number|Long);
+
+        /**
+         * Creates a new DailyRewardAllocation instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns DailyRewardAllocation instance
+         */
+        public static create(properties?: types.IDailyRewardAllocation): types.DailyRewardAllocation;
+
+        /**
+         * Encodes the specified DailyRewardAllocation message. Does not implicitly {@link types.DailyRewardAllocation.verify|verify} messages.
+         * @param message DailyRewardAllocation message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IDailyRewardAllocation, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified DailyRewardAllocation message, length delimited. Does not implicitly {@link types.DailyRewardAllocation.verify|verify} messages.
+         * @param message DailyRewardAllocation message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IDailyRewardAllocation, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a DailyRewardAllocation message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns DailyRewardAllocation
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.DailyRewardAllocation;
+
+        /**
+         * Decodes a DailyRewardAllocation message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns DailyRewardAllocation
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.DailyRewardAllocation;
+
+        /**
+         * Verifies a DailyRewardAllocation message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a DailyRewardAllocation message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns DailyRewardAllocation
+         */
+        public static fromObject(object: { [k: string]: any }): types.DailyRewardAllocation;
+
+        /**
+         * Creates a plain object from a DailyRewardAllocation message. Also converts values to other types if specified.
+         * @param message DailyRewardAllocation
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.DailyRewardAllocation, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this DailyRewardAllocation to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for DailyRewardAllocation
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a DailyRewardClaim. */
+    interface IDailyRewardClaim {
+
+        /** DailyRewardClaim utcDate */
+        utcDate?: (string|null);
+
+        /** DailyRewardClaim playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** DailyRewardClaim gameId */
+        gameId?: (Uint8Array|null);
+
+        /** DailyRewardClaim rank */
+        rank?: (number|Long|null);
+
+        /** DailyRewardClaim claimedAmount */
+        claimedAmount?: (number|Long|null);
+
+        /** DailyRewardClaim claimedAtUnix */
+        claimedAtUnix?: (number|Long|null);
+    }
+
+    /** Represents a DailyRewardClaim. */
+    class DailyRewardClaim implements IDailyRewardClaim {
+
+        /**
+         * Constructs a new DailyRewardClaim.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IDailyRewardClaim);
+
+        /** DailyRewardClaim utcDate. */
+        public utcDate: string;
+
+        /** DailyRewardClaim playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** DailyRewardClaim gameId. */
+        public gameId: Uint8Array;
+
+        /** DailyRewardClaim rank. */
+        public rank: (number|Long);
+
+        /** DailyRewardClaim claimedAmount. */
+        public claimedAmount: (number|Long);
+
+        /** DailyRewardClaim claimedAtUnix. */
+        public claimedAtUnix: (number|Long);
+
+        /**
+         * Creates a new DailyRewardClaim instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns DailyRewardClaim instance
+         */
+        public static create(properties?: types.IDailyRewardClaim): types.DailyRewardClaim;
+
+        /**
+         * Encodes the specified DailyRewardClaim message. Does not implicitly {@link types.DailyRewardClaim.verify|verify} messages.
+         * @param message DailyRewardClaim message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IDailyRewardClaim, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified DailyRewardClaim message, length delimited. Does not implicitly {@link types.DailyRewardClaim.verify|verify} messages.
+         * @param message DailyRewardClaim message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IDailyRewardClaim, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a DailyRewardClaim message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns DailyRewardClaim
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.DailyRewardClaim;
+
+        /**
+         * Decodes a DailyRewardClaim message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns DailyRewardClaim
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.DailyRewardClaim;
+
+        /**
+         * Verifies a DailyRewardClaim message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a DailyRewardClaim message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns DailyRewardClaim
+         */
+        public static fromObject(object: { [k: string]: any }): types.DailyRewardClaim;
+
+        /**
+         * Creates a plain object from a DailyRewardClaim message. Also converts values to other types if specified.
+         * @param message DailyRewardClaim
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.DailyRewardClaim, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this DailyRewardClaim to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for DailyRewardClaim
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a ClassicPointsDailyLedger. */
+    interface IClassicPointsDailyLedger {
+
+        /** ClassicPointsDailyLedger utcDate */
+        utcDate?: (string|null);
+
+        /** ClassicPointsDailyLedger playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** ClassicPointsDailyLedger earnedPoints */
+        earnedPoints?: (number|Long|null);
+    }
+
+    /** Represents a ClassicPointsDailyLedger. */
+    class ClassicPointsDailyLedger implements IClassicPointsDailyLedger {
+
+        /**
+         * Constructs a new ClassicPointsDailyLedger.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IClassicPointsDailyLedger);
+
+        /** ClassicPointsDailyLedger utcDate. */
+        public utcDate: string;
+
+        /** ClassicPointsDailyLedger playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** ClassicPointsDailyLedger earnedPoints. */
+        public earnedPoints: (number|Long);
+
+        /**
+         * Creates a new ClassicPointsDailyLedger instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns ClassicPointsDailyLedger instance
+         */
+        public static create(properties?: types.IClassicPointsDailyLedger): types.ClassicPointsDailyLedger;
+
+        /**
+         * Encodes the specified ClassicPointsDailyLedger message. Does not implicitly {@link types.ClassicPointsDailyLedger.verify|verify} messages.
+         * @param message ClassicPointsDailyLedger message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IClassicPointsDailyLedger, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified ClassicPointsDailyLedger message, length delimited. Does not implicitly {@link types.ClassicPointsDailyLedger.verify|verify} messages.
+         * @param message ClassicPointsDailyLedger message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IClassicPointsDailyLedger, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a ClassicPointsDailyLedger message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ClassicPointsDailyLedger
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.ClassicPointsDailyLedger;
+
+        /**
+         * Decodes a ClassicPointsDailyLedger message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns ClassicPointsDailyLedger
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.ClassicPointsDailyLedger;
+
+        /**
+         * Verifies a ClassicPointsDailyLedger message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a ClassicPointsDailyLedger message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns ClassicPointsDailyLedger
+         */
+        public static fromObject(object: { [k: string]: any }): types.ClassicPointsDailyLedger;
+
+        /**
+         * Creates a plain object from a ClassicPointsDailyLedger message. Also converts values to other types if specified.
+         * @param message ClassicPointsDailyLedger
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.ClassicPointsDailyLedger, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this ClassicPointsDailyLedger to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for ClassicPointsDailyLedger
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a ClassicPointRedemption. */
+    interface IClassicPointRedemption {
+
+        /** ClassicPointRedemption playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** ClassicPointRedemption burnPoints */
+        burnPoints?: (number|Long|null);
+
+        /** ClassicPointRedemption payoutAmount */
+        payoutAmount?: (number|Long|null);
+
+        /** ClassicPointRedemption redeemedAtUnix */
+        redeemedAtUnix?: (number|Long|null);
+    }
+
+    /** Represents a ClassicPointRedemption. */
+    class ClassicPointRedemption implements IClassicPointRedemption {
+
+        /**
+         * Constructs a new ClassicPointRedemption.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IClassicPointRedemption);
+
+        /** ClassicPointRedemption playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** ClassicPointRedemption burnPoints. */
+        public burnPoints: (number|Long);
+
+        /** ClassicPointRedemption payoutAmount. */
+        public payoutAmount: (number|Long);
+
+        /** ClassicPointRedemption redeemedAtUnix. */
+        public redeemedAtUnix: (number|Long);
+
+        /**
+         * Creates a new ClassicPointRedemption instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns ClassicPointRedemption instance
+         */
+        public static create(properties?: types.IClassicPointRedemption): types.ClassicPointRedemption;
+
+        /**
+         * Encodes the specified ClassicPointRedemption message. Does not implicitly {@link types.ClassicPointRedemption.verify|verify} messages.
+         * @param message ClassicPointRedemption message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IClassicPointRedemption, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified ClassicPointRedemption message, length delimited. Does not implicitly {@link types.ClassicPointRedemption.verify|verify} messages.
+         * @param message ClassicPointRedemption message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IClassicPointRedemption, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a ClassicPointRedemption message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ClassicPointRedemption
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.ClassicPointRedemption;
+
+        /**
+         * Decodes a ClassicPointRedemption message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns ClassicPointRedemption
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.ClassicPointRedemption;
+
+        /**
+         * Verifies a ClassicPointRedemption message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a ClassicPointRedemption message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns ClassicPointRedemption
+         */
+        public static fromObject(object: { [k: string]: any }): types.ClassicPointRedemption;
+
+        /**
+         * Creates a plain object from a ClassicPointRedemption message. Also converts values to other types if specified.
+         * @param message ClassicPointRedemption
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.ClassicPointRedemption, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this ClassicPointRedemption to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for ClassicPointRedemption
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a DailyLoginClaim. */
+    interface IDailyLoginClaim {
+
+        /** DailyLoginClaim utcDate */
+        utcDate?: (string|null);
+
+        /** DailyLoginClaim playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** DailyLoginClaim streakDay */
+        streakDay?: (number|Long|null);
+
+        /** DailyLoginClaim rewardPoints */
+        rewardPoints?: (number|Long|null);
+
+        /** DailyLoginClaim bonusBps */
+        bonusBps?: (number|Long|null);
+
+        /** DailyLoginClaim claimedAtUnix */
+        claimedAtUnix?: (number|Long|null);
+    }
+
+    /** Represents a DailyLoginClaim. */
+    class DailyLoginClaim implements IDailyLoginClaim {
+
+        /**
+         * Constructs a new DailyLoginClaim.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IDailyLoginClaim);
+
+        /** DailyLoginClaim utcDate. */
+        public utcDate: string;
+
+        /** DailyLoginClaim playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** DailyLoginClaim streakDay. */
+        public streakDay: (number|Long);
+
+        /** DailyLoginClaim rewardPoints. */
+        public rewardPoints: (number|Long);
+
+        /** DailyLoginClaim bonusBps. */
+        public bonusBps: (number|Long);
+
+        /** DailyLoginClaim claimedAtUnix. */
+        public claimedAtUnix: (number|Long);
+
+        /**
+         * Creates a new DailyLoginClaim instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns DailyLoginClaim instance
+         */
+        public static create(properties?: types.IDailyLoginClaim): types.DailyLoginClaim;
+
+        /**
+         * Encodes the specified DailyLoginClaim message. Does not implicitly {@link types.DailyLoginClaim.verify|verify} messages.
+         * @param message DailyLoginClaim message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IDailyLoginClaim, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified DailyLoginClaim message, length delimited. Does not implicitly {@link types.DailyLoginClaim.verify|verify} messages.
+         * @param message DailyLoginClaim message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IDailyLoginClaim, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a DailyLoginClaim message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns DailyLoginClaim
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.DailyLoginClaim;
+
+        /**
+         * Decodes a DailyLoginClaim message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns DailyLoginClaim
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.DailyLoginClaim;
+
+        /**
+         * Verifies a DailyLoginClaim message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a DailyLoginClaim message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns DailyLoginClaim
+         */
+        public static fromObject(object: { [k: string]: any }): types.DailyLoginClaim;
+
+        /**
+         * Creates a plain object from a DailyLoginClaim message. Also converts values to other types if specified.
+         * @param message DailyLoginClaim
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.DailyLoginClaim, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this DailyLoginClaim to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for DailyLoginClaim
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a PlayerStats. */
+    interface IPlayerStats {
+
+        /** PlayerStats playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** PlayerStats dailyGamesStarted */
+        dailyGamesStarted?: (number|Long|null);
+
+        /** PlayerStats classicGamesStarted */
+        classicGamesStarted?: (number|Long|null);
+
+        /** PlayerStats gamesCompleted */
+        gamesCompleted?: (number|Long|null);
+
+        /** PlayerStats wins */
+        wins?: (number|Long|null);
+
+        /** PlayerStats losses */
+        losses?: (number|Long|null);
+
+        /** PlayerStats bestDailyScore */
+        bestDailyScore?: (number|Long|null);
+
+        /** PlayerStats bestClassicScore */
+        bestClassicScore?: (number|Long|null);
+
+        /** PlayerStats bestTile */
+        bestTile?: (number|Long|null);
+
+        /** PlayerStats totalScore */
+        totalScore?: (number|Long|null);
+
+        /** PlayerStats classicPointsBalance */
+        classicPointsBalance?: (number|Long|null);
+
+        /** PlayerStats classicPointsEarned */
+        classicPointsEarned?: (number|Long|null);
+
+        /** PlayerStats loginStreak */
+        loginStreak?: (number|Long|null);
+
+        /** PlayerStats lastLoginClaimUtcDate */
+        lastLoginClaimUtcDate?: (string|null);
+
+        /** PlayerStats classicPointsBonusUtcDate */
+        classicPointsBonusUtcDate?: (string|null);
+    }
+
+    /** Represents a PlayerStats. */
+    class PlayerStats implements IPlayerStats {
+
+        /**
+         * Constructs a new PlayerStats.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IPlayerStats);
+
+        /** PlayerStats playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** PlayerStats dailyGamesStarted. */
+        public dailyGamesStarted: (number|Long);
+
+        /** PlayerStats classicGamesStarted. */
+        public classicGamesStarted: (number|Long);
+
+        /** PlayerStats gamesCompleted. */
+        public gamesCompleted: (number|Long);
+
+        /** PlayerStats wins. */
+        public wins: (number|Long);
+
+        /** PlayerStats losses. */
+        public losses: (number|Long);
+
+        /** PlayerStats bestDailyScore. */
+        public bestDailyScore: (number|Long);
+
+        /** PlayerStats bestClassicScore. */
+        public bestClassicScore: (number|Long);
+
+        /** PlayerStats bestTile. */
+        public bestTile: (number|Long);
+
+        /** PlayerStats totalScore. */
+        public totalScore: (number|Long);
+
+        /** PlayerStats classicPointsBalance. */
+        public classicPointsBalance: (number|Long);
+
+        /** PlayerStats classicPointsEarned. */
+        public classicPointsEarned: (number|Long);
+
+        /** PlayerStats loginStreak. */
+        public loginStreak: (number|Long);
+
+        /** PlayerStats lastLoginClaimUtcDate. */
+        public lastLoginClaimUtcDate: string;
+
+        /** PlayerStats classicPointsBonusUtcDate. */
+        public classicPointsBonusUtcDate: string;
+
+        /**
+         * Creates a new PlayerStats instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns PlayerStats instance
+         */
+        public static create(properties?: types.IPlayerStats): types.PlayerStats;
+
+        /**
+         * Encodes the specified PlayerStats message. Does not implicitly {@link types.PlayerStats.verify|verify} messages.
+         * @param message PlayerStats message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IPlayerStats, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified PlayerStats message, length delimited. Does not implicitly {@link types.PlayerStats.verify|verify} messages.
+         * @param message PlayerStats message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IPlayerStats, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a PlayerStats message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns PlayerStats
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.PlayerStats;
+
+        /**
+         * Decodes a PlayerStats message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns PlayerStats
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.PlayerStats;
+
+        /**
+         * Verifies a PlayerStats message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a PlayerStats message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns PlayerStats
+         */
+        public static fromObject(object: { [k: string]: any }): types.PlayerStats;
+
+        /**
+         * Creates a plain object from a PlayerStats message. Also converts values to other types if specified.
+         * @param message PlayerStats
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.PlayerStats, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this PlayerStats to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for PlayerStats
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a FSMToPlugin. */
     interface IFSMToPlugin {
 

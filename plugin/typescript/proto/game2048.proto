@@ -1,0 +1,236 @@
+syntax = "proto3";
+
+package types;
+option go_package = "github.com/canopy-network/go-plugin/contract";
+
+// GameMode identifies which 2048 mode a session belongs to.
+enum GameMode {
+  GAME_MODE_UNSPECIFIED = 0;
+  GAME_MODE_DAILY = 1;
+  GAME_MODE_CLASSIC = 2;
+}
+
+// SessionStatus tracks the lifecycle of a game session.
+enum SessionStatus {
+  SESSION_STATUS_UNSPECIFIED = 0;
+  SESSION_STATUS_ACTIVE = 1;
+  SESSION_STATUS_COMPLETED = 2;
+  SESSION_STATUS_EXPIRED = 3;
+}
+
+// StopReason records how the run ended.
+enum StopReason {
+  STOP_REASON_UNSPECIFIED = 0;
+  STOP_REASON_PLAYER_STOPPED = 1;
+  STOP_REASON_NO_MOVES = 2;
+  STOP_REASON_MAX_MOVES = 3;
+}
+
+// MoveDirection is used for deterministic replay.
+enum MoveDirection {
+  MOVE_DIRECTION_UNSPECIFIED = 0;
+  MOVE_DIRECTION_UP = 1;
+  MOVE_DIRECTION_RIGHT = 2;
+  MOVE_DIRECTION_DOWN = 3;
+  MOVE_DIRECTION_LEFT = 4;
+}
+
+// MessageStartDailyGame starts a daily challenge session.
+message MessageStartDailyGame {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  string utc_date = 2; // @gotags: json:"utcDate"
+  bytes game_id = 3; // @gotags: json:"gameId"
+}
+
+// MessageStartClassicGame starts a classic session.
+message MessageStartClassicGame {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  bytes game_id = 2; // @gotags: json:"gameId"
+}
+
+// MessageSubmitGameResult submits the final move list for replay verification.
+message MessageSubmitGameResult {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  bytes game_id = 2; // @gotags: json:"gameId"
+  repeated MoveDirection moves = 3;
+  uint64 declared_score = 4; // @gotags: json:"declaredScore"
+  uint64 declared_max_tile = 5; // @gotags: json:"declaredMaxTile"
+  StopReason stop_reason = 6; // @gotags: json:"stopReason"
+}
+
+// MessageClaimDailyReward claims the finalized reward for one UTC day.
+message MessageClaimDailyReward {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  string utc_date = 2; // @gotags: json:"utcDate"
+}
+
+// MessageRedeemClassicPoints burns classic points to redeem CNPY from treasury.
+message MessageRedeemClassicPoints {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  uint64 burn_points = 2; // @gotags: json:"burnPoints"
+}
+
+// MessageClaimDailyLoginReward grants the UTC-day login reward and activates the same-day classic bonus.
+message MessageClaimDailyLoginReward {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+}
+
+// GameConfig stores governance-style configuration for the 2048 contract.
+message GameConfig {
+  uint64 classic_start_fee = 1; // @gotags: json:"classicStartFee"
+  uint64 daily_start_fee = 2; // @gotags: json:"dailyStartFee"
+  uint64 daily_max_moves = 3; // @gotags: json:"dailyMaxMoves"
+  uint64 classic_leaderboard_size = 4; // @gotags: json:"classicLeaderboardSize"
+  uint64 daily_leaderboard_size = 5; // @gotags: json:"dailyLeaderboardSize"
+  bytes platform_treasury_address = 6; // @gotags: json:"platformTreasuryAddress"
+  uint64 daily_platform_fee_bps = 7; // @gotags: json:"dailyPlatformFeeBps"
+  repeated uint64 daily_payout_bps = 8; // @gotags: json:"dailyPayoutBps"
+  uint64 classic_daily_points_cap = 9; // @gotags: json:"classicDailyPointsCap"
+  uint64 shop_redemption_rate_points = 10; // @gotags: json:"shopRedemptionRatePoints"
+  uint64 shop_redemption_rate_cnpy = 11; // @gotags: json:"shopRedemptionRateCnpy"
+  uint64 shop_min_redeem_points = 12; // @gotags: json:"shopMinRedeemPoints"
+  uint64 shop_redeem_step_points = 13; // @gotags: json:"shopRedeemStepPoints"
+  uint64 daily_reward_fee_bps = 14; // @gotags: json:"dailyRewardFeeBps"
+  uint64 daily_reserve_fee_bps = 15; // @gotags: json:"dailyReserveFeeBps"
+  uint64 daily_shop_fee_bps = 16; // @gotags: json:"dailyShopFeeBps"
+  uint64 classic_platform_fee_bps = 17; // @gotags: json:"classicPlatformFeeBps"
+  uint64 classic_reserve_fee_bps = 18; // @gotags: json:"classicReserveFeeBps"
+  uint64 classic_shop_fee_bps = 19; // @gotags: json:"classicShopFeeBps"
+  repeated uint64 daily_login_reward_points = 20; // @gotags: json:"dailyLoginRewardPoints"
+  uint64 daily_login_bonus_bps = 21; // @gotags: json:"dailyLoginBonusBps"
+}
+
+// GameSession is the canonical record of a paid run.
+message GameSession {
+  bytes game_id = 1; // @gotags: json:"gameId"
+  bytes player_address = 2; // @gotags: json:"playerAddress"
+  GameMode mode = 3;
+  string utc_date = 4; // @gotags: json:"utcDate"
+  bytes seed = 5;
+  SessionStatus status = 6;
+  uint64 started_height = 7; // @gotags: json:"startedHeight"
+  uint64 started_at_unix = 8; // @gotags: json:"startedAtUnix"
+  uint64 fee_paid = 9; // @gotags: json:"feePaid"
+  uint64 max_moves = 10; // @gotags: json:"maxMoves"
+  uint64 submitted_score = 11; // @gotags: json:"submittedScore"
+  uint64 submitted_max_tile = 12; // @gotags: json:"submittedMaxTile"
+  uint64 final_move_count = 13; // @gotags: json:"finalMoveCount"
+  StopReason stop_reason = 14; // @gotags: json:"stopReason"
+  uint64 submitted_at_unix = 15; // @gotags: json:"submittedAtUnix"
+}
+
+// DailyAttempt prevents more than one daily start per address per UTC day.
+message DailyAttempt {
+  string utc_date = 1; // @gotags: json:"utcDate"
+  bytes player_address = 2; // @gotags: json:"playerAddress"
+  bytes game_id = 3; // @gotags: json:"gameId"
+}
+
+// DailySubmission records the final accepted daily result for auditability and payout tracking.
+message DailySubmission {
+  string utc_date = 1; // @gotags: json:"utcDate"
+  bytes player_address = 2; // @gotags: json:"playerAddress"
+  bytes game_id = 3; // @gotags: json:"gameId"
+  uint64 score = 4;
+  uint64 max_tile = 5; // @gotags: json:"maxTile"
+  uint64 move_count = 6; // @gotags: json:"moveCount"
+  uint64 submitted_at_unix = 7; // @gotags: json:"submittedAtUnix"
+}
+
+// DailyPrizePool tracks fee accounting for a specific UTC day.
+message DailyPrizePool {
+  string utc_date = 1; // @gotags: json:"utcDate"
+  uint64 entry_count = 2; // @gotags: json:"entryCount"
+  uint64 gross_fees = 3; // @gotags: json:"grossFees"
+  uint64 treasury_fees = 4; // @gotags: json:"treasuryFees"
+  uint64 reward_pool = 5; // @gotags: json:"rewardPool"
+  bool finalized = 6;
+  uint64 finalized_at_unix = 7; // @gotags: json:"finalizedAtUnix"
+  uint64 distributed_rewards = 8; // @gotags: json:"distributedRewards"
+  uint64 treasury_leftover = 9; // @gotags: json:"treasuryLeftover"
+}
+
+// GameTreasury tracks the explicit non-daily treasury buckets.
+message GameTreasury {
+  uint64 platform_balance = 1; // @gotags: json:"platformBalance"
+  uint64 reserve_balance = 2; // @gotags: json:"reserveBalance"
+  uint64 shop_balance = 3; // @gotags: json:"shopBalance"
+  uint64 updated_at_unix = 4; // @gotags: json:"updatedAtUnix"
+}
+
+// LeaderboardEntry is stored for both classic and daily boards.
+message LeaderboardEntry {
+  bytes game_id = 1; // @gotags: json:"gameId"
+  bytes player_address = 2; // @gotags: json:"playerAddress"
+  uint64 score = 3;
+  uint64 max_tile = 4; // @gotags: json:"maxTile"
+  uint64 move_count = 5; // @gotags: json:"moveCount"
+  uint64 ended_at_unix = 6; // @gotags: json:"endedAtUnix"
+}
+
+// DailyRewardAllocation stores the finalized payout record for a winner.
+message DailyRewardAllocation {
+  string utc_date = 1; // @gotags: json:"utcDate"
+  bytes player_address = 2; // @gotags: json:"playerAddress"
+  bytes game_id = 3; // @gotags: json:"gameId"
+  uint64 rank = 4;
+  uint64 reward_amount = 5; // @gotags: json:"rewardAmount"
+  uint64 score = 6;
+  uint64 max_tile = 7; // @gotags: json:"maxTile"
+  uint64 move_count = 8; // @gotags: json:"moveCount"
+  uint64 ended_at_unix = 9; // @gotags: json:"endedAtUnix"
+}
+
+// DailyRewardClaim prevents duplicate claims by address and day.
+message DailyRewardClaim {
+  string utc_date = 1; // @gotags: json:"utcDate"
+  bytes player_address = 2; // @gotags: json:"playerAddress"
+  bytes game_id = 3; // @gotags: json:"gameId"
+  uint64 rank = 4;
+  uint64 claimed_amount = 5; // @gotags: json:"claimedAmount"
+  uint64 claimed_at_unix = 6; // @gotags: json:"claimedAtUnix"
+}
+
+// ClassicPointsDailyLedger tracks how many classic points a player earned in one UTC day.
+message ClassicPointsDailyLedger {
+  string utc_date = 1; // @gotags: json:"utcDate"
+  bytes player_address = 2; // @gotags: json:"playerAddress"
+  uint64 earned_points = 3; // @gotags: json:"earnedPoints"
+}
+
+// ClassicPointRedemption records one successful points burn and treasury payout.
+message ClassicPointRedemption {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  uint64 burn_points = 2; // @gotags: json:"burnPoints"
+  uint64 payout_amount = 3; // @gotags: json:"payoutAmount"
+  uint64 redeemed_at_unix = 4; // @gotags: json:"redeemedAtUnix"
+}
+
+// DailyLoginClaim records one claimed UTC-day login reward.
+message DailyLoginClaim {
+  string utc_date = 1; // @gotags: json:"utcDate"
+  bytes player_address = 2; // @gotags: json:"playerAddress"
+  uint64 streak_day = 3; // @gotags: json:"streakDay"
+  uint64 reward_points = 4; // @gotags: json:"rewardPoints"
+  uint64 bonus_bps = 5; // @gotags: json:"bonusBps"
+  uint64 claimed_at_unix = 6; // @gotags: json:"claimedAtUnix"
+}
+
+// PlayerStats stores aggregate performance and usage data per player.
+message PlayerStats {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  uint64 daily_games_started = 2; // @gotags: json:"dailyGamesStarted"
+  uint64 classic_games_started = 3; // @gotags: json:"classicGamesStarted"
+  uint64 games_completed = 4; // @gotags: json:"gamesCompleted"
+  uint64 wins = 5;
+  uint64 losses = 6;
+  uint64 best_daily_score = 7; // @gotags: json:"bestDailyScore"
+  uint64 best_classic_score = 8; // @gotags: json:"bestClassicScore"
+  uint64 best_tile = 9; // @gotags: json:"bestTile"
+  uint64 total_score = 10; // @gotags: json:"totalScore"
+  uint64 classic_points_balance = 11; // @gotags: json:"classicPointsBalance"
+  uint64 classic_points_earned = 12; // @gotags: json:"classicPointsEarned"
+  uint64 login_streak = 13; // @gotags: json:"loginStreak"
+  string last_login_claim_utc_date = 14; // @gotags: json:"lastLoginClaimUtcDate"
+  string classic_points_bonus_utc_date = 15; // @gotags: json:"classicPointsBonusUtcDate"
+}

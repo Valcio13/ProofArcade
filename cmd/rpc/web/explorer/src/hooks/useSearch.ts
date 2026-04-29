@@ -6,17 +6,15 @@ import {
     BlockByHash,
     TxByHash,
     Validator,
-    Account,
-    AllOrders,
+    Account
 } from '../lib/api'
-import { toCNPY } from '../lib/utils'
 
 interface SearchResult {
-    type: 'block' | 'transaction' | 'address' | 'validator' | 'order'
+    type: 'block' | 'transaction' | 'address' | 'validator'
     id: string
     title: string
     subtitle?: string
-    data: Record<string, unknown>
+    data: any
 }
 
 interface SearchResults {
@@ -25,11 +23,7 @@ interface SearchResults {
     transactions: SearchResult[]
     addresses: SearchResult[]
     validators: SearchResult[]
-    orders: SearchResult[]
 }
-
-const formatAccountBalanceSubtitle = (amount: number | string | undefined) =>
-    `Balance: ${toCNPY(Number(amount || 0)).toLocaleString()} CNPY`
 
 export const useSearch = (searchTerm: string) => {
     const [results, setResults] = useState<SearchResults | null>(null)
@@ -63,8 +57,7 @@ export const useSearch = (searchTerm: string) => {
                 blocks: [],
                 transactions: [],
                 addresses: [],
-                validators: [],
-                orders: []
+                validators: []
             }
 
             // DIRECT SEARCH FOR BLOCKS, TRANSACTIONS, ACCOUNTS, AND VALIDATORS
@@ -147,7 +140,7 @@ export const useSearch = (searchTerm: string) => {
                                                 type: 'address' as const,
                                                 id: account.address,
                                                 title: 'Account',
-                                                subtitle: formatAccountBalanceSubtitle(account.amount),
+                                                subtitle: `Balance: ${(account.amount / 1000000).toLocaleString()} PROOF`,
                                                 data: account
                                             }
 
@@ -168,7 +161,7 @@ export const useSearch = (searchTerm: string) => {
                                                 type: 'address' as const,
                                                 id: account.address,
                                                 title: 'Account',
-                                                subtitle: formatAccountBalanceSubtitle(account.amount),
+                                                subtitle: `Balance: ${(account.amount / 1000000).toLocaleString()} PROOF`,
                                                 data: account
                                             }
 
@@ -211,7 +204,7 @@ export const useSearch = (searchTerm: string) => {
                                                 type: 'address' as const,
                                                 id: accountId,
                                                 title: 'Account',
-                                                subtitle: formatAccountBalanceSubtitle(result.account.amount),
+                                                subtitle: `Balance: ${(result.account.amount / 1000000).toLocaleString()} PROOF`,
                                                 data: result.account
                                             })
                                         }
@@ -282,7 +275,7 @@ export const useSearch = (searchTerm: string) => {
                                                 type: 'address' as const,
                                                 id: accountId,
                                                 title: 'Account',
-                                                subtitle: formatAccountBalanceSubtitle(result.account.amount),
+                                                subtitle: `Balance: ${(result.account.amount / 1000000).toLocaleString()} PROOF`,
                                                 data: result.account
                                             })
                                         }
@@ -323,7 +316,7 @@ export const useSearch = (searchTerm: string) => {
                                             type: 'address' as const,
                                             id: accountId,
                                             title: 'Account',
-                                            subtitle: formatAccountBalanceSubtitle(account.amount),
+                                            subtitle: `Balance: ${(account.amount / 1000000).toLocaleString()} PROOF`,
                                             data: account
                                         })
                                     }
@@ -354,36 +347,6 @@ export const useSearch = (searchTerm: string) => {
                 )
             }
 
-            // 4. Search orders by ID across all paginated order-book results
-            searchPromises.push(
-                AllOrders()
-                    .then((ordersList: Record<string, unknown>[]) => {
-                        const termLower = term.toLowerCase()
-                        const matchingOrders = ordersList.filter((order: Record<string, unknown>) => {
-                            const id = String(order.id || order.Id || '')
-                            return id.toLowerCase().includes(termLower)
-                        })
-
-                        matchingOrders.forEach((order: Record<string, unknown>) => {
-                            const id = String(order.id || order.Id || '')
-                            const committee = order.committee ?? order.Chain ?? ''
-                            const buyerSendAddress = order.buyerSendAddress || order.BuyerSendAddress || ''
-                            const status = buyerSendAddress ? 'Locked' : 'Active'
-
-                            if (!searchResults.orders.some(o => o.id === id)) {
-                                searchResults.orders.push({
-                                    type: 'order' as const,
-                                    id,
-                                    title: `Order ${id.length > 16 ? id.slice(0, 8) + '...' + id.slice(-8) : id}`,
-                                    subtitle: `Committee ${committee} · ${status}`,
-                                    data: order
-                                })
-                            }
-                        })
-                    })
-                    .catch(err => console.log('Order search error:', err))
-            )
-
             // Wait for all promises to complete
             await Promise.all(searchPromises)
 
@@ -391,8 +354,7 @@ export const useSearch = (searchTerm: string) => {
             const total = searchResults.blocks.length +
                 searchResults.transactions.length +
                 searchResults.addresses.length +
-                searchResults.validators.length +
-                searchResults.orders.length
+                searchResults.validators.length
 
             setResults({
                 ...searchResults,

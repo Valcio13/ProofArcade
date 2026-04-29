@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Poll } from '@/hooks/useGovernance';
-import { WALLET_BADGE_CLASS, WALLET_BADGE_TONE } from '@/components/ui/badgeStyles';
 
 interface PollCardProps {
     poll: Poll;
@@ -10,12 +9,17 @@ interface PollCardProps {
 }
 
 export const PollCard: React.FC<PollCardProps> = ({ poll, onVote, onViewDetails }) => {
-    const normalizedHash = poll.proposalHash || poll.hash;
-    const isIdentifierTitle = poll.title.trim().toLowerCase() === normalizedHash.toLowerCase() ||
-        poll.title.trim().toLowerCase() === poll.hash.toLowerCase();
-
     const getStatusColor = (status: Poll['status']) => {
-        return WALLET_BADGE_TONE;
+        switch (status) {
+            case 'active':
+                return 'bg-primary/20 text-primary border-primary/40';
+            case 'passed':
+                return 'bg-green-500/20 text-green-400 border-green-500/40';
+            case 'rejected':
+                return 'bg-red-500/20 text-red-400 border-red-500/40';
+            default:
+                return 'bg-muted/20 text-muted-foreground border-border/40';
+        }
     };
 
     const getStatusLabel = (status: Poll['status']) => {
@@ -42,7 +46,7 @@ export const PollCard: React.FC<PollCardProps> = ({ poll, onVote, onViewDetails 
 
     return (
         <motion.div
-            className="bg-card rounded-xl p-6 border border-border hover:border-white/20 transition-all duration-300 h-full flex flex-col"
+            className="bg-card rounded-xl p-6 border border-border hover:border-primary/40 transition-all duration-300 h-full flex flex-col"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ y: -4 }}
@@ -50,20 +54,18 @@ export const PollCard: React.FC<PollCardProps> = ({ poll, onVote, onViewDetails 
             {/* Header with status and time */}
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <span className={`${WALLET_BADGE_CLASS} ${getStatusColor(poll.status)}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(poll.status)}`}>
                         {getStatusLabel(poll.status)}
                     </span>
                     {poll.status === 'active' && (
-                        <span className={WALLET_BADGE_CLASS}>
+                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 border border-orange-500/40">
                             {formatEndTime(poll.endTime)}
                         </span>
                     )}
                 </div>
-                {!isIdentifierTitle && (
-                    <span className="text-xs text-muted-foreground">
-                        #{poll.hash.slice(0, 8)}...
-                    </span>
-                )}
+                <span className="text-xs text-muted-foreground font-mono">
+                    #{poll.hash.slice(0, 8)}...
+                </span>
             </div>
 
             {/* Title and Description */}
@@ -75,7 +77,7 @@ export const PollCard: React.FC<PollCardProps> = ({ poll, onVote, onViewDetails 
                     {poll.description}
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
-                    Vote actions target the selected poll hash directly.
+                    Vote actions auto-fill proposal, endBlock, and URL fields.
                 </p>
             </div>
 
@@ -89,11 +91,11 @@ export const PollCard: React.FC<PollCardProps> = ({ poll, onVote, onViewDetails 
                 {/* Combined Progress Bar */}
                 <div className="h-3 bg-accent rounded-full overflow-hidden mb-4 flex">
                     <div
-                        className="bg-primary transition-all duration-500"
+                        className="bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
                         style={{ width: `${poll.yesPercent}%` }}
                     />
                     <div
-                        className="bg-red-500 transition-all duration-500"
+                        className="bg-gradient-to-r from-red-400 to-red-500 transition-all duration-500"
                         style={{ width: `${poll.noPercent}%` }}
                     />
                 </div>
@@ -176,3 +178,4 @@ export const PollCard: React.FC<PollCardProps> = ({ poll, onVote, onViewDetails 
         </motion.div>
     );
 };
+

@@ -5,9 +5,9 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_SCRIPT="$SCRIPT_DIR/dist/main.js"
 NODE_CMD="node"
-PID_FILE="/tmp/plugin/typescript-plugin.pid"
-LOG_FILE="/tmp/plugin/typescript-plugin.log"
-PLUGIN_DIR="/tmp/plugin"
+PLUGIN_DIR="${CANOPY_PLUGIN_DATA_DIR:-/tmp/plugin}"
+PID_FILE="$PLUGIN_DIR/typescript-plugin.pid"
+LOG_FILE="$PLUGIN_DIR/typescript-plugin.log"
 TARBALL="$SCRIPT_DIR/typescript-plugin.tar.gz"
 # Timeout in seconds for graceful shutdown
 STOP_TIMEOUT=10

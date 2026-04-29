@@ -107,6 +107,10 @@ func NewRCManager(controller *controller.Controller, config lib.Config, logger l
 func (r *RCManager) Start() {
 	// for each rc in the config
 	for _, rc := range r.c.RootChain {
+		if rc.ChainId == r.c.ChainId {
+			r.log.Infof("Skipping remote root-chain subscription for self root chain %d", rc.ChainId)
+			continue
+		}
 		// dial each root chain
 		r.NewSubscription(rc)
 	}
@@ -168,6 +172,27 @@ func (r *RCManager) GetHeight(rootChainId uint64) uint64 {
 // GetRootChainInfo() retrieves the root chain info from the root chain 'on-demand'
 func (r *RCManager) GetRootChainInfo(rootChainId, chainId uint64) (info *lib.RootChainInfo, err lib.ErrorI) {
 	defer lib.TimeTrack(r.log, time.Now(), 500*time.Millisecond)
+	if rootChainId == r.c.ChainId {
+		height := r.controller.FSM.Height()
+		lastHeight := uint64(1)
+		if height > 1 {
+			lastHeight = height - 1
+		}
+		validatorSet, err := r.controller.FSM.LoadCommittee(chainId, height)
+		if err != nil {
+			return nil, err
+		}
+		lastValidatorSet, err := r.controller.FSM.LoadCommittee(chainId, lastHeight)
+		if err != nil {
+			return nil, err
+		}
+		return &lib.RootChainInfo{
+			RootChainId:      rootChainId,
+			Height:           height,
+			ValidatorSet:     validatorSet.ValidatorSet,
+			LastValidatorSet: lastValidatorSet.ValidatorSet,
+		}, nil
+	}
 	// lock for thread safety
 	r.l.Lock()
 	defer r.l.Unlock()
@@ -191,6 +216,12 @@ func (r *RCManager) GetRootChainInfo(rootChainId, chainId uint64) (info *lib.Roo
 // GetValidatorSet() returns the validator set from the root-chain
 func (r *RCManager) GetValidatorSet(rootChainId, id, rootHeight uint64) (lib.ValidatorSet, lib.ErrorI) {
 	defer lib.TimeTrack(r.log, time.Now(), 500*time.Millisecond)
+	if rootChainId == r.c.ChainId {
+		if rootHeight == 0 {
+			rootHeight = r.controller.FSM.Height()
+		}
+		return r.controller.FSM.LoadCommittee(id, rootHeight)
+	}
 	// if the root chain id is the same as the info
 	sub, found := r.subscriptions[rootChainId]
 	if !found {
@@ -216,6 +247,17 @@ func (r *RCManager) GetValidatorSet(rootChainId, id, rootHeight uint64) (lib.Val
 // GetOrders() returns the order book from the root-chain
 func (r *RCManager) GetOrders(rootChainId, rootHeight, id uint64) (*lib.OrderBook, lib.ErrorI) {
 	defer lib.TimeTrack(r.log, time.Now(), 500*time.Millisecond)
+	if rootChainId == r.c.ChainId {
+		if rootHeight == 0 {
+			rootHeight = r.controller.FSM.Height()
+		}
+		sm, err := r.controller.FSM.TimeMachine(rootHeight)
+		if err != nil {
+			return nil, err
+		}
+		defer sm.Discard()
+		return sm.GetOrderBook(id)
+	}
 	// if the root chain id is the same as the info
 	sub, found := r.subscriptions[rootChainId]
 	if !found {
@@ -260,6 +302,17 @@ func (r *RCManager) GetOrder(rootChainId, height uint64, orderId string, chainId
 // IsValidDoubleSigner() returns if an address is a valid double signer for a specific 'double sign height'
 func (r *RCManager) IsValidDoubleSigner(rootChainId, height uint64, address string) (*bool, lib.ErrorI) {
 	defer lib.TimeTrack(r.log, time.Now(), 500*time.Millisecond)
+	if rootChainId == r.c.ChainId {
+		addr, convErr := lib.StringToBytes(address)
+		if convErr != nil {
+			return nil, convErr
+		}
+		ok, err := r.controller.FSM.Store().(lib.StoreI).IsValidDoubleSigner(addr, height)
+		if err != nil {
+			return nil, err
+		}
+		return &ok, nil
+	}
 	// if the root chain id is the same as the info
 	sub, found := r.subscriptions[rootChainId]
 	if !found {
@@ -273,6 +326,13 @@ func (r *RCManager) IsValidDoubleSigner(rootChainId, height uint64, address stri
 // GetMinimumEvidenceHeight() returns the minimum height double sign evidence must have to be 'valid'
 func (r *RCManager) GetMinimumEvidenceHeight(rootChainId, height uint64) (*uint64, lib.ErrorI) {
 	defer lib.TimeTrack(r.log, time.Now(), 500*time.Millisecond)
+	if rootChainId == r.c.ChainId {
+		h, err := r.controller.FSM.LoadMinimumEvidenceHeight()
+		if err != nil {
+			return nil, err
+		}
+		return &h, nil
+	}
 	// if the root chain id is the same as the info
 	sub, found := r.subscriptions[rootChainId]
 	if !found {
@@ -287,6 +347,9 @@ func (r *RCManager) GetMinimumEvidenceHeight(rootChainId, height uint64) (*uint6
 // TODO should be able to get these from the file or the root-chain upon independence
 func (r *RCManager) GetCheckpoint(rootChainId, height, chainId uint64) (blockHash lib.HexBytes, err lib.ErrorI) {
 	defer lib.TimeTrack(r.log, time.Now(), 500*time.Millisecond)
+	if rootChainId == r.c.ChainId {
+		return r.controller.FSM.Store().(lib.StoreI).GetCheckpoint(chainId, height)
+	}
 	// if the root chain id is the same as the info
 	sub, found := r.subscriptions[rootChainId]
 	if !found {
@@ -300,6 +363,17 @@ func (r *RCManager) GetCheckpoint(rootChainId, height, chainId uint64) (blockHas
 // GetLotteryWinner() returns the winner of the delegate lottery from the root-chain
 func (r *RCManager) GetLotteryWinner(rootChainId, height, id uint64) (*lib.LotteryWinner, lib.ErrorI) {
 	defer lib.TimeTrack(r.log, time.Now(), 500*time.Millisecond)
+	if rootChainId == r.c.ChainId {
+		if height == 0 {
+			height = r.controller.FSM.Height()
+		}
+		sm, err := r.controller.FSM.TimeMachine(height)
+		if err != nil {
+			return nil, err
+		}
+		defer sm.Discard()
+		return sm.LotteryWinner(id)
+	}
 	// if the root chain id is the same as the info
 	sub, found := r.subscriptions[rootChainId]
 	if !found {
@@ -379,13 +453,8 @@ func (r *RCSubscription) dialWithBackoff(chainId uint64, config lib.RootChain) {
 		// fallback if url didn't have a scheme and was treated as a path
 		host = parsedUrl.Path
 	}
-	// determine websocket scheme based on original URL scheme
-	wsScheme := "ws"
-	if parsedUrl.Scheme == "https" || parsedUrl.Scheme == "wss" {
-		wsScheme = "wss"
-	}
 	// create a URL to connect to the root chain with
-	u := url.URL{Scheme: wsScheme, Host: host, Path: SubscribeRCInfoPath, RawQuery: fmt.Sprintf("%s=%d", chainIdParamName, chainId)}
+	u := url.URL{Scheme: "ws", Host: host, Path: SubscribeRCInfoPath, RawQuery: fmt.Sprintf("%s=%d", chainIdParamName, chainId)}
 	// create a new retry for backoff
 	retry := lib.NewRetry(uint64(time.Second.Milliseconds()), 25)
 	// until backoff fails or connection succeeds
@@ -469,6 +538,9 @@ func (r *RCManager) RemoveSubscription(chainId uint64) {
 	for _, rc := range r.c.RootChain {
 		// if found
 		if rc.ChainId == chainId {
+			if rc.ChainId == r.c.ChainId {
+				return
+			}
 			// re-dial
 			r.NewSubscription(rc)
 			// exit

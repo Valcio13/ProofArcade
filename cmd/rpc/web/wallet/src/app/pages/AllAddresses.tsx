@@ -1,36 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronUp, ChevronsUpDown, Copy, Search } from "lucide-react";
+import { Search, Wallet, Copy } from "lucide-react";
 import { useAccountData } from "@/hooks/useAccountData";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { useAccounts } from "@/app/providers/AccountsProvider";
-import { getCanopySymbol } from "@/lib/utils/canopySymbols";
-import { useDenom } from "@/hooks/useDenom";
-import { PageHeader } from "@/components/layouts/PageHeader";
-import { WALLET_BADGE_CLASS, WALLET_BADGE_TONE } from "@/components/ui/badgeStyles";
-
-const desktopRowCellClass =
-  "px-2 sm:px-3 lg:px-4 py-2 text-xs sm:text-sm text-white whitespace-nowrap align-middle transition-colors group-hover:bg-[#272729] bg-[#1a1a1a]";
-
-const LatestUpdated = ({ className = "" }: { className?: string }) => (
-  <div className={`flex items-center gap-2 lg:gap-4 ${className}`}>
-    <div className="relative inline-flex items-center gap-1.5 rounded-full border border-[rgba(53,205,72,0.30)] bg-[rgba(53,205,72,0.12)] px-4 py-1">
-      <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#35cd48] shadow-[0_0_4px_rgba(53,205,72,0.8)]" />
-      <span className="text-sm font-medium text-[#35cd48]">Live</span>
-    </div>
-  </div>
-);
 
 export const AllAddresses = () => {
   const { accounts, loading: accountsLoading } = useAccounts();
   const { balances, stakingData } = useAccountData();
   const { copyToClipboard } = useCopyToClipboard();
-  const { symbol, factor } = useDenom();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [sortColumn, setSortColumn] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const formatAddress = (address: string) => {
     return (
@@ -39,7 +20,7 @@ export const AllAddresses = () => {
   };
 
   const formatBalance = (amount: number) => {
-    return (amount / factor).toLocaleString("en-US", {
+    return (amount / 1000000).toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -54,7 +35,16 @@ export const AllAddresses = () => {
   };
 
   const getStatusColor = (status: string) => {
-    return WALLET_BADGE_TONE;
+    switch (status) {
+      case "Staked":
+        return "bg-primary/20 text-primary border border-primary/40";
+      case "Unstaking":
+        return "bg-orange-500/20 text-orange-400 border border-orange-500/40";
+      case "Liquid":
+        return "bg-muted/20 text-muted-foreground border border-border/40";
+      default:
+        return "bg-muted/20 text-muted-foreground border border-border/40";
+    }
   };
 
   const processedAddresses = useMemo(() => {
@@ -94,62 +84,6 @@ export const AllAddresses = () => {
     });
   }, [processedAddresses, searchTerm, filterStatus]);
 
-  const handleSort = (column: string) => {
-    setSortColumn((currentColumn) => {
-      if (currentColumn === column) {
-        setSortDirection((currentDirection) => currentDirection === "desc" ? "asc" : "desc");
-        return currentColumn;
-      }
-      setSortDirection("desc");
-      return column;
-    });
-  };
-
-  const sortedAddresses = useMemo(() => {
-    if (!sortColumn) return filteredAddresses;
-
-    const sorted = [...filteredAddresses];
-    sorted.sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortColumn) {
-        case "Address":
-          comparison = a.address.localeCompare(b.address, undefined, { numeric: true, sensitivity: "base" });
-          break;
-        case "Nickname":
-          comparison = a.nickname.localeCompare(b.nickname, undefined, { numeric: true, sensitivity: "base" });
-          break;
-        case "Liquid Balance":
-          comparison = a.balance - b.balance;
-          break;
-        case "Staked":
-          comparison = a.staked - b.staked;
-          break;
-        case "Total":
-          comparison = a.total - b.total;
-          break;
-        case "Status":
-          comparison = a.status.localeCompare(b.status, undefined, { numeric: true, sensitivity: "base" });
-          break;
-        default:
-          comparison = 0;
-      }
-
-      return sortDirection === "asc" ? comparison : -comparison;
-    });
-
-    return sorted;
-  }, [filteredAddresses, sortColumn, sortDirection]);
-
-  const columns = useMemo(() => ([
-    { label: "Address", sortable: true },
-    { label: "Nickname", sortable: true },
-    { label: "Liquid Balance", sortable: true },
-    { label: "Staked", sortable: true },
-    { label: "Total", sortable: true },
-    { label: "Status", sortable: true },
-  ]), []);
-
   // Calculate totals
   const totalBalance = useMemo(() => {
     return filteredAddresses.reduce((sum, addr) => sum + addr.balance, 0);
@@ -177,10 +111,12 @@ export const AllAddresses = () => {
       <div className="px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <PageHeader
-            title="All Addresses"
-            subtitle="Manage all your wallet addresses and their balances"
-          />
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            All Addresses
+          </h1>
+          <p className="text-muted-foreground">
+            Manage all your wallet addresses and their balances
+          </p>
         </div>
 
         {/* Filters */}
@@ -224,13 +160,13 @@ export const AllAddresses = () => {
           <div className="bg-card rounded-xl p-4 border border-border">
             <div className="text-sm text-muted-foreground mb-1">Total Balance</div>
             <div className="text-2xl font-bold text-foreground">
-              {formatBalance(totalBalance)} {symbol}
+              {formatBalance(totalBalance)} CNPY
             </div>
           </div>
           <div className="bg-card rounded-xl p-4 border border-border">
             <div className="text-sm text-muted-foreground mb-1">Total Staked</div>
             <div className="text-2xl font-bold text-primary">
-              {formatBalance(totalStaked)} {symbol}
+              {formatBalance(totalStaked)} CNPY
             </div>
           </div>
           <div className="bg-card rounded-xl p-4 border border-border">
@@ -243,67 +179,47 @@ export const AllAddresses = () => {
 
         {/* Addresses Table */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="flex flex-col items-start justify-between gap-3 px-6 py-4 leading-none sm:flex-row sm:items-center sm:gap-4">
-            <h2 className="wallet-card-title tracking-tight">
-              Addresses
-            </h2>
-            <LatestUpdated className="self-end sm:self-auto" />
-          </div>
           <div className="overflow-x-auto">
-            <table
-              className="w-full"
-              style={{ tableLayout: "auto", borderCollapse: "separate", borderSpacing: "0 4px" }}
-            >
-              <thead>
+            <table className="w-full">
+              <thead className="bg-accent/30">
                 <tr>
-                  {columns.map(({ label, sortable }) => {
-                    const isActive = sortColumn === label;
-
-                    return (
-                      <th
-                        key={label}
-                        className={`px-2 py-1.5 text-left text-[11px] font-medium tracking-wider text-white/60 whitespace-nowrap sm:px-3 lg:px-4 ${sortable ? "cursor-pointer select-none hover:text-white/80" : ""}`}
-                        onClick={() => sortable ? handleSort(label) : undefined}
-                      >
-                        <div className="flex items-center gap-1">
-                          {label}
-                          {sortable && (
-                            <span className="inline-flex">
-                              {isActive ? (
-                                sortDirection === "asc" ? (
-                                  <ChevronUp className="h-3 w-3" />
-                                ) : (
-                                  <ChevronDown className="h-3 w-3" />
-                                )
-                              ) : (
-                                <ChevronsUpDown className="h-3 w-3 opacity-40" />
-                              )}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                    );
-                  })}
+                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                    Address
+                  </th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                    Nickname
+                  </th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                    Liquid Balance
+                  </th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                    Staked
+                  </th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                    Total
+                  </th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {sortedAddresses.length > 0 ? (
-                  sortedAddresses.map((addr, i) => (
+                {filteredAddresses.length > 0 ? (
+                  filteredAddresses.map((addr, i) => (
                     <motion.tr
                       key={addr.id}
-                      className="group"
+                      className="border-b border-border/30 hover:bg-accent/20 transition-colors"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: i * 0.05 }}
                     >
-                      <td
-                        className={desktopRowCellClass}
-                        style={{ borderTopLeftRadius: "10px", borderBottomLeftRadius: "10px" }}
-                      >
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={getCanopySymbol(i)} alt="" className="w-10 h-10 rounded-full object-contain flex-shrink-0" />
+                          <div className="w-10 h-10 bg-gradient-to-r from-primary/80 to-primary/40 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Wallet className="text-foreground w-4 h-4" />
+                          </div>
                           <div>
-                            <div className="text-sm text-foreground">
+                            <div className="text-sm text-foreground font-mono">
                               {formatAddress(addr.address)}
                             </div>
                             <button
@@ -313,7 +229,7 @@ export const AllAddresses = () => {
                                   `Address ${addr.nickname}`,
                                 )
                               }
-                              className="flex items-center text-xs text-white/60 transition-colors hover:text-[#35cd48]"
+                              className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center"
                             >
                               <Copy className="w-3 h-3 mr-1" />
                               Copy
@@ -321,32 +237,29 @@ export const AllAddresses = () => {
                           </div>
                         </div>
                       </td>
-                      <td className={desktopRowCellClass}>
+                      <td className="px-6 py-4">
                         <div className="text-sm text-foreground">
                           {addr.nickname}
                         </div>
                       </td>
-                      <td className={desktopRowCellClass}>
+                      <td className="px-6 py-4">
                         <div className="text-sm text-foreground">
-                          {formatBalance(addr.balance)} {symbol}
+                          {formatBalance(addr.balance)} CNPY
                         </div>
                       </td>
-                      <td className={desktopRowCellClass}>
+                      <td className="px-6 py-4">
                         <div className="text-sm text-primary">
-                          {formatBalance(addr.staked)} {symbol}
+                          {formatBalance(addr.staked)} CNPY
                         </div>
                       </td>
-                      <td className={desktopRowCellClass}>
+                      <td className="px-6 py-4">
                         <div className="text-sm font-medium text-foreground">
-                          {formatBalance(addr.total)} {symbol}
+                          {formatBalance(addr.total)} CNPY
                         </div>
                       </td>
-                      <td
-                        className={desktopRowCellClass}
-                        style={{ borderTopRightRadius: "10px", borderBottomRightRadius: "10px" }}
-                      >
+                      <td className="px-6 py-4">
                         <span
-                          className={`${WALLET_BADGE_CLASS} leading-none ${getStatusColor(addr.status)}`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(addr.status)}`}
                         >
                           {addr.status}
                         </span>
@@ -373,3 +286,4 @@ export const AllAddresses = () => {
 };
 
 export default AllAddresses;
+

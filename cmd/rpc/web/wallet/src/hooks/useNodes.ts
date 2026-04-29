@@ -76,43 +76,39 @@ export const useAvailableNodes = () => {
           dsFetch("admin.peerInfo"),
         ]);
 
-        const netAddress: string = peerData?.id?.netAddress || "";
-        const rpcBase: string = config.chain?.rpc?.admin || config.chain?.rpc?.base || "";
+        const netAddress: string = peerData?.id?.netAddress || "tcp://localhost";
 
-        let nodeName = netAddress
-          ? netAddress.replace("tcp://", "")
-          : new URL(rpcBase).hostname;
+        let nodeName = netAddress.replace("tcp://", "");
 
-        if (nodeName.includes("-")) {
+        if (nodeName !== "localhost" && nodeName.includes("-")) {
           nodeName = nodeName
             .replace(/-/g, " ")
             .replace(/\b\w/g, (l: string) => l.toUpperCase());
         }
 
-        if (!nodeName) {
+        if (!nodeName || nodeName === "current-node") {
           nodeName = "Current Node";
         }
 
         return [
           {
-            id: consensusData?.address || "current_node",
+            id: "current_node",
             name: nodeName,
             address: consensusData?.address || "",
             isActive: true,
-            netAddress: netAddress || rpcBase,
+            netAddress: netAddress,
           },
         ];
       } catch (error) {
         console.log("Current node not available:", error);
-        const rpcBase: string = config.chain?.rpc?.admin || config.chain?.rpc?.base || "";
 
         return [
           {
             id: "current_node",
-            name: "Current Node",
+            name: "localhost",
             address: "",
             isActive: false,
-            netAddress: rpcBase || "unavailable",
+            netAddress: "tcp://localhost",
           },
         ];
       }

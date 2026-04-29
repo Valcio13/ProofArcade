@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Blocks",
-    "description": "Explore the most recent blocks on the Canopy network.",
+    "description": "Explore the most recent blocks on the ProofArcade network.",
     "currentBlock": "Current Block:",
     "totalBlocks": "Total:",
     "blocksUnit": "blocks"
@@ -38,7 +38,7 @@
       "blockTime": "Block Time"
     },
     "units": {
-      "cnpy": "CNPY",
+      "cnpy": "PROOF",
       "seconds": "s",
       "secsAgo": "secs ago",
       "minAgo": "min ago",

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -22,6 +23,15 @@ import (
 	"github.com/shirou/gopsutil/net"
 	"github.com/shirou/gopsutil/process"
 )
+
+const defaultDevFaucetAmount uint64 = 500
+
+type devFaucetResponse struct {
+	TxHash    string `json:"txHash"`
+	Amount    uint64 `json:"amount"`
+	Recipient string `json:"recipient"`
+	Submitted bool   `json:"submitted"`
+}
 
 // Keystore responds with the local keystore
 func (s *Server) Keystore(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -135,6 +145,70 @@ func (s *Server) TransactionSend(w http.ResponseWriter, r *http.Request, _ httpr
 		// Create and return the transaction to be sent
 		return fsm.NewSendTransaction(p, toAddress, ptr.Amount, s.config.NetworkID, s.config.ChainId, ptr.Fee, s.controller.ChainHeight(), ptr.Memo)
 	})
+}
+
+// DevFaucet sends a small amount from the local validator account to a target address for local testing.
+func (s *Server) DevFaucet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ptr := new(faucetRequest)
+	if ok := unmarshal(w, r, ptr); !ok {
+		return
+	}
+	if len(ptr.Address) == 0 {
+		write(w, fmt.Errorf("address is required"), http.StatusBadRequest)
+		return
+	}
+	if ptr.Amount == 0 {
+		ptr.Amount = defaultDevFaucetAmount
+	}
+
+	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+
+	txReq := &txRequest{Fee: 0}
+	if err = s.getFeeFromState(txReq, fsm.MessageSendName); err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+
+	tx, err := fsm.NewSendTransaction(
+		privateKey,
+		crypto.NewAddress(ptr.Address),
+		ptr.Amount,
+		s.config.NetworkID,
+		s.config.ChainId,
+		txReq.Fee,
+		s.controller.ChainHeight(),
+		"dev faucet",
+	)
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+
+	txHash, err := tx.GetHash()
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	txBytes, err := lib.Marshal(tx)
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	if err = s.controller.SendTxMsgs([][]byte{txBytes}); err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+
+	write(w, devFaucetResponse{
+		TxHash:    hex.EncodeToString(txHash),
+		Amount:    ptr.Amount,
+		Recipient: crypto.NewAddress(ptr.Address).String(),
+		Submitted: true,
+	}, http.StatusOK)
 }
 
 // TransactionStake stakes a validator

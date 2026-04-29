@@ -453,7 +453,8 @@ func (s *StateMachine) getValidatorSet(chainId uint64, delegate bool) (vs lib.Va
 		// convert the bytes into a validator object reference
 		val, e := s.unmarshalValidator(it.Value())
 		if e != nil {
-			return vs, e
+			s.log.Warnf("Skipping invalid validator record %x: %s", it.Key(), e.Error())
+			continue
 		}
 		// add it to the list
 		validators = append(validators, val)

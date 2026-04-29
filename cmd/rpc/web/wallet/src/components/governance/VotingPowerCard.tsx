@@ -2,13 +2,19 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useVotingPower } from '@/hooks/useGovernance';
-import { useDenom } from '@/hooks/useDenom';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 
 export const VotingPowerCard = () => {
     const { selectedAccount } = useAccounts();
     const { data: votingPowerData, isLoading } = useVotingPower(selectedAccount?.address || '');
-    const { symbol, factor } = useDenom();
+
+    const formatVotingPower = (amount: number) => {
+        if (!amount && amount !== 0) return '0.00';
+        return (amount / 1000000).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    };
 
     return (
         <motion.div
@@ -37,14 +43,14 @@ export const VotingPowerCard = () => {
                     <div className="flex items-center gap-3">
                         <div className="text-4xl font-bold font-sans text-foreground">
                             <AnimatedNumber
-                                value={votingPowerData?.votingPower ? votingPowerData.votingPower / factor : 0}
+                                value={votingPowerData?.votingPower ? votingPowerData.votingPower / 1000000 : 0}
                                 format={{
                                     notation: 'standard',
                                     maximumFractionDigits: 2
                                 }}
                             />
                         </div>
-                        <span className="text-xl text-muted-foreground">{symbol}</span>
+                        <span className="text-xl text-muted-foreground">CNPY</span>
                     </div>
                 )}
             </div>

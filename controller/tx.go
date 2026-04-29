@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -83,7 +82,12 @@ func (c *Controller) ListenForTx() {
 
 // GetProposalBlockFromMempool() returns the cached proposal block
 func (c *Controller) GetProposalBlockFromMempool() *CachedProposal {
-	return c.Mempool.cachedProposal.Load().(*CachedProposal)
+	cached := c.Mempool.cachedProposal.Load()
+	if cached == nil {
+		return nil
+	}
+	proposal, _ := cached.(*CachedProposal)
+	return proposal
 }
 
 // CheckMempool() periodically checks the mempool:
@@ -242,16 +246,13 @@ func (m *Mempool) CheckMempool() {
 		rcBuildHeight = m.FSM.Height()
 	} else {
 		// Use mempool FSM snapshot to avoid races with controller FSM resets.
-		var rootChainID uint64
-		var e lib.ErrorI
-		if rootChainID, e = m.FSM.GetRootChainId(); e != nil {
+		if rootChainID, e := m.FSM.GetRootChainId(); e != nil {
 			m.log.Error(e.Error())
 		} else {
 			rcBuildHeight = m.controller.RCManager.GetHeight(rootChainID)
 		}
 		// for nested chains fetch and cache the DEX root batch, liveness is handled on the certificate results
-		rootDexBatch, err := m.controller.RCManager.GetDexBatch(rootChainID,
-			rcBuildHeight, m.controller.Config.ChainId, false)
+		rootDexBatch, err := m.controller.getDexRootBatch(rcBuildHeight)
 		if err != nil {
 			m.log.Warnf("Check Mempool error: %s", err.Error())
 		}
@@ -334,31 +335,6 @@ func (c *Controller) GetPendingPage(p lib.PageParams) (page *lib.Page, err lib.E
 	err = page.LoadArray(c.Mempool.cachedResults, &txResults, callback)
 	// exit
 	return
-}
-
-// GetPendingTxByHash() returns an unconfirmed mempool transaction by hash.
-func (c *Controller) GetPendingTxByHash(hash string) (*lib.TxResult, bool) {
-	// lock the controller for thread safety
-	c.Lock()
-	// unlock the controller when the function completes
-	defer c.Unlock()
-	if c.Mempool == nil {
-		return nil, false
-	}
-	normalizedHash := normalizeTxHash(hash)
-	for _, tx := range c.Mempool.cachedResults {
-		if tx == nil {
-			continue
-		}
-		if normalizeTxHash(tx.TxHash) == normalizedHash {
-			return tx, true
-		}
-	}
-	return nil, false
-}
-
-func normalizeTxHash(hash string) string {
-	return strings.TrimPrefix(strings.ToLower(hash), "0x")
 }
 
 // GetFailedTxsPage() returns a list of failed mempool transactions

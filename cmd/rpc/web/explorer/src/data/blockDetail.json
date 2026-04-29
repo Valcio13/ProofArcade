@@ -31,7 +31,7 @@
     "units": {
       "bytes": "bytes",
       "transactions": "transactions",
-      "cnpy": "CNPY",
+      "cnpy": "PROOF",
       "utc": "UTC"
     }
   },

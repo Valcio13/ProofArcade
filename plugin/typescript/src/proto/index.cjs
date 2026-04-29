@@ -1189,6 +1189,7967 @@ $root.types = (function() {
         return EventCustom;
     })();
 
+    /**
+     * GameMode enum.
+     * @name types.GameMode
+     * @enum {number}
+     * @property {number} GAME_MODE_UNSPECIFIED=0 GAME_MODE_UNSPECIFIED value
+     * @property {number} GAME_MODE_DAILY=1 GAME_MODE_DAILY value
+     * @property {number} GAME_MODE_CLASSIC=2 GAME_MODE_CLASSIC value
+     */
+    types.GameMode = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "GAME_MODE_UNSPECIFIED"] = 0;
+        values[valuesById[1] = "GAME_MODE_DAILY"] = 1;
+        values[valuesById[2] = "GAME_MODE_CLASSIC"] = 2;
+        return values;
+    })();
+
+    /**
+     * SessionStatus enum.
+     * @name types.SessionStatus
+     * @enum {number}
+     * @property {number} SESSION_STATUS_UNSPECIFIED=0 SESSION_STATUS_UNSPECIFIED value
+     * @property {number} SESSION_STATUS_ACTIVE=1 SESSION_STATUS_ACTIVE value
+     * @property {number} SESSION_STATUS_COMPLETED=2 SESSION_STATUS_COMPLETED value
+     * @property {number} SESSION_STATUS_EXPIRED=3 SESSION_STATUS_EXPIRED value
+     */
+    types.SessionStatus = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "SESSION_STATUS_UNSPECIFIED"] = 0;
+        values[valuesById[1] = "SESSION_STATUS_ACTIVE"] = 1;
+        values[valuesById[2] = "SESSION_STATUS_COMPLETED"] = 2;
+        values[valuesById[3] = "SESSION_STATUS_EXPIRED"] = 3;
+        return values;
+    })();
+
+    /**
+     * StopReason enum.
+     * @name types.StopReason
+     * @enum {number}
+     * @property {number} STOP_REASON_UNSPECIFIED=0 STOP_REASON_UNSPECIFIED value
+     * @property {number} STOP_REASON_PLAYER_STOPPED=1 STOP_REASON_PLAYER_STOPPED value
+     * @property {number} STOP_REASON_NO_MOVES=2 STOP_REASON_NO_MOVES value
+     * @property {number} STOP_REASON_MAX_MOVES=3 STOP_REASON_MAX_MOVES value
+     */
+    types.StopReason = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "STOP_REASON_UNSPECIFIED"] = 0;
+        values[valuesById[1] = "STOP_REASON_PLAYER_STOPPED"] = 1;
+        values[valuesById[2] = "STOP_REASON_NO_MOVES"] = 2;
+        values[valuesById[3] = "STOP_REASON_MAX_MOVES"] = 3;
+        return values;
+    })();
+
+    /**
+     * MoveDirection enum.
+     * @name types.MoveDirection
+     * @enum {number}
+     * @property {number} MOVE_DIRECTION_UNSPECIFIED=0 MOVE_DIRECTION_UNSPECIFIED value
+     * @property {number} MOVE_DIRECTION_UP=1 MOVE_DIRECTION_UP value
+     * @property {number} MOVE_DIRECTION_RIGHT=2 MOVE_DIRECTION_RIGHT value
+     * @property {number} MOVE_DIRECTION_DOWN=3 MOVE_DIRECTION_DOWN value
+     * @property {number} MOVE_DIRECTION_LEFT=4 MOVE_DIRECTION_LEFT value
+     */
+    types.MoveDirection = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "MOVE_DIRECTION_UNSPECIFIED"] = 0;
+        values[valuesById[1] = "MOVE_DIRECTION_UP"] = 1;
+        values[valuesById[2] = "MOVE_DIRECTION_RIGHT"] = 2;
+        values[valuesById[3] = "MOVE_DIRECTION_DOWN"] = 3;
+        values[valuesById[4] = "MOVE_DIRECTION_LEFT"] = 4;
+        return values;
+    })();
+
+    types.MessageStartDailyGame = (function() {
+
+        /**
+         * Properties of a MessageStartDailyGame.
+         * @memberof types
+         * @interface IMessageStartDailyGame
+         * @property {Uint8Array|null} [playerAddress] MessageStartDailyGame playerAddress
+         * @property {string|null} [utcDate] MessageStartDailyGame utcDate
+         * @property {Uint8Array|null} [gameId] MessageStartDailyGame gameId
+         */
+
+        /**
+         * Constructs a new MessageStartDailyGame.
+         * @memberof types
+         * @classdesc Represents a MessageStartDailyGame.
+         * @implements IMessageStartDailyGame
+         * @constructor
+         * @param {types.IMessageStartDailyGame=} [properties] Properties to set
+         */
+        function MessageStartDailyGame(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageStartDailyGame playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.MessageStartDailyGame
+         * @instance
+         */
+        MessageStartDailyGame.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * MessageStartDailyGame utcDate.
+         * @member {string} utcDate
+         * @memberof types.MessageStartDailyGame
+         * @instance
+         */
+        MessageStartDailyGame.prototype.utcDate = "";
+
+        /**
+         * MessageStartDailyGame gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.MessageStartDailyGame
+         * @instance
+         */
+        MessageStartDailyGame.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessageStartDailyGame instance using the specified properties.
+         * @function create
+         * @memberof types.MessageStartDailyGame
+         * @static
+         * @param {types.IMessageStartDailyGame=} [properties] Properties to set
+         * @returns {types.MessageStartDailyGame} MessageStartDailyGame instance
+         */
+        MessageStartDailyGame.create = function create(properties) {
+            return new MessageStartDailyGame(properties);
+        };
+
+        /**
+         * Encodes the specified MessageStartDailyGame message. Does not implicitly {@link types.MessageStartDailyGame.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageStartDailyGame
+         * @static
+         * @param {types.IMessageStartDailyGame} message MessageStartDailyGame message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageStartDailyGame.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.utcDate);
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.gameId);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageStartDailyGame message, length delimited. Does not implicitly {@link types.MessageStartDailyGame.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageStartDailyGame
+         * @static
+         * @param {types.IMessageStartDailyGame} message MessageStartDailyGame message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageStartDailyGame.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageStartDailyGame message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageStartDailyGame
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageStartDailyGame} MessageStartDailyGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageStartDailyGame.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageStartDailyGame();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageStartDailyGame message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageStartDailyGame
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageStartDailyGame} MessageStartDailyGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageStartDailyGame.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageStartDailyGame message.
+         * @function verify
+         * @memberof types.MessageStartDailyGame
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageStartDailyGame.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessageStartDailyGame message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageStartDailyGame
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageStartDailyGame} MessageStartDailyGame
+         */
+        MessageStartDailyGame.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageStartDailyGame)
+                return object;
+            var message = new $root.types.MessageStartDailyGame();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageStartDailyGame message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageStartDailyGame
+         * @static
+         * @param {types.MessageStartDailyGame} message MessageStartDailyGame
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageStartDailyGame.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                object.utcDate = "";
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            return object;
+        };
+
+        /**
+         * Converts this MessageStartDailyGame to JSON.
+         * @function toJSON
+         * @memberof types.MessageStartDailyGame
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageStartDailyGame.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageStartDailyGame
+         * @function getTypeUrl
+         * @memberof types.MessageStartDailyGame
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageStartDailyGame.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageStartDailyGame";
+        };
+
+        return MessageStartDailyGame;
+    })();
+
+    types.MessageStartClassicGame = (function() {
+
+        /**
+         * Properties of a MessageStartClassicGame.
+         * @memberof types
+         * @interface IMessageStartClassicGame
+         * @property {Uint8Array|null} [playerAddress] MessageStartClassicGame playerAddress
+         * @property {Uint8Array|null} [gameId] MessageStartClassicGame gameId
+         */
+
+        /**
+         * Constructs a new MessageStartClassicGame.
+         * @memberof types
+         * @classdesc Represents a MessageStartClassicGame.
+         * @implements IMessageStartClassicGame
+         * @constructor
+         * @param {types.IMessageStartClassicGame=} [properties] Properties to set
+         */
+        function MessageStartClassicGame(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageStartClassicGame playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.MessageStartClassicGame
+         * @instance
+         */
+        MessageStartClassicGame.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * MessageStartClassicGame gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.MessageStartClassicGame
+         * @instance
+         */
+        MessageStartClassicGame.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessageStartClassicGame instance using the specified properties.
+         * @function create
+         * @memberof types.MessageStartClassicGame
+         * @static
+         * @param {types.IMessageStartClassicGame=} [properties] Properties to set
+         * @returns {types.MessageStartClassicGame} MessageStartClassicGame instance
+         */
+        MessageStartClassicGame.create = function create(properties) {
+            return new MessageStartClassicGame(properties);
+        };
+
+        /**
+         * Encodes the specified MessageStartClassicGame message. Does not implicitly {@link types.MessageStartClassicGame.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageStartClassicGame
+         * @static
+         * @param {types.IMessageStartClassicGame} message MessageStartClassicGame message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageStartClassicGame.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.gameId);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageStartClassicGame message, length delimited. Does not implicitly {@link types.MessageStartClassicGame.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageStartClassicGame
+         * @static
+         * @param {types.IMessageStartClassicGame} message MessageStartClassicGame message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageStartClassicGame.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageStartClassicGame message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageStartClassicGame
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageStartClassicGame} MessageStartClassicGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageStartClassicGame.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageStartClassicGame();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageStartClassicGame message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageStartClassicGame
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageStartClassicGame} MessageStartClassicGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageStartClassicGame.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageStartClassicGame message.
+         * @function verify
+         * @memberof types.MessageStartClassicGame
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageStartClassicGame.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessageStartClassicGame message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageStartClassicGame
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageStartClassicGame} MessageStartClassicGame
+         */
+        MessageStartClassicGame.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageStartClassicGame)
+                return object;
+            var message = new $root.types.MessageStartClassicGame();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageStartClassicGame message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageStartClassicGame
+         * @static
+         * @param {types.MessageStartClassicGame} message MessageStartClassicGame
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageStartClassicGame.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            return object;
+        };
+
+        /**
+         * Converts this MessageStartClassicGame to JSON.
+         * @function toJSON
+         * @memberof types.MessageStartClassicGame
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageStartClassicGame.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageStartClassicGame
+         * @function getTypeUrl
+         * @memberof types.MessageStartClassicGame
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageStartClassicGame.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageStartClassicGame";
+        };
+
+        return MessageStartClassicGame;
+    })();
+
+    types.MessageSubmitGameResult = (function() {
+
+        /**
+         * Properties of a MessageSubmitGameResult.
+         * @memberof types
+         * @interface IMessageSubmitGameResult
+         * @property {Uint8Array|null} [playerAddress] MessageSubmitGameResult playerAddress
+         * @property {Uint8Array|null} [gameId] MessageSubmitGameResult gameId
+         * @property {Array.<types.MoveDirection>|null} [moves] MessageSubmitGameResult moves
+         * @property {number|Long|null} [declaredScore] MessageSubmitGameResult declaredScore
+         * @property {number|Long|null} [declaredMaxTile] MessageSubmitGameResult declaredMaxTile
+         * @property {types.StopReason|null} [stopReason] MessageSubmitGameResult stopReason
+         */
+
+        /**
+         * Constructs a new MessageSubmitGameResult.
+         * @memberof types
+         * @classdesc Represents a MessageSubmitGameResult.
+         * @implements IMessageSubmitGameResult
+         * @constructor
+         * @param {types.IMessageSubmitGameResult=} [properties] Properties to set
+         */
+        function MessageSubmitGameResult(properties) {
+            this.moves = [];
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageSubmitGameResult playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.MessageSubmitGameResult
+         * @instance
+         */
+        MessageSubmitGameResult.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * MessageSubmitGameResult gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.MessageSubmitGameResult
+         * @instance
+         */
+        MessageSubmitGameResult.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * MessageSubmitGameResult moves.
+         * @member {Array.<types.MoveDirection>} moves
+         * @memberof types.MessageSubmitGameResult
+         * @instance
+         */
+        MessageSubmitGameResult.prototype.moves = $util.emptyArray;
+
+        /**
+         * MessageSubmitGameResult declaredScore.
+         * @member {number|Long} declaredScore
+         * @memberof types.MessageSubmitGameResult
+         * @instance
+         */
+        MessageSubmitGameResult.prototype.declaredScore = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessageSubmitGameResult declaredMaxTile.
+         * @member {number|Long} declaredMaxTile
+         * @memberof types.MessageSubmitGameResult
+         * @instance
+         */
+        MessageSubmitGameResult.prototype.declaredMaxTile = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessageSubmitGameResult stopReason.
+         * @member {types.StopReason} stopReason
+         * @memberof types.MessageSubmitGameResult
+         * @instance
+         */
+        MessageSubmitGameResult.prototype.stopReason = 0;
+
+        /**
+         * Creates a new MessageSubmitGameResult instance using the specified properties.
+         * @function create
+         * @memberof types.MessageSubmitGameResult
+         * @static
+         * @param {types.IMessageSubmitGameResult=} [properties] Properties to set
+         * @returns {types.MessageSubmitGameResult} MessageSubmitGameResult instance
+         */
+        MessageSubmitGameResult.create = function create(properties) {
+            return new MessageSubmitGameResult(properties);
+        };
+
+        /**
+         * Encodes the specified MessageSubmitGameResult message. Does not implicitly {@link types.MessageSubmitGameResult.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageSubmitGameResult
+         * @static
+         * @param {types.IMessageSubmitGameResult} message MessageSubmitGameResult message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageSubmitGameResult.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.gameId);
+            if (message.moves != null && message.moves.length) {
+                writer.uint32(/* id 3, wireType 2 =*/26).fork();
+                for (var i = 0; i < message.moves.length; ++i)
+                    writer.int32(message.moves[i]);
+                writer.ldelim();
+            }
+            if (message.declaredScore != null && Object.hasOwnProperty.call(message, "declaredScore"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.declaredScore);
+            if (message.declaredMaxTile != null && Object.hasOwnProperty.call(message, "declaredMaxTile"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.declaredMaxTile);
+            if (message.stopReason != null && Object.hasOwnProperty.call(message, "stopReason"))
+                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.stopReason);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageSubmitGameResult message, length delimited. Does not implicitly {@link types.MessageSubmitGameResult.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageSubmitGameResult
+         * @static
+         * @param {types.IMessageSubmitGameResult} message MessageSubmitGameResult message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageSubmitGameResult.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageSubmitGameResult message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageSubmitGameResult
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageSubmitGameResult} MessageSubmitGameResult
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageSubmitGameResult.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageSubmitGameResult();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        if (!(message.moves && message.moves.length))
+                            message.moves = [];
+                        if ((tag & 7) === 2) {
+                            var end2 = reader.uint32() + reader.pos;
+                            while (reader.pos < end2)
+                                message.moves.push(reader.int32());
+                        } else
+                            message.moves.push(reader.int32());
+                        break;
+                    }
+                case 4: {
+                        message.declaredScore = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.declaredMaxTile = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.stopReason = reader.int32();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageSubmitGameResult message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageSubmitGameResult
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageSubmitGameResult} MessageSubmitGameResult
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageSubmitGameResult.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageSubmitGameResult message.
+         * @function verify
+         * @memberof types.MessageSubmitGameResult
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageSubmitGameResult.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            if (message.moves != null && message.hasOwnProperty("moves")) {
+                if (!Array.isArray(message.moves))
+                    return "moves: array expected";
+                for (var i = 0; i < message.moves.length; ++i)
+                    switch (message.moves[i]) {
+                    default:
+                        return "moves: enum value[] expected";
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                        break;
+                    }
+            }
+            if (message.declaredScore != null && message.hasOwnProperty("declaredScore"))
+                if (!$util.isInteger(message.declaredScore) && !(message.declaredScore && $util.isInteger(message.declaredScore.low) && $util.isInteger(message.declaredScore.high)))
+                    return "declaredScore: integer|Long expected";
+            if (message.declaredMaxTile != null && message.hasOwnProperty("declaredMaxTile"))
+                if (!$util.isInteger(message.declaredMaxTile) && !(message.declaredMaxTile && $util.isInteger(message.declaredMaxTile.low) && $util.isInteger(message.declaredMaxTile.high)))
+                    return "declaredMaxTile: integer|Long expected";
+            if (message.stopReason != null && message.hasOwnProperty("stopReason"))
+                switch (message.stopReason) {
+                default:
+                    return "stopReason: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    break;
+                }
+            return null;
+        };
+
+        /**
+         * Creates a MessageSubmitGameResult message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageSubmitGameResult
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageSubmitGameResult} MessageSubmitGameResult
+         */
+        MessageSubmitGameResult.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageSubmitGameResult)
+                return object;
+            var message = new $root.types.MessageSubmitGameResult();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            if (object.moves) {
+                if (!Array.isArray(object.moves))
+                    throw TypeError(".types.MessageSubmitGameResult.moves: array expected");
+                message.moves = [];
+                for (var i = 0; i < object.moves.length; ++i)
+                    switch (object.moves[i]) {
+                    default:
+                        if (typeof object.moves[i] === "number") {
+                            message.moves[i] = object.moves[i];
+                            break;
+                        }
+                    case "MOVE_DIRECTION_UNSPECIFIED":
+                    case 0:
+                        message.moves[i] = 0;
+                        break;
+                    case "MOVE_DIRECTION_UP":
+                    case 1:
+                        message.moves[i] = 1;
+                        break;
+                    case "MOVE_DIRECTION_RIGHT":
+                    case 2:
+                        message.moves[i] = 2;
+                        break;
+                    case "MOVE_DIRECTION_DOWN":
+                    case 3:
+                        message.moves[i] = 3;
+                        break;
+                    case "MOVE_DIRECTION_LEFT":
+                    case 4:
+                        message.moves[i] = 4;
+                        break;
+                    }
+            }
+            if (object.declaredScore != null)
+                if ($util.Long)
+                    (message.declaredScore = $util.Long.fromValue(object.declaredScore)).unsigned = true;
+                else if (typeof object.declaredScore === "string")
+                    message.declaredScore = parseInt(object.declaredScore, 10);
+                else if (typeof object.declaredScore === "number")
+                    message.declaredScore = object.declaredScore;
+                else if (typeof object.declaredScore === "object")
+                    message.declaredScore = new $util.LongBits(object.declaredScore.low >>> 0, object.declaredScore.high >>> 0).toNumber(true);
+            if (object.declaredMaxTile != null)
+                if ($util.Long)
+                    (message.declaredMaxTile = $util.Long.fromValue(object.declaredMaxTile)).unsigned = true;
+                else if (typeof object.declaredMaxTile === "string")
+                    message.declaredMaxTile = parseInt(object.declaredMaxTile, 10);
+                else if (typeof object.declaredMaxTile === "number")
+                    message.declaredMaxTile = object.declaredMaxTile;
+                else if (typeof object.declaredMaxTile === "object")
+                    message.declaredMaxTile = new $util.LongBits(object.declaredMaxTile.low >>> 0, object.declaredMaxTile.high >>> 0).toNumber(true);
+            switch (object.stopReason) {
+            default:
+                if (typeof object.stopReason === "number") {
+                    message.stopReason = object.stopReason;
+                    break;
+                }
+                break;
+            case "STOP_REASON_UNSPECIFIED":
+            case 0:
+                message.stopReason = 0;
+                break;
+            case "STOP_REASON_PLAYER_STOPPED":
+            case 1:
+                message.stopReason = 1;
+                break;
+            case "STOP_REASON_NO_MOVES":
+            case 2:
+                message.stopReason = 2;
+                break;
+            case "STOP_REASON_MAX_MOVES":
+            case 3:
+                message.stopReason = 3;
+                break;
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageSubmitGameResult message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageSubmitGameResult
+         * @static
+         * @param {types.MessageSubmitGameResult} message MessageSubmitGameResult
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageSubmitGameResult.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.arrays || options.defaults)
+                object.moves = [];
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.declaredScore = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.declaredScore = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.declaredMaxTile = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.declaredMaxTile = options.longs === String ? "0" : 0;
+                object.stopReason = options.enums === String ? "STOP_REASON_UNSPECIFIED" : 0;
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            if (message.moves && message.moves.length) {
+                object.moves = [];
+                for (var j = 0; j < message.moves.length; ++j)
+                    object.moves[j] = options.enums === String ? $root.types.MoveDirection[message.moves[j]] === undefined ? message.moves[j] : $root.types.MoveDirection[message.moves[j]] : message.moves[j];
+            }
+            if (message.declaredScore != null && message.hasOwnProperty("declaredScore"))
+                if (typeof message.declaredScore === "number")
+                    object.declaredScore = options.longs === String ? String(message.declaredScore) : message.declaredScore;
+                else
+                    object.declaredScore = options.longs === String ? $util.Long.prototype.toString.call(message.declaredScore) : options.longs === Number ? new $util.LongBits(message.declaredScore.low >>> 0, message.declaredScore.high >>> 0).toNumber(true) : message.declaredScore;
+            if (message.declaredMaxTile != null && message.hasOwnProperty("declaredMaxTile"))
+                if (typeof message.declaredMaxTile === "number")
+                    object.declaredMaxTile = options.longs === String ? String(message.declaredMaxTile) : message.declaredMaxTile;
+                else
+                    object.declaredMaxTile = options.longs === String ? $util.Long.prototype.toString.call(message.declaredMaxTile) : options.longs === Number ? new $util.LongBits(message.declaredMaxTile.low >>> 0, message.declaredMaxTile.high >>> 0).toNumber(true) : message.declaredMaxTile;
+            if (message.stopReason != null && message.hasOwnProperty("stopReason"))
+                object.stopReason = options.enums === String ? $root.types.StopReason[message.stopReason] === undefined ? message.stopReason : $root.types.StopReason[message.stopReason] : message.stopReason;
+            return object;
+        };
+
+        /**
+         * Converts this MessageSubmitGameResult to JSON.
+         * @function toJSON
+         * @memberof types.MessageSubmitGameResult
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageSubmitGameResult.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageSubmitGameResult
+         * @function getTypeUrl
+         * @memberof types.MessageSubmitGameResult
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageSubmitGameResult.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageSubmitGameResult";
+        };
+
+        return MessageSubmitGameResult;
+    })();
+
+    types.MessageClaimDailyReward = (function() {
+
+        /**
+         * Properties of a MessageClaimDailyReward.
+         * @memberof types
+         * @interface IMessageClaimDailyReward
+         * @property {Uint8Array|null} [playerAddress] MessageClaimDailyReward playerAddress
+         * @property {string|null} [utcDate] MessageClaimDailyReward utcDate
+         */
+
+        /**
+         * Constructs a new MessageClaimDailyReward.
+         * @memberof types
+         * @classdesc Represents a MessageClaimDailyReward.
+         * @implements IMessageClaimDailyReward
+         * @constructor
+         * @param {types.IMessageClaimDailyReward=} [properties] Properties to set
+         */
+        function MessageClaimDailyReward(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageClaimDailyReward playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.MessageClaimDailyReward
+         * @instance
+         */
+        MessageClaimDailyReward.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * MessageClaimDailyReward utcDate.
+         * @member {string} utcDate
+         * @memberof types.MessageClaimDailyReward
+         * @instance
+         */
+        MessageClaimDailyReward.prototype.utcDate = "";
+
+        /**
+         * Creates a new MessageClaimDailyReward instance using the specified properties.
+         * @function create
+         * @memberof types.MessageClaimDailyReward
+         * @static
+         * @param {types.IMessageClaimDailyReward=} [properties] Properties to set
+         * @returns {types.MessageClaimDailyReward} MessageClaimDailyReward instance
+         */
+        MessageClaimDailyReward.create = function create(properties) {
+            return new MessageClaimDailyReward(properties);
+        };
+
+        /**
+         * Encodes the specified MessageClaimDailyReward message. Does not implicitly {@link types.MessageClaimDailyReward.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageClaimDailyReward
+         * @static
+         * @param {types.IMessageClaimDailyReward} message MessageClaimDailyReward message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageClaimDailyReward.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.utcDate);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageClaimDailyReward message, length delimited. Does not implicitly {@link types.MessageClaimDailyReward.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageClaimDailyReward
+         * @static
+         * @param {types.IMessageClaimDailyReward} message MessageClaimDailyReward message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageClaimDailyReward.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageClaimDailyReward message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageClaimDailyReward
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageClaimDailyReward} MessageClaimDailyReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageClaimDailyReward.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageClaimDailyReward();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageClaimDailyReward message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageClaimDailyReward
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageClaimDailyReward} MessageClaimDailyReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageClaimDailyReward.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageClaimDailyReward message.
+         * @function verify
+         * @memberof types.MessageClaimDailyReward
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageClaimDailyReward.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessageClaimDailyReward message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageClaimDailyReward
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageClaimDailyReward} MessageClaimDailyReward
+         */
+        MessageClaimDailyReward.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageClaimDailyReward)
+                return object;
+            var message = new $root.types.MessageClaimDailyReward();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageClaimDailyReward message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageClaimDailyReward
+         * @static
+         * @param {types.MessageClaimDailyReward} message MessageClaimDailyReward
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageClaimDailyReward.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                object.utcDate = "";
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            return object;
+        };
+
+        /**
+         * Converts this MessageClaimDailyReward to JSON.
+         * @function toJSON
+         * @memberof types.MessageClaimDailyReward
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageClaimDailyReward.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageClaimDailyReward
+         * @function getTypeUrl
+         * @memberof types.MessageClaimDailyReward
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageClaimDailyReward.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageClaimDailyReward";
+        };
+
+        return MessageClaimDailyReward;
+    })();
+
+    types.MessageRedeemClassicPoints = (function() {
+
+        /**
+         * Properties of a MessageRedeemClassicPoints.
+         * @memberof types
+         * @interface IMessageRedeemClassicPoints
+         * @property {Uint8Array|null} [playerAddress] MessageRedeemClassicPoints playerAddress
+         * @property {number|Long|null} [burnPoints] MessageRedeemClassicPoints burnPoints
+         */
+
+        /**
+         * Constructs a new MessageRedeemClassicPoints.
+         * @memberof types
+         * @classdesc Represents a MessageRedeemClassicPoints.
+         * @implements IMessageRedeemClassicPoints
+         * @constructor
+         * @param {types.IMessageRedeemClassicPoints=} [properties] Properties to set
+         */
+        function MessageRedeemClassicPoints(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageRedeemClassicPoints playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.MessageRedeemClassicPoints
+         * @instance
+         */
+        MessageRedeemClassicPoints.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * MessageRedeemClassicPoints burnPoints.
+         * @member {number|Long} burnPoints
+         * @memberof types.MessageRedeemClassicPoints
+         * @instance
+         */
+        MessageRedeemClassicPoints.prototype.burnPoints = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new MessageRedeemClassicPoints instance using the specified properties.
+         * @function create
+         * @memberof types.MessageRedeemClassicPoints
+         * @static
+         * @param {types.IMessageRedeemClassicPoints=} [properties] Properties to set
+         * @returns {types.MessageRedeemClassicPoints} MessageRedeemClassicPoints instance
+         */
+        MessageRedeemClassicPoints.create = function create(properties) {
+            return new MessageRedeemClassicPoints(properties);
+        };
+
+        /**
+         * Encodes the specified MessageRedeemClassicPoints message. Does not implicitly {@link types.MessageRedeemClassicPoints.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageRedeemClassicPoints
+         * @static
+         * @param {types.IMessageRedeemClassicPoints} message MessageRedeemClassicPoints message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageRedeemClassicPoints.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.burnPoints != null && Object.hasOwnProperty.call(message, "burnPoints"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.burnPoints);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageRedeemClassicPoints message, length delimited. Does not implicitly {@link types.MessageRedeemClassicPoints.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageRedeemClassicPoints
+         * @static
+         * @param {types.IMessageRedeemClassicPoints} message MessageRedeemClassicPoints message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageRedeemClassicPoints.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageRedeemClassicPoints message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageRedeemClassicPoints
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageRedeemClassicPoints} MessageRedeemClassicPoints
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageRedeemClassicPoints.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageRedeemClassicPoints();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.burnPoints = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageRedeemClassicPoints message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageRedeemClassicPoints
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageRedeemClassicPoints} MessageRedeemClassicPoints
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageRedeemClassicPoints.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageRedeemClassicPoints message.
+         * @function verify
+         * @memberof types.MessageRedeemClassicPoints
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageRedeemClassicPoints.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.burnPoints != null && message.hasOwnProperty("burnPoints"))
+                if (!$util.isInteger(message.burnPoints) && !(message.burnPoints && $util.isInteger(message.burnPoints.low) && $util.isInteger(message.burnPoints.high)))
+                    return "burnPoints: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessageRedeemClassicPoints message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageRedeemClassicPoints
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageRedeemClassicPoints} MessageRedeemClassicPoints
+         */
+        MessageRedeemClassicPoints.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageRedeemClassicPoints)
+                return object;
+            var message = new $root.types.MessageRedeemClassicPoints();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.burnPoints != null)
+                if ($util.Long)
+                    (message.burnPoints = $util.Long.fromValue(object.burnPoints)).unsigned = true;
+                else if (typeof object.burnPoints === "string")
+                    message.burnPoints = parseInt(object.burnPoints, 10);
+                else if (typeof object.burnPoints === "number")
+                    message.burnPoints = object.burnPoints;
+                else if (typeof object.burnPoints === "object")
+                    message.burnPoints = new $util.LongBits(object.burnPoints.low >>> 0, object.burnPoints.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageRedeemClassicPoints message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageRedeemClassicPoints
+         * @static
+         * @param {types.MessageRedeemClassicPoints} message MessageRedeemClassicPoints
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageRedeemClassicPoints.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.burnPoints = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.burnPoints = options.longs === String ? "0" : 0;
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.burnPoints != null && message.hasOwnProperty("burnPoints"))
+                if (typeof message.burnPoints === "number")
+                    object.burnPoints = options.longs === String ? String(message.burnPoints) : message.burnPoints;
+                else
+                    object.burnPoints = options.longs === String ? $util.Long.prototype.toString.call(message.burnPoints) : options.longs === Number ? new $util.LongBits(message.burnPoints.low >>> 0, message.burnPoints.high >>> 0).toNumber(true) : message.burnPoints;
+            return object;
+        };
+
+        /**
+         * Converts this MessageRedeemClassicPoints to JSON.
+         * @function toJSON
+         * @memberof types.MessageRedeemClassicPoints
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageRedeemClassicPoints.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageRedeemClassicPoints
+         * @function getTypeUrl
+         * @memberof types.MessageRedeemClassicPoints
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageRedeemClassicPoints.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageRedeemClassicPoints";
+        };
+
+        return MessageRedeemClassicPoints;
+    })();
+
+    types.MessageClaimDailyLoginReward = (function() {
+
+        /**
+         * Properties of a MessageClaimDailyLoginReward.
+         * @memberof types
+         * @interface IMessageClaimDailyLoginReward
+         * @property {Uint8Array|null} [playerAddress] MessageClaimDailyLoginReward playerAddress
+         */
+
+        /**
+         * Constructs a new MessageClaimDailyLoginReward.
+         * @memberof types
+         * @classdesc Represents a MessageClaimDailyLoginReward.
+         * @implements IMessageClaimDailyLoginReward
+         * @constructor
+         * @param {types.IMessageClaimDailyLoginReward=} [properties] Properties to set
+         */
+        function MessageClaimDailyLoginReward(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageClaimDailyLoginReward playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.MessageClaimDailyLoginReward
+         * @instance
+         */
+        MessageClaimDailyLoginReward.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessageClaimDailyLoginReward instance using the specified properties.
+         * @function create
+         * @memberof types.MessageClaimDailyLoginReward
+         * @static
+         * @param {types.IMessageClaimDailyLoginReward=} [properties] Properties to set
+         * @returns {types.MessageClaimDailyLoginReward} MessageClaimDailyLoginReward instance
+         */
+        MessageClaimDailyLoginReward.create = function create(properties) {
+            return new MessageClaimDailyLoginReward(properties);
+        };
+
+        /**
+         * Encodes the specified MessageClaimDailyLoginReward message. Does not implicitly {@link types.MessageClaimDailyLoginReward.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageClaimDailyLoginReward
+         * @static
+         * @param {types.IMessageClaimDailyLoginReward} message MessageClaimDailyLoginReward message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageClaimDailyLoginReward.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageClaimDailyLoginReward message, length delimited. Does not implicitly {@link types.MessageClaimDailyLoginReward.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageClaimDailyLoginReward
+         * @static
+         * @param {types.IMessageClaimDailyLoginReward} message MessageClaimDailyLoginReward message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageClaimDailyLoginReward.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageClaimDailyLoginReward message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageClaimDailyLoginReward
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageClaimDailyLoginReward} MessageClaimDailyLoginReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageClaimDailyLoginReward.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageClaimDailyLoginReward();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageClaimDailyLoginReward message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageClaimDailyLoginReward
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageClaimDailyLoginReward} MessageClaimDailyLoginReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageClaimDailyLoginReward.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageClaimDailyLoginReward message.
+         * @function verify
+         * @memberof types.MessageClaimDailyLoginReward
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageClaimDailyLoginReward.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessageClaimDailyLoginReward message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageClaimDailyLoginReward
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageClaimDailyLoginReward} MessageClaimDailyLoginReward
+         */
+        MessageClaimDailyLoginReward.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageClaimDailyLoginReward)
+                return object;
+            var message = new $root.types.MessageClaimDailyLoginReward();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageClaimDailyLoginReward message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageClaimDailyLoginReward
+         * @static
+         * @param {types.MessageClaimDailyLoginReward} message MessageClaimDailyLoginReward
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageClaimDailyLoginReward.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults)
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            return object;
+        };
+
+        /**
+         * Converts this MessageClaimDailyLoginReward to JSON.
+         * @function toJSON
+         * @memberof types.MessageClaimDailyLoginReward
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageClaimDailyLoginReward.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageClaimDailyLoginReward
+         * @function getTypeUrl
+         * @memberof types.MessageClaimDailyLoginReward
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageClaimDailyLoginReward.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageClaimDailyLoginReward";
+        };
+
+        return MessageClaimDailyLoginReward;
+    })();
+
+    types.GameConfig = (function() {
+
+        /**
+         * Properties of a GameConfig.
+         * @memberof types
+         * @interface IGameConfig
+         * @property {number|Long|null} [classicStartFee] GameConfig classicStartFee
+         * @property {number|Long|null} [dailyStartFee] GameConfig dailyStartFee
+         * @property {number|Long|null} [dailyMaxMoves] GameConfig dailyMaxMoves
+         * @property {number|Long|null} [classicLeaderboardSize] GameConfig classicLeaderboardSize
+         * @property {number|Long|null} [dailyLeaderboardSize] GameConfig dailyLeaderboardSize
+         * @property {Uint8Array|null} [platformTreasuryAddress] GameConfig platformTreasuryAddress
+         * @property {number|Long|null} [dailyPlatformFeeBps] GameConfig dailyPlatformFeeBps
+         * @property {Array.<number|Long>|null} [dailyPayoutBps] GameConfig dailyPayoutBps
+         * @property {number|Long|null} [classicDailyPointsCap] GameConfig classicDailyPointsCap
+         * @property {number|Long|null} [shopRedemptionRatePoints] GameConfig shopRedemptionRatePoints
+         * @property {number|Long|null} [shopRedemptionRateCnpy] GameConfig shopRedemptionRateCnpy
+         * @property {number|Long|null} [shopMinRedeemPoints] GameConfig shopMinRedeemPoints
+         * @property {number|Long|null} [shopRedeemStepPoints] GameConfig shopRedeemStepPoints
+         * @property {number|Long|null} [dailyRewardFeeBps] GameConfig dailyRewardFeeBps
+         * @property {number|Long|null} [dailyReserveFeeBps] GameConfig dailyReserveFeeBps
+         * @property {number|Long|null} [dailyShopFeeBps] GameConfig dailyShopFeeBps
+         * @property {number|Long|null} [classicPlatformFeeBps] GameConfig classicPlatformFeeBps
+         * @property {number|Long|null} [classicReserveFeeBps] GameConfig classicReserveFeeBps
+         * @property {number|Long|null} [classicShopFeeBps] GameConfig classicShopFeeBps
+         * @property {Array.<number|Long>|null} [dailyLoginRewardPoints] GameConfig dailyLoginRewardPoints
+         * @property {number|Long|null} [dailyLoginBonusBps] GameConfig dailyLoginBonusBps
+         */
+
+        /**
+         * Constructs a new GameConfig.
+         * @memberof types
+         * @classdesc Represents a GameConfig.
+         * @implements IGameConfig
+         * @constructor
+         * @param {types.IGameConfig=} [properties] Properties to set
+         */
+        function GameConfig(properties) {
+            this.dailyPayoutBps = [];
+            this.dailyLoginRewardPoints = [];
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * GameConfig classicStartFee.
+         * @member {number|Long} classicStartFee
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.classicStartFee = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig dailyStartFee.
+         * @member {number|Long} dailyStartFee
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyStartFee = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig dailyMaxMoves.
+         * @member {number|Long} dailyMaxMoves
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyMaxMoves = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig classicLeaderboardSize.
+         * @member {number|Long} classicLeaderboardSize
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.classicLeaderboardSize = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig dailyLeaderboardSize.
+         * @member {number|Long} dailyLeaderboardSize
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyLeaderboardSize = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig platformTreasuryAddress.
+         * @member {Uint8Array} platformTreasuryAddress
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.platformTreasuryAddress = $util.newBuffer([]);
+
+        /**
+         * GameConfig dailyPlatformFeeBps.
+         * @member {number|Long} dailyPlatformFeeBps
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyPlatformFeeBps = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig dailyPayoutBps.
+         * @member {Array.<number|Long>} dailyPayoutBps
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyPayoutBps = $util.emptyArray;
+
+        /**
+         * GameConfig classicDailyPointsCap.
+         * @member {number|Long} classicDailyPointsCap
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.classicDailyPointsCap = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig shopRedemptionRatePoints.
+         * @member {number|Long} shopRedemptionRatePoints
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.shopRedemptionRatePoints = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig shopRedemptionRateCnpy.
+         * @member {number|Long} shopRedemptionRateCnpy
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.shopRedemptionRateCnpy = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig shopMinRedeemPoints.
+         * @member {number|Long} shopMinRedeemPoints
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.shopMinRedeemPoints = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig shopRedeemStepPoints.
+         * @member {number|Long} shopRedeemStepPoints
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.shopRedeemStepPoints = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig dailyRewardFeeBps.
+         * @member {number|Long} dailyRewardFeeBps
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyRewardFeeBps = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig dailyReserveFeeBps.
+         * @member {number|Long} dailyReserveFeeBps
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyReserveFeeBps = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig dailyShopFeeBps.
+         * @member {number|Long} dailyShopFeeBps
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyShopFeeBps = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig classicPlatformFeeBps.
+         * @member {number|Long} classicPlatformFeeBps
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.classicPlatformFeeBps = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig classicReserveFeeBps.
+         * @member {number|Long} classicReserveFeeBps
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.classicReserveFeeBps = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig classicShopFeeBps.
+         * @member {number|Long} classicShopFeeBps
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.classicShopFeeBps = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameConfig dailyLoginRewardPoints.
+         * @member {Array.<number|Long>} dailyLoginRewardPoints
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyLoginRewardPoints = $util.emptyArray;
+
+        /**
+         * GameConfig dailyLoginBonusBps.
+         * @member {number|Long} dailyLoginBonusBps
+         * @memberof types.GameConfig
+         * @instance
+         */
+        GameConfig.prototype.dailyLoginBonusBps = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new GameConfig instance using the specified properties.
+         * @function create
+         * @memberof types.GameConfig
+         * @static
+         * @param {types.IGameConfig=} [properties] Properties to set
+         * @returns {types.GameConfig} GameConfig instance
+         */
+        GameConfig.create = function create(properties) {
+            return new GameConfig(properties);
+        };
+
+        /**
+         * Encodes the specified GameConfig message. Does not implicitly {@link types.GameConfig.verify|verify} messages.
+         * @function encode
+         * @memberof types.GameConfig
+         * @static
+         * @param {types.IGameConfig} message GameConfig message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        GameConfig.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.classicStartFee != null && Object.hasOwnProperty.call(message, "classicStartFee"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.classicStartFee);
+            if (message.dailyStartFee != null && Object.hasOwnProperty.call(message, "dailyStartFee"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.dailyStartFee);
+            if (message.dailyMaxMoves != null && Object.hasOwnProperty.call(message, "dailyMaxMoves"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.dailyMaxMoves);
+            if (message.classicLeaderboardSize != null && Object.hasOwnProperty.call(message, "classicLeaderboardSize"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.classicLeaderboardSize);
+            if (message.dailyLeaderboardSize != null && Object.hasOwnProperty.call(message, "dailyLeaderboardSize"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.dailyLeaderboardSize);
+            if (message.platformTreasuryAddress != null && Object.hasOwnProperty.call(message, "platformTreasuryAddress"))
+                writer.uint32(/* id 6, wireType 2 =*/50).bytes(message.platformTreasuryAddress);
+            if (message.dailyPlatformFeeBps != null && Object.hasOwnProperty.call(message, "dailyPlatformFeeBps"))
+                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.dailyPlatformFeeBps);
+            if (message.dailyPayoutBps != null && message.dailyPayoutBps.length) {
+                writer.uint32(/* id 8, wireType 2 =*/66).fork();
+                for (var i = 0; i < message.dailyPayoutBps.length; ++i)
+                    writer.uint64(message.dailyPayoutBps[i]);
+                writer.ldelim();
+            }
+            if (message.classicDailyPointsCap != null && Object.hasOwnProperty.call(message, "classicDailyPointsCap"))
+                writer.uint32(/* id 9, wireType 0 =*/72).uint64(message.classicDailyPointsCap);
+            if (message.shopRedemptionRatePoints != null && Object.hasOwnProperty.call(message, "shopRedemptionRatePoints"))
+                writer.uint32(/* id 10, wireType 0 =*/80).uint64(message.shopRedemptionRatePoints);
+            if (message.shopRedemptionRateCnpy != null && Object.hasOwnProperty.call(message, "shopRedemptionRateCnpy"))
+                writer.uint32(/* id 11, wireType 0 =*/88).uint64(message.shopRedemptionRateCnpy);
+            if (message.shopMinRedeemPoints != null && Object.hasOwnProperty.call(message, "shopMinRedeemPoints"))
+                writer.uint32(/* id 12, wireType 0 =*/96).uint64(message.shopMinRedeemPoints);
+            if (message.shopRedeemStepPoints != null && Object.hasOwnProperty.call(message, "shopRedeemStepPoints"))
+                writer.uint32(/* id 13, wireType 0 =*/104).uint64(message.shopRedeemStepPoints);
+            if (message.dailyRewardFeeBps != null && Object.hasOwnProperty.call(message, "dailyRewardFeeBps"))
+                writer.uint32(/* id 14, wireType 0 =*/112).uint64(message.dailyRewardFeeBps);
+            if (message.dailyReserveFeeBps != null && Object.hasOwnProperty.call(message, "dailyReserveFeeBps"))
+                writer.uint32(/* id 15, wireType 0 =*/120).uint64(message.dailyReserveFeeBps);
+            if (message.dailyShopFeeBps != null && Object.hasOwnProperty.call(message, "dailyShopFeeBps"))
+                writer.uint32(/* id 16, wireType 0 =*/128).uint64(message.dailyShopFeeBps);
+            if (message.classicPlatformFeeBps != null && Object.hasOwnProperty.call(message, "classicPlatformFeeBps"))
+                writer.uint32(/* id 17, wireType 0 =*/136).uint64(message.classicPlatformFeeBps);
+            if (message.classicReserveFeeBps != null && Object.hasOwnProperty.call(message, "classicReserveFeeBps"))
+                writer.uint32(/* id 18, wireType 0 =*/144).uint64(message.classicReserveFeeBps);
+            if (message.classicShopFeeBps != null && Object.hasOwnProperty.call(message, "classicShopFeeBps"))
+                writer.uint32(/* id 19, wireType 0 =*/152).uint64(message.classicShopFeeBps);
+            if (message.dailyLoginRewardPoints != null && message.dailyLoginRewardPoints.length) {
+                writer.uint32(/* id 20, wireType 2 =*/162).fork();
+                for (var i = 0; i < message.dailyLoginRewardPoints.length; ++i)
+                    writer.uint64(message.dailyLoginRewardPoints[i]);
+                writer.ldelim();
+            }
+            if (message.dailyLoginBonusBps != null && Object.hasOwnProperty.call(message, "dailyLoginBonusBps"))
+                writer.uint32(/* id 21, wireType 0 =*/168).uint64(message.dailyLoginBonusBps);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified GameConfig message, length delimited. Does not implicitly {@link types.GameConfig.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.GameConfig
+         * @static
+         * @param {types.IGameConfig} message GameConfig message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        GameConfig.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a GameConfig message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.GameConfig
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.GameConfig} GameConfig
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        GameConfig.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.GameConfig();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.classicStartFee = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.dailyStartFee = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.dailyMaxMoves = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.classicLeaderboardSize = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.dailyLeaderboardSize = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.platformTreasuryAddress = reader.bytes();
+                        break;
+                    }
+                case 7: {
+                        message.dailyPlatformFeeBps = reader.uint64();
+                        break;
+                    }
+                case 8: {
+                        if (!(message.dailyPayoutBps && message.dailyPayoutBps.length))
+                            message.dailyPayoutBps = [];
+                        if ((tag & 7) === 2) {
+                            var end2 = reader.uint32() + reader.pos;
+                            while (reader.pos < end2)
+                                message.dailyPayoutBps.push(reader.uint64());
+                        } else
+                            message.dailyPayoutBps.push(reader.uint64());
+                        break;
+                    }
+                case 9: {
+                        message.classicDailyPointsCap = reader.uint64();
+                        break;
+                    }
+                case 10: {
+                        message.shopRedemptionRatePoints = reader.uint64();
+                        break;
+                    }
+                case 11: {
+                        message.shopRedemptionRateCnpy = reader.uint64();
+                        break;
+                    }
+                case 12: {
+                        message.shopMinRedeemPoints = reader.uint64();
+                        break;
+                    }
+                case 13: {
+                        message.shopRedeemStepPoints = reader.uint64();
+                        break;
+                    }
+                case 14: {
+                        message.dailyRewardFeeBps = reader.uint64();
+                        break;
+                    }
+                case 15: {
+                        message.dailyReserveFeeBps = reader.uint64();
+                        break;
+                    }
+                case 16: {
+                        message.dailyShopFeeBps = reader.uint64();
+                        break;
+                    }
+                case 17: {
+                        message.classicPlatformFeeBps = reader.uint64();
+                        break;
+                    }
+                case 18: {
+                        message.classicReserveFeeBps = reader.uint64();
+                        break;
+                    }
+                case 19: {
+                        message.classicShopFeeBps = reader.uint64();
+                        break;
+                    }
+                case 20: {
+                        if (!(message.dailyLoginRewardPoints && message.dailyLoginRewardPoints.length))
+                            message.dailyLoginRewardPoints = [];
+                        if ((tag & 7) === 2) {
+                            var end2 = reader.uint32() + reader.pos;
+                            while (reader.pos < end2)
+                                message.dailyLoginRewardPoints.push(reader.uint64());
+                        } else
+                            message.dailyLoginRewardPoints.push(reader.uint64());
+                        break;
+                    }
+                case 21: {
+                        message.dailyLoginBonusBps = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a GameConfig message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.GameConfig
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.GameConfig} GameConfig
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        GameConfig.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a GameConfig message.
+         * @function verify
+         * @memberof types.GameConfig
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        GameConfig.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.classicStartFee != null && message.hasOwnProperty("classicStartFee"))
+                if (!$util.isInteger(message.classicStartFee) && !(message.classicStartFee && $util.isInteger(message.classicStartFee.low) && $util.isInteger(message.classicStartFee.high)))
+                    return "classicStartFee: integer|Long expected";
+            if (message.dailyStartFee != null && message.hasOwnProperty("dailyStartFee"))
+                if (!$util.isInteger(message.dailyStartFee) && !(message.dailyStartFee && $util.isInteger(message.dailyStartFee.low) && $util.isInteger(message.dailyStartFee.high)))
+                    return "dailyStartFee: integer|Long expected";
+            if (message.dailyMaxMoves != null && message.hasOwnProperty("dailyMaxMoves"))
+                if (!$util.isInteger(message.dailyMaxMoves) && !(message.dailyMaxMoves && $util.isInteger(message.dailyMaxMoves.low) && $util.isInteger(message.dailyMaxMoves.high)))
+                    return "dailyMaxMoves: integer|Long expected";
+            if (message.classicLeaderboardSize != null && message.hasOwnProperty("classicLeaderboardSize"))
+                if (!$util.isInteger(message.classicLeaderboardSize) && !(message.classicLeaderboardSize && $util.isInteger(message.classicLeaderboardSize.low) && $util.isInteger(message.classicLeaderboardSize.high)))
+                    return "classicLeaderboardSize: integer|Long expected";
+            if (message.dailyLeaderboardSize != null && message.hasOwnProperty("dailyLeaderboardSize"))
+                if (!$util.isInteger(message.dailyLeaderboardSize) && !(message.dailyLeaderboardSize && $util.isInteger(message.dailyLeaderboardSize.low) && $util.isInteger(message.dailyLeaderboardSize.high)))
+                    return "dailyLeaderboardSize: integer|Long expected";
+            if (message.platformTreasuryAddress != null && message.hasOwnProperty("platformTreasuryAddress"))
+                if (!(message.platformTreasuryAddress && typeof message.platformTreasuryAddress.length === "number" || $util.isString(message.platformTreasuryAddress)))
+                    return "platformTreasuryAddress: buffer expected";
+            if (message.dailyPlatformFeeBps != null && message.hasOwnProperty("dailyPlatformFeeBps"))
+                if (!$util.isInteger(message.dailyPlatformFeeBps) && !(message.dailyPlatformFeeBps && $util.isInteger(message.dailyPlatformFeeBps.low) && $util.isInteger(message.dailyPlatformFeeBps.high)))
+                    return "dailyPlatformFeeBps: integer|Long expected";
+            if (message.dailyPayoutBps != null && message.hasOwnProperty("dailyPayoutBps")) {
+                if (!Array.isArray(message.dailyPayoutBps))
+                    return "dailyPayoutBps: array expected";
+                for (var i = 0; i < message.dailyPayoutBps.length; ++i)
+                    if (!$util.isInteger(message.dailyPayoutBps[i]) && !(message.dailyPayoutBps[i] && $util.isInteger(message.dailyPayoutBps[i].low) && $util.isInteger(message.dailyPayoutBps[i].high)))
+                        return "dailyPayoutBps: integer|Long[] expected";
+            }
+            if (message.classicDailyPointsCap != null && message.hasOwnProperty("classicDailyPointsCap"))
+                if (!$util.isInteger(message.classicDailyPointsCap) && !(message.classicDailyPointsCap && $util.isInteger(message.classicDailyPointsCap.low) && $util.isInteger(message.classicDailyPointsCap.high)))
+                    return "classicDailyPointsCap: integer|Long expected";
+            if (message.shopRedemptionRatePoints != null && message.hasOwnProperty("shopRedemptionRatePoints"))
+                if (!$util.isInteger(message.shopRedemptionRatePoints) && !(message.shopRedemptionRatePoints && $util.isInteger(message.shopRedemptionRatePoints.low) && $util.isInteger(message.shopRedemptionRatePoints.high)))
+                    return "shopRedemptionRatePoints: integer|Long expected";
+            if (message.shopRedemptionRateCnpy != null && message.hasOwnProperty("shopRedemptionRateCnpy"))
+                if (!$util.isInteger(message.shopRedemptionRateCnpy) && !(message.shopRedemptionRateCnpy && $util.isInteger(message.shopRedemptionRateCnpy.low) && $util.isInteger(message.shopRedemptionRateCnpy.high)))
+                    return "shopRedemptionRateCnpy: integer|Long expected";
+            if (message.shopMinRedeemPoints != null && message.hasOwnProperty("shopMinRedeemPoints"))
+                if (!$util.isInteger(message.shopMinRedeemPoints) && !(message.shopMinRedeemPoints && $util.isInteger(message.shopMinRedeemPoints.low) && $util.isInteger(message.shopMinRedeemPoints.high)))
+                    return "shopMinRedeemPoints: integer|Long expected";
+            if (message.shopRedeemStepPoints != null && message.hasOwnProperty("shopRedeemStepPoints"))
+                if (!$util.isInteger(message.shopRedeemStepPoints) && !(message.shopRedeemStepPoints && $util.isInteger(message.shopRedeemStepPoints.low) && $util.isInteger(message.shopRedeemStepPoints.high)))
+                    return "shopRedeemStepPoints: integer|Long expected";
+            if (message.dailyRewardFeeBps != null && message.hasOwnProperty("dailyRewardFeeBps"))
+                if (!$util.isInteger(message.dailyRewardFeeBps) && !(message.dailyRewardFeeBps && $util.isInteger(message.dailyRewardFeeBps.low) && $util.isInteger(message.dailyRewardFeeBps.high)))
+                    return "dailyRewardFeeBps: integer|Long expected";
+            if (message.dailyReserveFeeBps != null && message.hasOwnProperty("dailyReserveFeeBps"))
+                if (!$util.isInteger(message.dailyReserveFeeBps) && !(message.dailyReserveFeeBps && $util.isInteger(message.dailyReserveFeeBps.low) && $util.isInteger(message.dailyReserveFeeBps.high)))
+                    return "dailyReserveFeeBps: integer|Long expected";
+            if (message.dailyShopFeeBps != null && message.hasOwnProperty("dailyShopFeeBps"))
+                if (!$util.isInteger(message.dailyShopFeeBps) && !(message.dailyShopFeeBps && $util.isInteger(message.dailyShopFeeBps.low) && $util.isInteger(message.dailyShopFeeBps.high)))
+                    return "dailyShopFeeBps: integer|Long expected";
+            if (message.classicPlatformFeeBps != null && message.hasOwnProperty("classicPlatformFeeBps"))
+                if (!$util.isInteger(message.classicPlatformFeeBps) && !(message.classicPlatformFeeBps && $util.isInteger(message.classicPlatformFeeBps.low) && $util.isInteger(message.classicPlatformFeeBps.high)))
+                    return "classicPlatformFeeBps: integer|Long expected";
+            if (message.classicReserveFeeBps != null && message.hasOwnProperty("classicReserveFeeBps"))
+                if (!$util.isInteger(message.classicReserveFeeBps) && !(message.classicReserveFeeBps && $util.isInteger(message.classicReserveFeeBps.low) && $util.isInteger(message.classicReserveFeeBps.high)))
+                    return "classicReserveFeeBps: integer|Long expected";
+            if (message.classicShopFeeBps != null && message.hasOwnProperty("classicShopFeeBps"))
+                if (!$util.isInteger(message.classicShopFeeBps) && !(message.classicShopFeeBps && $util.isInteger(message.classicShopFeeBps.low) && $util.isInteger(message.classicShopFeeBps.high)))
+                    return "classicShopFeeBps: integer|Long expected";
+            if (message.dailyLoginRewardPoints != null && message.hasOwnProperty("dailyLoginRewardPoints")) {
+                if (!Array.isArray(message.dailyLoginRewardPoints))
+                    return "dailyLoginRewardPoints: array expected";
+                for (var i = 0; i < message.dailyLoginRewardPoints.length; ++i)
+                    if (!$util.isInteger(message.dailyLoginRewardPoints[i]) && !(message.dailyLoginRewardPoints[i] && $util.isInteger(message.dailyLoginRewardPoints[i].low) && $util.isInteger(message.dailyLoginRewardPoints[i].high)))
+                        return "dailyLoginRewardPoints: integer|Long[] expected";
+            }
+            if (message.dailyLoginBonusBps != null && message.hasOwnProperty("dailyLoginBonusBps"))
+                if (!$util.isInteger(message.dailyLoginBonusBps) && !(message.dailyLoginBonusBps && $util.isInteger(message.dailyLoginBonusBps.low) && $util.isInteger(message.dailyLoginBonusBps.high)))
+                    return "dailyLoginBonusBps: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a GameConfig message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.GameConfig
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.GameConfig} GameConfig
+         */
+        GameConfig.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.GameConfig)
+                return object;
+            var message = new $root.types.GameConfig();
+            if (object.classicStartFee != null)
+                if ($util.Long)
+                    (message.classicStartFee = $util.Long.fromValue(object.classicStartFee)).unsigned = true;
+                else if (typeof object.classicStartFee === "string")
+                    message.classicStartFee = parseInt(object.classicStartFee, 10);
+                else if (typeof object.classicStartFee === "number")
+                    message.classicStartFee = object.classicStartFee;
+                else if (typeof object.classicStartFee === "object")
+                    message.classicStartFee = new $util.LongBits(object.classicStartFee.low >>> 0, object.classicStartFee.high >>> 0).toNumber(true);
+            if (object.dailyStartFee != null)
+                if ($util.Long)
+                    (message.dailyStartFee = $util.Long.fromValue(object.dailyStartFee)).unsigned = true;
+                else if (typeof object.dailyStartFee === "string")
+                    message.dailyStartFee = parseInt(object.dailyStartFee, 10);
+                else if (typeof object.dailyStartFee === "number")
+                    message.dailyStartFee = object.dailyStartFee;
+                else if (typeof object.dailyStartFee === "object")
+                    message.dailyStartFee = new $util.LongBits(object.dailyStartFee.low >>> 0, object.dailyStartFee.high >>> 0).toNumber(true);
+            if (object.dailyMaxMoves != null)
+                if ($util.Long)
+                    (message.dailyMaxMoves = $util.Long.fromValue(object.dailyMaxMoves)).unsigned = true;
+                else if (typeof object.dailyMaxMoves === "string")
+                    message.dailyMaxMoves = parseInt(object.dailyMaxMoves, 10);
+                else if (typeof object.dailyMaxMoves === "number")
+                    message.dailyMaxMoves = object.dailyMaxMoves;
+                else if (typeof object.dailyMaxMoves === "object")
+                    message.dailyMaxMoves = new $util.LongBits(object.dailyMaxMoves.low >>> 0, object.dailyMaxMoves.high >>> 0).toNumber(true);
+            if (object.classicLeaderboardSize != null)
+                if ($util.Long)
+                    (message.classicLeaderboardSize = $util.Long.fromValue(object.classicLeaderboardSize)).unsigned = true;
+                else if (typeof object.classicLeaderboardSize === "string")
+                    message.classicLeaderboardSize = parseInt(object.classicLeaderboardSize, 10);
+                else if (typeof object.classicLeaderboardSize === "number")
+                    message.classicLeaderboardSize = object.classicLeaderboardSize;
+                else if (typeof object.classicLeaderboardSize === "object")
+                    message.classicLeaderboardSize = new $util.LongBits(object.classicLeaderboardSize.low >>> 0, object.classicLeaderboardSize.high >>> 0).toNumber(true);
+            if (object.dailyLeaderboardSize != null)
+                if ($util.Long)
+                    (message.dailyLeaderboardSize = $util.Long.fromValue(object.dailyLeaderboardSize)).unsigned = true;
+                else if (typeof object.dailyLeaderboardSize === "string")
+                    message.dailyLeaderboardSize = parseInt(object.dailyLeaderboardSize, 10);
+                else if (typeof object.dailyLeaderboardSize === "number")
+                    message.dailyLeaderboardSize = object.dailyLeaderboardSize;
+                else if (typeof object.dailyLeaderboardSize === "object")
+                    message.dailyLeaderboardSize = new $util.LongBits(object.dailyLeaderboardSize.low >>> 0, object.dailyLeaderboardSize.high >>> 0).toNumber(true);
+            if (object.platformTreasuryAddress != null)
+                if (typeof object.platformTreasuryAddress === "string")
+                    $util.base64.decode(object.platformTreasuryAddress, message.platformTreasuryAddress = $util.newBuffer($util.base64.length(object.platformTreasuryAddress)), 0);
+                else if (object.platformTreasuryAddress.length >= 0)
+                    message.platformTreasuryAddress = object.platformTreasuryAddress;
+            if (object.dailyPlatformFeeBps != null)
+                if ($util.Long)
+                    (message.dailyPlatformFeeBps = $util.Long.fromValue(object.dailyPlatformFeeBps)).unsigned = true;
+                else if (typeof object.dailyPlatformFeeBps === "string")
+                    message.dailyPlatformFeeBps = parseInt(object.dailyPlatformFeeBps, 10);
+                else if (typeof object.dailyPlatformFeeBps === "number")
+                    message.dailyPlatformFeeBps = object.dailyPlatformFeeBps;
+                else if (typeof object.dailyPlatformFeeBps === "object")
+                    message.dailyPlatformFeeBps = new $util.LongBits(object.dailyPlatformFeeBps.low >>> 0, object.dailyPlatformFeeBps.high >>> 0).toNumber(true);
+            if (object.dailyPayoutBps) {
+                if (!Array.isArray(object.dailyPayoutBps))
+                    throw TypeError(".types.GameConfig.dailyPayoutBps: array expected");
+                message.dailyPayoutBps = [];
+                for (var i = 0; i < object.dailyPayoutBps.length; ++i)
+                    if ($util.Long)
+                        (message.dailyPayoutBps[i] = $util.Long.fromValue(object.dailyPayoutBps[i])).unsigned = true;
+                    else if (typeof object.dailyPayoutBps[i] === "string")
+                        message.dailyPayoutBps[i] = parseInt(object.dailyPayoutBps[i], 10);
+                    else if (typeof object.dailyPayoutBps[i] === "number")
+                        message.dailyPayoutBps[i] = object.dailyPayoutBps[i];
+                    else if (typeof object.dailyPayoutBps[i] === "object")
+                        message.dailyPayoutBps[i] = new $util.LongBits(object.dailyPayoutBps[i].low >>> 0, object.dailyPayoutBps[i].high >>> 0).toNumber(true);
+            }
+            if (object.classicDailyPointsCap != null)
+                if ($util.Long)
+                    (message.classicDailyPointsCap = $util.Long.fromValue(object.classicDailyPointsCap)).unsigned = true;
+                else if (typeof object.classicDailyPointsCap === "string")
+                    message.classicDailyPointsCap = parseInt(object.classicDailyPointsCap, 10);
+                else if (typeof object.classicDailyPointsCap === "number")
+                    message.classicDailyPointsCap = object.classicDailyPointsCap;
+                else if (typeof object.classicDailyPointsCap === "object")
+                    message.classicDailyPointsCap = new $util.LongBits(object.classicDailyPointsCap.low >>> 0, object.classicDailyPointsCap.high >>> 0).toNumber(true);
+            if (object.shopRedemptionRatePoints != null)
+                if ($util.Long)
+                    (message.shopRedemptionRatePoints = $util.Long.fromValue(object.shopRedemptionRatePoints)).unsigned = true;
+                else if (typeof object.shopRedemptionRatePoints === "string")
+                    message.shopRedemptionRatePoints = parseInt(object.shopRedemptionRatePoints, 10);
+                else if (typeof object.shopRedemptionRatePoints === "number")
+                    message.shopRedemptionRatePoints = object.shopRedemptionRatePoints;
+                else if (typeof object.shopRedemptionRatePoints === "object")
+                    message.shopRedemptionRatePoints = new $util.LongBits(object.shopRedemptionRatePoints.low >>> 0, object.shopRedemptionRatePoints.high >>> 0).toNumber(true);
+            if (object.shopRedemptionRateCnpy != null)
+                if ($util.Long)
+                    (message.shopRedemptionRateCnpy = $util.Long.fromValue(object.shopRedemptionRateCnpy)).unsigned = true;
+                else if (typeof object.shopRedemptionRateCnpy === "string")
+                    message.shopRedemptionRateCnpy = parseInt(object.shopRedemptionRateCnpy, 10);
+                else if (typeof object.shopRedemptionRateCnpy === "number")
+                    message.shopRedemptionRateCnpy = object.shopRedemptionRateCnpy;
+                else if (typeof object.shopRedemptionRateCnpy === "object")
+                    message.shopRedemptionRateCnpy = new $util.LongBits(object.shopRedemptionRateCnpy.low >>> 0, object.shopRedemptionRateCnpy.high >>> 0).toNumber(true);
+            if (object.shopMinRedeemPoints != null)
+                if ($util.Long)
+                    (message.shopMinRedeemPoints = $util.Long.fromValue(object.shopMinRedeemPoints)).unsigned = true;
+                else if (typeof object.shopMinRedeemPoints === "string")
+                    message.shopMinRedeemPoints = parseInt(object.shopMinRedeemPoints, 10);
+                else if (typeof object.shopMinRedeemPoints === "number")
+                    message.shopMinRedeemPoints = object.shopMinRedeemPoints;
+                else if (typeof object.shopMinRedeemPoints === "object")
+                    message.shopMinRedeemPoints = new $util.LongBits(object.shopMinRedeemPoints.low >>> 0, object.shopMinRedeemPoints.high >>> 0).toNumber(true);
+            if (object.shopRedeemStepPoints != null)
+                if ($util.Long)
+                    (message.shopRedeemStepPoints = $util.Long.fromValue(object.shopRedeemStepPoints)).unsigned = true;
+                else if (typeof object.shopRedeemStepPoints === "string")
+                    message.shopRedeemStepPoints = parseInt(object.shopRedeemStepPoints, 10);
+                else if (typeof object.shopRedeemStepPoints === "number")
+                    message.shopRedeemStepPoints = object.shopRedeemStepPoints;
+                else if (typeof object.shopRedeemStepPoints === "object")
+                    message.shopRedeemStepPoints = new $util.LongBits(object.shopRedeemStepPoints.low >>> 0, object.shopRedeemStepPoints.high >>> 0).toNumber(true);
+            if (object.dailyRewardFeeBps != null)
+                if ($util.Long)
+                    (message.dailyRewardFeeBps = $util.Long.fromValue(object.dailyRewardFeeBps)).unsigned = true;
+                else if (typeof object.dailyRewardFeeBps === "string")
+                    message.dailyRewardFeeBps = parseInt(object.dailyRewardFeeBps, 10);
+                else if (typeof object.dailyRewardFeeBps === "number")
+                    message.dailyRewardFeeBps = object.dailyRewardFeeBps;
+                else if (typeof object.dailyRewardFeeBps === "object")
+                    message.dailyRewardFeeBps = new $util.LongBits(object.dailyRewardFeeBps.low >>> 0, object.dailyRewardFeeBps.high >>> 0).toNumber(true);
+            if (object.dailyReserveFeeBps != null)
+                if ($util.Long)
+                    (message.dailyReserveFeeBps = $util.Long.fromValue(object.dailyReserveFeeBps)).unsigned = true;
+                else if (typeof object.dailyReserveFeeBps === "string")
+                    message.dailyReserveFeeBps = parseInt(object.dailyReserveFeeBps, 10);
+                else if (typeof object.dailyReserveFeeBps === "number")
+                    message.dailyReserveFeeBps = object.dailyReserveFeeBps;
+                else if (typeof object.dailyReserveFeeBps === "object")
+                    message.dailyReserveFeeBps = new $util.LongBits(object.dailyReserveFeeBps.low >>> 0, object.dailyReserveFeeBps.high >>> 0).toNumber(true);
+            if (object.dailyShopFeeBps != null)
+                if ($util.Long)
+                    (message.dailyShopFeeBps = $util.Long.fromValue(object.dailyShopFeeBps)).unsigned = true;
+                else if (typeof object.dailyShopFeeBps === "string")
+                    message.dailyShopFeeBps = parseInt(object.dailyShopFeeBps, 10);
+                else if (typeof object.dailyShopFeeBps === "number")
+                    message.dailyShopFeeBps = object.dailyShopFeeBps;
+                else if (typeof object.dailyShopFeeBps === "object")
+                    message.dailyShopFeeBps = new $util.LongBits(object.dailyShopFeeBps.low >>> 0, object.dailyShopFeeBps.high >>> 0).toNumber(true);
+            if (object.classicPlatformFeeBps != null)
+                if ($util.Long)
+                    (message.classicPlatformFeeBps = $util.Long.fromValue(object.classicPlatformFeeBps)).unsigned = true;
+                else if (typeof object.classicPlatformFeeBps === "string")
+                    message.classicPlatformFeeBps = parseInt(object.classicPlatformFeeBps, 10);
+                else if (typeof object.classicPlatformFeeBps === "number")
+                    message.classicPlatformFeeBps = object.classicPlatformFeeBps;
+                else if (typeof object.classicPlatformFeeBps === "object")
+                    message.classicPlatformFeeBps = new $util.LongBits(object.classicPlatformFeeBps.low >>> 0, object.classicPlatformFeeBps.high >>> 0).toNumber(true);
+            if (object.classicReserveFeeBps != null)
+                if ($util.Long)
+                    (message.classicReserveFeeBps = $util.Long.fromValue(object.classicReserveFeeBps)).unsigned = true;
+                else if (typeof object.classicReserveFeeBps === "string")
+                    message.classicReserveFeeBps = parseInt(object.classicReserveFeeBps, 10);
+                else if (typeof object.classicReserveFeeBps === "number")
+                    message.classicReserveFeeBps = object.classicReserveFeeBps;
+                else if (typeof object.classicReserveFeeBps === "object")
+                    message.classicReserveFeeBps = new $util.LongBits(object.classicReserveFeeBps.low >>> 0, object.classicReserveFeeBps.high >>> 0).toNumber(true);
+            if (object.classicShopFeeBps != null)
+                if ($util.Long)
+                    (message.classicShopFeeBps = $util.Long.fromValue(object.classicShopFeeBps)).unsigned = true;
+                else if (typeof object.classicShopFeeBps === "string")
+                    message.classicShopFeeBps = parseInt(object.classicShopFeeBps, 10);
+                else if (typeof object.classicShopFeeBps === "number")
+                    message.classicShopFeeBps = object.classicShopFeeBps;
+                else if (typeof object.classicShopFeeBps === "object")
+                    message.classicShopFeeBps = new $util.LongBits(object.classicShopFeeBps.low >>> 0, object.classicShopFeeBps.high >>> 0).toNumber(true);
+            if (object.dailyLoginRewardPoints) {
+                if (!Array.isArray(object.dailyLoginRewardPoints))
+                    throw TypeError(".types.GameConfig.dailyLoginRewardPoints: array expected");
+                message.dailyLoginRewardPoints = [];
+                for (var i = 0; i < object.dailyLoginRewardPoints.length; ++i)
+                    if ($util.Long)
+                        (message.dailyLoginRewardPoints[i] = $util.Long.fromValue(object.dailyLoginRewardPoints[i])).unsigned = true;
+                    else if (typeof object.dailyLoginRewardPoints[i] === "string")
+                        message.dailyLoginRewardPoints[i] = parseInt(object.dailyLoginRewardPoints[i], 10);
+                    else if (typeof object.dailyLoginRewardPoints[i] === "number")
+                        message.dailyLoginRewardPoints[i] = object.dailyLoginRewardPoints[i];
+                    else if (typeof object.dailyLoginRewardPoints[i] === "object")
+                        message.dailyLoginRewardPoints[i] = new $util.LongBits(object.dailyLoginRewardPoints[i].low >>> 0, object.dailyLoginRewardPoints[i].high >>> 0).toNumber(true);
+            }
+            if (object.dailyLoginBonusBps != null)
+                if ($util.Long)
+                    (message.dailyLoginBonusBps = $util.Long.fromValue(object.dailyLoginBonusBps)).unsigned = true;
+                else if (typeof object.dailyLoginBonusBps === "string")
+                    message.dailyLoginBonusBps = parseInt(object.dailyLoginBonusBps, 10);
+                else if (typeof object.dailyLoginBonusBps === "number")
+                    message.dailyLoginBonusBps = object.dailyLoginBonusBps;
+                else if (typeof object.dailyLoginBonusBps === "object")
+                    message.dailyLoginBonusBps = new $util.LongBits(object.dailyLoginBonusBps.low >>> 0, object.dailyLoginBonusBps.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a GameConfig message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.GameConfig
+         * @static
+         * @param {types.GameConfig} message GameConfig
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        GameConfig.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.arrays || options.defaults) {
+                object.dailyPayoutBps = [];
+                object.dailyLoginRewardPoints = [];
+            }
+            if (options.defaults) {
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.classicStartFee = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.classicStartFee = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.dailyStartFee = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.dailyStartFee = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.dailyMaxMoves = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.dailyMaxMoves = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.classicLeaderboardSize = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.classicLeaderboardSize = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.dailyLeaderboardSize = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.dailyLeaderboardSize = options.longs === String ? "0" : 0;
+                if (options.bytes === String)
+                    object.platformTreasuryAddress = "";
+                else {
+                    object.platformTreasuryAddress = [];
+                    if (options.bytes !== Array)
+                        object.platformTreasuryAddress = $util.newBuffer(object.platformTreasuryAddress);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.dailyPlatformFeeBps = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.dailyPlatformFeeBps = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.classicDailyPointsCap = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.classicDailyPointsCap = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.shopRedemptionRatePoints = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.shopRedemptionRatePoints = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.shopRedemptionRateCnpy = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.shopRedemptionRateCnpy = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.shopMinRedeemPoints = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.shopMinRedeemPoints = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.shopRedeemStepPoints = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.shopRedeemStepPoints = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.dailyRewardFeeBps = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.dailyRewardFeeBps = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.dailyReserveFeeBps = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.dailyReserveFeeBps = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.dailyShopFeeBps = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.dailyShopFeeBps = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.classicPlatformFeeBps = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.classicPlatformFeeBps = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.classicReserveFeeBps = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.classicReserveFeeBps = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.classicShopFeeBps = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.classicShopFeeBps = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.dailyLoginBonusBps = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.dailyLoginBonusBps = options.longs === String ? "0" : 0;
+            }
+            if (message.classicStartFee != null && message.hasOwnProperty("classicStartFee"))
+                if (typeof message.classicStartFee === "number")
+                    object.classicStartFee = options.longs === String ? String(message.classicStartFee) : message.classicStartFee;
+                else
+                    object.classicStartFee = options.longs === String ? $util.Long.prototype.toString.call(message.classicStartFee) : options.longs === Number ? new $util.LongBits(message.classicStartFee.low >>> 0, message.classicStartFee.high >>> 0).toNumber(true) : message.classicStartFee;
+            if (message.dailyStartFee != null && message.hasOwnProperty("dailyStartFee"))
+                if (typeof message.dailyStartFee === "number")
+                    object.dailyStartFee = options.longs === String ? String(message.dailyStartFee) : message.dailyStartFee;
+                else
+                    object.dailyStartFee = options.longs === String ? $util.Long.prototype.toString.call(message.dailyStartFee) : options.longs === Number ? new $util.LongBits(message.dailyStartFee.low >>> 0, message.dailyStartFee.high >>> 0).toNumber(true) : message.dailyStartFee;
+            if (message.dailyMaxMoves != null && message.hasOwnProperty("dailyMaxMoves"))
+                if (typeof message.dailyMaxMoves === "number")
+                    object.dailyMaxMoves = options.longs === String ? String(message.dailyMaxMoves) : message.dailyMaxMoves;
+                else
+                    object.dailyMaxMoves = options.longs === String ? $util.Long.prototype.toString.call(message.dailyMaxMoves) : options.longs === Number ? new $util.LongBits(message.dailyMaxMoves.low >>> 0, message.dailyMaxMoves.high >>> 0).toNumber(true) : message.dailyMaxMoves;
+            if (message.classicLeaderboardSize != null && message.hasOwnProperty("classicLeaderboardSize"))
+                if (typeof message.classicLeaderboardSize === "number")
+                    object.classicLeaderboardSize = options.longs === String ? String(message.classicLeaderboardSize) : message.classicLeaderboardSize;
+                else
+                    object.classicLeaderboardSize = options.longs === String ? $util.Long.prototype.toString.call(message.classicLeaderboardSize) : options.longs === Number ? new $util.LongBits(message.classicLeaderboardSize.low >>> 0, message.classicLeaderboardSize.high >>> 0).toNumber(true) : message.classicLeaderboardSize;
+            if (message.dailyLeaderboardSize != null && message.hasOwnProperty("dailyLeaderboardSize"))
+                if (typeof message.dailyLeaderboardSize === "number")
+                    object.dailyLeaderboardSize = options.longs === String ? String(message.dailyLeaderboardSize) : message.dailyLeaderboardSize;
+                else
+                    object.dailyLeaderboardSize = options.longs === String ? $util.Long.prototype.toString.call(message.dailyLeaderboardSize) : options.longs === Number ? new $util.LongBits(message.dailyLeaderboardSize.low >>> 0, message.dailyLeaderboardSize.high >>> 0).toNumber(true) : message.dailyLeaderboardSize;
+            if (message.platformTreasuryAddress != null && message.hasOwnProperty("platformTreasuryAddress"))
+                object.platformTreasuryAddress = options.bytes === String ? $util.base64.encode(message.platformTreasuryAddress, 0, message.platformTreasuryAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.platformTreasuryAddress) : message.platformTreasuryAddress;
+            if (message.dailyPlatformFeeBps != null && message.hasOwnProperty("dailyPlatformFeeBps"))
+                if (typeof message.dailyPlatformFeeBps === "number")
+                    object.dailyPlatformFeeBps = options.longs === String ? String(message.dailyPlatformFeeBps) : message.dailyPlatformFeeBps;
+                else
+                    object.dailyPlatformFeeBps = options.longs === String ? $util.Long.prototype.toString.call(message.dailyPlatformFeeBps) : options.longs === Number ? new $util.LongBits(message.dailyPlatformFeeBps.low >>> 0, message.dailyPlatformFeeBps.high >>> 0).toNumber(true) : message.dailyPlatformFeeBps;
+            if (message.dailyPayoutBps && message.dailyPayoutBps.length) {
+                object.dailyPayoutBps = [];
+                for (var j = 0; j < message.dailyPayoutBps.length; ++j)
+                    if (typeof message.dailyPayoutBps[j] === "number")
+                        object.dailyPayoutBps[j] = options.longs === String ? String(message.dailyPayoutBps[j]) : message.dailyPayoutBps[j];
+                    else
+                        object.dailyPayoutBps[j] = options.longs === String ? $util.Long.prototype.toString.call(message.dailyPayoutBps[j]) : options.longs === Number ? new $util.LongBits(message.dailyPayoutBps[j].low >>> 0, message.dailyPayoutBps[j].high >>> 0).toNumber(true) : message.dailyPayoutBps[j];
+            }
+            if (message.classicDailyPointsCap != null && message.hasOwnProperty("classicDailyPointsCap"))
+                if (typeof message.classicDailyPointsCap === "number")
+                    object.classicDailyPointsCap = options.longs === String ? String(message.classicDailyPointsCap) : message.classicDailyPointsCap;
+                else
+                    object.classicDailyPointsCap = options.longs === String ? $util.Long.prototype.toString.call(message.classicDailyPointsCap) : options.longs === Number ? new $util.LongBits(message.classicDailyPointsCap.low >>> 0, message.classicDailyPointsCap.high >>> 0).toNumber(true) : message.classicDailyPointsCap;
+            if (message.shopRedemptionRatePoints != null && message.hasOwnProperty("shopRedemptionRatePoints"))
+                if (typeof message.shopRedemptionRatePoints === "number")
+                    object.shopRedemptionRatePoints = options.longs === String ? String(message.shopRedemptionRatePoints) : message.shopRedemptionRatePoints;
+                else
+                    object.shopRedemptionRatePoints = options.longs === String ? $util.Long.prototype.toString.call(message.shopRedemptionRatePoints) : options.longs === Number ? new $util.LongBits(message.shopRedemptionRatePoints.low >>> 0, message.shopRedemptionRatePoints.high >>> 0).toNumber(true) : message.shopRedemptionRatePoints;
+            if (message.shopRedemptionRateCnpy != null && message.hasOwnProperty("shopRedemptionRateCnpy"))
+                if (typeof message.shopRedemptionRateCnpy === "number")
+                    object.shopRedemptionRateCnpy = options.longs === String ? String(message.shopRedemptionRateCnpy) : message.shopRedemptionRateCnpy;
+                else
+                    object.shopRedemptionRateCnpy = options.longs === String ? $util.Long.prototype.toString.call(message.shopRedemptionRateCnpy) : options.longs === Number ? new $util.LongBits(message.shopRedemptionRateCnpy.low >>> 0, message.shopRedemptionRateCnpy.high >>> 0).toNumber(true) : message.shopRedemptionRateCnpy;
+            if (message.shopMinRedeemPoints != null && message.hasOwnProperty("shopMinRedeemPoints"))
+                if (typeof message.shopMinRedeemPoints === "number")
+                    object.shopMinRedeemPoints = options.longs === String ? String(message.shopMinRedeemPoints) : message.shopMinRedeemPoints;
+                else
+                    object.shopMinRedeemPoints = options.longs === String ? $util.Long.prototype.toString.call(message.shopMinRedeemPoints) : options.longs === Number ? new $util.LongBits(message.shopMinRedeemPoints.low >>> 0, message.shopMinRedeemPoints.high >>> 0).toNumber(true) : message.shopMinRedeemPoints;
+            if (message.shopRedeemStepPoints != null && message.hasOwnProperty("shopRedeemStepPoints"))
+                if (typeof message.shopRedeemStepPoints === "number")
+                    object.shopRedeemStepPoints = options.longs === String ? String(message.shopRedeemStepPoints) : message.shopRedeemStepPoints;
+                else
+                    object.shopRedeemStepPoints = options.longs === String ? $util.Long.prototype.toString.call(message.shopRedeemStepPoints) : options.longs === Number ? new $util.LongBits(message.shopRedeemStepPoints.low >>> 0, message.shopRedeemStepPoints.high >>> 0).toNumber(true) : message.shopRedeemStepPoints;
+            if (message.dailyRewardFeeBps != null && message.hasOwnProperty("dailyRewardFeeBps"))
+                if (typeof message.dailyRewardFeeBps === "number")
+                    object.dailyRewardFeeBps = options.longs === String ? String(message.dailyRewardFeeBps) : message.dailyRewardFeeBps;
+                else
+                    object.dailyRewardFeeBps = options.longs === String ? $util.Long.prototype.toString.call(message.dailyRewardFeeBps) : options.longs === Number ? new $util.LongBits(message.dailyRewardFeeBps.low >>> 0, message.dailyRewardFeeBps.high >>> 0).toNumber(true) : message.dailyRewardFeeBps;
+            if (message.dailyReserveFeeBps != null && message.hasOwnProperty("dailyReserveFeeBps"))
+                if (typeof message.dailyReserveFeeBps === "number")
+                    object.dailyReserveFeeBps = options.longs === String ? String(message.dailyReserveFeeBps) : message.dailyReserveFeeBps;
+                else
+                    object.dailyReserveFeeBps = options.longs === String ? $util.Long.prototype.toString.call(message.dailyReserveFeeBps) : options.longs === Number ? new $util.LongBits(message.dailyReserveFeeBps.low >>> 0, message.dailyReserveFeeBps.high >>> 0).toNumber(true) : message.dailyReserveFeeBps;
+            if (message.dailyShopFeeBps != null && message.hasOwnProperty("dailyShopFeeBps"))
+                if (typeof message.dailyShopFeeBps === "number")
+                    object.dailyShopFeeBps = options.longs === String ? String(message.dailyShopFeeBps) : message.dailyShopFeeBps;
+                else
+                    object.dailyShopFeeBps = options.longs === String ? $util.Long.prototype.toString.call(message.dailyShopFeeBps) : options.longs === Number ? new $util.LongBits(message.dailyShopFeeBps.low >>> 0, message.dailyShopFeeBps.high >>> 0).toNumber(true) : message.dailyShopFeeBps;
+            if (message.classicPlatformFeeBps != null && message.hasOwnProperty("classicPlatformFeeBps"))
+                if (typeof message.classicPlatformFeeBps === "number")
+                    object.classicPlatformFeeBps = options.longs === String ? String(message.classicPlatformFeeBps) : message.classicPlatformFeeBps;
+                else
+                    object.classicPlatformFeeBps = options.longs === String ? $util.Long.prototype.toString.call(message.classicPlatformFeeBps) : options.longs === Number ? new $util.LongBits(message.classicPlatformFeeBps.low >>> 0, message.classicPlatformFeeBps.high >>> 0).toNumber(true) : message.classicPlatformFeeBps;
+            if (message.classicReserveFeeBps != null && message.hasOwnProperty("classicReserveFeeBps"))
+                if (typeof message.classicReserveFeeBps === "number")
+                    object.classicReserveFeeBps = options.longs === String ? String(message.classicReserveFeeBps) : message.classicReserveFeeBps;
+                else
+                    object.classicReserveFeeBps = options.longs === String ? $util.Long.prototype.toString.call(message.classicReserveFeeBps) : options.longs === Number ? new $util.LongBits(message.classicReserveFeeBps.low >>> 0, message.classicReserveFeeBps.high >>> 0).toNumber(true) : message.classicReserveFeeBps;
+            if (message.classicShopFeeBps != null && message.hasOwnProperty("classicShopFeeBps"))
+                if (typeof message.classicShopFeeBps === "number")
+                    object.classicShopFeeBps = options.longs === String ? String(message.classicShopFeeBps) : message.classicShopFeeBps;
+                else
+                    object.classicShopFeeBps = options.longs === String ? $util.Long.prototype.toString.call(message.classicShopFeeBps) : options.longs === Number ? new $util.LongBits(message.classicShopFeeBps.low >>> 0, message.classicShopFeeBps.high >>> 0).toNumber(true) : message.classicShopFeeBps;
+            if (message.dailyLoginRewardPoints && message.dailyLoginRewardPoints.length) {
+                object.dailyLoginRewardPoints = [];
+                for (var j = 0; j < message.dailyLoginRewardPoints.length; ++j)
+                    if (typeof message.dailyLoginRewardPoints[j] === "number")
+                        object.dailyLoginRewardPoints[j] = options.longs === String ? String(message.dailyLoginRewardPoints[j]) : message.dailyLoginRewardPoints[j];
+                    else
+                        object.dailyLoginRewardPoints[j] = options.longs === String ? $util.Long.prototype.toString.call(message.dailyLoginRewardPoints[j]) : options.longs === Number ? new $util.LongBits(message.dailyLoginRewardPoints[j].low >>> 0, message.dailyLoginRewardPoints[j].high >>> 0).toNumber(true) : message.dailyLoginRewardPoints[j];
+            }
+            if (message.dailyLoginBonusBps != null && message.hasOwnProperty("dailyLoginBonusBps"))
+                if (typeof message.dailyLoginBonusBps === "number")
+                    object.dailyLoginBonusBps = options.longs === String ? String(message.dailyLoginBonusBps) : message.dailyLoginBonusBps;
+                else
+                    object.dailyLoginBonusBps = options.longs === String ? $util.Long.prototype.toString.call(message.dailyLoginBonusBps) : options.longs === Number ? new $util.LongBits(message.dailyLoginBonusBps.low >>> 0, message.dailyLoginBonusBps.high >>> 0).toNumber(true) : message.dailyLoginBonusBps;
+            return object;
+        };
+
+        /**
+         * Converts this GameConfig to JSON.
+         * @function toJSON
+         * @memberof types.GameConfig
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        GameConfig.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for GameConfig
+         * @function getTypeUrl
+         * @memberof types.GameConfig
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        GameConfig.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.GameConfig";
+        };
+
+        return GameConfig;
+    })();
+
+    types.GameSession = (function() {
+
+        /**
+         * Properties of a GameSession.
+         * @memberof types
+         * @interface IGameSession
+         * @property {Uint8Array|null} [gameId] GameSession gameId
+         * @property {Uint8Array|null} [playerAddress] GameSession playerAddress
+         * @property {types.GameMode|null} [mode] GameSession mode
+         * @property {string|null} [utcDate] GameSession utcDate
+         * @property {Uint8Array|null} [seed] GameSession seed
+         * @property {types.SessionStatus|null} [status] GameSession status
+         * @property {number|Long|null} [startedHeight] GameSession startedHeight
+         * @property {number|Long|null} [startedAtUnix] GameSession startedAtUnix
+         * @property {number|Long|null} [feePaid] GameSession feePaid
+         * @property {number|Long|null} [maxMoves] GameSession maxMoves
+         * @property {number|Long|null} [submittedScore] GameSession submittedScore
+         * @property {number|Long|null} [submittedMaxTile] GameSession submittedMaxTile
+         * @property {number|Long|null} [finalMoveCount] GameSession finalMoveCount
+         * @property {types.StopReason|null} [stopReason] GameSession stopReason
+         * @property {number|Long|null} [submittedAtUnix] GameSession submittedAtUnix
+         */
+
+        /**
+         * Constructs a new GameSession.
+         * @memberof types
+         * @classdesc Represents a GameSession.
+         * @implements IGameSession
+         * @constructor
+         * @param {types.IGameSession=} [properties] Properties to set
+         */
+        function GameSession(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * GameSession gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * GameSession playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * GameSession mode.
+         * @member {types.GameMode} mode
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.mode = 0;
+
+        /**
+         * GameSession utcDate.
+         * @member {string} utcDate
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.utcDate = "";
+
+        /**
+         * GameSession seed.
+         * @member {Uint8Array} seed
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.seed = $util.newBuffer([]);
+
+        /**
+         * GameSession status.
+         * @member {types.SessionStatus} status
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.status = 0;
+
+        /**
+         * GameSession startedHeight.
+         * @member {number|Long} startedHeight
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.startedHeight = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameSession startedAtUnix.
+         * @member {number|Long} startedAtUnix
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.startedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameSession feePaid.
+         * @member {number|Long} feePaid
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.feePaid = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameSession maxMoves.
+         * @member {number|Long} maxMoves
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.maxMoves = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameSession submittedScore.
+         * @member {number|Long} submittedScore
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.submittedScore = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameSession submittedMaxTile.
+         * @member {number|Long} submittedMaxTile
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.submittedMaxTile = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameSession finalMoveCount.
+         * @member {number|Long} finalMoveCount
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.finalMoveCount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameSession stopReason.
+         * @member {types.StopReason} stopReason
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.stopReason = 0;
+
+        /**
+         * GameSession submittedAtUnix.
+         * @member {number|Long} submittedAtUnix
+         * @memberof types.GameSession
+         * @instance
+         */
+        GameSession.prototype.submittedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new GameSession instance using the specified properties.
+         * @function create
+         * @memberof types.GameSession
+         * @static
+         * @param {types.IGameSession=} [properties] Properties to set
+         * @returns {types.GameSession} GameSession instance
+         */
+        GameSession.create = function create(properties) {
+            return new GameSession(properties);
+        };
+
+        /**
+         * Encodes the specified GameSession message. Does not implicitly {@link types.GameSession.verify|verify} messages.
+         * @function encode
+         * @memberof types.GameSession
+         * @static
+         * @param {types.IGameSession} message GameSession message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        GameSession.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.gameId);
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.playerAddress);
+            if (message.mode != null && Object.hasOwnProperty.call(message, "mode"))
+                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.mode);
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.utcDate);
+            if (message.seed != null && Object.hasOwnProperty.call(message, "seed"))
+                writer.uint32(/* id 5, wireType 2 =*/42).bytes(message.seed);
+            if (message.status != null && Object.hasOwnProperty.call(message, "status"))
+                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.status);
+            if (message.startedHeight != null && Object.hasOwnProperty.call(message, "startedHeight"))
+                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.startedHeight);
+            if (message.startedAtUnix != null && Object.hasOwnProperty.call(message, "startedAtUnix"))
+                writer.uint32(/* id 8, wireType 0 =*/64).uint64(message.startedAtUnix);
+            if (message.feePaid != null && Object.hasOwnProperty.call(message, "feePaid"))
+                writer.uint32(/* id 9, wireType 0 =*/72).uint64(message.feePaid);
+            if (message.maxMoves != null && Object.hasOwnProperty.call(message, "maxMoves"))
+                writer.uint32(/* id 10, wireType 0 =*/80).uint64(message.maxMoves);
+            if (message.submittedScore != null && Object.hasOwnProperty.call(message, "submittedScore"))
+                writer.uint32(/* id 11, wireType 0 =*/88).uint64(message.submittedScore);
+            if (message.submittedMaxTile != null && Object.hasOwnProperty.call(message, "submittedMaxTile"))
+                writer.uint32(/* id 12, wireType 0 =*/96).uint64(message.submittedMaxTile);
+            if (message.finalMoveCount != null && Object.hasOwnProperty.call(message, "finalMoveCount"))
+                writer.uint32(/* id 13, wireType 0 =*/104).uint64(message.finalMoveCount);
+            if (message.stopReason != null && Object.hasOwnProperty.call(message, "stopReason"))
+                writer.uint32(/* id 14, wireType 0 =*/112).int32(message.stopReason);
+            if (message.submittedAtUnix != null && Object.hasOwnProperty.call(message, "submittedAtUnix"))
+                writer.uint32(/* id 15, wireType 0 =*/120).uint64(message.submittedAtUnix);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified GameSession message, length delimited. Does not implicitly {@link types.GameSession.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.GameSession
+         * @static
+         * @param {types.IGameSession} message GameSession message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        GameSession.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a GameSession message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.GameSession
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.GameSession} GameSession
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        GameSession.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.GameSession();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.mode = reader.int32();
+                        break;
+                    }
+                case 4: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                case 5: {
+                        message.seed = reader.bytes();
+                        break;
+                    }
+                case 6: {
+                        message.status = reader.int32();
+                        break;
+                    }
+                case 7: {
+                        message.startedHeight = reader.uint64();
+                        break;
+                    }
+                case 8: {
+                        message.startedAtUnix = reader.uint64();
+                        break;
+                    }
+                case 9: {
+                        message.feePaid = reader.uint64();
+                        break;
+                    }
+                case 10: {
+                        message.maxMoves = reader.uint64();
+                        break;
+                    }
+                case 11: {
+                        message.submittedScore = reader.uint64();
+                        break;
+                    }
+                case 12: {
+                        message.submittedMaxTile = reader.uint64();
+                        break;
+                    }
+                case 13: {
+                        message.finalMoveCount = reader.uint64();
+                        break;
+                    }
+                case 14: {
+                        message.stopReason = reader.int32();
+                        break;
+                    }
+                case 15: {
+                        message.submittedAtUnix = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a GameSession message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.GameSession
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.GameSession} GameSession
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        GameSession.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a GameSession message.
+         * @function verify
+         * @memberof types.GameSession
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        GameSession.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.mode != null && message.hasOwnProperty("mode"))
+                switch (message.mode) {
+                default:
+                    return "mode: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                    break;
+                }
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            if (message.seed != null && message.hasOwnProperty("seed"))
+                if (!(message.seed && typeof message.seed.length === "number" || $util.isString(message.seed)))
+                    return "seed: buffer expected";
+            if (message.status != null && message.hasOwnProperty("status"))
+                switch (message.status) {
+                default:
+                    return "status: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    break;
+                }
+            if (message.startedHeight != null && message.hasOwnProperty("startedHeight"))
+                if (!$util.isInteger(message.startedHeight) && !(message.startedHeight && $util.isInteger(message.startedHeight.low) && $util.isInteger(message.startedHeight.high)))
+                    return "startedHeight: integer|Long expected";
+            if (message.startedAtUnix != null && message.hasOwnProperty("startedAtUnix"))
+                if (!$util.isInteger(message.startedAtUnix) && !(message.startedAtUnix && $util.isInteger(message.startedAtUnix.low) && $util.isInteger(message.startedAtUnix.high)))
+                    return "startedAtUnix: integer|Long expected";
+            if (message.feePaid != null && message.hasOwnProperty("feePaid"))
+                if (!$util.isInteger(message.feePaid) && !(message.feePaid && $util.isInteger(message.feePaid.low) && $util.isInteger(message.feePaid.high)))
+                    return "feePaid: integer|Long expected";
+            if (message.maxMoves != null && message.hasOwnProperty("maxMoves"))
+                if (!$util.isInteger(message.maxMoves) && !(message.maxMoves && $util.isInteger(message.maxMoves.low) && $util.isInteger(message.maxMoves.high)))
+                    return "maxMoves: integer|Long expected";
+            if (message.submittedScore != null && message.hasOwnProperty("submittedScore"))
+                if (!$util.isInteger(message.submittedScore) && !(message.submittedScore && $util.isInteger(message.submittedScore.low) && $util.isInteger(message.submittedScore.high)))
+                    return "submittedScore: integer|Long expected";
+            if (message.submittedMaxTile != null && message.hasOwnProperty("submittedMaxTile"))
+                if (!$util.isInteger(message.submittedMaxTile) && !(message.submittedMaxTile && $util.isInteger(message.submittedMaxTile.low) && $util.isInteger(message.submittedMaxTile.high)))
+                    return "submittedMaxTile: integer|Long expected";
+            if (message.finalMoveCount != null && message.hasOwnProperty("finalMoveCount"))
+                if (!$util.isInteger(message.finalMoveCount) && !(message.finalMoveCount && $util.isInteger(message.finalMoveCount.low) && $util.isInteger(message.finalMoveCount.high)))
+                    return "finalMoveCount: integer|Long expected";
+            if (message.stopReason != null && message.hasOwnProperty("stopReason"))
+                switch (message.stopReason) {
+                default:
+                    return "stopReason: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    break;
+                }
+            if (message.submittedAtUnix != null && message.hasOwnProperty("submittedAtUnix"))
+                if (!$util.isInteger(message.submittedAtUnix) && !(message.submittedAtUnix && $util.isInteger(message.submittedAtUnix.low) && $util.isInteger(message.submittedAtUnix.high)))
+                    return "submittedAtUnix: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a GameSession message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.GameSession
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.GameSession} GameSession
+         */
+        GameSession.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.GameSession)
+                return object;
+            var message = new $root.types.GameSession();
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            switch (object.mode) {
+            default:
+                if (typeof object.mode === "number") {
+                    message.mode = object.mode;
+                    break;
+                }
+                break;
+            case "GAME_MODE_UNSPECIFIED":
+            case 0:
+                message.mode = 0;
+                break;
+            case "GAME_MODE_DAILY":
+            case 1:
+                message.mode = 1;
+                break;
+            case "GAME_MODE_CLASSIC":
+            case 2:
+                message.mode = 2;
+                break;
+            }
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            if (object.seed != null)
+                if (typeof object.seed === "string")
+                    $util.base64.decode(object.seed, message.seed = $util.newBuffer($util.base64.length(object.seed)), 0);
+                else if (object.seed.length >= 0)
+                    message.seed = object.seed;
+            switch (object.status) {
+            default:
+                if (typeof object.status === "number") {
+                    message.status = object.status;
+                    break;
+                }
+                break;
+            case "SESSION_STATUS_UNSPECIFIED":
+            case 0:
+                message.status = 0;
+                break;
+            case "SESSION_STATUS_ACTIVE":
+            case 1:
+                message.status = 1;
+                break;
+            case "SESSION_STATUS_COMPLETED":
+            case 2:
+                message.status = 2;
+                break;
+            case "SESSION_STATUS_EXPIRED":
+            case 3:
+                message.status = 3;
+                break;
+            }
+            if (object.startedHeight != null)
+                if ($util.Long)
+                    (message.startedHeight = $util.Long.fromValue(object.startedHeight)).unsigned = true;
+                else if (typeof object.startedHeight === "string")
+                    message.startedHeight = parseInt(object.startedHeight, 10);
+                else if (typeof object.startedHeight === "number")
+                    message.startedHeight = object.startedHeight;
+                else if (typeof object.startedHeight === "object")
+                    message.startedHeight = new $util.LongBits(object.startedHeight.low >>> 0, object.startedHeight.high >>> 0).toNumber(true);
+            if (object.startedAtUnix != null)
+                if ($util.Long)
+                    (message.startedAtUnix = $util.Long.fromValue(object.startedAtUnix)).unsigned = true;
+                else if (typeof object.startedAtUnix === "string")
+                    message.startedAtUnix = parseInt(object.startedAtUnix, 10);
+                else if (typeof object.startedAtUnix === "number")
+                    message.startedAtUnix = object.startedAtUnix;
+                else if (typeof object.startedAtUnix === "object")
+                    message.startedAtUnix = new $util.LongBits(object.startedAtUnix.low >>> 0, object.startedAtUnix.high >>> 0).toNumber(true);
+            if (object.feePaid != null)
+                if ($util.Long)
+                    (message.feePaid = $util.Long.fromValue(object.feePaid)).unsigned = true;
+                else if (typeof object.feePaid === "string")
+                    message.feePaid = parseInt(object.feePaid, 10);
+                else if (typeof object.feePaid === "number")
+                    message.feePaid = object.feePaid;
+                else if (typeof object.feePaid === "object")
+                    message.feePaid = new $util.LongBits(object.feePaid.low >>> 0, object.feePaid.high >>> 0).toNumber(true);
+            if (object.maxMoves != null)
+                if ($util.Long)
+                    (message.maxMoves = $util.Long.fromValue(object.maxMoves)).unsigned = true;
+                else if (typeof object.maxMoves === "string")
+                    message.maxMoves = parseInt(object.maxMoves, 10);
+                else if (typeof object.maxMoves === "number")
+                    message.maxMoves = object.maxMoves;
+                else if (typeof object.maxMoves === "object")
+                    message.maxMoves = new $util.LongBits(object.maxMoves.low >>> 0, object.maxMoves.high >>> 0).toNumber(true);
+            if (object.submittedScore != null)
+                if ($util.Long)
+                    (message.submittedScore = $util.Long.fromValue(object.submittedScore)).unsigned = true;
+                else if (typeof object.submittedScore === "string")
+                    message.submittedScore = parseInt(object.submittedScore, 10);
+                else if (typeof object.submittedScore === "number")
+                    message.submittedScore = object.submittedScore;
+                else if (typeof object.submittedScore === "object")
+                    message.submittedScore = new $util.LongBits(object.submittedScore.low >>> 0, object.submittedScore.high >>> 0).toNumber(true);
+            if (object.submittedMaxTile != null)
+                if ($util.Long)
+                    (message.submittedMaxTile = $util.Long.fromValue(object.submittedMaxTile)).unsigned = true;
+                else if (typeof object.submittedMaxTile === "string")
+                    message.submittedMaxTile = parseInt(object.submittedMaxTile, 10);
+                else if (typeof object.submittedMaxTile === "number")
+                    message.submittedMaxTile = object.submittedMaxTile;
+                else if (typeof object.submittedMaxTile === "object")
+                    message.submittedMaxTile = new $util.LongBits(object.submittedMaxTile.low >>> 0, object.submittedMaxTile.high >>> 0).toNumber(true);
+            if (object.finalMoveCount != null)
+                if ($util.Long)
+                    (message.finalMoveCount = $util.Long.fromValue(object.finalMoveCount)).unsigned = true;
+                else if (typeof object.finalMoveCount === "string")
+                    message.finalMoveCount = parseInt(object.finalMoveCount, 10);
+                else if (typeof object.finalMoveCount === "number")
+                    message.finalMoveCount = object.finalMoveCount;
+                else if (typeof object.finalMoveCount === "object")
+                    message.finalMoveCount = new $util.LongBits(object.finalMoveCount.low >>> 0, object.finalMoveCount.high >>> 0).toNumber(true);
+            switch (object.stopReason) {
+            default:
+                if (typeof object.stopReason === "number") {
+                    message.stopReason = object.stopReason;
+                    break;
+                }
+                break;
+            case "STOP_REASON_UNSPECIFIED":
+            case 0:
+                message.stopReason = 0;
+                break;
+            case "STOP_REASON_PLAYER_STOPPED":
+            case 1:
+                message.stopReason = 1;
+                break;
+            case "STOP_REASON_NO_MOVES":
+            case 2:
+                message.stopReason = 2;
+                break;
+            case "STOP_REASON_MAX_MOVES":
+            case 3:
+                message.stopReason = 3;
+                break;
+            }
+            if (object.submittedAtUnix != null)
+                if ($util.Long)
+                    (message.submittedAtUnix = $util.Long.fromValue(object.submittedAtUnix)).unsigned = true;
+                else if (typeof object.submittedAtUnix === "string")
+                    message.submittedAtUnix = parseInt(object.submittedAtUnix, 10);
+                else if (typeof object.submittedAtUnix === "number")
+                    message.submittedAtUnix = object.submittedAtUnix;
+                else if (typeof object.submittedAtUnix === "object")
+                    message.submittedAtUnix = new $util.LongBits(object.submittedAtUnix.low >>> 0, object.submittedAtUnix.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a GameSession message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.GameSession
+         * @static
+         * @param {types.GameSession} message GameSession
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        GameSession.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                object.mode = options.enums === String ? "GAME_MODE_UNSPECIFIED" : 0;
+                object.utcDate = "";
+                if (options.bytes === String)
+                    object.seed = "";
+                else {
+                    object.seed = [];
+                    if (options.bytes !== Array)
+                        object.seed = $util.newBuffer(object.seed);
+                }
+                object.status = options.enums === String ? "SESSION_STATUS_UNSPECIFIED" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.startedHeight = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.startedHeight = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.startedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.startedAtUnix = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.feePaid = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.feePaid = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.maxMoves = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.maxMoves = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.submittedScore = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.submittedScore = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.submittedMaxTile = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.submittedMaxTile = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.finalMoveCount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.finalMoveCount = options.longs === String ? "0" : 0;
+                object.stopReason = options.enums === String ? "STOP_REASON_UNSPECIFIED" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.submittedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.submittedAtUnix = options.longs === String ? "0" : 0;
+            }
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.mode != null && message.hasOwnProperty("mode"))
+                object.mode = options.enums === String ? $root.types.GameMode[message.mode] === undefined ? message.mode : $root.types.GameMode[message.mode] : message.mode;
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            if (message.seed != null && message.hasOwnProperty("seed"))
+                object.seed = options.bytes === String ? $util.base64.encode(message.seed, 0, message.seed.length) : options.bytes === Array ? Array.prototype.slice.call(message.seed) : message.seed;
+            if (message.status != null && message.hasOwnProperty("status"))
+                object.status = options.enums === String ? $root.types.SessionStatus[message.status] === undefined ? message.status : $root.types.SessionStatus[message.status] : message.status;
+            if (message.startedHeight != null && message.hasOwnProperty("startedHeight"))
+                if (typeof message.startedHeight === "number")
+                    object.startedHeight = options.longs === String ? String(message.startedHeight) : message.startedHeight;
+                else
+                    object.startedHeight = options.longs === String ? $util.Long.prototype.toString.call(message.startedHeight) : options.longs === Number ? new $util.LongBits(message.startedHeight.low >>> 0, message.startedHeight.high >>> 0).toNumber(true) : message.startedHeight;
+            if (message.startedAtUnix != null && message.hasOwnProperty("startedAtUnix"))
+                if (typeof message.startedAtUnix === "number")
+                    object.startedAtUnix = options.longs === String ? String(message.startedAtUnix) : message.startedAtUnix;
+                else
+                    object.startedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.startedAtUnix) : options.longs === Number ? new $util.LongBits(message.startedAtUnix.low >>> 0, message.startedAtUnix.high >>> 0).toNumber(true) : message.startedAtUnix;
+            if (message.feePaid != null && message.hasOwnProperty("feePaid"))
+                if (typeof message.feePaid === "number")
+                    object.feePaid = options.longs === String ? String(message.feePaid) : message.feePaid;
+                else
+                    object.feePaid = options.longs === String ? $util.Long.prototype.toString.call(message.feePaid) : options.longs === Number ? new $util.LongBits(message.feePaid.low >>> 0, message.feePaid.high >>> 0).toNumber(true) : message.feePaid;
+            if (message.maxMoves != null && message.hasOwnProperty("maxMoves"))
+                if (typeof message.maxMoves === "number")
+                    object.maxMoves = options.longs === String ? String(message.maxMoves) : message.maxMoves;
+                else
+                    object.maxMoves = options.longs === String ? $util.Long.prototype.toString.call(message.maxMoves) : options.longs === Number ? new $util.LongBits(message.maxMoves.low >>> 0, message.maxMoves.high >>> 0).toNumber(true) : message.maxMoves;
+            if (message.submittedScore != null && message.hasOwnProperty("submittedScore"))
+                if (typeof message.submittedScore === "number")
+                    object.submittedScore = options.longs === String ? String(message.submittedScore) : message.submittedScore;
+                else
+                    object.submittedScore = options.longs === String ? $util.Long.prototype.toString.call(message.submittedScore) : options.longs === Number ? new $util.LongBits(message.submittedScore.low >>> 0, message.submittedScore.high >>> 0).toNumber(true) : message.submittedScore;
+            if (message.submittedMaxTile != null && message.hasOwnProperty("submittedMaxTile"))
+                if (typeof message.submittedMaxTile === "number")
+                    object.submittedMaxTile = options.longs === String ? String(message.submittedMaxTile) : message.submittedMaxTile;
+                else
+                    object.submittedMaxTile = options.longs === String ? $util.Long.prototype.toString.call(message.submittedMaxTile) : options.longs === Number ? new $util.LongBits(message.submittedMaxTile.low >>> 0, message.submittedMaxTile.high >>> 0).toNumber(true) : message.submittedMaxTile;
+            if (message.finalMoveCount != null && message.hasOwnProperty("finalMoveCount"))
+                if (typeof message.finalMoveCount === "number")
+                    object.finalMoveCount = options.longs === String ? String(message.finalMoveCount) : message.finalMoveCount;
+                else
+                    object.finalMoveCount = options.longs === String ? $util.Long.prototype.toString.call(message.finalMoveCount) : options.longs === Number ? new $util.LongBits(message.finalMoveCount.low >>> 0, message.finalMoveCount.high >>> 0).toNumber(true) : message.finalMoveCount;
+            if (message.stopReason != null && message.hasOwnProperty("stopReason"))
+                object.stopReason = options.enums === String ? $root.types.StopReason[message.stopReason] === undefined ? message.stopReason : $root.types.StopReason[message.stopReason] : message.stopReason;
+            if (message.submittedAtUnix != null && message.hasOwnProperty("submittedAtUnix"))
+                if (typeof message.submittedAtUnix === "number")
+                    object.submittedAtUnix = options.longs === String ? String(message.submittedAtUnix) : message.submittedAtUnix;
+                else
+                    object.submittedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.submittedAtUnix) : options.longs === Number ? new $util.LongBits(message.submittedAtUnix.low >>> 0, message.submittedAtUnix.high >>> 0).toNumber(true) : message.submittedAtUnix;
+            return object;
+        };
+
+        /**
+         * Converts this GameSession to JSON.
+         * @function toJSON
+         * @memberof types.GameSession
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        GameSession.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for GameSession
+         * @function getTypeUrl
+         * @memberof types.GameSession
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        GameSession.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.GameSession";
+        };
+
+        return GameSession;
+    })();
+
+    types.DailyAttempt = (function() {
+
+        /**
+         * Properties of a DailyAttempt.
+         * @memberof types
+         * @interface IDailyAttempt
+         * @property {string|null} [utcDate] DailyAttempt utcDate
+         * @property {Uint8Array|null} [playerAddress] DailyAttempt playerAddress
+         * @property {Uint8Array|null} [gameId] DailyAttempt gameId
+         */
+
+        /**
+         * Constructs a new DailyAttempt.
+         * @memberof types
+         * @classdesc Represents a DailyAttempt.
+         * @implements IDailyAttempt
+         * @constructor
+         * @param {types.IDailyAttempt=} [properties] Properties to set
+         */
+        function DailyAttempt(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * DailyAttempt utcDate.
+         * @member {string} utcDate
+         * @memberof types.DailyAttempt
+         * @instance
+         */
+        DailyAttempt.prototype.utcDate = "";
+
+        /**
+         * DailyAttempt playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.DailyAttempt
+         * @instance
+         */
+        DailyAttempt.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * DailyAttempt gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.DailyAttempt
+         * @instance
+         */
+        DailyAttempt.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * Creates a new DailyAttempt instance using the specified properties.
+         * @function create
+         * @memberof types.DailyAttempt
+         * @static
+         * @param {types.IDailyAttempt=} [properties] Properties to set
+         * @returns {types.DailyAttempt} DailyAttempt instance
+         */
+        DailyAttempt.create = function create(properties) {
+            return new DailyAttempt(properties);
+        };
+
+        /**
+         * Encodes the specified DailyAttempt message. Does not implicitly {@link types.DailyAttempt.verify|verify} messages.
+         * @function encode
+         * @memberof types.DailyAttempt
+         * @static
+         * @param {types.IDailyAttempt} message DailyAttempt message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyAttempt.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.utcDate);
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.playerAddress);
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.gameId);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified DailyAttempt message, length delimited. Does not implicitly {@link types.DailyAttempt.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.DailyAttempt
+         * @static
+         * @param {types.IDailyAttempt} message DailyAttempt message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyAttempt.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a DailyAttempt message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.DailyAttempt
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.DailyAttempt} DailyAttempt
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyAttempt.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.DailyAttempt();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a DailyAttempt message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.DailyAttempt
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.DailyAttempt} DailyAttempt
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyAttempt.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a DailyAttempt message.
+         * @function verify
+         * @memberof types.DailyAttempt
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        DailyAttempt.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a DailyAttempt message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.DailyAttempt
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.DailyAttempt} DailyAttempt
+         */
+        DailyAttempt.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.DailyAttempt)
+                return object;
+            var message = new $root.types.DailyAttempt();
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a DailyAttempt message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.DailyAttempt
+         * @static
+         * @param {types.DailyAttempt} message DailyAttempt
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        DailyAttempt.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.utcDate = "";
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+            }
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            return object;
+        };
+
+        /**
+         * Converts this DailyAttempt to JSON.
+         * @function toJSON
+         * @memberof types.DailyAttempt
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        DailyAttempt.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for DailyAttempt
+         * @function getTypeUrl
+         * @memberof types.DailyAttempt
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        DailyAttempt.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.DailyAttempt";
+        };
+
+        return DailyAttempt;
+    })();
+
+    types.DailySubmission = (function() {
+
+        /**
+         * Properties of a DailySubmission.
+         * @memberof types
+         * @interface IDailySubmission
+         * @property {string|null} [utcDate] DailySubmission utcDate
+         * @property {Uint8Array|null} [playerAddress] DailySubmission playerAddress
+         * @property {Uint8Array|null} [gameId] DailySubmission gameId
+         * @property {number|Long|null} [score] DailySubmission score
+         * @property {number|Long|null} [maxTile] DailySubmission maxTile
+         * @property {number|Long|null} [moveCount] DailySubmission moveCount
+         * @property {number|Long|null} [submittedAtUnix] DailySubmission submittedAtUnix
+         */
+
+        /**
+         * Constructs a new DailySubmission.
+         * @memberof types
+         * @classdesc Represents a DailySubmission.
+         * @implements IDailySubmission
+         * @constructor
+         * @param {types.IDailySubmission=} [properties] Properties to set
+         */
+        function DailySubmission(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * DailySubmission utcDate.
+         * @member {string} utcDate
+         * @memberof types.DailySubmission
+         * @instance
+         */
+        DailySubmission.prototype.utcDate = "";
+
+        /**
+         * DailySubmission playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.DailySubmission
+         * @instance
+         */
+        DailySubmission.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * DailySubmission gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.DailySubmission
+         * @instance
+         */
+        DailySubmission.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * DailySubmission score.
+         * @member {number|Long} score
+         * @memberof types.DailySubmission
+         * @instance
+         */
+        DailySubmission.prototype.score = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailySubmission maxTile.
+         * @member {number|Long} maxTile
+         * @memberof types.DailySubmission
+         * @instance
+         */
+        DailySubmission.prototype.maxTile = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailySubmission moveCount.
+         * @member {number|Long} moveCount
+         * @memberof types.DailySubmission
+         * @instance
+         */
+        DailySubmission.prototype.moveCount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailySubmission submittedAtUnix.
+         * @member {number|Long} submittedAtUnix
+         * @memberof types.DailySubmission
+         * @instance
+         */
+        DailySubmission.prototype.submittedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new DailySubmission instance using the specified properties.
+         * @function create
+         * @memberof types.DailySubmission
+         * @static
+         * @param {types.IDailySubmission=} [properties] Properties to set
+         * @returns {types.DailySubmission} DailySubmission instance
+         */
+        DailySubmission.create = function create(properties) {
+            return new DailySubmission(properties);
+        };
+
+        /**
+         * Encodes the specified DailySubmission message. Does not implicitly {@link types.DailySubmission.verify|verify} messages.
+         * @function encode
+         * @memberof types.DailySubmission
+         * @static
+         * @param {types.IDailySubmission} message DailySubmission message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailySubmission.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.utcDate);
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.playerAddress);
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.gameId);
+            if (message.score != null && Object.hasOwnProperty.call(message, "score"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.score);
+            if (message.maxTile != null && Object.hasOwnProperty.call(message, "maxTile"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.maxTile);
+            if (message.moveCount != null && Object.hasOwnProperty.call(message, "moveCount"))
+                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.moveCount);
+            if (message.submittedAtUnix != null && Object.hasOwnProperty.call(message, "submittedAtUnix"))
+                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.submittedAtUnix);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified DailySubmission message, length delimited. Does not implicitly {@link types.DailySubmission.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.DailySubmission
+         * @static
+         * @param {types.IDailySubmission} message DailySubmission message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailySubmission.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a DailySubmission message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.DailySubmission
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.DailySubmission} DailySubmission
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailySubmission.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.DailySubmission();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                case 4: {
+                        message.score = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.maxTile = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.moveCount = reader.uint64();
+                        break;
+                    }
+                case 7: {
+                        message.submittedAtUnix = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a DailySubmission message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.DailySubmission
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.DailySubmission} DailySubmission
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailySubmission.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a DailySubmission message.
+         * @function verify
+         * @memberof types.DailySubmission
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        DailySubmission.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            if (message.score != null && message.hasOwnProperty("score"))
+                if (!$util.isInteger(message.score) && !(message.score && $util.isInteger(message.score.low) && $util.isInteger(message.score.high)))
+                    return "score: integer|Long expected";
+            if (message.maxTile != null && message.hasOwnProperty("maxTile"))
+                if (!$util.isInteger(message.maxTile) && !(message.maxTile && $util.isInteger(message.maxTile.low) && $util.isInteger(message.maxTile.high)))
+                    return "maxTile: integer|Long expected";
+            if (message.moveCount != null && message.hasOwnProperty("moveCount"))
+                if (!$util.isInteger(message.moveCount) && !(message.moveCount && $util.isInteger(message.moveCount.low) && $util.isInteger(message.moveCount.high)))
+                    return "moveCount: integer|Long expected";
+            if (message.submittedAtUnix != null && message.hasOwnProperty("submittedAtUnix"))
+                if (!$util.isInteger(message.submittedAtUnix) && !(message.submittedAtUnix && $util.isInteger(message.submittedAtUnix.low) && $util.isInteger(message.submittedAtUnix.high)))
+                    return "submittedAtUnix: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a DailySubmission message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.DailySubmission
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.DailySubmission} DailySubmission
+         */
+        DailySubmission.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.DailySubmission)
+                return object;
+            var message = new $root.types.DailySubmission();
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            if (object.score != null)
+                if ($util.Long)
+                    (message.score = $util.Long.fromValue(object.score)).unsigned = true;
+                else if (typeof object.score === "string")
+                    message.score = parseInt(object.score, 10);
+                else if (typeof object.score === "number")
+                    message.score = object.score;
+                else if (typeof object.score === "object")
+                    message.score = new $util.LongBits(object.score.low >>> 0, object.score.high >>> 0).toNumber(true);
+            if (object.maxTile != null)
+                if ($util.Long)
+                    (message.maxTile = $util.Long.fromValue(object.maxTile)).unsigned = true;
+                else if (typeof object.maxTile === "string")
+                    message.maxTile = parseInt(object.maxTile, 10);
+                else if (typeof object.maxTile === "number")
+                    message.maxTile = object.maxTile;
+                else if (typeof object.maxTile === "object")
+                    message.maxTile = new $util.LongBits(object.maxTile.low >>> 0, object.maxTile.high >>> 0).toNumber(true);
+            if (object.moveCount != null)
+                if ($util.Long)
+                    (message.moveCount = $util.Long.fromValue(object.moveCount)).unsigned = true;
+                else if (typeof object.moveCount === "string")
+                    message.moveCount = parseInt(object.moveCount, 10);
+                else if (typeof object.moveCount === "number")
+                    message.moveCount = object.moveCount;
+                else if (typeof object.moveCount === "object")
+                    message.moveCount = new $util.LongBits(object.moveCount.low >>> 0, object.moveCount.high >>> 0).toNumber(true);
+            if (object.submittedAtUnix != null)
+                if ($util.Long)
+                    (message.submittedAtUnix = $util.Long.fromValue(object.submittedAtUnix)).unsigned = true;
+                else if (typeof object.submittedAtUnix === "string")
+                    message.submittedAtUnix = parseInt(object.submittedAtUnix, 10);
+                else if (typeof object.submittedAtUnix === "number")
+                    message.submittedAtUnix = object.submittedAtUnix;
+                else if (typeof object.submittedAtUnix === "object")
+                    message.submittedAtUnix = new $util.LongBits(object.submittedAtUnix.low >>> 0, object.submittedAtUnix.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a DailySubmission message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.DailySubmission
+         * @static
+         * @param {types.DailySubmission} message DailySubmission
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        DailySubmission.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.utcDate = "";
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.score = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.score = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.maxTile = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.maxTile = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.moveCount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.moveCount = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.submittedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.submittedAtUnix = options.longs === String ? "0" : 0;
+            }
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            if (message.score != null && message.hasOwnProperty("score"))
+                if (typeof message.score === "number")
+                    object.score = options.longs === String ? String(message.score) : message.score;
+                else
+                    object.score = options.longs === String ? $util.Long.prototype.toString.call(message.score) : options.longs === Number ? new $util.LongBits(message.score.low >>> 0, message.score.high >>> 0).toNumber(true) : message.score;
+            if (message.maxTile != null && message.hasOwnProperty("maxTile"))
+                if (typeof message.maxTile === "number")
+                    object.maxTile = options.longs === String ? String(message.maxTile) : message.maxTile;
+                else
+                    object.maxTile = options.longs === String ? $util.Long.prototype.toString.call(message.maxTile) : options.longs === Number ? new $util.LongBits(message.maxTile.low >>> 0, message.maxTile.high >>> 0).toNumber(true) : message.maxTile;
+            if (message.moveCount != null && message.hasOwnProperty("moveCount"))
+                if (typeof message.moveCount === "number")
+                    object.moveCount = options.longs === String ? String(message.moveCount) : message.moveCount;
+                else
+                    object.moveCount = options.longs === String ? $util.Long.prototype.toString.call(message.moveCount) : options.longs === Number ? new $util.LongBits(message.moveCount.low >>> 0, message.moveCount.high >>> 0).toNumber(true) : message.moveCount;
+            if (message.submittedAtUnix != null && message.hasOwnProperty("submittedAtUnix"))
+                if (typeof message.submittedAtUnix === "number")
+                    object.submittedAtUnix = options.longs === String ? String(message.submittedAtUnix) : message.submittedAtUnix;
+                else
+                    object.submittedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.submittedAtUnix) : options.longs === Number ? new $util.LongBits(message.submittedAtUnix.low >>> 0, message.submittedAtUnix.high >>> 0).toNumber(true) : message.submittedAtUnix;
+            return object;
+        };
+
+        /**
+         * Converts this DailySubmission to JSON.
+         * @function toJSON
+         * @memberof types.DailySubmission
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        DailySubmission.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for DailySubmission
+         * @function getTypeUrl
+         * @memberof types.DailySubmission
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        DailySubmission.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.DailySubmission";
+        };
+
+        return DailySubmission;
+    })();
+
+    types.DailyPrizePool = (function() {
+
+        /**
+         * Properties of a DailyPrizePool.
+         * @memberof types
+         * @interface IDailyPrizePool
+         * @property {string|null} [utcDate] DailyPrizePool utcDate
+         * @property {number|Long|null} [entryCount] DailyPrizePool entryCount
+         * @property {number|Long|null} [grossFees] DailyPrizePool grossFees
+         * @property {number|Long|null} [treasuryFees] DailyPrizePool treasuryFees
+         * @property {number|Long|null} [rewardPool] DailyPrizePool rewardPool
+         * @property {boolean|null} [finalized] DailyPrizePool finalized
+         * @property {number|Long|null} [finalizedAtUnix] DailyPrizePool finalizedAtUnix
+         * @property {number|Long|null} [distributedRewards] DailyPrizePool distributedRewards
+         * @property {number|Long|null} [treasuryLeftover] DailyPrizePool treasuryLeftover
+         */
+
+        /**
+         * Constructs a new DailyPrizePool.
+         * @memberof types
+         * @classdesc Represents a DailyPrizePool.
+         * @implements IDailyPrizePool
+         * @constructor
+         * @param {types.IDailyPrizePool=} [properties] Properties to set
+         */
+        function DailyPrizePool(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * DailyPrizePool utcDate.
+         * @member {string} utcDate
+         * @memberof types.DailyPrizePool
+         * @instance
+         */
+        DailyPrizePool.prototype.utcDate = "";
+
+        /**
+         * DailyPrizePool entryCount.
+         * @member {number|Long} entryCount
+         * @memberof types.DailyPrizePool
+         * @instance
+         */
+        DailyPrizePool.prototype.entryCount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyPrizePool grossFees.
+         * @member {number|Long} grossFees
+         * @memberof types.DailyPrizePool
+         * @instance
+         */
+        DailyPrizePool.prototype.grossFees = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyPrizePool treasuryFees.
+         * @member {number|Long} treasuryFees
+         * @memberof types.DailyPrizePool
+         * @instance
+         */
+        DailyPrizePool.prototype.treasuryFees = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyPrizePool rewardPool.
+         * @member {number|Long} rewardPool
+         * @memberof types.DailyPrizePool
+         * @instance
+         */
+        DailyPrizePool.prototype.rewardPool = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyPrizePool finalized.
+         * @member {boolean} finalized
+         * @memberof types.DailyPrizePool
+         * @instance
+         */
+        DailyPrizePool.prototype.finalized = false;
+
+        /**
+         * DailyPrizePool finalizedAtUnix.
+         * @member {number|Long} finalizedAtUnix
+         * @memberof types.DailyPrizePool
+         * @instance
+         */
+        DailyPrizePool.prototype.finalizedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyPrizePool distributedRewards.
+         * @member {number|Long} distributedRewards
+         * @memberof types.DailyPrizePool
+         * @instance
+         */
+        DailyPrizePool.prototype.distributedRewards = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyPrizePool treasuryLeftover.
+         * @member {number|Long} treasuryLeftover
+         * @memberof types.DailyPrizePool
+         * @instance
+         */
+        DailyPrizePool.prototype.treasuryLeftover = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new DailyPrizePool instance using the specified properties.
+         * @function create
+         * @memberof types.DailyPrizePool
+         * @static
+         * @param {types.IDailyPrizePool=} [properties] Properties to set
+         * @returns {types.DailyPrizePool} DailyPrizePool instance
+         */
+        DailyPrizePool.create = function create(properties) {
+            return new DailyPrizePool(properties);
+        };
+
+        /**
+         * Encodes the specified DailyPrizePool message. Does not implicitly {@link types.DailyPrizePool.verify|verify} messages.
+         * @function encode
+         * @memberof types.DailyPrizePool
+         * @static
+         * @param {types.IDailyPrizePool} message DailyPrizePool message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyPrizePool.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.utcDate);
+            if (message.entryCount != null && Object.hasOwnProperty.call(message, "entryCount"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.entryCount);
+            if (message.grossFees != null && Object.hasOwnProperty.call(message, "grossFees"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.grossFees);
+            if (message.treasuryFees != null && Object.hasOwnProperty.call(message, "treasuryFees"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.treasuryFees);
+            if (message.rewardPool != null && Object.hasOwnProperty.call(message, "rewardPool"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.rewardPool);
+            if (message.finalized != null && Object.hasOwnProperty.call(message, "finalized"))
+                writer.uint32(/* id 6, wireType 0 =*/48).bool(message.finalized);
+            if (message.finalizedAtUnix != null && Object.hasOwnProperty.call(message, "finalizedAtUnix"))
+                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.finalizedAtUnix);
+            if (message.distributedRewards != null && Object.hasOwnProperty.call(message, "distributedRewards"))
+                writer.uint32(/* id 8, wireType 0 =*/64).uint64(message.distributedRewards);
+            if (message.treasuryLeftover != null && Object.hasOwnProperty.call(message, "treasuryLeftover"))
+                writer.uint32(/* id 9, wireType 0 =*/72).uint64(message.treasuryLeftover);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified DailyPrizePool message, length delimited. Does not implicitly {@link types.DailyPrizePool.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.DailyPrizePool
+         * @static
+         * @param {types.IDailyPrizePool} message DailyPrizePool message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyPrizePool.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a DailyPrizePool message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.DailyPrizePool
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.DailyPrizePool} DailyPrizePool
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyPrizePool.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.DailyPrizePool();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.entryCount = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.grossFees = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.treasuryFees = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.rewardPool = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.finalized = reader.bool();
+                        break;
+                    }
+                case 7: {
+                        message.finalizedAtUnix = reader.uint64();
+                        break;
+                    }
+                case 8: {
+                        message.distributedRewards = reader.uint64();
+                        break;
+                    }
+                case 9: {
+                        message.treasuryLeftover = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a DailyPrizePool message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.DailyPrizePool
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.DailyPrizePool} DailyPrizePool
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyPrizePool.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a DailyPrizePool message.
+         * @function verify
+         * @memberof types.DailyPrizePool
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        DailyPrizePool.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            if (message.entryCount != null && message.hasOwnProperty("entryCount"))
+                if (!$util.isInteger(message.entryCount) && !(message.entryCount && $util.isInteger(message.entryCount.low) && $util.isInteger(message.entryCount.high)))
+                    return "entryCount: integer|Long expected";
+            if (message.grossFees != null && message.hasOwnProperty("grossFees"))
+                if (!$util.isInteger(message.grossFees) && !(message.grossFees && $util.isInteger(message.grossFees.low) && $util.isInteger(message.grossFees.high)))
+                    return "grossFees: integer|Long expected";
+            if (message.treasuryFees != null && message.hasOwnProperty("treasuryFees"))
+                if (!$util.isInteger(message.treasuryFees) && !(message.treasuryFees && $util.isInteger(message.treasuryFees.low) && $util.isInteger(message.treasuryFees.high)))
+                    return "treasuryFees: integer|Long expected";
+            if (message.rewardPool != null && message.hasOwnProperty("rewardPool"))
+                if (!$util.isInteger(message.rewardPool) && !(message.rewardPool && $util.isInteger(message.rewardPool.low) && $util.isInteger(message.rewardPool.high)))
+                    return "rewardPool: integer|Long expected";
+            if (message.finalized != null && message.hasOwnProperty("finalized"))
+                if (typeof message.finalized !== "boolean")
+                    return "finalized: boolean expected";
+            if (message.finalizedAtUnix != null && message.hasOwnProperty("finalizedAtUnix"))
+                if (!$util.isInteger(message.finalizedAtUnix) && !(message.finalizedAtUnix && $util.isInteger(message.finalizedAtUnix.low) && $util.isInteger(message.finalizedAtUnix.high)))
+                    return "finalizedAtUnix: integer|Long expected";
+            if (message.distributedRewards != null && message.hasOwnProperty("distributedRewards"))
+                if (!$util.isInteger(message.distributedRewards) && !(message.distributedRewards && $util.isInteger(message.distributedRewards.low) && $util.isInteger(message.distributedRewards.high)))
+                    return "distributedRewards: integer|Long expected";
+            if (message.treasuryLeftover != null && message.hasOwnProperty("treasuryLeftover"))
+                if (!$util.isInteger(message.treasuryLeftover) && !(message.treasuryLeftover && $util.isInteger(message.treasuryLeftover.low) && $util.isInteger(message.treasuryLeftover.high)))
+                    return "treasuryLeftover: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a DailyPrizePool message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.DailyPrizePool
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.DailyPrizePool} DailyPrizePool
+         */
+        DailyPrizePool.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.DailyPrizePool)
+                return object;
+            var message = new $root.types.DailyPrizePool();
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            if (object.entryCount != null)
+                if ($util.Long)
+                    (message.entryCount = $util.Long.fromValue(object.entryCount)).unsigned = true;
+                else if (typeof object.entryCount === "string")
+                    message.entryCount = parseInt(object.entryCount, 10);
+                else if (typeof object.entryCount === "number")
+                    message.entryCount = object.entryCount;
+                else if (typeof object.entryCount === "object")
+                    message.entryCount = new $util.LongBits(object.entryCount.low >>> 0, object.entryCount.high >>> 0).toNumber(true);
+            if (object.grossFees != null)
+                if ($util.Long)
+                    (message.grossFees = $util.Long.fromValue(object.grossFees)).unsigned = true;
+                else if (typeof object.grossFees === "string")
+                    message.grossFees = parseInt(object.grossFees, 10);
+                else if (typeof object.grossFees === "number")
+                    message.grossFees = object.grossFees;
+                else if (typeof object.grossFees === "object")
+                    message.grossFees = new $util.LongBits(object.grossFees.low >>> 0, object.grossFees.high >>> 0).toNumber(true);
+            if (object.treasuryFees != null)
+                if ($util.Long)
+                    (message.treasuryFees = $util.Long.fromValue(object.treasuryFees)).unsigned = true;
+                else if (typeof object.treasuryFees === "string")
+                    message.treasuryFees = parseInt(object.treasuryFees, 10);
+                else if (typeof object.treasuryFees === "number")
+                    message.treasuryFees = object.treasuryFees;
+                else if (typeof object.treasuryFees === "object")
+                    message.treasuryFees = new $util.LongBits(object.treasuryFees.low >>> 0, object.treasuryFees.high >>> 0).toNumber(true);
+            if (object.rewardPool != null)
+                if ($util.Long)
+                    (message.rewardPool = $util.Long.fromValue(object.rewardPool)).unsigned = true;
+                else if (typeof object.rewardPool === "string")
+                    message.rewardPool = parseInt(object.rewardPool, 10);
+                else if (typeof object.rewardPool === "number")
+                    message.rewardPool = object.rewardPool;
+                else if (typeof object.rewardPool === "object")
+                    message.rewardPool = new $util.LongBits(object.rewardPool.low >>> 0, object.rewardPool.high >>> 0).toNumber(true);
+            if (object.finalized != null)
+                message.finalized = Boolean(object.finalized);
+            if (object.finalizedAtUnix != null)
+                if ($util.Long)
+                    (message.finalizedAtUnix = $util.Long.fromValue(object.finalizedAtUnix)).unsigned = true;
+                else if (typeof object.finalizedAtUnix === "string")
+                    message.finalizedAtUnix = parseInt(object.finalizedAtUnix, 10);
+                else if (typeof object.finalizedAtUnix === "number")
+                    message.finalizedAtUnix = object.finalizedAtUnix;
+                else if (typeof object.finalizedAtUnix === "object")
+                    message.finalizedAtUnix = new $util.LongBits(object.finalizedAtUnix.low >>> 0, object.finalizedAtUnix.high >>> 0).toNumber(true);
+            if (object.distributedRewards != null)
+                if ($util.Long)
+                    (message.distributedRewards = $util.Long.fromValue(object.distributedRewards)).unsigned = true;
+                else if (typeof object.distributedRewards === "string")
+                    message.distributedRewards = parseInt(object.distributedRewards, 10);
+                else if (typeof object.distributedRewards === "number")
+                    message.distributedRewards = object.distributedRewards;
+                else if (typeof object.distributedRewards === "object")
+                    message.distributedRewards = new $util.LongBits(object.distributedRewards.low >>> 0, object.distributedRewards.high >>> 0).toNumber(true);
+            if (object.treasuryLeftover != null)
+                if ($util.Long)
+                    (message.treasuryLeftover = $util.Long.fromValue(object.treasuryLeftover)).unsigned = true;
+                else if (typeof object.treasuryLeftover === "string")
+                    message.treasuryLeftover = parseInt(object.treasuryLeftover, 10);
+                else if (typeof object.treasuryLeftover === "number")
+                    message.treasuryLeftover = object.treasuryLeftover;
+                else if (typeof object.treasuryLeftover === "object")
+                    message.treasuryLeftover = new $util.LongBits(object.treasuryLeftover.low >>> 0, object.treasuryLeftover.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a DailyPrizePool message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.DailyPrizePool
+         * @static
+         * @param {types.DailyPrizePool} message DailyPrizePool
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        DailyPrizePool.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.utcDate = "";
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.entryCount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.entryCount = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.grossFees = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.grossFees = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.treasuryFees = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.treasuryFees = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.rewardPool = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.rewardPool = options.longs === String ? "0" : 0;
+                object.finalized = false;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.finalizedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.finalizedAtUnix = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.distributedRewards = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.distributedRewards = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.treasuryLeftover = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.treasuryLeftover = options.longs === String ? "0" : 0;
+            }
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            if (message.entryCount != null && message.hasOwnProperty("entryCount"))
+                if (typeof message.entryCount === "number")
+                    object.entryCount = options.longs === String ? String(message.entryCount) : message.entryCount;
+                else
+                    object.entryCount = options.longs === String ? $util.Long.prototype.toString.call(message.entryCount) : options.longs === Number ? new $util.LongBits(message.entryCount.low >>> 0, message.entryCount.high >>> 0).toNumber(true) : message.entryCount;
+            if (message.grossFees != null && message.hasOwnProperty("grossFees"))
+                if (typeof message.grossFees === "number")
+                    object.grossFees = options.longs === String ? String(message.grossFees) : message.grossFees;
+                else
+                    object.grossFees = options.longs === String ? $util.Long.prototype.toString.call(message.grossFees) : options.longs === Number ? new $util.LongBits(message.grossFees.low >>> 0, message.grossFees.high >>> 0).toNumber(true) : message.grossFees;
+            if (message.treasuryFees != null && message.hasOwnProperty("treasuryFees"))
+                if (typeof message.treasuryFees === "number")
+                    object.treasuryFees = options.longs === String ? String(message.treasuryFees) : message.treasuryFees;
+                else
+                    object.treasuryFees = options.longs === String ? $util.Long.prototype.toString.call(message.treasuryFees) : options.longs === Number ? new $util.LongBits(message.treasuryFees.low >>> 0, message.treasuryFees.high >>> 0).toNumber(true) : message.treasuryFees;
+            if (message.rewardPool != null && message.hasOwnProperty("rewardPool"))
+                if (typeof message.rewardPool === "number")
+                    object.rewardPool = options.longs === String ? String(message.rewardPool) : message.rewardPool;
+                else
+                    object.rewardPool = options.longs === String ? $util.Long.prototype.toString.call(message.rewardPool) : options.longs === Number ? new $util.LongBits(message.rewardPool.low >>> 0, message.rewardPool.high >>> 0).toNumber(true) : message.rewardPool;
+            if (message.finalized != null && message.hasOwnProperty("finalized"))
+                object.finalized = message.finalized;
+            if (message.finalizedAtUnix != null && message.hasOwnProperty("finalizedAtUnix"))
+                if (typeof message.finalizedAtUnix === "number")
+                    object.finalizedAtUnix = options.longs === String ? String(message.finalizedAtUnix) : message.finalizedAtUnix;
+                else
+                    object.finalizedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.finalizedAtUnix) : options.longs === Number ? new $util.LongBits(message.finalizedAtUnix.low >>> 0, message.finalizedAtUnix.high >>> 0).toNumber(true) : message.finalizedAtUnix;
+            if (message.distributedRewards != null && message.hasOwnProperty("distributedRewards"))
+                if (typeof message.distributedRewards === "number")
+                    object.distributedRewards = options.longs === String ? String(message.distributedRewards) : message.distributedRewards;
+                else
+                    object.distributedRewards = options.longs === String ? $util.Long.prototype.toString.call(message.distributedRewards) : options.longs === Number ? new $util.LongBits(message.distributedRewards.low >>> 0, message.distributedRewards.high >>> 0).toNumber(true) : message.distributedRewards;
+            if (message.treasuryLeftover != null && message.hasOwnProperty("treasuryLeftover"))
+                if (typeof message.treasuryLeftover === "number")
+                    object.treasuryLeftover = options.longs === String ? String(message.treasuryLeftover) : message.treasuryLeftover;
+                else
+                    object.treasuryLeftover = options.longs === String ? $util.Long.prototype.toString.call(message.treasuryLeftover) : options.longs === Number ? new $util.LongBits(message.treasuryLeftover.low >>> 0, message.treasuryLeftover.high >>> 0).toNumber(true) : message.treasuryLeftover;
+            return object;
+        };
+
+        /**
+         * Converts this DailyPrizePool to JSON.
+         * @function toJSON
+         * @memberof types.DailyPrizePool
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        DailyPrizePool.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for DailyPrizePool
+         * @function getTypeUrl
+         * @memberof types.DailyPrizePool
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        DailyPrizePool.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.DailyPrizePool";
+        };
+
+        return DailyPrizePool;
+    })();
+
+    types.GameTreasury = (function() {
+
+        /**
+         * Properties of a GameTreasury.
+         * @memberof types
+         * @interface IGameTreasury
+         * @property {number|Long|null} [platformBalance] GameTreasury platformBalance
+         * @property {number|Long|null} [reserveBalance] GameTreasury reserveBalance
+         * @property {number|Long|null} [shopBalance] GameTreasury shopBalance
+         * @property {number|Long|null} [updatedAtUnix] GameTreasury updatedAtUnix
+         */
+
+        /**
+         * Constructs a new GameTreasury.
+         * @memberof types
+         * @classdesc Represents a GameTreasury.
+         * @implements IGameTreasury
+         * @constructor
+         * @param {types.IGameTreasury=} [properties] Properties to set
+         */
+        function GameTreasury(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * GameTreasury platformBalance.
+         * @member {number|Long} platformBalance
+         * @memberof types.GameTreasury
+         * @instance
+         */
+        GameTreasury.prototype.platformBalance = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameTreasury reserveBalance.
+         * @member {number|Long} reserveBalance
+         * @memberof types.GameTreasury
+         * @instance
+         */
+        GameTreasury.prototype.reserveBalance = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameTreasury shopBalance.
+         * @member {number|Long} shopBalance
+         * @memberof types.GameTreasury
+         * @instance
+         */
+        GameTreasury.prototype.shopBalance = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * GameTreasury updatedAtUnix.
+         * @member {number|Long} updatedAtUnix
+         * @memberof types.GameTreasury
+         * @instance
+         */
+        GameTreasury.prototype.updatedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new GameTreasury instance using the specified properties.
+         * @function create
+         * @memberof types.GameTreasury
+         * @static
+         * @param {types.IGameTreasury=} [properties] Properties to set
+         * @returns {types.GameTreasury} GameTreasury instance
+         */
+        GameTreasury.create = function create(properties) {
+            return new GameTreasury(properties);
+        };
+
+        /**
+         * Encodes the specified GameTreasury message. Does not implicitly {@link types.GameTreasury.verify|verify} messages.
+         * @function encode
+         * @memberof types.GameTreasury
+         * @static
+         * @param {types.IGameTreasury} message GameTreasury message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        GameTreasury.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.platformBalance != null && Object.hasOwnProperty.call(message, "platformBalance"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.platformBalance);
+            if (message.reserveBalance != null && Object.hasOwnProperty.call(message, "reserveBalance"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.reserveBalance);
+            if (message.shopBalance != null && Object.hasOwnProperty.call(message, "shopBalance"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.shopBalance);
+            if (message.updatedAtUnix != null && Object.hasOwnProperty.call(message, "updatedAtUnix"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.updatedAtUnix);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified GameTreasury message, length delimited. Does not implicitly {@link types.GameTreasury.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.GameTreasury
+         * @static
+         * @param {types.IGameTreasury} message GameTreasury message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        GameTreasury.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a GameTreasury message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.GameTreasury
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.GameTreasury} GameTreasury
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        GameTreasury.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.GameTreasury();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.platformBalance = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.reserveBalance = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.shopBalance = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.updatedAtUnix = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a GameTreasury message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.GameTreasury
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.GameTreasury} GameTreasury
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        GameTreasury.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a GameTreasury message.
+         * @function verify
+         * @memberof types.GameTreasury
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        GameTreasury.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.platformBalance != null && message.hasOwnProperty("platformBalance"))
+                if (!$util.isInteger(message.platformBalance) && !(message.platformBalance && $util.isInteger(message.platformBalance.low) && $util.isInteger(message.platformBalance.high)))
+                    return "platformBalance: integer|Long expected";
+            if (message.reserveBalance != null && message.hasOwnProperty("reserveBalance"))
+                if (!$util.isInteger(message.reserveBalance) && !(message.reserveBalance && $util.isInteger(message.reserveBalance.low) && $util.isInteger(message.reserveBalance.high)))
+                    return "reserveBalance: integer|Long expected";
+            if (message.shopBalance != null && message.hasOwnProperty("shopBalance"))
+                if (!$util.isInteger(message.shopBalance) && !(message.shopBalance && $util.isInteger(message.shopBalance.low) && $util.isInteger(message.shopBalance.high)))
+                    return "shopBalance: integer|Long expected";
+            if (message.updatedAtUnix != null && message.hasOwnProperty("updatedAtUnix"))
+                if (!$util.isInteger(message.updatedAtUnix) && !(message.updatedAtUnix && $util.isInteger(message.updatedAtUnix.low) && $util.isInteger(message.updatedAtUnix.high)))
+                    return "updatedAtUnix: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a GameTreasury message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.GameTreasury
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.GameTreasury} GameTreasury
+         */
+        GameTreasury.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.GameTreasury)
+                return object;
+            var message = new $root.types.GameTreasury();
+            if (object.platformBalance != null)
+                if ($util.Long)
+                    (message.platformBalance = $util.Long.fromValue(object.platformBalance)).unsigned = true;
+                else if (typeof object.platformBalance === "string")
+                    message.platformBalance = parseInt(object.platformBalance, 10);
+                else if (typeof object.platformBalance === "number")
+                    message.platformBalance = object.platformBalance;
+                else if (typeof object.platformBalance === "object")
+                    message.platformBalance = new $util.LongBits(object.platformBalance.low >>> 0, object.platformBalance.high >>> 0).toNumber(true);
+            if (object.reserveBalance != null)
+                if ($util.Long)
+                    (message.reserveBalance = $util.Long.fromValue(object.reserveBalance)).unsigned = true;
+                else if (typeof object.reserveBalance === "string")
+                    message.reserveBalance = parseInt(object.reserveBalance, 10);
+                else if (typeof object.reserveBalance === "number")
+                    message.reserveBalance = object.reserveBalance;
+                else if (typeof object.reserveBalance === "object")
+                    message.reserveBalance = new $util.LongBits(object.reserveBalance.low >>> 0, object.reserveBalance.high >>> 0).toNumber(true);
+            if (object.shopBalance != null)
+                if ($util.Long)
+                    (message.shopBalance = $util.Long.fromValue(object.shopBalance)).unsigned = true;
+                else if (typeof object.shopBalance === "string")
+                    message.shopBalance = parseInt(object.shopBalance, 10);
+                else if (typeof object.shopBalance === "number")
+                    message.shopBalance = object.shopBalance;
+                else if (typeof object.shopBalance === "object")
+                    message.shopBalance = new $util.LongBits(object.shopBalance.low >>> 0, object.shopBalance.high >>> 0).toNumber(true);
+            if (object.updatedAtUnix != null)
+                if ($util.Long)
+                    (message.updatedAtUnix = $util.Long.fromValue(object.updatedAtUnix)).unsigned = true;
+                else if (typeof object.updatedAtUnix === "string")
+                    message.updatedAtUnix = parseInt(object.updatedAtUnix, 10);
+                else if (typeof object.updatedAtUnix === "number")
+                    message.updatedAtUnix = object.updatedAtUnix;
+                else if (typeof object.updatedAtUnix === "object")
+                    message.updatedAtUnix = new $util.LongBits(object.updatedAtUnix.low >>> 0, object.updatedAtUnix.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a GameTreasury message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.GameTreasury
+         * @static
+         * @param {types.GameTreasury} message GameTreasury
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        GameTreasury.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.platformBalance = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.platformBalance = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.reserveBalance = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.reserveBalance = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.shopBalance = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.shopBalance = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.updatedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.updatedAtUnix = options.longs === String ? "0" : 0;
+            }
+            if (message.platformBalance != null && message.hasOwnProperty("platformBalance"))
+                if (typeof message.platformBalance === "number")
+                    object.platformBalance = options.longs === String ? String(message.platformBalance) : message.platformBalance;
+                else
+                    object.platformBalance = options.longs === String ? $util.Long.prototype.toString.call(message.platformBalance) : options.longs === Number ? new $util.LongBits(message.platformBalance.low >>> 0, message.platformBalance.high >>> 0).toNumber(true) : message.platformBalance;
+            if (message.reserveBalance != null && message.hasOwnProperty("reserveBalance"))
+                if (typeof message.reserveBalance === "number")
+                    object.reserveBalance = options.longs === String ? String(message.reserveBalance) : message.reserveBalance;
+                else
+                    object.reserveBalance = options.longs === String ? $util.Long.prototype.toString.call(message.reserveBalance) : options.longs === Number ? new $util.LongBits(message.reserveBalance.low >>> 0, message.reserveBalance.high >>> 0).toNumber(true) : message.reserveBalance;
+            if (message.shopBalance != null && message.hasOwnProperty("shopBalance"))
+                if (typeof message.shopBalance === "number")
+                    object.shopBalance = options.longs === String ? String(message.shopBalance) : message.shopBalance;
+                else
+                    object.shopBalance = options.longs === String ? $util.Long.prototype.toString.call(message.shopBalance) : options.longs === Number ? new $util.LongBits(message.shopBalance.low >>> 0, message.shopBalance.high >>> 0).toNumber(true) : message.shopBalance;
+            if (message.updatedAtUnix != null && message.hasOwnProperty("updatedAtUnix"))
+                if (typeof message.updatedAtUnix === "number")
+                    object.updatedAtUnix = options.longs === String ? String(message.updatedAtUnix) : message.updatedAtUnix;
+                else
+                    object.updatedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.updatedAtUnix) : options.longs === Number ? new $util.LongBits(message.updatedAtUnix.low >>> 0, message.updatedAtUnix.high >>> 0).toNumber(true) : message.updatedAtUnix;
+            return object;
+        };
+
+        /**
+         * Converts this GameTreasury to JSON.
+         * @function toJSON
+         * @memberof types.GameTreasury
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        GameTreasury.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for GameTreasury
+         * @function getTypeUrl
+         * @memberof types.GameTreasury
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        GameTreasury.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.GameTreasury";
+        };
+
+        return GameTreasury;
+    })();
+
+    types.LeaderboardEntry = (function() {
+
+        /**
+         * Properties of a LeaderboardEntry.
+         * @memberof types
+         * @interface ILeaderboardEntry
+         * @property {Uint8Array|null} [gameId] LeaderboardEntry gameId
+         * @property {Uint8Array|null} [playerAddress] LeaderboardEntry playerAddress
+         * @property {number|Long|null} [score] LeaderboardEntry score
+         * @property {number|Long|null} [maxTile] LeaderboardEntry maxTile
+         * @property {number|Long|null} [moveCount] LeaderboardEntry moveCount
+         * @property {number|Long|null} [endedAtUnix] LeaderboardEntry endedAtUnix
+         */
+
+        /**
+         * Constructs a new LeaderboardEntry.
+         * @memberof types
+         * @classdesc Represents a LeaderboardEntry.
+         * @implements ILeaderboardEntry
+         * @constructor
+         * @param {types.ILeaderboardEntry=} [properties] Properties to set
+         */
+        function LeaderboardEntry(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * LeaderboardEntry gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.LeaderboardEntry
+         * @instance
+         */
+        LeaderboardEntry.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * LeaderboardEntry playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.LeaderboardEntry
+         * @instance
+         */
+        LeaderboardEntry.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * LeaderboardEntry score.
+         * @member {number|Long} score
+         * @memberof types.LeaderboardEntry
+         * @instance
+         */
+        LeaderboardEntry.prototype.score = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * LeaderboardEntry maxTile.
+         * @member {number|Long} maxTile
+         * @memberof types.LeaderboardEntry
+         * @instance
+         */
+        LeaderboardEntry.prototype.maxTile = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * LeaderboardEntry moveCount.
+         * @member {number|Long} moveCount
+         * @memberof types.LeaderboardEntry
+         * @instance
+         */
+        LeaderboardEntry.prototype.moveCount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * LeaderboardEntry endedAtUnix.
+         * @member {number|Long} endedAtUnix
+         * @memberof types.LeaderboardEntry
+         * @instance
+         */
+        LeaderboardEntry.prototype.endedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new LeaderboardEntry instance using the specified properties.
+         * @function create
+         * @memberof types.LeaderboardEntry
+         * @static
+         * @param {types.ILeaderboardEntry=} [properties] Properties to set
+         * @returns {types.LeaderboardEntry} LeaderboardEntry instance
+         */
+        LeaderboardEntry.create = function create(properties) {
+            return new LeaderboardEntry(properties);
+        };
+
+        /**
+         * Encodes the specified LeaderboardEntry message. Does not implicitly {@link types.LeaderboardEntry.verify|verify} messages.
+         * @function encode
+         * @memberof types.LeaderboardEntry
+         * @static
+         * @param {types.ILeaderboardEntry} message LeaderboardEntry message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        LeaderboardEntry.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.gameId);
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.playerAddress);
+            if (message.score != null && Object.hasOwnProperty.call(message, "score"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.score);
+            if (message.maxTile != null && Object.hasOwnProperty.call(message, "maxTile"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.maxTile);
+            if (message.moveCount != null && Object.hasOwnProperty.call(message, "moveCount"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.moveCount);
+            if (message.endedAtUnix != null && Object.hasOwnProperty.call(message, "endedAtUnix"))
+                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.endedAtUnix);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified LeaderboardEntry message, length delimited. Does not implicitly {@link types.LeaderboardEntry.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.LeaderboardEntry
+         * @static
+         * @param {types.ILeaderboardEntry} message LeaderboardEntry message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        LeaderboardEntry.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a LeaderboardEntry message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.LeaderboardEntry
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.LeaderboardEntry} LeaderboardEntry
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        LeaderboardEntry.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.LeaderboardEntry();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.score = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.maxTile = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.moveCount = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.endedAtUnix = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a LeaderboardEntry message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.LeaderboardEntry
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.LeaderboardEntry} LeaderboardEntry
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        LeaderboardEntry.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a LeaderboardEntry message.
+         * @function verify
+         * @memberof types.LeaderboardEntry
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        LeaderboardEntry.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.score != null && message.hasOwnProperty("score"))
+                if (!$util.isInteger(message.score) && !(message.score && $util.isInteger(message.score.low) && $util.isInteger(message.score.high)))
+                    return "score: integer|Long expected";
+            if (message.maxTile != null && message.hasOwnProperty("maxTile"))
+                if (!$util.isInteger(message.maxTile) && !(message.maxTile && $util.isInteger(message.maxTile.low) && $util.isInteger(message.maxTile.high)))
+                    return "maxTile: integer|Long expected";
+            if (message.moveCount != null && message.hasOwnProperty("moveCount"))
+                if (!$util.isInteger(message.moveCount) && !(message.moveCount && $util.isInteger(message.moveCount.low) && $util.isInteger(message.moveCount.high)))
+                    return "moveCount: integer|Long expected";
+            if (message.endedAtUnix != null && message.hasOwnProperty("endedAtUnix"))
+                if (!$util.isInteger(message.endedAtUnix) && !(message.endedAtUnix && $util.isInteger(message.endedAtUnix.low) && $util.isInteger(message.endedAtUnix.high)))
+                    return "endedAtUnix: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a LeaderboardEntry message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.LeaderboardEntry
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.LeaderboardEntry} LeaderboardEntry
+         */
+        LeaderboardEntry.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.LeaderboardEntry)
+                return object;
+            var message = new $root.types.LeaderboardEntry();
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.score != null)
+                if ($util.Long)
+                    (message.score = $util.Long.fromValue(object.score)).unsigned = true;
+                else if (typeof object.score === "string")
+                    message.score = parseInt(object.score, 10);
+                else if (typeof object.score === "number")
+                    message.score = object.score;
+                else if (typeof object.score === "object")
+                    message.score = new $util.LongBits(object.score.low >>> 0, object.score.high >>> 0).toNumber(true);
+            if (object.maxTile != null)
+                if ($util.Long)
+                    (message.maxTile = $util.Long.fromValue(object.maxTile)).unsigned = true;
+                else if (typeof object.maxTile === "string")
+                    message.maxTile = parseInt(object.maxTile, 10);
+                else if (typeof object.maxTile === "number")
+                    message.maxTile = object.maxTile;
+                else if (typeof object.maxTile === "object")
+                    message.maxTile = new $util.LongBits(object.maxTile.low >>> 0, object.maxTile.high >>> 0).toNumber(true);
+            if (object.moveCount != null)
+                if ($util.Long)
+                    (message.moveCount = $util.Long.fromValue(object.moveCount)).unsigned = true;
+                else if (typeof object.moveCount === "string")
+                    message.moveCount = parseInt(object.moveCount, 10);
+                else if (typeof object.moveCount === "number")
+                    message.moveCount = object.moveCount;
+                else if (typeof object.moveCount === "object")
+                    message.moveCount = new $util.LongBits(object.moveCount.low >>> 0, object.moveCount.high >>> 0).toNumber(true);
+            if (object.endedAtUnix != null)
+                if ($util.Long)
+                    (message.endedAtUnix = $util.Long.fromValue(object.endedAtUnix)).unsigned = true;
+                else if (typeof object.endedAtUnix === "string")
+                    message.endedAtUnix = parseInt(object.endedAtUnix, 10);
+                else if (typeof object.endedAtUnix === "number")
+                    message.endedAtUnix = object.endedAtUnix;
+                else if (typeof object.endedAtUnix === "object")
+                    message.endedAtUnix = new $util.LongBits(object.endedAtUnix.low >>> 0, object.endedAtUnix.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a LeaderboardEntry message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.LeaderboardEntry
+         * @static
+         * @param {types.LeaderboardEntry} message LeaderboardEntry
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        LeaderboardEntry.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.score = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.score = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.maxTile = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.maxTile = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.moveCount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.moveCount = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.endedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.endedAtUnix = options.longs === String ? "0" : 0;
+            }
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.score != null && message.hasOwnProperty("score"))
+                if (typeof message.score === "number")
+                    object.score = options.longs === String ? String(message.score) : message.score;
+                else
+                    object.score = options.longs === String ? $util.Long.prototype.toString.call(message.score) : options.longs === Number ? new $util.LongBits(message.score.low >>> 0, message.score.high >>> 0).toNumber(true) : message.score;
+            if (message.maxTile != null && message.hasOwnProperty("maxTile"))
+                if (typeof message.maxTile === "number")
+                    object.maxTile = options.longs === String ? String(message.maxTile) : message.maxTile;
+                else
+                    object.maxTile = options.longs === String ? $util.Long.prototype.toString.call(message.maxTile) : options.longs === Number ? new $util.LongBits(message.maxTile.low >>> 0, message.maxTile.high >>> 0).toNumber(true) : message.maxTile;
+            if (message.moveCount != null && message.hasOwnProperty("moveCount"))
+                if (typeof message.moveCount === "number")
+                    object.moveCount = options.longs === String ? String(message.moveCount) : message.moveCount;
+                else
+                    object.moveCount = options.longs === String ? $util.Long.prototype.toString.call(message.moveCount) : options.longs === Number ? new $util.LongBits(message.moveCount.low >>> 0, message.moveCount.high >>> 0).toNumber(true) : message.moveCount;
+            if (message.endedAtUnix != null && message.hasOwnProperty("endedAtUnix"))
+                if (typeof message.endedAtUnix === "number")
+                    object.endedAtUnix = options.longs === String ? String(message.endedAtUnix) : message.endedAtUnix;
+                else
+                    object.endedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.endedAtUnix) : options.longs === Number ? new $util.LongBits(message.endedAtUnix.low >>> 0, message.endedAtUnix.high >>> 0).toNumber(true) : message.endedAtUnix;
+            return object;
+        };
+
+        /**
+         * Converts this LeaderboardEntry to JSON.
+         * @function toJSON
+         * @memberof types.LeaderboardEntry
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        LeaderboardEntry.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for LeaderboardEntry
+         * @function getTypeUrl
+         * @memberof types.LeaderboardEntry
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        LeaderboardEntry.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.LeaderboardEntry";
+        };
+
+        return LeaderboardEntry;
+    })();
+
+    types.DailyRewardAllocation = (function() {
+
+        /**
+         * Properties of a DailyRewardAllocation.
+         * @memberof types
+         * @interface IDailyRewardAllocation
+         * @property {string|null} [utcDate] DailyRewardAllocation utcDate
+         * @property {Uint8Array|null} [playerAddress] DailyRewardAllocation playerAddress
+         * @property {Uint8Array|null} [gameId] DailyRewardAllocation gameId
+         * @property {number|Long|null} [rank] DailyRewardAllocation rank
+         * @property {number|Long|null} [rewardAmount] DailyRewardAllocation rewardAmount
+         * @property {number|Long|null} [score] DailyRewardAllocation score
+         * @property {number|Long|null} [maxTile] DailyRewardAllocation maxTile
+         * @property {number|Long|null} [moveCount] DailyRewardAllocation moveCount
+         * @property {number|Long|null} [endedAtUnix] DailyRewardAllocation endedAtUnix
+         */
+
+        /**
+         * Constructs a new DailyRewardAllocation.
+         * @memberof types
+         * @classdesc Represents a DailyRewardAllocation.
+         * @implements IDailyRewardAllocation
+         * @constructor
+         * @param {types.IDailyRewardAllocation=} [properties] Properties to set
+         */
+        function DailyRewardAllocation(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * DailyRewardAllocation utcDate.
+         * @member {string} utcDate
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         */
+        DailyRewardAllocation.prototype.utcDate = "";
+
+        /**
+         * DailyRewardAllocation playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         */
+        DailyRewardAllocation.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * DailyRewardAllocation gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         */
+        DailyRewardAllocation.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * DailyRewardAllocation rank.
+         * @member {number|Long} rank
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         */
+        DailyRewardAllocation.prototype.rank = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyRewardAllocation rewardAmount.
+         * @member {number|Long} rewardAmount
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         */
+        DailyRewardAllocation.prototype.rewardAmount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyRewardAllocation score.
+         * @member {number|Long} score
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         */
+        DailyRewardAllocation.prototype.score = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyRewardAllocation maxTile.
+         * @member {number|Long} maxTile
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         */
+        DailyRewardAllocation.prototype.maxTile = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyRewardAllocation moveCount.
+         * @member {number|Long} moveCount
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         */
+        DailyRewardAllocation.prototype.moveCount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyRewardAllocation endedAtUnix.
+         * @member {number|Long} endedAtUnix
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         */
+        DailyRewardAllocation.prototype.endedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new DailyRewardAllocation instance using the specified properties.
+         * @function create
+         * @memberof types.DailyRewardAllocation
+         * @static
+         * @param {types.IDailyRewardAllocation=} [properties] Properties to set
+         * @returns {types.DailyRewardAllocation} DailyRewardAllocation instance
+         */
+        DailyRewardAllocation.create = function create(properties) {
+            return new DailyRewardAllocation(properties);
+        };
+
+        /**
+         * Encodes the specified DailyRewardAllocation message. Does not implicitly {@link types.DailyRewardAllocation.verify|verify} messages.
+         * @function encode
+         * @memberof types.DailyRewardAllocation
+         * @static
+         * @param {types.IDailyRewardAllocation} message DailyRewardAllocation message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyRewardAllocation.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.utcDate);
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.playerAddress);
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.gameId);
+            if (message.rank != null && Object.hasOwnProperty.call(message, "rank"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.rank);
+            if (message.rewardAmount != null && Object.hasOwnProperty.call(message, "rewardAmount"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.rewardAmount);
+            if (message.score != null && Object.hasOwnProperty.call(message, "score"))
+                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.score);
+            if (message.maxTile != null && Object.hasOwnProperty.call(message, "maxTile"))
+                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.maxTile);
+            if (message.moveCount != null && Object.hasOwnProperty.call(message, "moveCount"))
+                writer.uint32(/* id 8, wireType 0 =*/64).uint64(message.moveCount);
+            if (message.endedAtUnix != null && Object.hasOwnProperty.call(message, "endedAtUnix"))
+                writer.uint32(/* id 9, wireType 0 =*/72).uint64(message.endedAtUnix);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified DailyRewardAllocation message, length delimited. Does not implicitly {@link types.DailyRewardAllocation.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.DailyRewardAllocation
+         * @static
+         * @param {types.IDailyRewardAllocation} message DailyRewardAllocation message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyRewardAllocation.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a DailyRewardAllocation message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.DailyRewardAllocation
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.DailyRewardAllocation} DailyRewardAllocation
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyRewardAllocation.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.DailyRewardAllocation();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                case 4: {
+                        message.rank = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.rewardAmount = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.score = reader.uint64();
+                        break;
+                    }
+                case 7: {
+                        message.maxTile = reader.uint64();
+                        break;
+                    }
+                case 8: {
+                        message.moveCount = reader.uint64();
+                        break;
+                    }
+                case 9: {
+                        message.endedAtUnix = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a DailyRewardAllocation message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.DailyRewardAllocation
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.DailyRewardAllocation} DailyRewardAllocation
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyRewardAllocation.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a DailyRewardAllocation message.
+         * @function verify
+         * @memberof types.DailyRewardAllocation
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        DailyRewardAllocation.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            if (message.rank != null && message.hasOwnProperty("rank"))
+                if (!$util.isInteger(message.rank) && !(message.rank && $util.isInteger(message.rank.low) && $util.isInteger(message.rank.high)))
+                    return "rank: integer|Long expected";
+            if (message.rewardAmount != null && message.hasOwnProperty("rewardAmount"))
+                if (!$util.isInteger(message.rewardAmount) && !(message.rewardAmount && $util.isInteger(message.rewardAmount.low) && $util.isInteger(message.rewardAmount.high)))
+                    return "rewardAmount: integer|Long expected";
+            if (message.score != null && message.hasOwnProperty("score"))
+                if (!$util.isInteger(message.score) && !(message.score && $util.isInteger(message.score.low) && $util.isInteger(message.score.high)))
+                    return "score: integer|Long expected";
+            if (message.maxTile != null && message.hasOwnProperty("maxTile"))
+                if (!$util.isInteger(message.maxTile) && !(message.maxTile && $util.isInteger(message.maxTile.low) && $util.isInteger(message.maxTile.high)))
+                    return "maxTile: integer|Long expected";
+            if (message.moveCount != null && message.hasOwnProperty("moveCount"))
+                if (!$util.isInteger(message.moveCount) && !(message.moveCount && $util.isInteger(message.moveCount.low) && $util.isInteger(message.moveCount.high)))
+                    return "moveCount: integer|Long expected";
+            if (message.endedAtUnix != null && message.hasOwnProperty("endedAtUnix"))
+                if (!$util.isInteger(message.endedAtUnix) && !(message.endedAtUnix && $util.isInteger(message.endedAtUnix.low) && $util.isInteger(message.endedAtUnix.high)))
+                    return "endedAtUnix: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a DailyRewardAllocation message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.DailyRewardAllocation
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.DailyRewardAllocation} DailyRewardAllocation
+         */
+        DailyRewardAllocation.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.DailyRewardAllocation)
+                return object;
+            var message = new $root.types.DailyRewardAllocation();
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            if (object.rank != null)
+                if ($util.Long)
+                    (message.rank = $util.Long.fromValue(object.rank)).unsigned = true;
+                else if (typeof object.rank === "string")
+                    message.rank = parseInt(object.rank, 10);
+                else if (typeof object.rank === "number")
+                    message.rank = object.rank;
+                else if (typeof object.rank === "object")
+                    message.rank = new $util.LongBits(object.rank.low >>> 0, object.rank.high >>> 0).toNumber(true);
+            if (object.rewardAmount != null)
+                if ($util.Long)
+                    (message.rewardAmount = $util.Long.fromValue(object.rewardAmount)).unsigned = true;
+                else if (typeof object.rewardAmount === "string")
+                    message.rewardAmount = parseInt(object.rewardAmount, 10);
+                else if (typeof object.rewardAmount === "number")
+                    message.rewardAmount = object.rewardAmount;
+                else if (typeof object.rewardAmount === "object")
+                    message.rewardAmount = new $util.LongBits(object.rewardAmount.low >>> 0, object.rewardAmount.high >>> 0).toNumber(true);
+            if (object.score != null)
+                if ($util.Long)
+                    (message.score = $util.Long.fromValue(object.score)).unsigned = true;
+                else if (typeof object.score === "string")
+                    message.score = parseInt(object.score, 10);
+                else if (typeof object.score === "number")
+                    message.score = object.score;
+                else if (typeof object.score === "object")
+                    message.score = new $util.LongBits(object.score.low >>> 0, object.score.high >>> 0).toNumber(true);
+            if (object.maxTile != null)
+                if ($util.Long)
+                    (message.maxTile = $util.Long.fromValue(object.maxTile)).unsigned = true;
+                else if (typeof object.maxTile === "string")
+                    message.maxTile = parseInt(object.maxTile, 10);
+                else if (typeof object.maxTile === "number")
+                    message.maxTile = object.maxTile;
+                else if (typeof object.maxTile === "object")
+                    message.maxTile = new $util.LongBits(object.maxTile.low >>> 0, object.maxTile.high >>> 0).toNumber(true);
+            if (object.moveCount != null)
+                if ($util.Long)
+                    (message.moveCount = $util.Long.fromValue(object.moveCount)).unsigned = true;
+                else if (typeof object.moveCount === "string")
+                    message.moveCount = parseInt(object.moveCount, 10);
+                else if (typeof object.moveCount === "number")
+                    message.moveCount = object.moveCount;
+                else if (typeof object.moveCount === "object")
+                    message.moveCount = new $util.LongBits(object.moveCount.low >>> 0, object.moveCount.high >>> 0).toNumber(true);
+            if (object.endedAtUnix != null)
+                if ($util.Long)
+                    (message.endedAtUnix = $util.Long.fromValue(object.endedAtUnix)).unsigned = true;
+                else if (typeof object.endedAtUnix === "string")
+                    message.endedAtUnix = parseInt(object.endedAtUnix, 10);
+                else if (typeof object.endedAtUnix === "number")
+                    message.endedAtUnix = object.endedAtUnix;
+                else if (typeof object.endedAtUnix === "object")
+                    message.endedAtUnix = new $util.LongBits(object.endedAtUnix.low >>> 0, object.endedAtUnix.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a DailyRewardAllocation message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.DailyRewardAllocation
+         * @static
+         * @param {types.DailyRewardAllocation} message DailyRewardAllocation
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        DailyRewardAllocation.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.utcDate = "";
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.rank = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.rank = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.rewardAmount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.rewardAmount = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.score = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.score = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.maxTile = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.maxTile = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.moveCount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.moveCount = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.endedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.endedAtUnix = options.longs === String ? "0" : 0;
+            }
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            if (message.rank != null && message.hasOwnProperty("rank"))
+                if (typeof message.rank === "number")
+                    object.rank = options.longs === String ? String(message.rank) : message.rank;
+                else
+                    object.rank = options.longs === String ? $util.Long.prototype.toString.call(message.rank) : options.longs === Number ? new $util.LongBits(message.rank.low >>> 0, message.rank.high >>> 0).toNumber(true) : message.rank;
+            if (message.rewardAmount != null && message.hasOwnProperty("rewardAmount"))
+                if (typeof message.rewardAmount === "number")
+                    object.rewardAmount = options.longs === String ? String(message.rewardAmount) : message.rewardAmount;
+                else
+                    object.rewardAmount = options.longs === String ? $util.Long.prototype.toString.call(message.rewardAmount) : options.longs === Number ? new $util.LongBits(message.rewardAmount.low >>> 0, message.rewardAmount.high >>> 0).toNumber(true) : message.rewardAmount;
+            if (message.score != null && message.hasOwnProperty("score"))
+                if (typeof message.score === "number")
+                    object.score = options.longs === String ? String(message.score) : message.score;
+                else
+                    object.score = options.longs === String ? $util.Long.prototype.toString.call(message.score) : options.longs === Number ? new $util.LongBits(message.score.low >>> 0, message.score.high >>> 0).toNumber(true) : message.score;
+            if (message.maxTile != null && message.hasOwnProperty("maxTile"))
+                if (typeof message.maxTile === "number")
+                    object.maxTile = options.longs === String ? String(message.maxTile) : message.maxTile;
+                else
+                    object.maxTile = options.longs === String ? $util.Long.prototype.toString.call(message.maxTile) : options.longs === Number ? new $util.LongBits(message.maxTile.low >>> 0, message.maxTile.high >>> 0).toNumber(true) : message.maxTile;
+            if (message.moveCount != null && message.hasOwnProperty("moveCount"))
+                if (typeof message.moveCount === "number")
+                    object.moveCount = options.longs === String ? String(message.moveCount) : message.moveCount;
+                else
+                    object.moveCount = options.longs === String ? $util.Long.prototype.toString.call(message.moveCount) : options.longs === Number ? new $util.LongBits(message.moveCount.low >>> 0, message.moveCount.high >>> 0).toNumber(true) : message.moveCount;
+            if (message.endedAtUnix != null && message.hasOwnProperty("endedAtUnix"))
+                if (typeof message.endedAtUnix === "number")
+                    object.endedAtUnix = options.longs === String ? String(message.endedAtUnix) : message.endedAtUnix;
+                else
+                    object.endedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.endedAtUnix) : options.longs === Number ? new $util.LongBits(message.endedAtUnix.low >>> 0, message.endedAtUnix.high >>> 0).toNumber(true) : message.endedAtUnix;
+            return object;
+        };
+
+        /**
+         * Converts this DailyRewardAllocation to JSON.
+         * @function toJSON
+         * @memberof types.DailyRewardAllocation
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        DailyRewardAllocation.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for DailyRewardAllocation
+         * @function getTypeUrl
+         * @memberof types.DailyRewardAllocation
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        DailyRewardAllocation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.DailyRewardAllocation";
+        };
+
+        return DailyRewardAllocation;
+    })();
+
+    types.DailyRewardClaim = (function() {
+
+        /**
+         * Properties of a DailyRewardClaim.
+         * @memberof types
+         * @interface IDailyRewardClaim
+         * @property {string|null} [utcDate] DailyRewardClaim utcDate
+         * @property {Uint8Array|null} [playerAddress] DailyRewardClaim playerAddress
+         * @property {Uint8Array|null} [gameId] DailyRewardClaim gameId
+         * @property {number|Long|null} [rank] DailyRewardClaim rank
+         * @property {number|Long|null} [claimedAmount] DailyRewardClaim claimedAmount
+         * @property {number|Long|null} [claimedAtUnix] DailyRewardClaim claimedAtUnix
+         */
+
+        /**
+         * Constructs a new DailyRewardClaim.
+         * @memberof types
+         * @classdesc Represents a DailyRewardClaim.
+         * @implements IDailyRewardClaim
+         * @constructor
+         * @param {types.IDailyRewardClaim=} [properties] Properties to set
+         */
+        function DailyRewardClaim(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * DailyRewardClaim utcDate.
+         * @member {string} utcDate
+         * @memberof types.DailyRewardClaim
+         * @instance
+         */
+        DailyRewardClaim.prototype.utcDate = "";
+
+        /**
+         * DailyRewardClaim playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.DailyRewardClaim
+         * @instance
+         */
+        DailyRewardClaim.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * DailyRewardClaim gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.DailyRewardClaim
+         * @instance
+         */
+        DailyRewardClaim.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * DailyRewardClaim rank.
+         * @member {number|Long} rank
+         * @memberof types.DailyRewardClaim
+         * @instance
+         */
+        DailyRewardClaim.prototype.rank = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyRewardClaim claimedAmount.
+         * @member {number|Long} claimedAmount
+         * @memberof types.DailyRewardClaim
+         * @instance
+         */
+        DailyRewardClaim.prototype.claimedAmount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyRewardClaim claimedAtUnix.
+         * @member {number|Long} claimedAtUnix
+         * @memberof types.DailyRewardClaim
+         * @instance
+         */
+        DailyRewardClaim.prototype.claimedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new DailyRewardClaim instance using the specified properties.
+         * @function create
+         * @memberof types.DailyRewardClaim
+         * @static
+         * @param {types.IDailyRewardClaim=} [properties] Properties to set
+         * @returns {types.DailyRewardClaim} DailyRewardClaim instance
+         */
+        DailyRewardClaim.create = function create(properties) {
+            return new DailyRewardClaim(properties);
+        };
+
+        /**
+         * Encodes the specified DailyRewardClaim message. Does not implicitly {@link types.DailyRewardClaim.verify|verify} messages.
+         * @function encode
+         * @memberof types.DailyRewardClaim
+         * @static
+         * @param {types.IDailyRewardClaim} message DailyRewardClaim message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyRewardClaim.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.utcDate);
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.playerAddress);
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.gameId);
+            if (message.rank != null && Object.hasOwnProperty.call(message, "rank"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.rank);
+            if (message.claimedAmount != null && Object.hasOwnProperty.call(message, "claimedAmount"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.claimedAmount);
+            if (message.claimedAtUnix != null && Object.hasOwnProperty.call(message, "claimedAtUnix"))
+                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.claimedAtUnix);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified DailyRewardClaim message, length delimited. Does not implicitly {@link types.DailyRewardClaim.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.DailyRewardClaim
+         * @static
+         * @param {types.IDailyRewardClaim} message DailyRewardClaim message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyRewardClaim.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a DailyRewardClaim message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.DailyRewardClaim
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.DailyRewardClaim} DailyRewardClaim
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyRewardClaim.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.DailyRewardClaim();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                case 4: {
+                        message.rank = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.claimedAmount = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.claimedAtUnix = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a DailyRewardClaim message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.DailyRewardClaim
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.DailyRewardClaim} DailyRewardClaim
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyRewardClaim.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a DailyRewardClaim message.
+         * @function verify
+         * @memberof types.DailyRewardClaim
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        DailyRewardClaim.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            if (message.rank != null && message.hasOwnProperty("rank"))
+                if (!$util.isInteger(message.rank) && !(message.rank && $util.isInteger(message.rank.low) && $util.isInteger(message.rank.high)))
+                    return "rank: integer|Long expected";
+            if (message.claimedAmount != null && message.hasOwnProperty("claimedAmount"))
+                if (!$util.isInteger(message.claimedAmount) && !(message.claimedAmount && $util.isInteger(message.claimedAmount.low) && $util.isInteger(message.claimedAmount.high)))
+                    return "claimedAmount: integer|Long expected";
+            if (message.claimedAtUnix != null && message.hasOwnProperty("claimedAtUnix"))
+                if (!$util.isInteger(message.claimedAtUnix) && !(message.claimedAtUnix && $util.isInteger(message.claimedAtUnix.low) && $util.isInteger(message.claimedAtUnix.high)))
+                    return "claimedAtUnix: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a DailyRewardClaim message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.DailyRewardClaim
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.DailyRewardClaim} DailyRewardClaim
+         */
+        DailyRewardClaim.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.DailyRewardClaim)
+                return object;
+            var message = new $root.types.DailyRewardClaim();
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            if (object.rank != null)
+                if ($util.Long)
+                    (message.rank = $util.Long.fromValue(object.rank)).unsigned = true;
+                else if (typeof object.rank === "string")
+                    message.rank = parseInt(object.rank, 10);
+                else if (typeof object.rank === "number")
+                    message.rank = object.rank;
+                else if (typeof object.rank === "object")
+                    message.rank = new $util.LongBits(object.rank.low >>> 0, object.rank.high >>> 0).toNumber(true);
+            if (object.claimedAmount != null)
+                if ($util.Long)
+                    (message.claimedAmount = $util.Long.fromValue(object.claimedAmount)).unsigned = true;
+                else if (typeof object.claimedAmount === "string")
+                    message.claimedAmount = parseInt(object.claimedAmount, 10);
+                else if (typeof object.claimedAmount === "number")
+                    message.claimedAmount = object.claimedAmount;
+                else if (typeof object.claimedAmount === "object")
+                    message.claimedAmount = new $util.LongBits(object.claimedAmount.low >>> 0, object.claimedAmount.high >>> 0).toNumber(true);
+            if (object.claimedAtUnix != null)
+                if ($util.Long)
+                    (message.claimedAtUnix = $util.Long.fromValue(object.claimedAtUnix)).unsigned = true;
+                else if (typeof object.claimedAtUnix === "string")
+                    message.claimedAtUnix = parseInt(object.claimedAtUnix, 10);
+                else if (typeof object.claimedAtUnix === "number")
+                    message.claimedAtUnix = object.claimedAtUnix;
+                else if (typeof object.claimedAtUnix === "object")
+                    message.claimedAtUnix = new $util.LongBits(object.claimedAtUnix.low >>> 0, object.claimedAtUnix.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a DailyRewardClaim message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.DailyRewardClaim
+         * @static
+         * @param {types.DailyRewardClaim} message DailyRewardClaim
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        DailyRewardClaim.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.utcDate = "";
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.rank = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.rank = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.claimedAmount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.claimedAmount = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.claimedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.claimedAtUnix = options.longs === String ? "0" : 0;
+            }
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            if (message.rank != null && message.hasOwnProperty("rank"))
+                if (typeof message.rank === "number")
+                    object.rank = options.longs === String ? String(message.rank) : message.rank;
+                else
+                    object.rank = options.longs === String ? $util.Long.prototype.toString.call(message.rank) : options.longs === Number ? new $util.LongBits(message.rank.low >>> 0, message.rank.high >>> 0).toNumber(true) : message.rank;
+            if (message.claimedAmount != null && message.hasOwnProperty("claimedAmount"))
+                if (typeof message.claimedAmount === "number")
+                    object.claimedAmount = options.longs === String ? String(message.claimedAmount) : message.claimedAmount;
+                else
+                    object.claimedAmount = options.longs === String ? $util.Long.prototype.toString.call(message.claimedAmount) : options.longs === Number ? new $util.LongBits(message.claimedAmount.low >>> 0, message.claimedAmount.high >>> 0).toNumber(true) : message.claimedAmount;
+            if (message.claimedAtUnix != null && message.hasOwnProperty("claimedAtUnix"))
+                if (typeof message.claimedAtUnix === "number")
+                    object.claimedAtUnix = options.longs === String ? String(message.claimedAtUnix) : message.claimedAtUnix;
+                else
+                    object.claimedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.claimedAtUnix) : options.longs === Number ? new $util.LongBits(message.claimedAtUnix.low >>> 0, message.claimedAtUnix.high >>> 0).toNumber(true) : message.claimedAtUnix;
+            return object;
+        };
+
+        /**
+         * Converts this DailyRewardClaim to JSON.
+         * @function toJSON
+         * @memberof types.DailyRewardClaim
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        DailyRewardClaim.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for DailyRewardClaim
+         * @function getTypeUrl
+         * @memberof types.DailyRewardClaim
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        DailyRewardClaim.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.DailyRewardClaim";
+        };
+
+        return DailyRewardClaim;
+    })();
+
+    types.ClassicPointsDailyLedger = (function() {
+
+        /**
+         * Properties of a ClassicPointsDailyLedger.
+         * @memberof types
+         * @interface IClassicPointsDailyLedger
+         * @property {string|null} [utcDate] ClassicPointsDailyLedger utcDate
+         * @property {Uint8Array|null} [playerAddress] ClassicPointsDailyLedger playerAddress
+         * @property {number|Long|null} [earnedPoints] ClassicPointsDailyLedger earnedPoints
+         */
+
+        /**
+         * Constructs a new ClassicPointsDailyLedger.
+         * @memberof types
+         * @classdesc Represents a ClassicPointsDailyLedger.
+         * @implements IClassicPointsDailyLedger
+         * @constructor
+         * @param {types.IClassicPointsDailyLedger=} [properties] Properties to set
+         */
+        function ClassicPointsDailyLedger(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * ClassicPointsDailyLedger utcDate.
+         * @member {string} utcDate
+         * @memberof types.ClassicPointsDailyLedger
+         * @instance
+         */
+        ClassicPointsDailyLedger.prototype.utcDate = "";
+
+        /**
+         * ClassicPointsDailyLedger playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.ClassicPointsDailyLedger
+         * @instance
+         */
+        ClassicPointsDailyLedger.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * ClassicPointsDailyLedger earnedPoints.
+         * @member {number|Long} earnedPoints
+         * @memberof types.ClassicPointsDailyLedger
+         * @instance
+         */
+        ClassicPointsDailyLedger.prototype.earnedPoints = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new ClassicPointsDailyLedger instance using the specified properties.
+         * @function create
+         * @memberof types.ClassicPointsDailyLedger
+         * @static
+         * @param {types.IClassicPointsDailyLedger=} [properties] Properties to set
+         * @returns {types.ClassicPointsDailyLedger} ClassicPointsDailyLedger instance
+         */
+        ClassicPointsDailyLedger.create = function create(properties) {
+            return new ClassicPointsDailyLedger(properties);
+        };
+
+        /**
+         * Encodes the specified ClassicPointsDailyLedger message. Does not implicitly {@link types.ClassicPointsDailyLedger.verify|verify} messages.
+         * @function encode
+         * @memberof types.ClassicPointsDailyLedger
+         * @static
+         * @param {types.IClassicPointsDailyLedger} message ClassicPointsDailyLedger message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ClassicPointsDailyLedger.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.utcDate);
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.playerAddress);
+            if (message.earnedPoints != null && Object.hasOwnProperty.call(message, "earnedPoints"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.earnedPoints);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified ClassicPointsDailyLedger message, length delimited. Does not implicitly {@link types.ClassicPointsDailyLedger.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.ClassicPointsDailyLedger
+         * @static
+         * @param {types.IClassicPointsDailyLedger} message ClassicPointsDailyLedger message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ClassicPointsDailyLedger.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a ClassicPointsDailyLedger message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.ClassicPointsDailyLedger
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.ClassicPointsDailyLedger} ClassicPointsDailyLedger
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ClassicPointsDailyLedger.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.ClassicPointsDailyLedger();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.earnedPoints = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a ClassicPointsDailyLedger message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.ClassicPointsDailyLedger
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.ClassicPointsDailyLedger} ClassicPointsDailyLedger
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ClassicPointsDailyLedger.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a ClassicPointsDailyLedger message.
+         * @function verify
+         * @memberof types.ClassicPointsDailyLedger
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        ClassicPointsDailyLedger.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.earnedPoints != null && message.hasOwnProperty("earnedPoints"))
+                if (!$util.isInteger(message.earnedPoints) && !(message.earnedPoints && $util.isInteger(message.earnedPoints.low) && $util.isInteger(message.earnedPoints.high)))
+                    return "earnedPoints: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a ClassicPointsDailyLedger message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.ClassicPointsDailyLedger
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.ClassicPointsDailyLedger} ClassicPointsDailyLedger
+         */
+        ClassicPointsDailyLedger.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.ClassicPointsDailyLedger)
+                return object;
+            var message = new $root.types.ClassicPointsDailyLedger();
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.earnedPoints != null)
+                if ($util.Long)
+                    (message.earnedPoints = $util.Long.fromValue(object.earnedPoints)).unsigned = true;
+                else if (typeof object.earnedPoints === "string")
+                    message.earnedPoints = parseInt(object.earnedPoints, 10);
+                else if (typeof object.earnedPoints === "number")
+                    message.earnedPoints = object.earnedPoints;
+                else if (typeof object.earnedPoints === "object")
+                    message.earnedPoints = new $util.LongBits(object.earnedPoints.low >>> 0, object.earnedPoints.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a ClassicPointsDailyLedger message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.ClassicPointsDailyLedger
+         * @static
+         * @param {types.ClassicPointsDailyLedger} message ClassicPointsDailyLedger
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        ClassicPointsDailyLedger.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.utcDate = "";
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.earnedPoints = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.earnedPoints = options.longs === String ? "0" : 0;
+            }
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.earnedPoints != null && message.hasOwnProperty("earnedPoints"))
+                if (typeof message.earnedPoints === "number")
+                    object.earnedPoints = options.longs === String ? String(message.earnedPoints) : message.earnedPoints;
+                else
+                    object.earnedPoints = options.longs === String ? $util.Long.prototype.toString.call(message.earnedPoints) : options.longs === Number ? new $util.LongBits(message.earnedPoints.low >>> 0, message.earnedPoints.high >>> 0).toNumber(true) : message.earnedPoints;
+            return object;
+        };
+
+        /**
+         * Converts this ClassicPointsDailyLedger to JSON.
+         * @function toJSON
+         * @memberof types.ClassicPointsDailyLedger
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        ClassicPointsDailyLedger.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for ClassicPointsDailyLedger
+         * @function getTypeUrl
+         * @memberof types.ClassicPointsDailyLedger
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        ClassicPointsDailyLedger.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.ClassicPointsDailyLedger";
+        };
+
+        return ClassicPointsDailyLedger;
+    })();
+
+    types.ClassicPointRedemption = (function() {
+
+        /**
+         * Properties of a ClassicPointRedemption.
+         * @memberof types
+         * @interface IClassicPointRedemption
+         * @property {Uint8Array|null} [playerAddress] ClassicPointRedemption playerAddress
+         * @property {number|Long|null} [burnPoints] ClassicPointRedemption burnPoints
+         * @property {number|Long|null} [payoutAmount] ClassicPointRedemption payoutAmount
+         * @property {number|Long|null} [redeemedAtUnix] ClassicPointRedemption redeemedAtUnix
+         */
+
+        /**
+         * Constructs a new ClassicPointRedemption.
+         * @memberof types
+         * @classdesc Represents a ClassicPointRedemption.
+         * @implements IClassicPointRedemption
+         * @constructor
+         * @param {types.IClassicPointRedemption=} [properties] Properties to set
+         */
+        function ClassicPointRedemption(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * ClassicPointRedemption playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.ClassicPointRedemption
+         * @instance
+         */
+        ClassicPointRedemption.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * ClassicPointRedemption burnPoints.
+         * @member {number|Long} burnPoints
+         * @memberof types.ClassicPointRedemption
+         * @instance
+         */
+        ClassicPointRedemption.prototype.burnPoints = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * ClassicPointRedemption payoutAmount.
+         * @member {number|Long} payoutAmount
+         * @memberof types.ClassicPointRedemption
+         * @instance
+         */
+        ClassicPointRedemption.prototype.payoutAmount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * ClassicPointRedemption redeemedAtUnix.
+         * @member {number|Long} redeemedAtUnix
+         * @memberof types.ClassicPointRedemption
+         * @instance
+         */
+        ClassicPointRedemption.prototype.redeemedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new ClassicPointRedemption instance using the specified properties.
+         * @function create
+         * @memberof types.ClassicPointRedemption
+         * @static
+         * @param {types.IClassicPointRedemption=} [properties] Properties to set
+         * @returns {types.ClassicPointRedemption} ClassicPointRedemption instance
+         */
+        ClassicPointRedemption.create = function create(properties) {
+            return new ClassicPointRedemption(properties);
+        };
+
+        /**
+         * Encodes the specified ClassicPointRedemption message. Does not implicitly {@link types.ClassicPointRedemption.verify|verify} messages.
+         * @function encode
+         * @memberof types.ClassicPointRedemption
+         * @static
+         * @param {types.IClassicPointRedemption} message ClassicPointRedemption message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ClassicPointRedemption.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.burnPoints != null && Object.hasOwnProperty.call(message, "burnPoints"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.burnPoints);
+            if (message.payoutAmount != null && Object.hasOwnProperty.call(message, "payoutAmount"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.payoutAmount);
+            if (message.redeemedAtUnix != null && Object.hasOwnProperty.call(message, "redeemedAtUnix"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.redeemedAtUnix);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified ClassicPointRedemption message, length delimited. Does not implicitly {@link types.ClassicPointRedemption.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.ClassicPointRedemption
+         * @static
+         * @param {types.IClassicPointRedemption} message ClassicPointRedemption message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ClassicPointRedemption.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a ClassicPointRedemption message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.ClassicPointRedemption
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.ClassicPointRedemption} ClassicPointRedemption
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ClassicPointRedemption.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.ClassicPointRedemption();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.burnPoints = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.payoutAmount = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.redeemedAtUnix = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a ClassicPointRedemption message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.ClassicPointRedemption
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.ClassicPointRedemption} ClassicPointRedemption
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ClassicPointRedemption.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a ClassicPointRedemption message.
+         * @function verify
+         * @memberof types.ClassicPointRedemption
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        ClassicPointRedemption.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.burnPoints != null && message.hasOwnProperty("burnPoints"))
+                if (!$util.isInteger(message.burnPoints) && !(message.burnPoints && $util.isInteger(message.burnPoints.low) && $util.isInteger(message.burnPoints.high)))
+                    return "burnPoints: integer|Long expected";
+            if (message.payoutAmount != null && message.hasOwnProperty("payoutAmount"))
+                if (!$util.isInteger(message.payoutAmount) && !(message.payoutAmount && $util.isInteger(message.payoutAmount.low) && $util.isInteger(message.payoutAmount.high)))
+                    return "payoutAmount: integer|Long expected";
+            if (message.redeemedAtUnix != null && message.hasOwnProperty("redeemedAtUnix"))
+                if (!$util.isInteger(message.redeemedAtUnix) && !(message.redeemedAtUnix && $util.isInteger(message.redeemedAtUnix.low) && $util.isInteger(message.redeemedAtUnix.high)))
+                    return "redeemedAtUnix: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a ClassicPointRedemption message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.ClassicPointRedemption
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.ClassicPointRedemption} ClassicPointRedemption
+         */
+        ClassicPointRedemption.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.ClassicPointRedemption)
+                return object;
+            var message = new $root.types.ClassicPointRedemption();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.burnPoints != null)
+                if ($util.Long)
+                    (message.burnPoints = $util.Long.fromValue(object.burnPoints)).unsigned = true;
+                else if (typeof object.burnPoints === "string")
+                    message.burnPoints = parseInt(object.burnPoints, 10);
+                else if (typeof object.burnPoints === "number")
+                    message.burnPoints = object.burnPoints;
+                else if (typeof object.burnPoints === "object")
+                    message.burnPoints = new $util.LongBits(object.burnPoints.low >>> 0, object.burnPoints.high >>> 0).toNumber(true);
+            if (object.payoutAmount != null)
+                if ($util.Long)
+                    (message.payoutAmount = $util.Long.fromValue(object.payoutAmount)).unsigned = true;
+                else if (typeof object.payoutAmount === "string")
+                    message.payoutAmount = parseInt(object.payoutAmount, 10);
+                else if (typeof object.payoutAmount === "number")
+                    message.payoutAmount = object.payoutAmount;
+                else if (typeof object.payoutAmount === "object")
+                    message.payoutAmount = new $util.LongBits(object.payoutAmount.low >>> 0, object.payoutAmount.high >>> 0).toNumber(true);
+            if (object.redeemedAtUnix != null)
+                if ($util.Long)
+                    (message.redeemedAtUnix = $util.Long.fromValue(object.redeemedAtUnix)).unsigned = true;
+                else if (typeof object.redeemedAtUnix === "string")
+                    message.redeemedAtUnix = parseInt(object.redeemedAtUnix, 10);
+                else if (typeof object.redeemedAtUnix === "number")
+                    message.redeemedAtUnix = object.redeemedAtUnix;
+                else if (typeof object.redeemedAtUnix === "object")
+                    message.redeemedAtUnix = new $util.LongBits(object.redeemedAtUnix.low >>> 0, object.redeemedAtUnix.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a ClassicPointRedemption message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.ClassicPointRedemption
+         * @static
+         * @param {types.ClassicPointRedemption} message ClassicPointRedemption
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        ClassicPointRedemption.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.burnPoints = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.burnPoints = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.payoutAmount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.payoutAmount = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.redeemedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.redeemedAtUnix = options.longs === String ? "0" : 0;
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.burnPoints != null && message.hasOwnProperty("burnPoints"))
+                if (typeof message.burnPoints === "number")
+                    object.burnPoints = options.longs === String ? String(message.burnPoints) : message.burnPoints;
+                else
+                    object.burnPoints = options.longs === String ? $util.Long.prototype.toString.call(message.burnPoints) : options.longs === Number ? new $util.LongBits(message.burnPoints.low >>> 0, message.burnPoints.high >>> 0).toNumber(true) : message.burnPoints;
+            if (message.payoutAmount != null && message.hasOwnProperty("payoutAmount"))
+                if (typeof message.payoutAmount === "number")
+                    object.payoutAmount = options.longs === String ? String(message.payoutAmount) : message.payoutAmount;
+                else
+                    object.payoutAmount = options.longs === String ? $util.Long.prototype.toString.call(message.payoutAmount) : options.longs === Number ? new $util.LongBits(message.payoutAmount.low >>> 0, message.payoutAmount.high >>> 0).toNumber(true) : message.payoutAmount;
+            if (message.redeemedAtUnix != null && message.hasOwnProperty("redeemedAtUnix"))
+                if (typeof message.redeemedAtUnix === "number")
+                    object.redeemedAtUnix = options.longs === String ? String(message.redeemedAtUnix) : message.redeemedAtUnix;
+                else
+                    object.redeemedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.redeemedAtUnix) : options.longs === Number ? new $util.LongBits(message.redeemedAtUnix.low >>> 0, message.redeemedAtUnix.high >>> 0).toNumber(true) : message.redeemedAtUnix;
+            return object;
+        };
+
+        /**
+         * Converts this ClassicPointRedemption to JSON.
+         * @function toJSON
+         * @memberof types.ClassicPointRedemption
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        ClassicPointRedemption.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for ClassicPointRedemption
+         * @function getTypeUrl
+         * @memberof types.ClassicPointRedemption
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        ClassicPointRedemption.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.ClassicPointRedemption";
+        };
+
+        return ClassicPointRedemption;
+    })();
+
+    types.DailyLoginClaim = (function() {
+
+        /**
+         * Properties of a DailyLoginClaim.
+         * @memberof types
+         * @interface IDailyLoginClaim
+         * @property {string|null} [utcDate] DailyLoginClaim utcDate
+         * @property {Uint8Array|null} [playerAddress] DailyLoginClaim playerAddress
+         * @property {number|Long|null} [streakDay] DailyLoginClaim streakDay
+         * @property {number|Long|null} [rewardPoints] DailyLoginClaim rewardPoints
+         * @property {number|Long|null} [bonusBps] DailyLoginClaim bonusBps
+         * @property {number|Long|null} [claimedAtUnix] DailyLoginClaim claimedAtUnix
+         */
+
+        /**
+         * Constructs a new DailyLoginClaim.
+         * @memberof types
+         * @classdesc Represents a DailyLoginClaim.
+         * @implements IDailyLoginClaim
+         * @constructor
+         * @param {types.IDailyLoginClaim=} [properties] Properties to set
+         */
+        function DailyLoginClaim(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * DailyLoginClaim utcDate.
+         * @member {string} utcDate
+         * @memberof types.DailyLoginClaim
+         * @instance
+         */
+        DailyLoginClaim.prototype.utcDate = "";
+
+        /**
+         * DailyLoginClaim playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.DailyLoginClaim
+         * @instance
+         */
+        DailyLoginClaim.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * DailyLoginClaim streakDay.
+         * @member {number|Long} streakDay
+         * @memberof types.DailyLoginClaim
+         * @instance
+         */
+        DailyLoginClaim.prototype.streakDay = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyLoginClaim rewardPoints.
+         * @member {number|Long} rewardPoints
+         * @memberof types.DailyLoginClaim
+         * @instance
+         */
+        DailyLoginClaim.prototype.rewardPoints = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyLoginClaim bonusBps.
+         * @member {number|Long} bonusBps
+         * @memberof types.DailyLoginClaim
+         * @instance
+         */
+        DailyLoginClaim.prototype.bonusBps = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * DailyLoginClaim claimedAtUnix.
+         * @member {number|Long} claimedAtUnix
+         * @memberof types.DailyLoginClaim
+         * @instance
+         */
+        DailyLoginClaim.prototype.claimedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new DailyLoginClaim instance using the specified properties.
+         * @function create
+         * @memberof types.DailyLoginClaim
+         * @static
+         * @param {types.IDailyLoginClaim=} [properties] Properties to set
+         * @returns {types.DailyLoginClaim} DailyLoginClaim instance
+         */
+        DailyLoginClaim.create = function create(properties) {
+            return new DailyLoginClaim(properties);
+        };
+
+        /**
+         * Encodes the specified DailyLoginClaim message. Does not implicitly {@link types.DailyLoginClaim.verify|verify} messages.
+         * @function encode
+         * @memberof types.DailyLoginClaim
+         * @static
+         * @param {types.IDailyLoginClaim} message DailyLoginClaim message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyLoginClaim.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.utcDate != null && Object.hasOwnProperty.call(message, "utcDate"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.utcDate);
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.playerAddress);
+            if (message.streakDay != null && Object.hasOwnProperty.call(message, "streakDay"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.streakDay);
+            if (message.rewardPoints != null && Object.hasOwnProperty.call(message, "rewardPoints"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.rewardPoints);
+            if (message.bonusBps != null && Object.hasOwnProperty.call(message, "bonusBps"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.bonusBps);
+            if (message.claimedAtUnix != null && Object.hasOwnProperty.call(message, "claimedAtUnix"))
+                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.claimedAtUnix);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified DailyLoginClaim message, length delimited. Does not implicitly {@link types.DailyLoginClaim.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.DailyLoginClaim
+         * @static
+         * @param {types.IDailyLoginClaim} message DailyLoginClaim message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DailyLoginClaim.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a DailyLoginClaim message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.DailyLoginClaim
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.DailyLoginClaim} DailyLoginClaim
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyLoginClaim.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.DailyLoginClaim();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.utcDate = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.streakDay = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.rewardPoints = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.bonusBps = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.claimedAtUnix = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a DailyLoginClaim message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.DailyLoginClaim
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.DailyLoginClaim} DailyLoginClaim
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DailyLoginClaim.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a DailyLoginClaim message.
+         * @function verify
+         * @memberof types.DailyLoginClaim
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        DailyLoginClaim.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                if (!$util.isString(message.utcDate))
+                    return "utcDate: string expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.streakDay != null && message.hasOwnProperty("streakDay"))
+                if (!$util.isInteger(message.streakDay) && !(message.streakDay && $util.isInteger(message.streakDay.low) && $util.isInteger(message.streakDay.high)))
+                    return "streakDay: integer|Long expected";
+            if (message.rewardPoints != null && message.hasOwnProperty("rewardPoints"))
+                if (!$util.isInteger(message.rewardPoints) && !(message.rewardPoints && $util.isInteger(message.rewardPoints.low) && $util.isInteger(message.rewardPoints.high)))
+                    return "rewardPoints: integer|Long expected";
+            if (message.bonusBps != null && message.hasOwnProperty("bonusBps"))
+                if (!$util.isInteger(message.bonusBps) && !(message.bonusBps && $util.isInteger(message.bonusBps.low) && $util.isInteger(message.bonusBps.high)))
+                    return "bonusBps: integer|Long expected";
+            if (message.claimedAtUnix != null && message.hasOwnProperty("claimedAtUnix"))
+                if (!$util.isInteger(message.claimedAtUnix) && !(message.claimedAtUnix && $util.isInteger(message.claimedAtUnix.low) && $util.isInteger(message.claimedAtUnix.high)))
+                    return "claimedAtUnix: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a DailyLoginClaim message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.DailyLoginClaim
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.DailyLoginClaim} DailyLoginClaim
+         */
+        DailyLoginClaim.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.DailyLoginClaim)
+                return object;
+            var message = new $root.types.DailyLoginClaim();
+            if (object.utcDate != null)
+                message.utcDate = String(object.utcDate);
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.streakDay != null)
+                if ($util.Long)
+                    (message.streakDay = $util.Long.fromValue(object.streakDay)).unsigned = true;
+                else if (typeof object.streakDay === "string")
+                    message.streakDay = parseInt(object.streakDay, 10);
+                else if (typeof object.streakDay === "number")
+                    message.streakDay = object.streakDay;
+                else if (typeof object.streakDay === "object")
+                    message.streakDay = new $util.LongBits(object.streakDay.low >>> 0, object.streakDay.high >>> 0).toNumber(true);
+            if (object.rewardPoints != null)
+                if ($util.Long)
+                    (message.rewardPoints = $util.Long.fromValue(object.rewardPoints)).unsigned = true;
+                else if (typeof object.rewardPoints === "string")
+                    message.rewardPoints = parseInt(object.rewardPoints, 10);
+                else if (typeof object.rewardPoints === "number")
+                    message.rewardPoints = object.rewardPoints;
+                else if (typeof object.rewardPoints === "object")
+                    message.rewardPoints = new $util.LongBits(object.rewardPoints.low >>> 0, object.rewardPoints.high >>> 0).toNumber(true);
+            if (object.bonusBps != null)
+                if ($util.Long)
+                    (message.bonusBps = $util.Long.fromValue(object.bonusBps)).unsigned = true;
+                else if (typeof object.bonusBps === "string")
+                    message.bonusBps = parseInt(object.bonusBps, 10);
+                else if (typeof object.bonusBps === "number")
+                    message.bonusBps = object.bonusBps;
+                else if (typeof object.bonusBps === "object")
+                    message.bonusBps = new $util.LongBits(object.bonusBps.low >>> 0, object.bonusBps.high >>> 0).toNumber(true);
+            if (object.claimedAtUnix != null)
+                if ($util.Long)
+                    (message.claimedAtUnix = $util.Long.fromValue(object.claimedAtUnix)).unsigned = true;
+                else if (typeof object.claimedAtUnix === "string")
+                    message.claimedAtUnix = parseInt(object.claimedAtUnix, 10);
+                else if (typeof object.claimedAtUnix === "number")
+                    message.claimedAtUnix = object.claimedAtUnix;
+                else if (typeof object.claimedAtUnix === "object")
+                    message.claimedAtUnix = new $util.LongBits(object.claimedAtUnix.low >>> 0, object.claimedAtUnix.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a DailyLoginClaim message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.DailyLoginClaim
+         * @static
+         * @param {types.DailyLoginClaim} message DailyLoginClaim
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        DailyLoginClaim.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.utcDate = "";
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.streakDay = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.streakDay = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.rewardPoints = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.rewardPoints = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.bonusBps = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.bonusBps = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.claimedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.claimedAtUnix = options.longs === String ? "0" : 0;
+            }
+            if (message.utcDate != null && message.hasOwnProperty("utcDate"))
+                object.utcDate = message.utcDate;
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.streakDay != null && message.hasOwnProperty("streakDay"))
+                if (typeof message.streakDay === "number")
+                    object.streakDay = options.longs === String ? String(message.streakDay) : message.streakDay;
+                else
+                    object.streakDay = options.longs === String ? $util.Long.prototype.toString.call(message.streakDay) : options.longs === Number ? new $util.LongBits(message.streakDay.low >>> 0, message.streakDay.high >>> 0).toNumber(true) : message.streakDay;
+            if (message.rewardPoints != null && message.hasOwnProperty("rewardPoints"))
+                if (typeof message.rewardPoints === "number")
+                    object.rewardPoints = options.longs === String ? String(message.rewardPoints) : message.rewardPoints;
+                else
+                    object.rewardPoints = options.longs === String ? $util.Long.prototype.toString.call(message.rewardPoints) : options.longs === Number ? new $util.LongBits(message.rewardPoints.low >>> 0, message.rewardPoints.high >>> 0).toNumber(true) : message.rewardPoints;
+            if (message.bonusBps != null && message.hasOwnProperty("bonusBps"))
+                if (typeof message.bonusBps === "number")
+                    object.bonusBps = options.longs === String ? String(message.bonusBps) : message.bonusBps;
+                else
+                    object.bonusBps = options.longs === String ? $util.Long.prototype.toString.call(message.bonusBps) : options.longs === Number ? new $util.LongBits(message.bonusBps.low >>> 0, message.bonusBps.high >>> 0).toNumber(true) : message.bonusBps;
+            if (message.claimedAtUnix != null && message.hasOwnProperty("claimedAtUnix"))
+                if (typeof message.claimedAtUnix === "number")
+                    object.claimedAtUnix = options.longs === String ? String(message.claimedAtUnix) : message.claimedAtUnix;
+                else
+                    object.claimedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.claimedAtUnix) : options.longs === Number ? new $util.LongBits(message.claimedAtUnix.low >>> 0, message.claimedAtUnix.high >>> 0).toNumber(true) : message.claimedAtUnix;
+            return object;
+        };
+
+        /**
+         * Converts this DailyLoginClaim to JSON.
+         * @function toJSON
+         * @memberof types.DailyLoginClaim
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        DailyLoginClaim.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for DailyLoginClaim
+         * @function getTypeUrl
+         * @memberof types.DailyLoginClaim
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        DailyLoginClaim.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.DailyLoginClaim";
+        };
+
+        return DailyLoginClaim;
+    })();
+
+    types.PlayerStats = (function() {
+
+        /**
+         * Properties of a PlayerStats.
+         * @memberof types
+         * @interface IPlayerStats
+         * @property {Uint8Array|null} [playerAddress] PlayerStats playerAddress
+         * @property {number|Long|null} [dailyGamesStarted] PlayerStats dailyGamesStarted
+         * @property {number|Long|null} [classicGamesStarted] PlayerStats classicGamesStarted
+         * @property {number|Long|null} [gamesCompleted] PlayerStats gamesCompleted
+         * @property {number|Long|null} [wins] PlayerStats wins
+         * @property {number|Long|null} [losses] PlayerStats losses
+         * @property {number|Long|null} [bestDailyScore] PlayerStats bestDailyScore
+         * @property {number|Long|null} [bestClassicScore] PlayerStats bestClassicScore
+         * @property {number|Long|null} [bestTile] PlayerStats bestTile
+         * @property {number|Long|null} [totalScore] PlayerStats totalScore
+         * @property {number|Long|null} [classicPointsBalance] PlayerStats classicPointsBalance
+         * @property {number|Long|null} [classicPointsEarned] PlayerStats classicPointsEarned
+         * @property {number|Long|null} [loginStreak] PlayerStats loginStreak
+         * @property {string|null} [lastLoginClaimUtcDate] PlayerStats lastLoginClaimUtcDate
+         * @property {string|null} [classicPointsBonusUtcDate] PlayerStats classicPointsBonusUtcDate
+         */
+
+        /**
+         * Constructs a new PlayerStats.
+         * @memberof types
+         * @classdesc Represents a PlayerStats.
+         * @implements IPlayerStats
+         * @constructor
+         * @param {types.IPlayerStats=} [properties] Properties to set
+         */
+        function PlayerStats(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * PlayerStats playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * PlayerStats dailyGamesStarted.
+         * @member {number|Long} dailyGamesStarted
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.dailyGamesStarted = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats classicGamesStarted.
+         * @member {number|Long} classicGamesStarted
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.classicGamesStarted = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats gamesCompleted.
+         * @member {number|Long} gamesCompleted
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.gamesCompleted = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats wins.
+         * @member {number|Long} wins
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.wins = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats losses.
+         * @member {number|Long} losses
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.losses = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats bestDailyScore.
+         * @member {number|Long} bestDailyScore
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.bestDailyScore = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats bestClassicScore.
+         * @member {number|Long} bestClassicScore
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.bestClassicScore = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats bestTile.
+         * @member {number|Long} bestTile
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.bestTile = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats totalScore.
+         * @member {number|Long} totalScore
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.totalScore = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats classicPointsBalance.
+         * @member {number|Long} classicPointsBalance
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.classicPointsBalance = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats classicPointsEarned.
+         * @member {number|Long} classicPointsEarned
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.classicPointsEarned = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats loginStreak.
+         * @member {number|Long} loginStreak
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.loginStreak = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerStats lastLoginClaimUtcDate.
+         * @member {string} lastLoginClaimUtcDate
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.lastLoginClaimUtcDate = "";
+
+        /**
+         * PlayerStats classicPointsBonusUtcDate.
+         * @member {string} classicPointsBonusUtcDate
+         * @memberof types.PlayerStats
+         * @instance
+         */
+        PlayerStats.prototype.classicPointsBonusUtcDate = "";
+
+        /**
+         * Creates a new PlayerStats instance using the specified properties.
+         * @function create
+         * @memberof types.PlayerStats
+         * @static
+         * @param {types.IPlayerStats=} [properties] Properties to set
+         * @returns {types.PlayerStats} PlayerStats instance
+         */
+        PlayerStats.create = function create(properties) {
+            return new PlayerStats(properties);
+        };
+
+        /**
+         * Encodes the specified PlayerStats message. Does not implicitly {@link types.PlayerStats.verify|verify} messages.
+         * @function encode
+         * @memberof types.PlayerStats
+         * @static
+         * @param {types.IPlayerStats} message PlayerStats message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PlayerStats.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.dailyGamesStarted != null && Object.hasOwnProperty.call(message, "dailyGamesStarted"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.dailyGamesStarted);
+            if (message.classicGamesStarted != null && Object.hasOwnProperty.call(message, "classicGamesStarted"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.classicGamesStarted);
+            if (message.gamesCompleted != null && Object.hasOwnProperty.call(message, "gamesCompleted"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.gamesCompleted);
+            if (message.wins != null && Object.hasOwnProperty.call(message, "wins"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.wins);
+            if (message.losses != null && Object.hasOwnProperty.call(message, "losses"))
+                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.losses);
+            if (message.bestDailyScore != null && Object.hasOwnProperty.call(message, "bestDailyScore"))
+                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.bestDailyScore);
+            if (message.bestClassicScore != null && Object.hasOwnProperty.call(message, "bestClassicScore"))
+                writer.uint32(/* id 8, wireType 0 =*/64).uint64(message.bestClassicScore);
+            if (message.bestTile != null && Object.hasOwnProperty.call(message, "bestTile"))
+                writer.uint32(/* id 9, wireType 0 =*/72).uint64(message.bestTile);
+            if (message.totalScore != null && Object.hasOwnProperty.call(message, "totalScore"))
+                writer.uint32(/* id 10, wireType 0 =*/80).uint64(message.totalScore);
+            if (message.classicPointsBalance != null && Object.hasOwnProperty.call(message, "classicPointsBalance"))
+                writer.uint32(/* id 11, wireType 0 =*/88).uint64(message.classicPointsBalance);
+            if (message.classicPointsEarned != null && Object.hasOwnProperty.call(message, "classicPointsEarned"))
+                writer.uint32(/* id 12, wireType 0 =*/96).uint64(message.classicPointsEarned);
+            if (message.loginStreak != null && Object.hasOwnProperty.call(message, "loginStreak"))
+                writer.uint32(/* id 13, wireType 0 =*/104).uint64(message.loginStreak);
+            if (message.lastLoginClaimUtcDate != null && Object.hasOwnProperty.call(message, "lastLoginClaimUtcDate"))
+                writer.uint32(/* id 14, wireType 2 =*/114).string(message.lastLoginClaimUtcDate);
+            if (message.classicPointsBonusUtcDate != null && Object.hasOwnProperty.call(message, "classicPointsBonusUtcDate"))
+                writer.uint32(/* id 15, wireType 2 =*/122).string(message.classicPointsBonusUtcDate);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified PlayerStats message, length delimited. Does not implicitly {@link types.PlayerStats.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.PlayerStats
+         * @static
+         * @param {types.IPlayerStats} message PlayerStats message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PlayerStats.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a PlayerStats message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.PlayerStats
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.PlayerStats} PlayerStats
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PlayerStats.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.PlayerStats();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.dailyGamesStarted = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.classicGamesStarted = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.gamesCompleted = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.wins = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.losses = reader.uint64();
+                        break;
+                    }
+                case 7: {
+                        message.bestDailyScore = reader.uint64();
+                        break;
+                    }
+                case 8: {
+                        message.bestClassicScore = reader.uint64();
+                        break;
+                    }
+                case 9: {
+                        message.bestTile = reader.uint64();
+                        break;
+                    }
+                case 10: {
+                        message.totalScore = reader.uint64();
+                        break;
+                    }
+                case 11: {
+                        message.classicPointsBalance = reader.uint64();
+                        break;
+                    }
+                case 12: {
+                        message.classicPointsEarned = reader.uint64();
+                        break;
+                    }
+                case 13: {
+                        message.loginStreak = reader.uint64();
+                        break;
+                    }
+                case 14: {
+                        message.lastLoginClaimUtcDate = reader.string();
+                        break;
+                    }
+                case 15: {
+                        message.classicPointsBonusUtcDate = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a PlayerStats message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.PlayerStats
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.PlayerStats} PlayerStats
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PlayerStats.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a PlayerStats message.
+         * @function verify
+         * @memberof types.PlayerStats
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PlayerStats.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.dailyGamesStarted != null && message.hasOwnProperty("dailyGamesStarted"))
+                if (!$util.isInteger(message.dailyGamesStarted) && !(message.dailyGamesStarted && $util.isInteger(message.dailyGamesStarted.low) && $util.isInteger(message.dailyGamesStarted.high)))
+                    return "dailyGamesStarted: integer|Long expected";
+            if (message.classicGamesStarted != null && message.hasOwnProperty("classicGamesStarted"))
+                if (!$util.isInteger(message.classicGamesStarted) && !(message.classicGamesStarted && $util.isInteger(message.classicGamesStarted.low) && $util.isInteger(message.classicGamesStarted.high)))
+                    return "classicGamesStarted: integer|Long expected";
+            if (message.gamesCompleted != null && message.hasOwnProperty("gamesCompleted"))
+                if (!$util.isInteger(message.gamesCompleted) && !(message.gamesCompleted && $util.isInteger(message.gamesCompleted.low) && $util.isInteger(message.gamesCompleted.high)))
+                    return "gamesCompleted: integer|Long expected";
+            if (message.wins != null && message.hasOwnProperty("wins"))
+                if (!$util.isInteger(message.wins) && !(message.wins && $util.isInteger(message.wins.low) && $util.isInteger(message.wins.high)))
+                    return "wins: integer|Long expected";
+            if (message.losses != null && message.hasOwnProperty("losses"))
+                if (!$util.isInteger(message.losses) && !(message.losses && $util.isInteger(message.losses.low) && $util.isInteger(message.losses.high)))
+                    return "losses: integer|Long expected";
+            if (message.bestDailyScore != null && message.hasOwnProperty("bestDailyScore"))
+                if (!$util.isInteger(message.bestDailyScore) && !(message.bestDailyScore && $util.isInteger(message.bestDailyScore.low) && $util.isInteger(message.bestDailyScore.high)))
+                    return "bestDailyScore: integer|Long expected";
+            if (message.bestClassicScore != null && message.hasOwnProperty("bestClassicScore"))
+                if (!$util.isInteger(message.bestClassicScore) && !(message.bestClassicScore && $util.isInteger(message.bestClassicScore.low) && $util.isInteger(message.bestClassicScore.high)))
+                    return "bestClassicScore: integer|Long expected";
+            if (message.bestTile != null && message.hasOwnProperty("bestTile"))
+                if (!$util.isInteger(message.bestTile) && !(message.bestTile && $util.isInteger(message.bestTile.low) && $util.isInteger(message.bestTile.high)))
+                    return "bestTile: integer|Long expected";
+            if (message.totalScore != null && message.hasOwnProperty("totalScore"))
+                if (!$util.isInteger(message.totalScore) && !(message.totalScore && $util.isInteger(message.totalScore.low) && $util.isInteger(message.totalScore.high)))
+                    return "totalScore: integer|Long expected";
+            if (message.classicPointsBalance != null && message.hasOwnProperty("classicPointsBalance"))
+                if (!$util.isInteger(message.classicPointsBalance) && !(message.classicPointsBalance && $util.isInteger(message.classicPointsBalance.low) && $util.isInteger(message.classicPointsBalance.high)))
+                    return "classicPointsBalance: integer|Long expected";
+            if (message.classicPointsEarned != null && message.hasOwnProperty("classicPointsEarned"))
+                if (!$util.isInteger(message.classicPointsEarned) && !(message.classicPointsEarned && $util.isInteger(message.classicPointsEarned.low) && $util.isInteger(message.classicPointsEarned.high)))
+                    return "classicPointsEarned: integer|Long expected";
+            if (message.loginStreak != null && message.hasOwnProperty("loginStreak"))
+                if (!$util.isInteger(message.loginStreak) && !(message.loginStreak && $util.isInteger(message.loginStreak.low) && $util.isInteger(message.loginStreak.high)))
+                    return "loginStreak: integer|Long expected";
+            if (message.lastLoginClaimUtcDate != null && message.hasOwnProperty("lastLoginClaimUtcDate"))
+                if (!$util.isString(message.lastLoginClaimUtcDate))
+                    return "lastLoginClaimUtcDate: string expected";
+            if (message.classicPointsBonusUtcDate != null && message.hasOwnProperty("classicPointsBonusUtcDate"))
+                if (!$util.isString(message.classicPointsBonusUtcDate))
+                    return "classicPointsBonusUtcDate: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a PlayerStats message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.PlayerStats
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.PlayerStats} PlayerStats
+         */
+        PlayerStats.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.PlayerStats)
+                return object;
+            var message = new $root.types.PlayerStats();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.dailyGamesStarted != null)
+                if ($util.Long)
+                    (message.dailyGamesStarted = $util.Long.fromValue(object.dailyGamesStarted)).unsigned = true;
+                else if (typeof object.dailyGamesStarted === "string")
+                    message.dailyGamesStarted = parseInt(object.dailyGamesStarted, 10);
+                else if (typeof object.dailyGamesStarted === "number")
+                    message.dailyGamesStarted = object.dailyGamesStarted;
+                else if (typeof object.dailyGamesStarted === "object")
+                    message.dailyGamesStarted = new $util.LongBits(object.dailyGamesStarted.low >>> 0, object.dailyGamesStarted.high >>> 0).toNumber(true);
+            if (object.classicGamesStarted != null)
+                if ($util.Long)
+                    (message.classicGamesStarted = $util.Long.fromValue(object.classicGamesStarted)).unsigned = true;
+                else if (typeof object.classicGamesStarted === "string")
+                    message.classicGamesStarted = parseInt(object.classicGamesStarted, 10);
+                else if (typeof object.classicGamesStarted === "number")
+                    message.classicGamesStarted = object.classicGamesStarted;
+                else if (typeof object.classicGamesStarted === "object")
+                    message.classicGamesStarted = new $util.LongBits(object.classicGamesStarted.low >>> 0, object.classicGamesStarted.high >>> 0).toNumber(true);
+            if (object.gamesCompleted != null)
+                if ($util.Long)
+                    (message.gamesCompleted = $util.Long.fromValue(object.gamesCompleted)).unsigned = true;
+                else if (typeof object.gamesCompleted === "string")
+                    message.gamesCompleted = parseInt(object.gamesCompleted, 10);
+                else if (typeof object.gamesCompleted === "number")
+                    message.gamesCompleted = object.gamesCompleted;
+                else if (typeof object.gamesCompleted === "object")
+                    message.gamesCompleted = new $util.LongBits(object.gamesCompleted.low >>> 0, object.gamesCompleted.high >>> 0).toNumber(true);
+            if (object.wins != null)
+                if ($util.Long)
+                    (message.wins = $util.Long.fromValue(object.wins)).unsigned = true;
+                else if (typeof object.wins === "string")
+                    message.wins = parseInt(object.wins, 10);
+                else if (typeof object.wins === "number")
+                    message.wins = object.wins;
+                else if (typeof object.wins === "object")
+                    message.wins = new $util.LongBits(object.wins.low >>> 0, object.wins.high >>> 0).toNumber(true);
+            if (object.losses != null)
+                if ($util.Long)
+                    (message.losses = $util.Long.fromValue(object.losses)).unsigned = true;
+                else if (typeof object.losses === "string")
+                    message.losses = parseInt(object.losses, 10);
+                else if (typeof object.losses === "number")
+                    message.losses = object.losses;
+                else if (typeof object.losses === "object")
+                    message.losses = new $util.LongBits(object.losses.low >>> 0, object.losses.high >>> 0).toNumber(true);
+            if (object.bestDailyScore != null)
+                if ($util.Long)
+                    (message.bestDailyScore = $util.Long.fromValue(object.bestDailyScore)).unsigned = true;
+                else if (typeof object.bestDailyScore === "string")
+                    message.bestDailyScore = parseInt(object.bestDailyScore, 10);
+                else if (typeof object.bestDailyScore === "number")
+                    message.bestDailyScore = object.bestDailyScore;
+                else if (typeof object.bestDailyScore === "object")
+                    message.bestDailyScore = new $util.LongBits(object.bestDailyScore.low >>> 0, object.bestDailyScore.high >>> 0).toNumber(true);
+            if (object.bestClassicScore != null)
+                if ($util.Long)
+                    (message.bestClassicScore = $util.Long.fromValue(object.bestClassicScore)).unsigned = true;
+                else if (typeof object.bestClassicScore === "string")
+                    message.bestClassicScore = parseInt(object.bestClassicScore, 10);
+                else if (typeof object.bestClassicScore === "number")
+                    message.bestClassicScore = object.bestClassicScore;
+                else if (typeof object.bestClassicScore === "object")
+                    message.bestClassicScore = new $util.LongBits(object.bestClassicScore.low >>> 0, object.bestClassicScore.high >>> 0).toNumber(true);
+            if (object.bestTile != null)
+                if ($util.Long)
+                    (message.bestTile = $util.Long.fromValue(object.bestTile)).unsigned = true;
+                else if (typeof object.bestTile === "string")
+                    message.bestTile = parseInt(object.bestTile, 10);
+                else if (typeof object.bestTile === "number")
+                    message.bestTile = object.bestTile;
+                else if (typeof object.bestTile === "object")
+                    message.bestTile = new $util.LongBits(object.bestTile.low >>> 0, object.bestTile.high >>> 0).toNumber(true);
+            if (object.totalScore != null)
+                if ($util.Long)
+                    (message.totalScore = $util.Long.fromValue(object.totalScore)).unsigned = true;
+                else if (typeof object.totalScore === "string")
+                    message.totalScore = parseInt(object.totalScore, 10);
+                else if (typeof object.totalScore === "number")
+                    message.totalScore = object.totalScore;
+                else if (typeof object.totalScore === "object")
+                    message.totalScore = new $util.LongBits(object.totalScore.low >>> 0, object.totalScore.high >>> 0).toNumber(true);
+            if (object.classicPointsBalance != null)
+                if ($util.Long)
+                    (message.classicPointsBalance = $util.Long.fromValue(object.classicPointsBalance)).unsigned = true;
+                else if (typeof object.classicPointsBalance === "string")
+                    message.classicPointsBalance = parseInt(object.classicPointsBalance, 10);
+                else if (typeof object.classicPointsBalance === "number")
+                    message.classicPointsBalance = object.classicPointsBalance;
+                else if (typeof object.classicPointsBalance === "object")
+                    message.classicPointsBalance = new $util.LongBits(object.classicPointsBalance.low >>> 0, object.classicPointsBalance.high >>> 0).toNumber(true);
+            if (object.classicPointsEarned != null)
+                if ($util.Long)
+                    (message.classicPointsEarned = $util.Long.fromValue(object.classicPointsEarned)).unsigned = true;
+                else if (typeof object.classicPointsEarned === "string")
+                    message.classicPointsEarned = parseInt(object.classicPointsEarned, 10);
+                else if (typeof object.classicPointsEarned === "number")
+                    message.classicPointsEarned = object.classicPointsEarned;
+                else if (typeof object.classicPointsEarned === "object")
+                    message.classicPointsEarned = new $util.LongBits(object.classicPointsEarned.low >>> 0, object.classicPointsEarned.high >>> 0).toNumber(true);
+            if (object.loginStreak != null)
+                if ($util.Long)
+                    (message.loginStreak = $util.Long.fromValue(object.loginStreak)).unsigned = true;
+                else if (typeof object.loginStreak === "string")
+                    message.loginStreak = parseInt(object.loginStreak, 10);
+                else if (typeof object.loginStreak === "number")
+                    message.loginStreak = object.loginStreak;
+                else if (typeof object.loginStreak === "object")
+                    message.loginStreak = new $util.LongBits(object.loginStreak.low >>> 0, object.loginStreak.high >>> 0).toNumber(true);
+            if (object.lastLoginClaimUtcDate != null)
+                message.lastLoginClaimUtcDate = String(object.lastLoginClaimUtcDate);
+            if (object.classicPointsBonusUtcDate != null)
+                message.classicPointsBonusUtcDate = String(object.classicPointsBonusUtcDate);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a PlayerStats message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.PlayerStats
+         * @static
+         * @param {types.PlayerStats} message PlayerStats
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PlayerStats.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.dailyGamesStarted = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.dailyGamesStarted = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.classicGamesStarted = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.classicGamesStarted = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.gamesCompleted = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.gamesCompleted = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.wins = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.wins = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.losses = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.losses = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.bestDailyScore = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.bestDailyScore = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.bestClassicScore = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.bestClassicScore = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.bestTile = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.bestTile = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.totalScore = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.totalScore = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.classicPointsBalance = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.classicPointsBalance = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.classicPointsEarned = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.classicPointsEarned = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.loginStreak = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.loginStreak = options.longs === String ? "0" : 0;
+                object.lastLoginClaimUtcDate = "";
+                object.classicPointsBonusUtcDate = "";
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.dailyGamesStarted != null && message.hasOwnProperty("dailyGamesStarted"))
+                if (typeof message.dailyGamesStarted === "number")
+                    object.dailyGamesStarted = options.longs === String ? String(message.dailyGamesStarted) : message.dailyGamesStarted;
+                else
+                    object.dailyGamesStarted = options.longs === String ? $util.Long.prototype.toString.call(message.dailyGamesStarted) : options.longs === Number ? new $util.LongBits(message.dailyGamesStarted.low >>> 0, message.dailyGamesStarted.high >>> 0).toNumber(true) : message.dailyGamesStarted;
+            if (message.classicGamesStarted != null && message.hasOwnProperty("classicGamesStarted"))
+                if (typeof message.classicGamesStarted === "number")
+                    object.classicGamesStarted = options.longs === String ? String(message.classicGamesStarted) : message.classicGamesStarted;
+                else
+                    object.classicGamesStarted = options.longs === String ? $util.Long.prototype.toString.call(message.classicGamesStarted) : options.longs === Number ? new $util.LongBits(message.classicGamesStarted.low >>> 0, message.classicGamesStarted.high >>> 0).toNumber(true) : message.classicGamesStarted;
+            if (message.gamesCompleted != null && message.hasOwnProperty("gamesCompleted"))
+                if (typeof message.gamesCompleted === "number")
+                    object.gamesCompleted = options.longs === String ? String(message.gamesCompleted) : message.gamesCompleted;
+                else
+                    object.gamesCompleted = options.longs === String ? $util.Long.prototype.toString.call(message.gamesCompleted) : options.longs === Number ? new $util.LongBits(message.gamesCompleted.low >>> 0, message.gamesCompleted.high >>> 0).toNumber(true) : message.gamesCompleted;
+            if (message.wins != null && message.hasOwnProperty("wins"))
+                if (typeof message.wins === "number")
+                    object.wins = options.longs === String ? String(message.wins) : message.wins;
+                else
+                    object.wins = options.longs === String ? $util.Long.prototype.toString.call(message.wins) : options.longs === Number ? new $util.LongBits(message.wins.low >>> 0, message.wins.high >>> 0).toNumber(true) : message.wins;
+            if (message.losses != null && message.hasOwnProperty("losses"))
+                if (typeof message.losses === "number")
+                    object.losses = options.longs === String ? String(message.losses) : message.losses;
+                else
+                    object.losses = options.longs === String ? $util.Long.prototype.toString.call(message.losses) : options.longs === Number ? new $util.LongBits(message.losses.low >>> 0, message.losses.high >>> 0).toNumber(true) : message.losses;
+            if (message.bestDailyScore != null && message.hasOwnProperty("bestDailyScore"))
+                if (typeof message.bestDailyScore === "number")
+                    object.bestDailyScore = options.longs === String ? String(message.bestDailyScore) : message.bestDailyScore;
+                else
+                    object.bestDailyScore = options.longs === String ? $util.Long.prototype.toString.call(message.bestDailyScore) : options.longs === Number ? new $util.LongBits(message.bestDailyScore.low >>> 0, message.bestDailyScore.high >>> 0).toNumber(true) : message.bestDailyScore;
+            if (message.bestClassicScore != null && message.hasOwnProperty("bestClassicScore"))
+                if (typeof message.bestClassicScore === "number")
+                    object.bestClassicScore = options.longs === String ? String(message.bestClassicScore) : message.bestClassicScore;
+                else
+                    object.bestClassicScore = options.longs === String ? $util.Long.prototype.toString.call(message.bestClassicScore) : options.longs === Number ? new $util.LongBits(message.bestClassicScore.low >>> 0, message.bestClassicScore.high >>> 0).toNumber(true) : message.bestClassicScore;
+            if (message.bestTile != null && message.hasOwnProperty("bestTile"))
+                if (typeof message.bestTile === "number")
+                    object.bestTile = options.longs === String ? String(message.bestTile) : message.bestTile;
+                else
+                    object.bestTile = options.longs === String ? $util.Long.prototype.toString.call(message.bestTile) : options.longs === Number ? new $util.LongBits(message.bestTile.low >>> 0, message.bestTile.high >>> 0).toNumber(true) : message.bestTile;
+            if (message.totalScore != null && message.hasOwnProperty("totalScore"))
+                if (typeof message.totalScore === "number")
+                    object.totalScore = options.longs === String ? String(message.totalScore) : message.totalScore;
+                else
+                    object.totalScore = options.longs === String ? $util.Long.prototype.toString.call(message.totalScore) : options.longs === Number ? new $util.LongBits(message.totalScore.low >>> 0, message.totalScore.high >>> 0).toNumber(true) : message.totalScore;
+            if (message.classicPointsBalance != null && message.hasOwnProperty("classicPointsBalance"))
+                if (typeof message.classicPointsBalance === "number")
+                    object.classicPointsBalance = options.longs === String ? String(message.classicPointsBalance) : message.classicPointsBalance;
+                else
+                    object.classicPointsBalance = options.longs === String ? $util.Long.prototype.toString.call(message.classicPointsBalance) : options.longs === Number ? new $util.LongBits(message.classicPointsBalance.low >>> 0, message.classicPointsBalance.high >>> 0).toNumber(true) : message.classicPointsBalance;
+            if (message.classicPointsEarned != null && message.hasOwnProperty("classicPointsEarned"))
+                if (typeof message.classicPointsEarned === "number")
+                    object.classicPointsEarned = options.longs === String ? String(message.classicPointsEarned) : message.classicPointsEarned;
+                else
+                    object.classicPointsEarned = options.longs === String ? $util.Long.prototype.toString.call(message.classicPointsEarned) : options.longs === Number ? new $util.LongBits(message.classicPointsEarned.low >>> 0, message.classicPointsEarned.high >>> 0).toNumber(true) : message.classicPointsEarned;
+            if (message.loginStreak != null && message.hasOwnProperty("loginStreak"))
+                if (typeof message.loginStreak === "number")
+                    object.loginStreak = options.longs === String ? String(message.loginStreak) : message.loginStreak;
+                else
+                    object.loginStreak = options.longs === String ? $util.Long.prototype.toString.call(message.loginStreak) : options.longs === Number ? new $util.LongBits(message.loginStreak.low >>> 0, message.loginStreak.high >>> 0).toNumber(true) : message.loginStreak;
+            if (message.lastLoginClaimUtcDate != null && message.hasOwnProperty("lastLoginClaimUtcDate"))
+                object.lastLoginClaimUtcDate = message.lastLoginClaimUtcDate;
+            if (message.classicPointsBonusUtcDate != null && message.hasOwnProperty("classicPointsBonusUtcDate"))
+                object.classicPointsBonusUtcDate = message.classicPointsBonusUtcDate;
+            return object;
+        };
+
+        /**
+         * Converts this PlayerStats to JSON.
+         * @function toJSON
+         * @memberof types.PlayerStats
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PlayerStats.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for PlayerStats
+         * @function getTypeUrl
+         * @memberof types.PlayerStats
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        PlayerStats.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.PlayerStats";
+        };
+
+        return PlayerStats;
+    })();
+
     types.FSMToPlugin = (function() {
 
         /**
