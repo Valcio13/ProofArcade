@@ -244,7 +244,7 @@ cd C:\path\to\canopy-main\plugin\typescript
 npm test
 
 cd C:\path\to\canopy-main
-& 'C:\Users\valci\go\bin\go1.24.6.exe' build -buildvcs=false -a -o .\canopy.exe .\cmd\main
+go build -buildvcs=false -a -o .\canopy.exe .\cmd\main
 
 taskkill /IM canopy.exe /F
 .\canopy.exe start

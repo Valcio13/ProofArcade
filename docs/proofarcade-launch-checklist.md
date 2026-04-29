@@ -145,7 +145,7 @@ Use this exact order to avoid stale embedded frontend builds.
 ### Frontend
 
 From:
-- [C:\Users\valci\Documents\Codex\2026-04-21-files-mentioned-by-the-user-canopy\canopy-main\cmd\rpc\web\explorer](C:\Users\valci\Documents\Codex\2026-04-21-files-mentioned-by-the-user-canopy\canopy-main\cmd\rpc\web\explorer)
+- `cmd/rpc/web/explorer`
 
 Run:
 
@@ -156,7 +156,7 @@ npm run build
 ### Plugin
 
 From:
-- [C:\Users\valci\Documents\Codex\2026-04-21-files-mentioned-by-the-user-canopy\canopy-main\plugin\typescript](C:\Users\valci\Documents\Codex\2026-04-21-files-mentioned-by-the-user-canopy\canopy-main\plugin\typescript)
+- `plugin/typescript`
 
 Run:
 
@@ -175,12 +175,12 @@ This currently validates:
 ### Go rebuild
 
 From repo root:
-- [C:\Users\valci\Documents\Codex\2026-04-21-files-mentioned-by-the-user-canopy\canopy-main](C:\Users\valci\Documents\Codex\2026-04-21-files-mentioned-by-the-user-canopy\canopy-main)
+- repo root
 
 Run the explicit build:
 
 ```powershell
-& 'C:\Users\valci\go\bin\go1.24.6.exe' build -buildvcs=false -a -o .\canopy.exe .\cmd\main
+go build -buildvcs=false -a -o .\canopy.exe .\cmd\main
 ```
 
 Do not rely on older wildcard build variants for the final launch workflow.

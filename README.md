@@ -1,108 +1,165 @@
-<img src="./canopy-logo-white-bg.svg" alt="Canopy Logo" width="500"/>
+# ProofArcade
 
-_Official golang implementation of the Canopy Network Protocol_
+ProofArcade is an onchain 2048 game experience built on the Canopy stack.
 
-[![GoDoc](https://img.shields.io/badge/godoc-reference-white.svg)](https://godoc.org/github.com/canopy-network/canopy)
-[![Getting Started](https://img.shields.io/badge/getting%20started-guide-white)](https://canopynetwork.org)
-[![Go Version](https://img.shields.io/badge/golang-v1.21-white.svg)](https://golang.org)
-[![Next.js Version](https://img.shields.io/badge/next%20js-v14.2.3-white.svg)](https://nextjs.org/)
+Players can:
+- play free in `Playtest`
+- run paid `Classic` games to earn spendable points
+- enter `Daily Challenge` for leaderboard rewards
+- claim daily `Check-In` streak rewards
+- redeem points in the shop
+- manage wallet backup/import from the product UI
 
+This repository contains the game contract, RPC/backend integration, frontend product surface, and deployment docs for the current ProofArcade beta.
 
-# Overview
+## Current Product Shape
 
-[![License](https://img.shields.io/badge/License-MIT-white.svg)](https://opensource.org/licenses/MIT)
-[![Testing](https://img.shields.io/badge/testing-docker%20compose-white)](https://docs.docker.com/compose/)
-[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos-white.svg)](https://github.com/canopy-network/canopy/releases)
-[![Status](https://img.shields.io/badge/status-alphanet-white)](https://docs.docker.com/compose/)
+Main user surfaces:
+- `Home`
+- `Play`
+- `Playtest`
+- `Check-In`
+- `Profile`
+- `Settings`
+- `Shop`
+- `Explorer`
 
-### ⫸ **Welcome to the Network that Powers the Peer-to-Peer Launchpad for New Chains**
+Core gameplay/economy systems:
+- deterministic 2048 replay verification
+- daily challenge prize pool
+- classic points economy
+- shop redemption
+- treasury buckets
+- reward claims
+- wallet import/export
 
-Built on a recursive architecture, chains bootstrap each other into independence —  
-forming an `unstoppable` web of utility and security. 
+## Game Modes
 
-**Here you'll find:**
+### Playtest
+- free
+- local only
+- no wallet required
+- no blockchain writes
+- no points or rewards
 
-➪ A recursive framework to build blockchains.
+### Classic
+- paid entry
+- deterministic seeded session
+- successful submits earn spendable points
+- points can later be redeemed in the shop
 
-➪ The seed chain that started the recursive cycle.
+### Daily Challenge
+- one run per wallet per UTC day
+- paid entry
+- leaderboard-ranked
+- daily reward pool shared across actual ranked players
+- rewards become claimable after the UTC day ends
 
-For more information on the Canopy Network Protocol visit [https://canopynetwork.org](https://canopynetwork.org)
+## Economy Summary
 
-## Network Status
+### Classic points
+- earned from successful classic submits
+- daily earning cap applies
+- usable in the shop
 
-⪢ Canopy is in `Betanet` 🚀 ➝ learn more about the [road-to-mainnet](https://www.canopynetwork.org/learn-more/road-to-mainnet)
+### Check-In
+- one claim per UTC day
+- 7-day streak
+- same classic points currency
+- day 7 unlocks a same-day classic-points bonus
 
-## Protocol Documentation
+### Daily rewards
+- funded from daily entry fees
+- distributed to ranked daily finishers
+- if fewer than 10 players finish, the reward weights are renormalized across actual winners
 
-➪ Check out the Canopy Network wiki:  [https://canopy-network.gitbook.io/docs](https://canopy-network.gitbook.io/docs)
+## Wallet Model
 
-## Repository Documentation
+Current wallet behavior should be treated as `beta`.
 
-Welcome to the Canopy Network reference implementation. This repository can be well understood reading about the core modules:
+Today:
+- wallet creation/import/export works
+- encrypted backup export/import works
+- sign-in convenience works
+- gameplay and reward actions still depend on admin/node wallet routes
 
-- [Controller](controller/README.md): Coordinates communication between all the major parts of the Canopy blockchain, like a central hub or "bus" that connects the system together.
-- [Finite State Machine (FSM)](fsm/README.md): Defines the logic for how transactions change the blockchain's state — it decides what’s valid and how state transitions happen from one block to the next.
-- [Byzantine Fault Tolerant (BFT) Consensus](bft/README.md): A consensus mechanism that allows the network to agree on new blocks even if some nodes are unreliable or malicious.
-- [Peer-to-Peer Networking](p2p/README.md): A secure and encrypted communication system that lets nodes talk directly to each other without needing a central server.
-- [Persistence](store/README.md): Manages the blockchain’s storage — it saves the current state (ledger), indexes past transactions, and ensures fast and reliable data verification.
+That means this is not yet a fully client-side self-custodial wallet model.
 
-## How to Run It
+Recommended beta posture:
+- export backup immediately
+- avoid storing meaningful value until custody is fully client-side
 
-➪ To run the Canopy binary, use the following commands:
+## Repository Map
 
-```bash
-make build/canopy-full
-canopy start
+Important project areas:
+- [cmd/rpc/web/explorer](cmd/rpc/web/explorer): main ProofArcade frontend
+- [cmd/rpc](cmd/rpc): RPC/backend routes and game endpoints
+- [plugin/typescript](plugin/typescript): 2048 contract/plugin logic
+- [docs](docs): product, treasury, launch, and deployment docs
+- [deploy](deploy): reverse-proxy examples for beta deployment
+
+Underlying protocol modules still live here too:
+- [controller/README.md](controller/README.md)
+- [fsm/README.md](fsm/README.md)
+- [bft/README.md](bft/README.md)
+- [p2p/README.md](p2p/README.md)
+- [store/README.md](store/README.md)
+
+## Local Development
+
+### Frontend
+
+```powershell
+cd cmd\rpc\web\explorer
+npm install
+npm run build
 ```
 
-## How to Run It with 🐳 Docker
+### Plugin tests
 
-➪ To run a Canopy `Localnet` in a *containerized* environment, use the following commands:
-```bash
-make docker/build
-make docker/up-fast
-make docker/logs
-
-or simply
-
-make docker/up && make docker/logs
+```powershell
+cd plugin\typescript
+npm install
+npm test
 ```
 
-## Running Tests
+### Rebuild the binary
 
-➪ To run Canopy unit tests, use the Go testing tools:
+From repo root:
 
-```bash
-make test
+```powershell
+go build -buildvcs=false -a -o .\canopy.exe .\cmd\main
 ```
 
-## How to Contribute
+### Start the app
 
-➪ Canopy is an open-source project, and we welcome contributions from the community. Here's how to get involved:
+```powershell
+.\canopy.exe start
+```
 
-1. **Fork** the repository and clone it locally.
-2. **Code** your improvements or fixes.
-3. **Submit a Pull Request** (PR) for review.
+## Launch / Deployment Docs
 
-➣ Please follow these [guidelines](CONTRIBUTING.md) to maintain high-quality contributions:
+Recommended reading for launch prep:
+- [docs/proofarcade-launch-checklist.md](docs/proofarcade-launch-checklist.md)
+- [docs/proofarcade-beta-deployment.md](docs/proofarcade-beta-deployment.md)
+- [deploy/caddy/README.md](deploy/caddy/README.md)
 
-### High Impact or Architectural Changes
+Economy design docs:
+- [docs/2048-daily-prize-pool-v1.md](docs/2048-daily-prize-pool-v1.md)
+- [docs/2048-shop-redemption-v1.md](docs/2048-shop-redemption-v1.md)
+- [docs/2048-treasury-v1.md](docs/2048-treasury-v1.md)
 
-➪ Before making large changes, discuss them with the Canopy team on [Discord](https://discord.gg/pNcSJj7Wdh) to ensure alignment.
+## Beta Notes
 
-### Coding Style
+For the near-term release, this project should be presented as:
+- `ProofArcade Beta`
 
-- Code must adhere to official Go formatting (use [`gofmt`](https://golang.org/cmd/gofmt)).
-- (Optional) Use [EditorConfig](https://editorconfig.org) for consistent formatting.
-- All code should follow Go documentation/commentary guidelines.
-- PRs should be opened against the `development` branch.
+Recommended launch posture:
+- protect admin wallet routes
+- keep wallet messaging conservative
+- keep production config explicit
+- freeze feature churn close to launch
 
-[![Pre-Release](https://img.shields.io/github/release-pre/canopy-network/canopy.svg)](https://github.com/canopy-network/canopy/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/canopy-network/canopy)](https://goreportcard.com/report/github.com/canopy-network/canopy)
-[![Contributors](https://img.shields.io/github/contributors/canopy-network/canopy.svg)](https://github.com/canopy-network/canopy/pulse)
-[![Last Commit](https://img.shields.io/github/last-commit/canopy-network/canopy.svg)](https://github.com/canopy-network/canopy/pulse)
+## Built On Canopy
 
-## Contact
-
-[![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://x.com/CNPYNetwork)
-[![Discord](https://img.shields.io/badge/discord-online-blue.svg)](https://discord.gg/pNcSJj7Wdh)
+ProofArcade is built on top of the Canopy codebase and protocol stack. The repo still contains the broader Canopy implementation, but the primary product surface in this fork is ProofArcade.

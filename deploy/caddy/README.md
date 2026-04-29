@@ -12,7 +12,7 @@ Use this for the current beta launch shape.
 ## Before launch
 
 1. Replace the domain in:
-   - [C:\Users\valci\Documents\Codex\2026-04-21-files-mentioned-by-the-user-canopy\canopy-main\deploy\caddy\ProofArcade.Caddyfile](C:\Users\valci\Documents\Codex\2026-04-21-files-mentioned-by-the-user-canopy\canopy-main\deploy\caddy\ProofArcade.Caddyfile)
+   - `deploy/caddy/ProofArcade.Caddyfile`
 2. Generate a real admin password hash:
 
 ```powershell
