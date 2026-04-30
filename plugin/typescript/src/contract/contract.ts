@@ -1565,6 +1565,8 @@ const gameShopPoolId = daoPoolId + 3;
 const gameDailyRewardPoolId = daoPoolId + 4;
 const defaultClassicStartFee = 2;
 const defaultDailyStartFee = 25;
+const legacyClassicStartFee = 90;
+const legacyDailyStartFee = 240;
 const defaultDailyMaxMoves = 80;
 const defaultDailyPlatformFeeBps = 500;
 const defaultDailyRewardFeeBps = 8000;
@@ -1808,12 +1810,24 @@ function areMovesValid(moves: number[]): boolean {
 
 function getConfiguredClassicStartFee(cfg: any): number {
     const fee = toUint64(cfg?.classicStartFee as Long | number | undefined);
+    if (isLegacyStartFeePair(cfg)) {
+        return defaultClassicStartFee;
+    }
     return fee > 0 ? fee : defaultClassicStartFee;
 }
 
 function getConfiguredDailyStartFee(cfg: any): number {
     const fee = toUint64(cfg?.dailyStartFee as Long | number | undefined);
+    if (isLegacyStartFeePair(cfg)) {
+        return defaultDailyStartFee;
+    }
     return fee > 0 ? fee : defaultDailyStartFee;
+}
+
+function isLegacyStartFeePair(cfg: any): boolean {
+    const classicFee = toUint64(cfg?.classicStartFee as Long | number | undefined);
+    const dailyFee = toUint64(cfg?.dailyStartFee as Long | number | undefined);
+    return classicFee === legacyClassicStartFee && dailyFee === legacyDailyStartFee;
 }
 
 function getConfiguredDailyMaxMoves(cfg: any): number {

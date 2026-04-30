@@ -46,6 +46,8 @@ const (
 
 	game2048DefaultClassicFee               = 2
 	game2048DefaultDailyFee                 = 25
+	game2048LegacyClassicFee                = 90
+	game2048LegacyDailyFee                  = 240
 	game2048DefaultDailyMoves               = 80
 	game2048DefaultDailyPlatformFeeBps      = 500
 	game2048DefaultDailyRewardFeeBps        = 8000
@@ -956,8 +958,8 @@ func loadGame2048Config(state *fsm.StateMachine) (game2048ConfigResponse, lib.Er
 		return game2048ConfigResponse{}, decodeErr
 	}
 	return game2048ConfigResponse{
-		DailyFee:                 uint64Field(message, "daily_start_fee", game2048DefaultDailyFee),
-		ClassicFee:               uint64Field(message, "classic_start_fee", game2048DefaultClassicFee),
+		DailyFee:                 normalizeGame2048DailyFee(uint64Field(message, "daily_start_fee", game2048DefaultDailyFee), uint64Field(message, "classic_start_fee", game2048DefaultClassicFee)),
+		ClassicFee:               normalizeGame2048ClassicFee(uint64Field(message, "classic_start_fee", game2048DefaultClassicFee), uint64Field(message, "daily_start_fee", game2048DefaultDailyFee)),
 		DailyMaxMoves:            uint64Field(message, "daily_max_moves", game2048DefaultDailyMoves),
 		DailyPlatformFeeBps:      uint64Field(message, "daily_platform_fee_bps", game2048DefaultDailyPlatformFeeBps),
 		DailyRewardFeeBps:        uint64Field(message, "daily_reward_fee_bps", game2048DefaultDailyRewardFeeBps),
@@ -1422,6 +1424,30 @@ func defaultGame2048Config() game2048ConfigResponse {
 		DailyLoginRewardPoints:   defaultDailyLoginRewardPoints(),
 		DailyLoginBonusBps:       game2048DefaultDailyLoginBonusBps,
 	}
+}
+
+func isLegacyGame2048FeePair(classicFee, dailyFee uint64) bool {
+	return classicFee == game2048LegacyClassicFee && dailyFee == game2048LegacyDailyFee
+}
+
+func normalizeGame2048ClassicFee(classicFee, dailyFee uint64) uint64 {
+	if isLegacyGame2048FeePair(classicFee, dailyFee) {
+		return game2048DefaultClassicFee
+	}
+	if classicFee == 0 {
+		return game2048DefaultClassicFee
+	}
+	return classicFee
+}
+
+func normalizeGame2048DailyFee(dailyFee, classicFee uint64) uint64 {
+	if isLegacyGame2048FeePair(classicFee, dailyFee) {
+		return game2048DefaultDailyFee
+	}
+	if dailyFee == 0 {
+		return game2048DefaultDailyFee
+	}
+	return dailyFee
 }
 
 func calculateGame2048RedeemPayout(burnPoints, ratePoints, rateCnpy uint64) uint64 {

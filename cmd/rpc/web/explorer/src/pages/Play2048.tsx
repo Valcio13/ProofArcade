@@ -127,13 +127,19 @@ function Play2048Page() {
       setClientStatus(nextClient.status)
       setConfig(await nextClient.getConfig())
       let bootstrapAddress = address
+      let rpcWalletCount = 0
       const storedAuth = loadStoredWalletAuth()
       if (nextClient.status.mode === 'rpc') {
         const nextWallets = await fetchRpcKeystoreAccounts()
         if (cancelled) {
           return
         }
+        rpcWalletCount = nextWallets.length
         setWallets(nextWallets)
+        if (nextWallets.length > 0) {
+          setSelectedMode('classic')
+          setLeaderboardMode('classic')
+        }
         if (
           storedAuth &&
           nextWallets.some((wallet) => wallet.address === storedAuth.address)
@@ -149,8 +155,20 @@ function Play2048Page() {
         bootstrapAddress = `player-${createSeedFromText('canopy-player').slice(0, 6)}`
         setAddress(bootstrapAddress)
       }
-      const restoredSession = loadStoredSession(bootstrapAddress)
-      const restoredRunState = loadStoredRunState(bootstrapAddress)
+      const rawRestoredSession = loadStoredSession(bootstrapAddress)
+      const rawRestoredRunState = loadStoredRunState(bootstrapAddress)
+      const restoredMode = rawRestoredRunState?.selectedMode ?? rawRestoredRunState?.selectedBoard
+      const restoredTxHash = (rawRestoredSession as (LocalSession & { txHash?: string }) | null)?.txHash
+      const shouldIgnoreLocalRestore =
+        nextClient.status.mode === 'rpc' &&
+        rpcWalletCount > 0 &&
+        (
+          rawRestoredSession?.mode === 'training' ||
+          (rawRestoredSession != null && !restoredTxHash) ||
+          (rawRestoredSession == null && restoredMode != null)
+        )
+      const restoredSession = shouldIgnoreLocalRestore ? null : rawRestoredSession
+      const restoredRunState = shouldIgnoreLocalRestore ? null : rawRestoredRunState
 
       const [nextPlayer, nextLeaderboards] = await Promise.all([
         nextClient.getPlayer(bootstrapAddress),
@@ -164,12 +182,27 @@ function Play2048Page() {
         setLeaderboards(nextLeaderboards)
         setSession(restoredSession)
         if (restoredRunState) {
+          const restoredMode = restoredRunState.selectedMode ?? restoredRunState.selectedBoard ?? 'training'
+          const nextSelectedMode: PlayMode =
+            nextClient.status.mode === 'rpc' &&
+            rpcWalletCount > 0 &&
+            !restoredSession &&
+            restoredMode === 'training'
+              ? 'classic'
+              : restoredMode
+          const nextLeaderboardMode: GameMode =
+            nextClient.status.mode === 'rpc' &&
+            rpcWalletCount > 0 &&
+            !restoredSession &&
+            restoredMode === 'training'
+              ? 'classic'
+              : restoredRunState.leaderboardMode ?? 'daily'
           setBoard(restoredRunState.board)
           setScore(restoredRunState.score)
           setMaxTile(restoredRunState.maxTile)
           setMoves(restoredRunState.moves)
-          setSelectedMode(restoredRunState.selectedMode ?? restoredRunState.selectedBoard ?? 'training')
-          setLeaderboardMode(restoredRunState.leaderboardMode ?? 'daily')
+          setSelectedMode(nextSelectedMode)
+          setLeaderboardMode(nextLeaderboardMode)
           setIsSubmitted(restoredRunState.isSubmitted)
           setLastOutcome(restoredRunState.lastOutcome)
         } else if (restoredSession) {
@@ -684,6 +717,58 @@ function Play2048Page() {
 
                   <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(280px,330px)_minmax(0,780px)] xl:items-start xl:justify-center">
                     <div className="space-y-3 xl:order-1">
+                      {clientStatus.mode === 'rpc' ? (
+                        <div className="rounded-[1.15rem] border border-white/10 bg-slate-950/60 px-4 py-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Live Wallet</p>
+                              <p className="mt-1 text-sm text-slate-300">
+                                Daily and classic runs need a signed wallet to pay fees and submit scores.
+                              </p>
+                            </div>
+                            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                              Signer
+                            </div>
+                          </div>
+
+                          <div className="mt-4 space-y-3">
+                            <label className="block">
+                              <span className="mb-2 block text-[10px] uppercase tracking-[0.22em] text-slate-500">Wallet</span>
+                              <select
+                                value={address}
+                                onChange={(event) => {
+                                  setAddress(event.target.value)
+                                  setLastActionError(null)
+                                }}
+                                className="w-full rounded-[1rem] border border-white/10 bg-[#060915] px-4 py-3 text-sm text-white outline-none transition focus:border-[#53a6ff]/60 focus:ring-2 focus:ring-[#53a6ff]/20"
+                              >
+                                {wallets.length > 0 ? wallets.map((wallet) => (
+                                  <option key={wallet.address} value={wallet.address}>
+                                    {wallet.nickname} ({formatAddress(wallet.address)})
+                                  </option>
+                                )) : (
+                                  <option value="">No wallet found</option>
+                                )}
+                              </select>
+                            </label>
+
+                            <label className="block">
+                              <span className="mb-2 block text-[10px] uppercase tracking-[0.22em] text-slate-500">Password</span>
+                              <input
+                                type="password"
+                                value={password}
+                                onChange={(event) => {
+                                  setPassword(event.target.value)
+                                  setLastActionError(null)
+                                }}
+                                placeholder="Wallet password"
+                                className="w-full rounded-[1rem] border border-white/10 bg-[#060915] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]/60 focus:ring-2 focus:ring-[#53a6ff]/20"
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      ) : null}
+
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div className="rounded-[1.1rem] border border-[#f6df84]/20 bg-[#f6df84]/10 px-4 py-3">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Score</p>

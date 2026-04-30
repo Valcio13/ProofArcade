@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 import { createGame2048Client } from '../lib/chain2048'
 import { shortAddress } from '../lib/address'
@@ -18,6 +19,7 @@ const HomePage = () => {
   })
   const [dailyPool, setDailyPool] = useState<DailyPrizePool | null>(null)
   const [countdown, setCountdown] = useState(() => formatUtcCountdown())
+  const [isRequestingFaucet, setIsRequestingFaucet] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -52,6 +54,25 @@ const HomePage = () => {
       window.clearInterval(timer)
     }
   }, [])
+
+  async function handleRequestFaucet() {
+    if (!storedWallet?.address || isRequestingFaucet) return
+    setIsRequestingFaucet(true)
+    try {
+      const client = await createGame2048Client()
+      const result = await client.addFunds(storedWallet.address)
+      if (result.txHash) {
+        toast.success(`Faucet sent. Tx ${result.txHash.slice(0, 12)}...`)
+      } else {
+        toast.success('Faucet funds added.')
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error(error instanceof Error ? error.message : 'Faucet request failed.')
+    } finally {
+      setIsRequestingFaucet(false)
+    }
+  }
 
   return (
     <motion.div
@@ -101,14 +122,28 @@ const HomePage = () => {
 
             <div className="flex flex-wrap gap-3">
               {hasLocalSession ? (
-                <MotionLink
-                  to="/play"
-                  className="rounded-2xl bg-[#f0cf52] px-6 py-3 text-sm font-bold text-[#2e2510] transition hover:brightness-105"
-                  whileHover={{ y: -2, scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Start Playing
-                </MotionLink>
+                <>
+                  <MotionLink
+                    to="/play"
+                    className="rounded-2xl bg-[#f0cf52] px-6 py-3 text-sm font-bold text-[#2e2510] transition hover:brightness-105"
+                    whileHover={{ y: -2, scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Start Playing
+                  </MotionLink>
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      void handleRequestFaucet()
+                    }}
+                    disabled={isRequestingFaucet}
+                    className="rounded-2xl border border-[#53a6ff]/30 bg-[#53a6ff]/10 px-5 py-3 text-sm font-semibold text-[#9fd0ff] transition hover:bg-[#53a6ff]/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    whileHover={{ y: -2, scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {isRequestingFaucet ? 'Requesting...' : 'Get Faucet'}
+                  </motion.button>
+                </>
               ) : (
                 <>
                   <MotionLink

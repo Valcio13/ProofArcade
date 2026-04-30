@@ -185,6 +185,83 @@ export function Transactions(page: number, height: number) {
     return POST(rpcURL, pageHeightReq(page, height), txsByHeightPath);
 }
 
+const getBlockHeight = (block: any): number =>
+    Number(block?.blockHeader?.height ?? block?.height ?? 0)
+
+const getBlockTotalTxs = (block: any): number =>
+    Number(block?.blockHeader?.totalTxs ?? block?.totalTxs ?? 0)
+
+const getComparableTimestamp = (value: any): number => {
+    if (!value) return 0
+    if (typeof value === 'number') {
+        if (value > 1e15) return Math.floor(value / 1000)
+        if (value > 1e12) return value
+        return value * 1000
+    }
+    const parsed = Date.parse(String(value))
+    return Number.isFinite(parsed) ? parsed : 0
+}
+
+async function collectRecentTransactions(limit: number, maxBlockPages: number = 50): Promise<any[]> {
+    const perPage = 10
+    const blocks: any[] = []
+    let latestTotalTxs = 0
+
+    for (let page = 1; page <= maxBlockPages; page++) {
+        const blocksResponse = await Blocks(page, perPage)
+        const pageBlocks = blocksResponse?.results || blocksResponse?.blocks || blocksResponse?.list || []
+        if (!Array.isArray(pageBlocks) || pageBlocks.length === 0) {
+            break
+        }
+
+        blocks.push(...pageBlocks)
+        if (latestTotalTxs === 0) {
+            latestTotalTxs = getBlockTotalTxs(pageBlocks[0])
+        }
+
+        const oldestTotalTxs = getBlockTotalTxs(pageBlocks[pageBlocks.length - 1])
+        if (latestTotalTxs - oldestTotalTxs >= limit) {
+            break
+        }
+    }
+
+    const candidateBlocks: any[] = []
+    for (let i = 0; i < blocks.length - 1; i++) {
+        const current = blocks[i]
+        const older = blocks[i + 1]
+        if (getBlockTotalTxs(current) > getBlockTotalTxs(older)) {
+            candidateBlocks.push(current)
+        }
+    }
+
+    const recentTransactions: any[] = []
+    for (const block of candidateBlocks) {
+        const height = getBlockHeight(block)
+        if (!height) continue
+
+        const txResponse = await Transactions(1, height)
+        const txs = txResponse?.results || txResponse?.transactions || []
+        if (!Array.isArray(txs) || txs.length === 0) continue
+
+        const blockTransactions = txs.map((tx: any) => ({
+            ...tx,
+            blockHeight: height,
+            blockHash: block?.blockHeader?.hash || block?.hash,
+            blockTime: block?.blockHeader?.time || block?.time,
+            blockNumber: height
+        }))
+        recentTransactions.push(...blockTransactions)
+
+        if (recentTransactions.length >= limit) {
+            break
+        }
+    }
+
+    return recentTransactions
+        .sort((a, b) => getComparableTimestamp(b.blockTime || b.time || b.timestamp) - getComparableTimestamp(a.blockTime || a.time || a.timestamp))
+        .slice(0, limit)
+}
+
 // Optimized function to get transactions with real pagination
 export async function getTransactionsWithRealPagination(page: number, perPage: number = 10, filters?: {
     type?: string;
@@ -201,45 +278,9 @@ export async function getTransactionsWithRealPagination(page: number, perPage: n
 
         // If there are no filters, use a more direct approach
         if (!filters || Object.values(filters).every(v => !v)) {
-            // Get blocks sequentially to cover the pagination
             const startIndex = (page - 1) * perPage;
             const endIndex = startIndex + perPage;
-
-            let allTransactions: any[] = [];
-            let currentBlockPage = 1;
-            const maxPages = 50; // Limit to avoid too many requests
-
-            while (allTransactions.length < endIndex && currentBlockPage <= maxPages) {
-                const blocksResponse = await Blocks(currentBlockPage, 0);
-                const blocks = blocksResponse?.results || blocksResponse?.blocks || [];
-
-                if (!Array.isArray(blocks) || blocks.length === 0) break;
-
-                for (const block of blocks) {
-                    if (block.transactions && Array.isArray(block.transactions)) {
-                        const blockTransactions = block.transactions.map((tx: any) => ({
-                            ...tx,
-                            blockHeight: block.blockHeader?.height || block.height,
-                            blockHash: block.blockHeader?.hash || block.hash,
-                            blockTime: block.blockHeader?.time || block.time,
-                            blockNumber: block.blockHeader?.height || block.height
-                        }));
-                        allTransactions = allTransactions.concat(blockTransactions);
-
-                        // If we have enough transactions, exit
-                        if (allTransactions.length >= endIndex) break;
-                    }
-                }
-
-                currentBlockPage++;
-            }
-
-            // Sort by time (most recent first)
-            allTransactions.sort((a, b) => {
-                const timeA = a.blockTime || a.time || a.timestamp || 0;
-                const timeB = b.blockTime || b.time || b.timestamp || 0;
-                return timeB - timeA;
-            });
+            const allTransactions = await collectRecentTransactions(endIndex);
 
             // Apply pagination
             const paginatedTransactions = allTransactions.slice(startIndex, endIndex);
@@ -349,11 +390,25 @@ export async function getTotalTransactionCount(cachedBlocks?: any[]): Promise<{ 
         let last24hCount = 0;
         const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
 
-        // If cached blocks are available, use them
-        if (cachedBlocks && Array.isArray(cachedBlocks) && cachedBlocks.length > 0) {
-            for (const block of cachedBlocks) {
+        let blocksToInspect = cachedBlocks;
+        if (!blocksToInspect || !Array.isArray(blocksToInspect) || blocksToInspect.length === 0) {
+            const latestBlocks = await Blocks(1, 10);
+            blocksToInspect = latestBlocks?.results || latestBlocks?.blocks || latestBlocks?.list || [];
+        }
+
+        // If blocks are available, use them
+        if (blocksToInspect && Array.isArray(blocksToInspect) && blocksToInspect.length > 0) {
+            const latestBlock = blocksToInspect[0];
+            const totalFromLatestBlock = Number(latestBlock?.blockHeader?.totalTxs ?? latestBlock?.totalTxs ?? 0);
+            if (Number.isFinite(totalFromLatestBlock) && totalFromLatestBlock > 0) {
+                totalCount = totalFromLatestBlock;
+            }
+
+            for (const block of blocksToInspect) {
                 if (block.transactions && Array.isArray(block.transactions)) {
-                    totalCount += block.transactions.length;
+                    if (totalCount === 0) {
+                        totalCount += block.transactions.length;
+                    }
 
                     // Count transactions from last 24h
                     for (const tx of block.transactions) {
@@ -407,9 +462,9 @@ export async function getTotalTransactionCount(cachedBlocks?: any[]): Promise<{ 
         }
 
         return {
-            total: 795963,
-            last24h: 79596,
-            tpm: 55.27
+            total: 0,
+            last24h: 0,
+            tpm: 0
         };
     } catch (error) {
         console.error('Error getting total transaction count:', error);
@@ -432,41 +487,8 @@ export async function AllTransactions(page: number, perPage: number = 10, filter
     maxAmount?: number;
 }) {
     try {
-        // Get total transaction count
         const totalTransactionCount = await getTotalTransactionCount();
-
-        // Calculate how many blocks we need to fetch to cover the pagination
-        // We assume an average transactions per block to optimize
-        const estimatedTxsPerBlock = 1; // Adjust according to your blockchain reality
-        const blocksNeeded = Math.ceil((page * perPage) / estimatedTxsPerBlock) + 5; // Extra buffer
-
-        // Fetch multiple pages of blocks to ensure enough transactions
-        let allTransactions: any[] = [];
-        let currentBlockPage = 1;
-        const maxBlockPages = Math.min(blocksNeeded, 20); // Limit for performance
-
-        while (currentBlockPage <= maxBlockPages && allTransactions.length < (page * perPage)) {
-            const blocksResponse = await Blocks(currentBlockPage, 0);
-            const blocks = blocksResponse?.results || blocksResponse?.blocks || blocksResponse?.list || [];
-
-            if (!Array.isArray(blocks) || blocks.length === 0) break;
-
-            for (const block of blocks) {
-                if (block.transactions && Array.isArray(block.transactions)) {
-                    // add block information to each transaction
-                    const blockTransactions = block.transactions.map((tx: any) => ({
-                        ...tx,
-                        blockHeight: block.blockHeader?.height || block.height,
-                        blockHash: block.blockHeader?.hash || block.hash,
-                        blockTime: block.blockHeader?.time || block.time,
-                        blockNumber: block.blockHeader?.height || block.height
-                    }));
-                    allTransactions = allTransactions.concat(blockTransactions);
-                }
-            }
-
-            currentBlockPage++;
-        }
+        let allTransactions = await collectRecentTransactions(page * perPage);
 
         // apply filters if provided
         if (filters) {
@@ -537,9 +559,7 @@ export async function AllTransactions(page: number, perPage: number = 10, filter
 
         // Sort by time (most recent first)
         allTransactions.sort((a, b) => {
-            const timeA = a.blockTime || a.time || a.timestamp || 0;
-            const timeB = b.blockTime || b.time || b.timestamp || 0;
-            return timeB - timeA;
+            return getComparableTimestamp(b.blockTime || b.time || b.timestamp) - getComparableTimestamp(a.blockTime || a.time || a.timestamp);
         });
 
         // Apply pagination

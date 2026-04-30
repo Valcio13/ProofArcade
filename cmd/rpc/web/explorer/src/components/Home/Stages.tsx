@@ -85,34 +85,14 @@ const Stages = () => {
             try {
                 setIsLoadingStats(true)
 
-                // Use totalTxs from block if available, otherwise fetch from API
-                if (totalTxsFromBlock !== null) {
-                    setTotalTxs(totalTxsFromBlock)
-                    // For last24h, we still need to fetch from API if available
-                    try {
-                        const txStats = await getTotalTransactionCount()
-                        setTxsLast24h(txStats.last24h)
-                    } catch (error) {
-                        console.error('Error fetching tx stats for last24h:', error)
-                        setTxsLast24h(0)
-                    }
-                } else {
-                    // Check if this network has real transactions
-                    const hasRealTransactions = cardData?.hasRealTransactions ?? true
-
-                    if (hasRealTransactions) {
-                        const txStats = await getTotalTransactionCount()
-                        setTotalTxs(txStats.total)
-                        setTxsLast24h(txStats.last24h)
-                    } else {
-                        setTotalTxs(0)
-                        setTxsLast24h(0)
-                    }
-                }
+                // Use live transaction stats, preferring the fetched block window over fake fallbacks.
+                const txStats = await getTotalTransactionCount(cardData?.blocks?.results || cardData?.blocks)
+                setTotalTxs(txStats.total)
+                setTxsLast24h(txStats.last24h)
 
                 // Always fetch account stats
                 try {
-                    const accountStats = await getTotalAccountCount()
+                    const accountStats = await getTotalAccountCount(cardData?.blocks?.results || cardData?.blocks)
                     setTotalAccounts(accountStats.total)
                     setAccountsLast24h(accountStats.last24h)
                 } catch (error) {

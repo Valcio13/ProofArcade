@@ -360,11 +360,8 @@ func (s *Server) runStaticFileServer(fileSys fs.FS, dir, port string, conf lib.C
 
 		// Helper function to serve index.html with config injection
 		serveIndexHTML := func() {
-			// Construct the file path for `index.html`
-			filePath := path.Join(dir, "index.html")
-
-			// Read the content of `index.html` into a byte slice
-			htmlBytes, e := fs.ReadFile(fileSys, filePath)
+			// Read the content of `index.html` from the sub-filesystem root
+			htmlBytes, e := fs.ReadFile(distFS, "index.html")
 			if e != nil {
 				http.NotFound(w, r)
 				return

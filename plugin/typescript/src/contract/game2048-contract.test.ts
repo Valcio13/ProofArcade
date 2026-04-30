@@ -19,6 +19,7 @@ import {
     KeyForGameReservePool,
     KeyForGameShopPool,
     KeyForGameSession,
+    KeyForGameConfig,
     KeyForGameTreasury,
     KeyForPlayerStats
 } from './contract.js';
@@ -462,6 +463,42 @@ test('startClassicGame deducts fee, creates session, and increments classic star
     assert.equal(toNumber(stats.classicGamesStarted), 1);
 });
 
+test('CheckTx accepts rebalanced fees when chain config still stores the legacy fee pair', async () => {
+    const playerAddress = addressOf(0xae);
+    const plugin = new FakePlugin();
+    const contract = new Contract(
+        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        {},
+        plugin as never,
+        Long.ZERO
+    );
+
+    plugin.state.set(
+        keyHex(KeyForGameConfig()),
+        encodeGame2048State('GameConfig', {
+            dailyStartFee: 240,
+            classicStartFee: 90
+        })
+    );
+
+    const result = await ContractAsync.CheckTx(contract, {
+        tx: {
+            fee: 2,
+            msg: {
+                typeUrl: 'type.googleapis.com/types.MessageStartClassicGame',
+                value: types.MessageStartClassicGame.encode(
+                    types.MessageStartClassicGame.create({
+                        playerAddress,
+                        gameId: Uint8Array.from([7, 7, 7, 7]),
+                    })
+                ).finish()
+            }
+        }
+    });
+
+    assert.equal(result.error, undefined);
+});
+
 test('startDailyGame routes fees into daily reward pool and treasury buckets', async () => {
     const playerAddress = addressOf(0xad);
     const plugin = new FakePlugin();
@@ -484,7 +521,7 @@ test('startDailyGame routes fees into daily reward pool and treasury buckets', a
     const result = await ContractAsync.DeliverMessageStartDailyGame(
         contract,
         { playerAddress, utcDate: '2026-04-24', gameId: Uint8Array.from([2, 4, 6, 8]) },
-        { fee: 240, createdHeight: 10, time: 1713657600, memo: 'daily' }
+        { fee: 25, createdHeight: 10, time: 1713657600, memo: 'daily' }
     );
 
     assert.equal(result.error, undefined);
@@ -499,9 +536,9 @@ test('startDailyGame routes fees into daily reward pool and treasury buckets', a
         rewardPool: number | Long
     }
     assert.equal(toNumber(pool.entryCount), 1);
-    assert.equal(toNumber(pool.grossFees), 240);
-    assert.equal(toNumber(pool.treasuryFees), 48);
-    assert.equal(toNumber(pool.rewardPool), 192);
+    assert.equal(toNumber(pool.grossFees), 25);
+    assert.equal(toNumber(pool.treasuryFees), 4);
+    assert.equal(toNumber(pool.rewardPool), 20);
 
     const treasuryBytes = plugin.state.get(keyHex(KeyForGameTreasury()));
     assert.ok(treasuryBytes);
@@ -511,9 +548,9 @@ test('startDailyGame routes fees into daily reward pool and treasury buckets', a
         reserveBalance: number | Long
         shopBalance: number | Long
     }
-    assert.equal(toNumber(treasury.platformBalance), 12);
-    assert.equal(toNumber(treasury.reserveBalance), 24);
-    assert.equal(toNumber(treasury.shopBalance), 12);
+    assert.equal(toNumber(treasury.platformBalance), 1);
+    assert.equal(toNumber(treasury.reserveBalance), 2);
+    assert.equal(toNumber(treasury.shopBalance), 1);
 });
 
 test('submitGameResult finalizes an active session and writes a leaderboard entry', async () => {
