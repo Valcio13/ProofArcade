@@ -14,42 +14,6 @@ const Footer: React.FC = () => {
                             © 2025 ProofArcade. All rights reserved.
                         </span>
                     </div>
-
-                    {/* Right side - Links */}
-                    <div className="flex items-center gap-6">
-                        <a
-                            href="https://canopy-network.gitbook.io/docs/secure-canopy/node-runner"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-primary text-sm transition-colors duration-200"
-                        >
-                            API
-                        </a>
-                        <a
-                            href="https://canopy-network.gitbook.io/docs"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-primary text-sm transition-colors duration-200"
-                        >
-                            Docs
-                        </a>
-                        <a
-                            href="https://www.canopynetwork.org/privacy-policy"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-primary text-sm transition-colors duration-200"
-                        >
-                            Privacy
-                        </a>
-                        <a
-                            href="https://www.canopynetwork.org/terms-of-service"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-primary text-sm transition-colors duration-200"
-                        >
-                            Terms
-                        </a>
-                    </div>
                 </div>
 
                 {/* Mobile Layout */}
@@ -57,42 +21,6 @@ const Footer: React.FC = () => {
                     {/* Logo */}
                     <div className="flex justify-center mb-4">
                         <Logo size={220} showText={false} />
-                    </div>
-
-                    {/* Links Grid */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                        <a
-                            href="https://canopy-network.gitbook.io/docs/secure-canopy/node-runner"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-primary text-sm transition-colors duration-200 text-center py-2"
-                        >
-                            API
-                        </a>
-                        <a
-                            href="https://canopy-network.gitbook.io/docs"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-primary text-sm transition-colors duration-200 text-center py-2"
-                        >
-                            Docs
-                        </a>
-                        <a
-                            href="https://www.canopynetwork.org/privacy-policy"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-primary text-sm transition-colors duration-200 text-center py-2"
-                        >
-                            Privacy
-                        </a>
-                        <a
-                            href="https://www.canopynetwork.org/terms-of-service"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-primary text-sm transition-colors duration-200 text-center py-2"
-                        >
-                            Terms
-                        </a>
                     </div>
 
                     {/* Copyright */}

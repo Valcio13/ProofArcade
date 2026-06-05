@@ -89,7 +89,13 @@ function persistPlaytestState(state: StoredPlaytestState) {
 }
 
 function PlaytestPage() {
-  const initialState = loadPlaytestState()
+  // Always start with a fresh playtest state - clear any previous session
+  useEffect(() => {
+    // Clear any stored playtest state when entering the page
+    localStorage.removeItem(PLAYTEST_STATE_KEY)
+  }, [])
+
+  const initialState = createFreshPlaytestState()
   const [session, setSession] = useState<PlaytestSession>(initialState.session)
   const [board, setBoard] = useState<number[]>(initialState.board)
   const [score, setScore] = useState(initialState.score)
@@ -114,6 +120,9 @@ function PlaytestPage() {
     isFinishedRef.current = isFinished
   }, [session, moves, board, score, maxTile, isFinished])
 
+  // Note: Persistence is disabled for Playtest to ensure fresh sessions
+  // Uncomment below to re-enable auto-save for debugging purposes
+  /*
   useEffect(() => {
     persistPlaytestState({
       session,
@@ -125,6 +134,7 @@ function PlaytestPage() {
       lastOutcome,
     })
   }, [session, board, score, maxTile, moves, isFinished, lastOutcome])
+  */
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

@@ -1,7 +1,7 @@
 import { startTransition, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import {
   canMove,
@@ -32,6 +32,7 @@ import {
   loadStoredWalletAuth,
   persistStoredWalletAuth,
 } from '../lib/walletAuth'
+import { shortAddress } from '../lib/address'
 
 const tileStyles: Record<number, string> = {
   0: 'bg-white/8 text-white/20',
@@ -82,6 +83,7 @@ interface ActionBannerState {
 }
 
 function Play2048Page() {
+  const [searchParams] = useSearchParams()
   const [address, setAddress] = useState('')
   const [password, setPassword] = useState('')
   const [wallets, setWallets] = useState<RpcKeystoreAccount[]>([])
@@ -119,6 +121,13 @@ function Play2048Page() {
     let cancelled = false
 
     async function bootstrap() {
+      // Read URL mode parameter as highest priority
+      const modeParam = searchParams.get('mode')
+      const urlMode: GameMode | null = 
+        modeParam === 'daily' ? 'daily' : 
+        modeParam === 'classic' ? 'classic' : 
+        null
+      
       const nextClient = await createGame2048Client()
       if (cancelled) {
         return
@@ -136,9 +145,14 @@ function Play2048Page() {
         }
         rpcWalletCount = nextWallets.length
         setWallets(nextWallets)
-        if (nextWallets.length > 0) {
+        
+        // Only set default mode if NO URL parameter exists
+        if (nextWallets.length > 0 && !urlMode) {
           setSelectedMode('classic')
           setLeaderboardMode('classic')
+        } else if (urlMode) {
+          setSelectedMode(urlMode)
+          setLeaderboardMode(urlMode)
         }
         if (
           storedAuth &&
@@ -228,7 +242,7 @@ function Play2048Page() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [searchParams])
 
   useEffect(() => {
     if (!client) {
@@ -622,60 +636,108 @@ function Play2048Page() {
                     Play first.
                   </h1>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-                    Daily is the high-stakes run with one attempt and a move cap. Classic is the always-on lane.
+                    Practice in Training Mode, then compete in Daily Challenge or Classic Mode for rewards.
                   </p>
                 </div>
 
                 <div className="rounded-[1.4rem] border border-white/10 bg-slate-950/40 p-4">
                   <p className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Session</p>
-                  <p className="mt-3 text-lg font-semibold text-white">
-                    {selectedMode === 'training' ? 'Training is local only' : 'Daily and classic use your signed-in wallet.'}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.22em] text-slate-300">
-                      {selectedMode}
+                  
+                  {/* Connected Wallet */}
+                  {clientStatus.mode === 'rpc' && wallets.length > 0 ? (
+                    <div className="mt-3">
+                      <p className="text-xs font-semibold text-slate-400">Connected Wallet</p>
+                      <p className="mt-1 text-sm font-bold text-white">
+                        {wallets.find(w => w.address === address)?.nickname || 'Unknown'}
+                      </p>
+                      <p className="mt-0.5 font-mono text-xs text-slate-400">{shortAddress(address)}</p>
                     </div>
-                    <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.22em] text-slate-300">
-                      {selectedMode === 'training' ? 'free' : `${selectedModeConfig.fee} PROOF`}
+                  ) : (
+                    <div className="mt-3">
+                      <p className="text-xs font-semibold text-slate-400">Mode</p>
+                      <p className="mt-1 text-sm font-bold text-white">Local Only</p>
                     </div>
+                  )}
+
+                  {/* Selected Mode */}
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold text-slate-400">Selected Mode</p>
+                    <p className="mt-1 text-sm font-bold text-white">
+                      {selectedMode === 'daily' ? 'Daily Challenge' : selectedMode === 'classic' ? 'Classic Mode' : 'Training Mode'}
+                    </p>
+                  </div>
+
+                  {/* Entry Fee */}
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold text-slate-400">Entry Fee</p>
+                    <p className="mt-1 text-sm font-bold text-white">
+                      {selectedMode === 'daily' ? `${config.dailyFee} PROOF` : selectedMode === 'classic' ? `${config.classicFee} PROOF` : 'FREE'}
+                    </p>
+                  </div>
+
+                  {/* Status */}
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className={`h-2 w-2 rounded-full ${clientStatus.mode === 'rpc' && address && password ? 'bg-[#53d7a6]' : selectedMode === 'training' ? 'bg-[#53d7a6]' : 'bg-amber-500'}`} />
+                    <p className="text-xs font-semibold text-slate-400">
+                      {clientStatus.mode === 'rpc' && address && password ? 'Connected' : selectedMode === 'training' ? 'Ready' : 'Wallet Required'}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-5 grid gap-3 lg:grid-cols-3">
-                <ModePanel
-                  title="Daily Challenge"
-                  fee={config.dailyFee}
-                  detail={`One attempt per address. Seed changes ${dailyWindowLabel}.`}
-                  meta={`${config.dailyMaxMoves} move cap`}
-                  selected={selectedMode === 'daily'}
-                  disabled={!canStart || isLoadingClient || !canUseLiveWallet}
-                  tone="daily"
-                  onSelect={() => setSelectedMode('daily')}
-                  onStart={() => start('daily')}
-                />
-                <ModePanel
-                  title="Classic Mode"
-                  fee={config.classicFee}
-                  detail="Unlimited runs with a fresh deterministic seed each paid session."
-                  meta="Warm-up friendly"
-                  selected={selectedMode === 'classic'}
-                  disabled={!canStart || isLoadingClient || !canUseLiveWallet}
-                  tone="classic"
-                  onSelect={() => setSelectedMode('classic')}
-                  onStart={() => start('classic')}
-                />
-                <ModePanel
-                  title="Training Mode"
-                  fee="free"
-                  detail="Play instantly on this device. Great for first-time users and no-wallet warm-up runs."
-                  meta="Local only"
-                  selected={selectedMode === 'training'}
-                  disabled={!canStart || isLoadingClient}
-                  tone="training"
-                  onSelect={() => setSelectedMode('training')}
-                  onStart={() => start('training')}
-                />
+              <div className="mt-5 space-y-5">
+                {/* COMPETITIVE RUNS SECTION */}
+                <div>
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="h-px flex-1 bg-gradient-to-r from-[#f0cf52]/40 to-transparent"></div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-[#f6df84]">Competitive Runs</p>
+                    <div className="h-px flex-1 bg-gradient-to-l from-[#f0cf52]/40 to-transparent"></div>
+                  </div>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <ModePanel
+                      title="Daily Challenge"
+                      fee={config.dailyFee}
+                      detail={`One attempt per address. Seed changes ${dailyWindowLabel}.`}
+                      meta={`${config.dailyMaxMoves} move cap`}
+                      selected={selectedMode === 'daily'}
+                      disabled={!canStart || isLoadingClient || !canUseLiveWallet}
+                      tone="daily"
+                      onSelect={() => setSelectedMode('daily')}
+                      onStart={() => start('daily')}
+                    />
+                    <ModePanel
+                      title="Classic Mode"
+                      fee={config.classicFee}
+                      detail="Unlimited runs with a fresh deterministic seed each paid session."
+                      meta="Warm-up friendly"
+                      selected={selectedMode === 'classic'}
+                      disabled={!canStart || isLoadingClient || !canUseLiveWallet}
+                      tone="classic"
+                      onSelect={() => setSelectedMode('classic')}
+                      onStart={() => start('classic')}
+                    />
+                  </div>
+                </div>
+
+                {/* PRACTICE SECTION */}
+                <div>
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="h-px flex-1 bg-gradient-to-r from-[#53d7a6]/40 to-transparent"></div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-[#53d7a6]">Practice</p>
+                    <div className="h-px flex-1 bg-gradient-to-l from-[#53d7a6]/40 to-transparent"></div>
+                  </div>
+                  <ModePanel
+                    title="Training Mode"
+                    fee="free"
+                    detail="Practice for free before entering competitive runs. No fees, no submissions, no risk."
+                    meta="Local only"
+                    selected={selectedMode === 'training'}
+                    disabled={!canStart || isLoadingClient}
+                    tone="training"
+                    onSelect={() => setSelectedMode('training')}
+                    onStart={() => start('training')}
+                  />
+                </div>
               </div>
             </div>
 
@@ -713,62 +775,24 @@ function Play2048Page() {
                         {lastActionError}
                       </motion.div>
                     ) : null}
+                    {!canUseLiveWallet && (selectedMode === 'daily' || selectedMode === 'classic') && clientStatus.mode === 'rpc' ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.18, ease: 'easeOut' }}
+                        className="mt-4 rounded-[1.25rem] border border-amber-500/40 bg-amber-950/20 px-4 py-3"
+                      >
+                        <p className="text-sm font-semibold text-amber-300">Wallet authentication required</p>
+                        <p className="mt-1 text-sm text-amber-200/80">
+                          {selectedMode === 'daily' ? 'Daily Challenge' : 'Classic Mode'} requires a signed-in wallet. Please <Link to="/auth" className="underline hover:text-amber-100">log in</Link> to continue.
+                        </p>
+                      </motion.div>
+                    ) : null}
                   </AnimatePresence>
 
                   <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(280px,330px)_minmax(0,780px)] xl:items-start xl:justify-center">
                     <div className="space-y-3 xl:order-1">
-                      {clientStatus.mode === 'rpc' ? (
-                        <div className="rounded-[1.15rem] border border-white/10 bg-slate-950/60 px-4 py-4">
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Live Wallet</p>
-                              <p className="mt-1 text-sm text-slate-300">
-                                Daily and classic runs need a signed wallet to pay fees and submit scores.
-                              </p>
-                            </div>
-                            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-slate-400">
-                              Signer
-                            </div>
-                          </div>
-
-                          <div className="mt-4 space-y-3">
-                            <label className="block">
-                              <span className="mb-2 block text-[10px] uppercase tracking-[0.22em] text-slate-500">Wallet</span>
-                              <select
-                                value={address}
-                                onChange={(event) => {
-                                  setAddress(event.target.value)
-                                  setLastActionError(null)
-                                }}
-                                className="w-full rounded-[1rem] border border-white/10 bg-[#060915] px-4 py-3 text-sm text-white outline-none transition focus:border-[#53a6ff]/60 focus:ring-2 focus:ring-[#53a6ff]/20"
-                              >
-                                {wallets.length > 0 ? wallets.map((wallet) => (
-                                  <option key={wallet.address} value={wallet.address}>
-                                    {wallet.nickname} ({formatAddress(wallet.address)})
-                                  </option>
-                                )) : (
-                                  <option value="">No wallet found</option>
-                                )}
-                              </select>
-                            </label>
-
-                            <label className="block">
-                              <span className="mb-2 block text-[10px] uppercase tracking-[0.22em] text-slate-500">Password</span>
-                              <input
-                                type="password"
-                                value={password}
-                                onChange={(event) => {
-                                  setPassword(event.target.value)
-                                  setLastActionError(null)
-                                }}
-                                placeholder="Wallet password"
-                                className="w-full rounded-[1rem] border border-white/10 bg-[#060915] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]/60 focus:ring-2 focus:ring-[#53a6ff]/20"
-                              />
-                            </label>
-                          </div>
-                        </div>
-                      ) : null}
-
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div className="rounded-[1.1rem] border border-[#f6df84]/20 bg-[#f6df84]/10 px-4 py-3">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Score</p>

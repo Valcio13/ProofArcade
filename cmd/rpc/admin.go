@@ -938,3 +938,38 @@ func execCommand(name string, arg ...string) ([]byte, error) {
 	// Return the captured output and a nil error, indicating successful execution.
 	return buf.Bytes(), nil
 }
+
+
+// WalletVerify verifies a wallet password without performing any transactions
+func (s *Server) WalletVerify(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(keystoreRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	s.logger.Infof("WalletVerify: received request for address: %s, password length: %d", hex.EncodeToString(req.Address), len(req.Password))
+
+	keystore, ok := newKeystore(w, s.config.DataDirPath)
+	if !ok {
+		s.logger.Warnf("WalletVerify: failed to create keystore")
+		return
+	}
+
+	// Attempt to decrypt the key with the provided password
+	s.logger.Infof("WalletVerify: attempting GetKey...")
+	privateKey, err := keystore.GetKey(req.Address, req.Password)
+	if err != nil {
+		s.logger.Warnf("WalletVerify: GetKey failed with error: %v", err)
+		write(w, map[string]string{"error": "authentication failed"}, http.StatusUnauthorized)
+		return
+	}
+	if privateKey == nil {
+		s.logger.Warnf("WalletVerify: GetKey returned nil key")
+		write(w, map[string]string{"error": "authentication failed"}, http.StatusUnauthorized)
+		return
+	}
+
+	s.logger.Infof("WalletVerify: SUCCESS - password verified")
+	// Password is valid
+	write(w, map[string]bool{"valid": true}, http.StatusOK)
+}

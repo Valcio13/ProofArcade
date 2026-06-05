@@ -82,6 +82,7 @@ const (
 	KeystoreImportRawRoutePath   = "/v1/admin/keystore-import-raw"
 	KeystoreDeleteRoutePath      = "/v1/admin/keystore-delete"
 	KeystoreGetRoutePath         = "/v1/admin/keystore-get"
+	WalletVerifyRoutePath        = "/v1/admin/wallet-verify"
 	TxSendRoutePath              = "/v1/admin/tx-send"
 	TxStakeRoutePath             = "/v1/admin/tx-stake"
 	TxEditStakeRoutePath         = "/v1/admin/tx-edit-stake"
@@ -196,6 +197,7 @@ const (
 	KeystoreImportRawRouteName      = "keystore-import-raw"
 	KeystoreDeleteRouteName         = "keystore-delete"
 	KeystoreGetRouteName            = "keystore-get"
+	WalletVerifyRouteName           = "wallet-verify"
 	TxSendRouteName                 = "tx-send"
 	TxStakeRouteName                = "tx-stake"
 	TxUnstakeRouteName              = "tx-unstake"
@@ -313,6 +315,7 @@ var routePaths = routes{
 	KeystoreImportRawRouteName:      {Method: http.MethodPost, Path: KeystoreImportRawRoutePath},
 	KeystoreDeleteRouteName:         {Method: http.MethodPost, Path: KeystoreDeleteRoutePath},
 	KeystoreGetRouteName:            {Method: http.MethodPost, Path: KeystoreGetRoutePath},
+	WalletVerifyRouteName:           {Method: http.MethodPost, Path: WalletVerifyRoutePath},
 	TxSendRouteName:                 {Method: http.MethodPost, Path: TxSendRoutePath},
 	TxStakeRouteName:                {Method: http.MethodPost, Path: TxStakeRoutePath},
 	TxEditOrderRouteName:            {Method: http.MethodPost, Path: TxEditOrderRoutePath},
@@ -446,6 +449,7 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		KeystoreImportRawRouteName:      s.KeystoreImportRaw,
 		KeystoreDeleteRouteName:         s.KeystoreDelete,
 		KeystoreGetRouteName:            s.KeystoreGetKeyGroup,
+		WalletVerifyRouteName:           s.WalletVerify,
 		TxSendRouteName:                 s.TransactionSend,
 		TxStakeRouteName:                s.TransactionStake,
 		TxEditStakeRouteName:            s.TransactionEditStake,

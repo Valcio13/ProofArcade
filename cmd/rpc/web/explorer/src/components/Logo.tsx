@@ -1,5 +1,6 @@
 import React from 'react'
-import proofArcadeLogo from '../assets/proofarcade-logo-navbar.png'
+import proofArcadeLogoIcon from '../assets/proofarcade-logo.png'
+import proofArcadeLogoFull from '../assets/proofarcade-logo-navbar.png'
 
 type LogoProps = {
     size?: number
@@ -8,20 +9,19 @@ type LogoProps = {
 }
 
 const Logo: React.FC<LogoProps> = ({ size = 32, className = '', showText = true }) => {
+    // When showText is true, use the full logo with text baked into the image
+    // When showText is false, use just the icon
+    const logoSrc = showText ? proofArcadeLogoFull : proofArcadeLogoIcon
+    
     return (
-        <div className={`flex items-center gap-2 ${className}`}>
+        <div className={`flex items-center ${className}`}>
             <img
-                src={proofArcadeLogo}
+                src={logoSrc}
                 alt="ProofArcade"
-                width={size * 4.2}
+                width={showText ? size * 4.2 : size}
                 height={size}
                 className="h-auto min-h-[28px] max-h-[72px] w-auto flex-shrink-0 object-contain"
             />
-            {showText && (
-                <span className="text-white font-semibold text-lg">
-                    ProofArcade
-                </span>
-            )}
         </div>
     )
 }

@@ -130,7 +130,7 @@ function DailyLoginPage() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -18 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="mx-auto max-w-[980px] px-4 py-8 sm:px-6 lg:px-8"
+      className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8"
     >
       <section className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(83,166,255,0.15),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(240,207,82,0.12),_transparent_22%),linear-gradient(160deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.28)] sm:p-8">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">

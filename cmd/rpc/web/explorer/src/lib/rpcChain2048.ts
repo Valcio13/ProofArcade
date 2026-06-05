@@ -305,6 +305,21 @@ export async function renameRpcKeystoreWallet(address: string, nickname: string)
   }
 }
 
+export async function deleteRpcKeystoreWallet(address: string, password: string): Promise<{ deleted: boolean }> {
+  const normalized = assertHexAddress(address)
+  
+  if (!password) {
+    throw new Error('Password is required to delete a wallet.')
+  }
+
+  await postJson<string>(adminRPCURL, '/v1/admin/keystore-delete', {
+    address: normalized,
+    password,
+  })
+
+  return { deleted: true }
+}
+
 function toChainMove(direction: MoveDirection): number {
   switch (direction) {
     case 'up':

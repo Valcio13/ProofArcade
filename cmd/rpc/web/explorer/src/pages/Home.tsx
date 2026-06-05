@@ -1,78 +1,54 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 import { createGame2048Client } from '../lib/chain2048'
 import { shortAddress } from '../lib/address'
-import { getUtcDateString } from '../lib/game2048'
-import type { DailyPrizePool, LeaderboardEntry } from '../lib/mockChain2048'
+import type { LeaderboardEntry } from '../lib/mockChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
+import { ArrowRight, Zap, Trophy, Target, Shield, Clock, Award } from 'lucide-react'
 
 const MotionLink = motion(Link)
 
 const HomePage = () => {
   const storedWallet = loadStoredWalletAuth()
   const hasLocalSession = !!storedWallet?.address
-  const [leaderboards, setLeaderboards] = useState<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>({
-    daily: [],
-    classic: [],
-  })
-  const [dailyPool, setDailyPool] = useState<DailyPrizePool | null>(null)
-  const [countdown, setCountdown] = useState(() => formatUtcCountdown())
-  const [isRequestingFaucet, setIsRequestingFaucet] = useState(false)
+  const [topPlayers, setTopPlayers] = useState<LeaderboardEntry[]>([])
+  const [playerStats, setPlayerStats] = useState<any>(null)
 
   useEffect(() => {
     let cancelled = false
 
-    async function loadLeaderboards() {
+    async function loadData() {
       const client = await createGame2048Client()
-      const [nextLeaderboards, nextDailyPool] = await Promise.all([
-        client.getLeaderboards(),
-        client.getDailyPrizePool(getUtcDateString()),
-      ])
+      const leaderboards = await client.getLeaderboards()
       if (!cancelled) {
-        setLeaderboards(nextLeaderboards)
-        setDailyPool(nextDailyPool)
+        // Combine both leaderboards and take top 3 by score
+        const combined = [...leaderboards.daily, ...leaderboards.classic]
+        const sorted = combined.sort((a, b) => b.score - a.score)
+        setTopPlayers(sorted.slice(0, 3))
+      }
+
+      // Load player stats if authenticated
+      if (hasLocalSession && storedWallet?.address) {
+        try {
+          const stats = await client.getPlayer(storedWallet.address)
+          if (!cancelled) {
+            setPlayerStats(stats)
+          }
+        } catch (error) {
+          console.error('Failed to load player stats:', error)
+        }
       }
     }
 
-    loadLeaderboards().catch((error) => {
+    loadData().catch((error) => {
       console.error(error)
     })
 
     return () => {
       cancelled = true
     }
-  }, [])
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setCountdown(formatUtcCountdown())
-    }, 1000)
-
-    return () => {
-      window.clearInterval(timer)
-    }
-  }, [])
-
-  async function handleRequestFaucet() {
-    if (!storedWallet?.address || isRequestingFaucet) return
-    setIsRequestingFaucet(true)
-    try {
-      const client = await createGame2048Client()
-      const result = await client.addFunds(storedWallet.address)
-      if (result.txHash) {
-        toast.success(`Faucet sent. Tx ${result.txHash.slice(0, 12)}...`)
-      } else {
-        toast.success('Faucet funds added.')
-      }
-    } catch (error) {
-      console.error(error)
-      toast.error(error instanceof Error ? error.message : 'Faucet request failed.')
-    } finally {
-      setIsRequestingFaucet(false)
-    }
-  }
+  }, [hasLocalSession, storedWallet?.address])
 
   return (
     <motion.div
@@ -80,310 +56,602 @@ const HomePage = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="mx-auto flex max-w-[1400px] flex-col gap-8 px-4 py-8 sm:px-6 xl:px-8"
+      className="mx-auto flex max-w-[1200px] flex-col gap-12 px-4 py-8 sm:px-6 lg:px-8"
     >
-      <section className="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(240,207,82,0.18),_transparent_28%),radial-gradient(circle_at_80%_16%,_rgba(83,166,255,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(201,95,56,0.2),_transparent_24%),linear-gradient(145deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-6 shadow-[0_25px_90px_rgba(0,0,0,0.32)] sm:p-8 xl:p-10">
-        <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.05)_45%,transparent_100%)]" />
-        <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_420px] xl:items-stretch">
-          <div className="flex flex-col justify-between gap-8">
-            <div className="max-w-4xl">
-              <p className="text-xs uppercase tracking-[0.32em] text-[#f6df84]">ProofArcade 2048</p>
-              <h1 className="mt-4 font-['Georgia'] text-5xl leading-none text-white sm:text-6xl xl:text-7xl">
-                Play 2048. Prove your score onchain.
-              </h1>
-              <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
-                Train for free, enter paid daily or classic runs when you are ready, and let the chain verify what you actually achieved.
-              </p>
-            </div>
+      {hasLocalSession ? (
+        /* AUTHENTICATED USER VIEW */
+        <>
+          {/* HERO - Welcome Back */}
+          <section className="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(240,207,82,0.18),_transparent_28%),radial-gradient(circle_at_80%_16%,_rgba(83,166,255,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(201,95,56,0.2),_transparent_24%),linear-gradient(145deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-8 shadow-[0_25px_90px_rgba(0,0,0,0.32)] sm:p-12 xl:p-16">
+            <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.05)_45%,transparent_100%)]" />
+            
+            <div className="relative">
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-xs uppercase tracking-[0.32em] text-[#f6df84]"
+              >
+                Welcome Back
+              </motion.p>
+              
+              <motion.h1 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-4 font-['Georgia'] text-5xl leading-tight text-white sm:text-6xl xl:text-7xl"
+              >
+                {storedWallet?.nickname || 'Player'}
+              </motion.h1>
+              
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mt-6 text-lg leading-8 text-slate-300"
+              >
+                Ready to play? Start a daily challenge or continue your classic run.
+              </motion.p>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <InfoCard
-                label="Daily Challenge"
-                value="Compete once per UTC day"
-                detail="Pay in, land on the leaderboard, and claim from the shared reward pool."
-              />
-              <InfoCard
-                label="Classic + Training"
-                value="Play free or grind points"
-                detail="Start with Playtest at no cost, then switch to classic when you want spendable progression."
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <InfoCard
-                title="Wallet-Owned Progress"
-                detail="Create or import a wallet when you are ready, then carry your points, rewards, and history with you."
-              />
-              <InfoCard
-                title="Playtest for new user"
-                detail="No wallet, no chain, no fee. Use it to learn the board before moving into classic or daily runs."
-              />
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              {hasLocalSession ? (
-                <>
-                  <MotionLink
-                    to="/play"
-                    className="rounded-2xl bg-[#f0cf52] px-6 py-3 text-sm font-bold text-[#2e2510] transition hover:brightness-105"
-                    whileHover={{ y: -2, scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Start Playing
-                  </MotionLink>
-                  <motion.button
-                    type="button"
-                    onClick={() => {
-                      void handleRequestFaucet()
-                    }}
-                    disabled={isRequestingFaucet}
-                    className="rounded-2xl border border-[#53a6ff]/30 bg-[#53a6ff]/10 px-5 py-3 text-sm font-semibold text-[#9fd0ff] transition hover:bg-[#53a6ff]/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    whileHover={{ y: -2, scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {isRequestingFaucet ? 'Requesting...' : 'Get Faucet'}
-                  </motion.button>
-                </>
-              ) : (
-                <>
-                  <MotionLink
-                    to="/playtest"
-                    className="rounded-2xl border border-[#53a6ff]/30 bg-[#53a6ff]/10 px-5 py-3 text-sm font-semibold text-[#9fd0ff] transition hover:bg-[#53a6ff]/20 hover:text-white"
-                    whileHover={{ y: -2, scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Playtest Now
-                  </MotionLink>
-                </>
-              )}
-            </div>
-          </div>
-
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-            className="rounded-[1.9rem] border border-white/10 bg-black/20 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.28em] text-slate-500">Game Preview</p>
-                <h2 className="mt-3 text-2xl font-bold text-white">The product is the board.</h2>
-              </div>
-              <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] uppercase tracking-[0.2em] text-slate-400">
-                Game-first
-              </div>
-            </div>
-
-            <div className="mt-5 grid grid-cols-4 gap-3 rounded-[1.5rem] border border-white/10 bg-[#171d28] p-4">
-              {[0, 2, 4, 8, 16, 32, 64, 128, 0, 256, 512, 1024, 0, 0, 2048, 0].map((value, index) => (
-                <motion.div
-                  key={`${index}-${value}`}
-                  initial={{ opacity: 0.78, scale: 0.94 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.015, type: 'spring', stiffness: 220, damping: 16 }}
-                  className={`flex aspect-square items-center justify-center rounded-[1rem] border border-black/10 text-lg font-black sm:text-xl ${
-                    value === 0
-                      ? 'bg-white/8'
-                      : value <= 4
-                        ? 'bg-[#f3efe6] text-[#372f24]'
-                        : value <= 32
-                          ? 'bg-[#d65d3e] text-white'
-                          : value <= 256
-                            ? 'bg-[#7ebd5d] text-[#173019]'
-                            : value <= 1024
-                              ? 'bg-[#53a6ff] text-white'
-                              : 'bg-[#f0cf52] text-[#43340a]'
-                  }`}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="mt-10 flex flex-wrap gap-4"
+              >
+                <MotionLink
+                  to="/play?mode=daily"
+                  className="flex items-center gap-3 rounded-2xl bg-[#f0cf52] px-8 py-4 text-base font-bold text-[#2e2510] shadow-[0_20px_60px_rgba(240,207,82,0.35)] transition hover:brightness-105 sm:text-lg"
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  {value || ''}
-                </motion.div>
-              ))}
+                  <Clock className="h-5 w-5" />
+                  Daily Challenge
+                </MotionLink>
+                
+                <MotionLink
+                  to="/play?mode=classic"
+                  className="flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-slate-200 transition hover:bg-white/10 sm:text-lg"
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Award className="h-5 w-5" />
+                  Classic Mode
+                </MotionLink>
+              </motion.div>
             </div>
+          </section>
+
+          {/* PLAYER STATS */}
+          {playerStats && (
+            <section>
+              <div className="mb-6">
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Your Stats</p>
+                <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Performance</h2>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                  label="Best Score"
+                  value={Math.max(playerStats.bestDailyScore || 0, playerStats.bestClassicScore || 0).toString()}
+                  icon={<Trophy className="h-6 w-6" />}
+                />
+                <StatCard
+                  label="Best Tile"
+                  value={playerStats.bestTile?.toString() || '0'}
+                  icon={<Target className="h-6 w-6" />}
+                />
+                <StatCard
+                  label="Games Played"
+                  value={(playerStats.dailyGamesStarted + playerStats.classicGamesStarted).toString()}
+                  icon={<Zap className="h-6 w-6" />}
+                />
+                <StatCard
+                  label="Login Streak"
+                  value={playerStats.loginStreak?.toString() || '0'}
+                  icon={<Award className="h-6 w-6" />}
+                />
+              </div>
+            </section>
+          )}
+
+          {/* QUICK ACTIONS */}
+          <section>
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Quick Access</p>
+              <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Actions</h2>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <QuickActionCard
+                to="/play?mode=daily"
+                icon={<Clock className="h-8 w-8" />}
+                title="Daily Challenge"
+                description="Compete for rewards"
+              />
+              <QuickActionCard
+                to="/play?mode=classic"
+                icon={<Award className="h-8 w-8" />}
+                title="Classic Mode"
+                description="Unlimited progression"
+              />
+              <QuickActionCard
+                to="/leaderboard"
+                icon={<Trophy className="h-8 w-8" />}
+                title="Leaderboard"
+                description="See your rank"
+              />
+              <QuickActionCard
+                to="/profile"
+                icon={<Shield className="h-8 w-8" />}
+                title="Profile"
+                description="View achievements"
+              />
+            </div>
+          </section>
+
+          {/* LEADERBOARD PREVIEW */}
+          <section>
+            <div className="mb-8 flex items-end justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Top Players</p>
+                <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Current Champions</h2>
+              </div>
+              <Link 
+                to="/leaderboard"
+                className="flex items-center gap-2 text-sm font-semibold text-[#f6df84] transition hover:text-[#f0cf52]"
+              >
+                View Full Leaderboard
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            {topPlayers.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-3">
+                {topPlayers.map((player, index) => (
+                  <TopPlayerCard
+                    key={player.gameId}
+                    rank={index + 1}
+                    address={player.address}
+                    score={player.score}
+                    maxTile={player.maxTile}
+                    moveCount={player.moveCount}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-slate-950/30 px-8 py-12 text-center">
+                <Trophy className="mx-auto h-12 w-12 text-slate-600" />
+                <p className="mt-4 text-slate-400">No players yet. Be the first to compete!</p>
+              </div>
+            )}
+          </section>
+        </>
+      ) : (
+        /* UNAUTHENTICATED USER VIEW - Original Onboarding */
+        <>
+      <section className="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(240,207,82,0.18),_transparent_28%),radial-gradient(circle_at_80%_16%,_rgba(83,166,255,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(201,95,56,0.2),_transparent_24%),linear-gradient(145deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-8 shadow-[0_25px_90px_rgba(0,0,0,0.32)] sm:p-12 xl:p-16">
+        <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.05)_45%,transparent_100%)]" />
+        
+        <div className="relative mx-auto max-w-4xl text-center">
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-xs uppercase tracking-[0.32em] text-[#f6df84]"
+          >
+            ProofArcade 2048
+          </motion.p>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-6 font-['Georgia'] text-5xl leading-tight text-white sm:text-6xl xl:text-7xl"
+          >
+            Play 2048. Prove your score onchain.
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-6 text-lg leading-8 text-slate-300 sm:text-xl"
+          >
+            Start for free with no wallet required. Create a wallet later when you're ready to compete for rewards and leaderboard rankings.
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          >
+            <MotionLink
+              to="/playtest"
+              className="group flex items-center gap-3 rounded-2xl bg-[#f0cf52] px-8 py-4 text-base font-bold text-[#2e2510] shadow-[0_20px_60px_rgba(240,207,82,0.35)] transition hover:brightness-105 sm:text-lg"
+              whileHover={{ y: -3, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Zap className="h-5 w-5" />
+              Play Free
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </MotionLink>
+            
+            <MotionLink
+              to="/leaderboard"
+              className="flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-slate-200 transition hover:bg-white/10 sm:text-lg"
+              whileHover={{ y: -3, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Trophy className="h-5 w-5" />
+              View Leaderboard
+            </MotionLink>
           </motion.div>
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <div className="lg:col-span-2 rounded-[1.8rem] border border-[#f0cf52]/20 bg-[linear-gradient(135deg,_rgba(45,38,16,0.88),_rgba(20,21,28,0.96))] p-5">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-[#f6df84]">Daily Challenge Prize Pool</p>
-              <h2 className="mt-2 text-3xl font-bold text-white">
-                {dailyPool?.rewardPool ?? 0} PROOF
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                The live pool for today&apos;s UTC board. Each daily entry adds to this reward pot before end-of-day claims.
-              </p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <PoolStat label="UTC Day" value={dailyPool?.utcDate ?? getUtcDateString()} />
-              <PoolStat label="Entries" value={`${dailyPool?.entryCount ?? 0}`} />
-              <PoolStat label="Gross Fees" value={`${dailyPool?.grossFees ?? 0} PROOF`} />
-            </div>
-          </div>
-          <div className="mt-4 rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3">
-            <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Resets In</p>
-            <p className="mt-2 text-sm font-semibold text-white">{countdown}</p>
-          </div>
+      {/* SECTION 2 - HOW IT WORKS */}
+      <section>
+        <div className="mb-8 text-center">
+          <p className="text-xs uppercase tracking-[0.28em] text-slate-500">How It Works</p>
+          <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Three Simple Steps</h2>
         </div>
 
-        <LeaderboardCard
-          title="Daily Leaders"
-          subtitle="Top submitted daily scores for the current board."
-          entries={leaderboards.daily}
-          selectedAddress={storedWallet?.address ?? ''}
-          emptyText="No daily submissions yet."
-        />
-        <LeaderboardCard
-          title="Classic Leaders"
-          subtitle="Highest verified classic runs so far."
-          entries={leaderboards.classic}
-          selectedAddress={storedWallet?.address ?? ''}
-          emptyText="No classic submissions yet."
-        />
-      </section>
-
-      <section className="rounded-[1.8rem] border border-white/10 bg-[linear-gradient(135deg,_rgba(17,22,31,0.96),_rgba(11,15,22,0.96))] p-5">
-        <p className="text-xs uppercase tracking-[0.28em] text-slate-500">How It Works</p>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <JourneyCard step="1" title="Train Or Register" detail="Try the game for free, or create/import a wallet when you want on-chain progress." />
-          <JourneyCard step="2" title="Play A Real Run" detail="Start a daily or classic session and let the chain own the session state." />
-          <JourneyCard step="3" title="Submit And Verify" detail="The move list is replayed deterministically before rewards, points, and leaderboard changes count." />
+        <div className="grid gap-5 md:grid-cols-3">
+          <StepCard
+            icon={<Zap className="h-8 w-8" />}
+            step="1"
+            title="Play Free"
+            description="Try 2048 instantly with no wallet, no fees, and no commitment."
+          />
+          <StepCard
+            icon={<Shield className="h-8 w-8" />}
+            step="2"
+            title="Create a Wallet"
+            description="Save progress, track achievements, and join competitive runs."
+          />
+          <StepCard
+            icon={<Trophy className="h-8 w-8" />}
+            step="3"
+            title="Compete"
+            description="Enter daily challenges, climb the leaderboard, and earn rewards."
+          />
         </div>
       </section>
-    </motion.div>
-  )
-}
 
-function InfoCard({
-  label,
-  title,
-  value,
-  detail,
-}: {
-  label?: string
-  title?: string
-  value?: string
-  detail: string
-}) {
-  return (
-    <motion.div
-      whileHover={{ y: -4, borderColor: 'rgba(255,255,255,0.18)' }}
-      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-      className="rounded-[1.25rem] border border-white/10 bg-black/20 px-4 py-4"
-    >
-      {label ? <p className="text-[10px] uppercase tracking-[0.24em] text-slate-500">{label}</p> : null}
-      {value ? <p className={`text-lg font-bold text-white ${label ? 'mt-2' : ''}`}>{value}</p> : null}
-      {title ? <p className="text-lg font-bold text-white">{title}</p> : null}
-      <p className="mt-1 text-sm text-slate-400">{detail}</p>
-    </motion.div>
-  )
-}
+      {/* SECTION 3 - GAME MODES */}
+      <section>
+        <div className="mb-8 text-center">
+          <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Game Modes</p>
+          <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Choose Your Path</h2>
+        </div>
 
-function JourneyCard({ step, title, detail }: { step: string; title: string; detail: string }) {
-  return (
-    <motion.div
-      whileHover={{ y: -4, borderColor: 'rgba(255,255,255,0.18)' }}
-      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-      className="rounded-[1.3rem] border border-white/10 bg-black/20 p-4"
-    >
-      <p className="text-[10px] uppercase tracking-[0.24em] text-[#f6df84]">Step {step}</p>
-      <p className="mt-2 text-lg font-bold text-white">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-400">{detail}</p>
-    </motion.div>
-  )
-}
+        <div className="grid gap-5 md:grid-cols-3">
+          <GameModeCard
+            icon={<Target className="h-10 w-10" />}
+            title="Playtest"
+            features={[
+              'No wallet required',
+              'Practice locally',
+              'Learn the game',
+            ]}
+            ctaText="Try Now"
+            ctaLink="/playtest"
+            highlighted={!hasLocalSession}
+          />
+          <GameModeCard
+            icon={<Clock className="h-10 w-10" />}
+            title="Daily Challenge"
+            features={[
+              'One competitive run per day',
+              'Shared reward pool',
+              'Daily leaderboard',
+            ]}
+            ctaText="Play Daily"
+            ctaLink="/play"
+            requiresWallet
+          />
+          <GameModeCard
+            icon={<Award className="h-10 w-10" />}
+            title="Classic Mode"
+            features={[
+              'Unlimited progression',
+              'Persistent stats',
+              'Long-term play',
+            ]}
+            ctaText="Play Classic"
+            ctaLink="/play"
+            requiresWallet
+          />
+        </div>
+      </section>
 
-function LeaderboardCard({
-  title,
-  subtitle,
-  entries,
-  selectedAddress,
-  emptyText,
-}: {
-  title: string
-  subtitle: string
-  entries: LeaderboardEntry[]
-  selectedAddress: string
-  emptyText: string
-}) {
-  return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-      className="rounded-[1.8rem] border border-white/10 bg-black/20 p-5"
-    >
-      <p className="text-xs uppercase tracking-[0.28em] text-slate-500">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-400">{subtitle}</p>
-      <div className="mt-4 space-y-3">
-        {entries.slice(0, 5).length > 0 ? (
-          entries.slice(0, 5).map((entry, index) => (
-            <motion.div
-              key={`${title}-${entry.gameId}`}
-              whileHover={{ x: 3, borderColor: entry.address === selectedAddress ? 'rgba(83,166,255,0.45)' : 'rgba(255,255,255,0.18)' }}
-              transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-              className={`rounded-[1rem] border px-4 py-3 ${
-                entry.address === selectedAddress ? 'border-[#53a6ff]/40 bg-[#53a6ff]/10' : 'border-white/10 bg-slate-950/50'
-              }`}
+      {/* SECTION 4 - WHY WALLETS EXIST */}
+      <section className="rounded-[2rem] border border-[#53a6ff]/20 bg-[linear-gradient(135deg,_rgba(25,40,60,0.5),_rgba(15,20,30,0.8))] p-8 sm:p-10">
+        <div className="mx-auto max-w-3xl text-center">
+          <Shield className="mx-auto h-12 w-12 text-[#53a6ff]" />
+          <h2 className="mt-6 text-3xl font-bold text-white">Why use a wallet?</h2>
+          <p className="mt-4 text-base leading-7 text-slate-300">
+            Create a wallet when you're ready to compete for rewards, track your progress, and appear on the leaderboard.
+          </p>
+          
+          <div className="mt-8 grid gap-4 text-left sm:grid-cols-3">
+            <WalletBenefit 
+              title="Saves your progress"
+              description="Keep your game history and achievements"
+            />
+            <WalletBenefit 
+              title="Tracks leaderboard history"
+              description="See how you rank against other players"
+            />
+            <WalletBenefit 
+              title="Enables rewards"
+              description="Compete for prizes and earn tokens"
+            />
+          </div>
+
+          <motion.p 
+            whileHover={{ scale: 1.01 }}
+            className="mt-8 rounded-xl border border-amber-500/20 bg-amber-950/20 px-6 py-4 text-sm leading-6 text-slate-300"
+          >
+            ⚠️ Wallets are stored locally on your device. Export a backup after creating one. If you lose both your password and backup, your wallet cannot be recovered.
+          </motion.p>
+
+          {!hasLocalSession && (
+            <MotionLink
+              to="/auth"
+              className="mt-8 inline-flex items-center gap-2 rounded-xl border-2 border-[#53a6ff]/40 bg-[#53a6ff]/15 px-8 py-4 text-base font-semibold text-[#9fd0ff] shadow-[0_10px_40px_rgba(83,166,255,0.15)] transition hover:border-[#53a6ff]/60 hover:bg-[#53a6ff]/25 hover:text-white hover:shadow-[0_15px_50px_rgba(83,166,255,0.25)]"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">#{index + 1}</p>
-                  <p className="mt-1 text-sm font-semibold text-white">{shortAddress(entry.address)}</p>
-                  <p className="mt-1 text-xs text-slate-500">{entry.moveCount} moves • tile {entry.maxTile}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-black text-[#f6df84]">{entry.score}</p>
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">{entry.utcDate}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))
+              Create Wallet
+              <ArrowRight className="h-5 w-5" />
+            </MotionLink>
+          )}
+        </div>
+      </section>
+
+      {/* SECTION 5 - LEADERBOARD PREVIEW */}
+      <section>
+        <div className="mb-8 flex items-end justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Top Players</p>
+            <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Current Champions</h2>
+          </div>
+          <Link 
+            to="/leaderboard"
+            className="flex items-center gap-2 text-sm font-semibold text-[#f6df84] transition hover:text-[#f0cf52]"
+          >
+            View Full Leaderboard
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {topPlayers.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-3">
+            {topPlayers.map((player, index) => (
+              <TopPlayerCard
+                key={player.gameId}
+                rank={index + 1}
+                address={player.address}
+                score={player.score}
+                maxTile={player.maxTile}
+                moveCount={player.moveCount}
+              />
+            ))}
+          </div>
         ) : (
-          <div className="rounded-[1rem] border border-dashed border-white/10 bg-slate-950/30 px-4 py-4 text-sm text-slate-400">
-            {emptyText}
+          <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-slate-950/30 px-8 py-12 text-center">
+            <Trophy className="mx-auto h-12 w-12 text-slate-600" />
+            <p className="mt-4 text-slate-400">No players yet. Be the first to compete!</p>
           </div>
         )}
+      </section>
+      </>
+      )}
+    </motion.div>
+  )
+}
+
+// Helper Components
+
+function StepCard({ icon, step, title, description }: { icon: React.ReactNode; step: string; title: string; description: string }) {
+  return (
+    <motion.div
+      whileHover={{ y: -6, borderColor: 'rgba(255,255,255,0.2)' }}
+      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
+      className="rounded-[1.5rem] border border-white/10 bg-[linear-gradient(135deg,_rgba(20,25,35,0.9),_rgba(12,16,24,0.9))] p-6"
+    >
+      <div className="flex items-center gap-4">
+        <div className="rounded-xl bg-[#f0cf52]/10 p-3 text-[#f6df84]">
+          {icon}
+        </div>
+        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Step {step}</div>
+      </div>
+      <h3 className="mt-4 text-xl font-bold text-white">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+    </motion.div>
+  )
+}
+
+function GameModeCard({ 
+  icon, 
+  title, 
+  features, 
+  ctaText, 
+  ctaLink, 
+  requiresWallet = false,
+  highlighted = false 
+}: { 
+  icon: React.ReactNode; 
+  title: string; 
+  features: string[]; 
+  ctaText: string; 
+  ctaLink: string;
+  requiresWallet?: boolean;
+  highlighted?: boolean;
+}) {
+  const storedWallet = loadStoredWalletAuth()
+  const hasWallet = !!storedWallet?.address
+  const isDisabled = requiresWallet && !hasWallet
+
+  return (
+    <motion.div
+      whileHover={{ y: -6, borderColor: highlighted ? 'rgba(240,207,82,0.4)' : 'rgba(255,255,255,0.2)' }}
+      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
+      className={`rounded-[1.5rem] border p-6 ${
+        highlighted
+          ? 'border-[#f0cf52]/30 bg-[linear-gradient(135deg,_rgba(45,38,16,0.6),_rgba(20,21,28,0.8))] shadow-[0_10px_40px_rgba(240,207,82,0.15)]'
+          : 'border-white/10 bg-[linear-gradient(135deg,_rgba(20,25,35,0.9),_rgba(12,16,24,0.9))]'
+      }`}
+    >
+      <div className={`rounded-xl p-3 inline-block ${
+        highlighted ? 'bg-[#f0cf52]/15 text-[#f6df84]' : 'bg-white/5 text-slate-300'
+      }`}>
+        {icon}
+      </div>
+      
+      <h3 className="mt-4 text-2xl font-bold text-white">{title}</h3>
+      
+      <ul className="mt-4 space-y-2">
+        {features.map((feature, index) => (
+          <li key={index} className="flex items-start gap-2 text-sm text-slate-400">
+            <span className="mt-1 text-[#53a6ff]">•</span>
+            {feature}
+          </li>
+        ))}
+      </ul>
+
+      {isDisabled ? (
+        <div className="mt-6 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-center text-sm text-slate-500">
+          Requires wallet
+        </div>
+      ) : (
+        <MotionLink
+          to={ctaLink}
+          className={`mt-6 block rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
+            highlighted
+              ? 'bg-[#f0cf52] text-[#2e2510] hover:brightness-105'
+              : 'border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10'
+          }`}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          {ctaText}
+        </MotionLink>
+      )}
+    </motion.div>
+  )
+}
+
+function WalletBenefit({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+      <h4 className="font-semibold text-white">{title}</h4>
+      <p className="mt-1 text-sm text-slate-400">{description}</p>
+    </div>
+  )
+}
+
+function StatCard({ 
+  label, 
+  value, 
+  icon 
+}: { 
+  label: string; 
+  value: string; 
+  icon: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -4, borderColor: 'rgba(255,255,255,0.2)' }}
+      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
+      className="rounded-[1.5rem] border border-white/10 bg-[linear-gradient(135deg,_rgba(20,25,35,0.9),_rgba(12,16,24,0.9))] p-6"
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">{label}</p>
+          <p className="mt-3 text-3xl font-black text-[#f6df84]">{value}</p>
+        </div>
+        <div className="rounded-xl bg-[#f0cf52]/10 p-3 text-[#f6df84]">
+          {icon}
+        </div>
       </div>
     </motion.div>
   )
 }
 
-function PoolStat({ label, value }: { label: string; value: string }) {
+function QuickActionCard({
+  to,
+  icon,
+  title,
+  description,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <MotionLink
+      to={to}
+      whileHover={{ y: -6, borderColor: 'rgba(255,255,255,0.2)' }}
+      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
+      className="block rounded-[1.5rem] border border-white/10 bg-[linear-gradient(135deg,_rgba(20,25,35,0.9),_rgba(12,16,24,0.9))] p-6"
+    >
+      <div className="rounded-xl bg-[#53a6ff]/10 p-3 inline-block text-[#9fd0ff]">
+        {icon}
+      </div>
+      <h3 className="mt-4 text-xl font-bold text-white">{title}</h3>
+      <p className="mt-2 text-sm text-slate-400">{description}</p>
+    </MotionLink>
+  )
+}
+
+function TopPlayerCard({ 
+  rank, 
+  address, 
+  score, 
+  maxTile, 
+  moveCount 
+}: { 
+  rank: number; 
+  address: string; 
+  score: number; 
+  maxTile: number;
+  moveCount: number;
+}) {
+  const medals = ['🥇', '🥈', '🥉']
+  const medal = medals[rank - 1]
+
   return (
     <motion.div
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -4, borderColor: 'rgba(240,207,82,0.4)' }}
       transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-      className="rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3"
+      className={`rounded-[1.5rem] border p-6 ${
+        rank === 1
+          ? 'border-[#f0cf52]/30 bg-[linear-gradient(135deg,_rgba(45,38,16,0.6),_rgba(20,21,28,0.8))]'
+          : 'border-white/10 bg-black/20'
+      }`}
     >
-      <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-3xl">{medal}</div>
+          <p className="mt-2 text-sm font-semibold text-white">{shortAddress(address)}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-black text-[#f6df84]">{score}</p>
+          <p className="mt-1 text-xs text-slate-500">points</p>
+        </div>
+      </div>
+      <div className="mt-4 flex items-center gap-4 text-xs text-slate-400">
+        <span>{moveCount} moves</span>
+        <span>•</span>
+        <span>tile {maxTile}</span>
+      </div>
     </motion.div>
   )
-}
-
-function formatUtcCountdown(): string {
-  const now = new Date()
-  const nextUtcMidnight = Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + 1,
-    0,
-    0,
-    0,
-    0,
-  )
-  const remainingMs = Math.max(0, nextUtcMidnight - now.getTime())
-  const totalSeconds = Math.floor(remainingMs / 1000)
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
-  return `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)} until next UTC day`
-}
-
-function pad2(value: number): string {
-  return value.toString().padStart(2, '0')
 }
 
 export default HomePage

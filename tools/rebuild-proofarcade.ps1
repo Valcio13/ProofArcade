@@ -12,7 +12,7 @@ npm test
 Pop-Location
 
 Write-Host "Rebuilding canopy.exe..." -ForegroundColor Cyan
-go build -buildvcs=false -a -o .\canopy.exe .\cmd\main
+go build -buildvcs=false -tags=untested_go_version -a -o .\canopy.exe .\cmd\main
 
 Write-Host "Restarting canopy.exe..." -ForegroundColor Cyan
 taskkill /IM canopy.exe /F 2>$null | Out-Null

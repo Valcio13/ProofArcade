@@ -8,7 +8,7 @@ type PageShellProps = {
 
 function PageShell({
   children,
-  maxWidthClass = 'max-w-[1100px]',
+  maxWidthClass = 'max-w-[1200px]',
   paddingClass = 'px-4 py-8 sm:px-6 lg:px-8',
 }: PageShellProps) {
   return <div className={`mx-auto ${maxWidthClass} ${paddingClass}`}>{children}</div>
