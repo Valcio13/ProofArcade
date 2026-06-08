@@ -72,6 +72,7 @@ const (
 	Game2048ShopConfigRoutePath    = "/v1/query/2048/shop-config"
 	Game2048RedeemPreviewRoutePath = "/v1/query/2048/redeem-preview"
 	Game2048RedemptionsRoutePath   = "/v1/query/2048/redemptions"
+	Game2048GameHistoryRoutePath   = "/v1/query/2048/game-history"
 	SubscribeRCInfoPath            = "/v1/subscribe-rc-info"
 	// eth
 	EthereumRoutePath = "/v1/eth"
@@ -183,6 +184,7 @@ const (
 	Game2048ShopConfigRouteName    = "2048-shop-config"
 	Game2048RedeemPreviewRouteName = "2048-redeem-preview"
 	Game2048RedemptionsRouteName   = "2048-redemptions"
+	Game2048GameHistoryRouteName   = "2048-game-history"
 	// debug
 	DebugBlockedRouteName   = "blocked"
 	DebugHeapRouteName      = "heap"
@@ -306,6 +308,7 @@ var routePaths = routes{
 	Game2048ShopConfigRouteName:    {Method: http.MethodGet, Path: Game2048ShopConfigRoutePath},
 	Game2048RedeemPreviewRouteName: {Method: http.MethodPost, Path: Game2048RedeemPreviewRoutePath},
 	Game2048RedemptionsRouteName:   {Method: http.MethodPost, Path: Game2048RedemptionsRoutePath},
+	Game2048GameHistoryRouteName:   {Method: http.MethodPost, Path: Game2048GameHistoryRoutePath},
 	// eth
 	EthereumRouteName: {Method: http.MethodPost, Path: EthereumRoutePath},
 	// admin
@@ -422,6 +425,7 @@ func createRouter(s *Server) *httprouter.Router {
 		Game2048ShopConfigRouteName:    s.Game2048ShopConfig,
 		Game2048RedeemPreviewRouteName: s.Game2048RedeemPreview,
 		Game2048RedemptionsRouteName:   s.Game2048Redemptions,
+		Game2048GameHistoryRouteName:   s.Game2048GameHistory,
 		EthereumRouteName:              s.EthereumHandler,
 		SubscribeRCInfoName:            s.WebSocket,
 	}

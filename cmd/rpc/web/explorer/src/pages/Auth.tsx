@@ -167,33 +167,24 @@ function AuthPage() {
     }
   }
 
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
+
   async function handleLogIn() {
-    console.log('=== handleLogIn CALLED ===')
-    console.log('selectedWallet:', selectedWallet)
-    console.log('loginPassword length:', loginPassword?.length)
-    
     if (!selectedWallet) {
-      console.log('ERROR: No wallet selected')
       toast.error('Choose a wallet first.')
       return
     }
     if (!loginPassword) {
-      console.log('ERROR: No password entered')
       toast.error('Enter the wallet password first.')
       return
     }
 
-    console.log('=== Starting password verification ===')
     // Verify the password before storing it
     try {
-      setIsLoading(true)
-      console.log('Creating game client...')
+      setIsLoggingIn(true)
       const client = await createGame2048Client()
-      console.log('Client created, mode:', client.status.mode)
       
       if (client.status.mode === 'rpc') {
-        console.log('=== MODE IS RPC - Will verify password ===')
-        console.log('Verifying password for:', selectedWallet.address)
         // Verify the password with the backend
         const verifyResponse = await fetch(`${adminRPCURL}/v1/admin/wallet-verify`, {
           method: 'POST',
@@ -204,21 +195,13 @@ function AuthPage() {
           }),
         })
         
-        console.log('Verification response status:', verifyResponse.status)
-        
         if (!verifyResponse.ok) {
           const errorData = await verifyResponse.json().catch(() => ({}))
           console.error('Password verification failed:', errorData)
           throw new Error('Incorrect password')
         }
-        
-        console.log('Password verification succeeded')
-      } else {
-        console.log('=== MODE IS NOT RPC - Skipping verification ===')
-        console.log('Current mode:', client.status.mode)
       }
       
-      console.log('=== Calling syncSession ===')
       syncSession(selectedWallet, loginPassword)
       toast.success(`${selectedWallet.nickname} is now signed in on this device.`)
       navigate('/')
@@ -226,7 +209,7 @@ function AuthPage() {
       console.error(error)
       toast.error('Incorrect password. Please try again.')
     } finally {
-      setIsLoading(false)
+      setIsLoggingIn(false)
     }
   }
 
@@ -473,24 +456,37 @@ function AuthPage() {
                 </div>
               )}
 
-              <FieldCard label="Wallet password">
-                <input
-                  type="password"
-                  value={loginPassword}
-                  onChange={(event) => setLoginPassword(event.target.value)}
-                  placeholder="Enter password"
-                  disabled={!selectedAddress}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff] disabled:cursor-not-allowed disabled:opacity-60"
-                />
-              </FieldCard>
+              <form onSubmit={(e) => { e.preventDefault(); handleLogIn(); }}>
+                <FieldCard label="Wallet password">
+                  <input
+                    type="password"
+                    value={loginPassword}
+                    onChange={(event) => setLoginPassword(event.target.value)}
+                    placeholder="Enter password"
+                    disabled={!selectedAddress}
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff] disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                </FieldCard>
 
-              <button
-                onClick={handleLogIn}
-                disabled={status.mode !== 'rpc' || !selectedAddress || !loginPassword || isLoading}
-                className="w-full rounded-2xl bg-[#53a6ff] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#64b0ff] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isLoading ? 'Logging In...' : 'Log In'}
-              </button>
+                <button
+                  type="submit"
+                  disabled={status.mode !== 'rpc' || !selectedAddress || !loginPassword || isLoggingIn}
+                  className="mt-4 w-full rounded-2xl bg-[#53a6ff] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#64b0ff] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isLoggingIn ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
+                      />
+                      Unlocking...
+                    </span>
+                  ) : (
+                    'Log In'
+                  )}
+                </button>
+              </form>
             </div>
           </section>
 
@@ -504,7 +500,7 @@ function AuthPage() {
               Create a wallet in the node keystore and sign in automatically.
             </p>
 
-            <div className="mt-5 space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); handleRegister(); }} className="mt-5 space-y-4">
               <FieldCard label="Nickname">
                 <input
                   value={nickname}
@@ -541,7 +537,7 @@ function AuthPage() {
               ) : null}
 
               <button
-                onClick={handleRegister}
+                type="submit"
                 disabled={
                   status.mode !== 'rpc' ||
                   isCreating ||
@@ -551,9 +547,20 @@ function AuthPage() {
                 }
                 className="w-full rounded-2xl bg-[#f0cf52] px-5 py-3 text-sm font-semibold text-[#2f2418] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isCreating ? 'Creating Wallet...' : 'Create Wallet'}
+                {isCreating ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="h-4 w-4 rounded-full border-2 border-[#2f2418]/30 border-t-[#2f2418]"
+                    />
+                    Creating...
+                  </span>
+                ) : (
+                  'Create Wallet'
+                )}
               </button>
-            </div>
+            </form>
           </section>
         </div>
 
@@ -565,13 +572,15 @@ function AuthPage() {
             <p className="mt-2 text-sm leading-6 text-slate-400">
               Restore an encrypted wallet backup. You'll still need the original password to unlock it.
             </p>
-            <input
-              value={importNickname}
-              onChange={(event) => setImportNickname(event.target.value)}
-              placeholder="Optional new nickname"
-              className="mt-4 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]"
-            />
-            <label className="mt-3 flex cursor-pointer items-center justify-center rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-black/50 hover:text-white">
+            <form onSubmit={(e) => { e.preventDefault(); }}>
+              <input
+                value={importNickname}
+                onChange={(event) => setImportNickname(event.target.value)}
+                placeholder="Optional new nickname"
+                className="mt-4 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]"
+              />
+            </form>
+            <label className="mt-3 flex cursor-pointer items-center justify-center rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-black/50 hover:text-white disabled:cursor-not-allowed disabled:opacity-50">
               <input
                 type="file"
                 accept="application/json,.json"
@@ -579,7 +588,18 @@ function AuthPage() {
                 disabled={isImporting}
                 className="sr-only"
               />
-              {isImporting ? 'Importing...' : 'Choose Backup File'}
+              {isImporting ? (
+                <span className="flex items-center gap-2">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    className="h-4 w-4 rounded-full border-2 border-slate-400/30 border-t-slate-400"
+                  />
+                  Importing...
+                </span>
+              ) : (
+                'Choose Backup File'
+              )}
             </label>
           </section>
 
@@ -703,7 +723,18 @@ function AuthPage() {
                     disabled={isDeleting || !deletePassword}
                     className="flex-1 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {isDeleting ? 'Deleting...' : 'Delete Wallet'}
+                    {isDeleting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                          className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
+                        />
+                        Deleting...
+                      </span>
+                    ) : (
+                      'Delete Wallet'
+                    )}
                   </button>
                 </div>
               </div>

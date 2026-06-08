@@ -253,8 +253,15 @@ test('classic submit applies same-day login bonus only after a day-7 claim and b
         maxMoves: 0,
         stopReason: 1
     });
-    const basePoints = Math.floor(replay.score / 32);
+    const basePoints = Math.floor(replay.score / 24);
     const bonusPoints = Math.floor(basePoints * 0.2);
+    
+    console.log('Test debug:', {
+        score: replay.score,
+        basePoints,
+        bonusPoints,
+        expectedTotal: basePoints + bonusPoints
+    });
 
     const plugin = new FakePlugin();
     const contract = new Contract(
@@ -328,7 +335,8 @@ test('classic submit applies same-day login bonus only after a day-7 claim and b
     assert.ok(ledgerBytes);
     const [ledgerRaw] = decodeGame2048State('ClassicPointsDailyLedger', ledgerBytes as Uint8Array);
     const ledger = ledgerRaw as { earnedPoints: number | Long };
-    assert.equal(toNumber(ledger.earnedPoints), basePoints + bonusPoints);
+    // Ledger tracks only base points against cap (bonus is added on top, not counted against cap)
+    assert.equal(toNumber(ledger.earnedPoints), basePoints);
 });
 
 test('claimDailyLoginReward unlocks the same-day bonus on day 7', async () => {
@@ -381,6 +389,67 @@ test('claimDailyLoginReward unlocks the same-day bonus on day 7', async () => {
     const claim = claimRaw as { bonusBps: number | Long; streakDay: number | Long };
     assert.equal(toNumber(claim.streakDay), 7);
     assert.equal(toNumber(claim.bonusBps), 2000);
+});
+
+test('claimDailyLoginReward resets streak from 7 to 1 on day 8 (cycle reset)', async () => {
+    const playerAddress = addressOf(0xa5);
+    const plugin = new FakePlugin();
+    const contract = new Contract(
+        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        {},
+        plugin as never,
+        Long.ZERO
+    );
+
+    // Setup: Player at Day 7 with bonus active
+    plugin.state.set(
+        keyHex(KeyForPlayerStats(playerAddress)),
+        encodeGame2048State('PlayerStats', {
+            playerAddress,
+            classicPointsBalance: 245,
+            classicPointsEarned: 245,
+            loginStreak: 7,
+            lastLoginClaimUtcDate: '2026-04-26',
+            classicPointsBonusUtcDate: '2026-04-26'
+        })
+    );
+
+    // Action: Claim Day 8 (next consecutive day)
+    const result = await ContractAsync.DeliverMessageClaimDailyLoginReward(
+        contract,
+        { playerAddress },
+        { time: Date.parse('2026-04-27T01:00:00.000Z') * 1000 }
+    );
+
+    assert.equal(result.error, undefined);
+
+    // Verify: Streak resets to 1, not capped at 7
+    const statsBytes = plugin.state.get(keyHex(KeyForPlayerStats(playerAddress)));
+    assert.ok(statsBytes);
+    const [statsRaw] = decodeGame2048State('PlayerStats', statsBytes as Uint8Array);
+    const stats = statsRaw as {
+        classicPointsBalance: number | Long;
+        classicPointsEarned: number | Long;
+        loginStreak: number | Long;
+        lastLoginClaimUtcDate: string;
+        classicPointsBonusUtcDate: string;
+    };
+    
+    // Key assertions: Streak cycles back to 1
+    assert.equal(toNumber(stats.loginStreak), 1, 'Streak should reset to 1 after Day 7');
+    assert.equal(toNumber(stats.classicPointsBalance), 265, 'Should earn Day 1 reward (20 points)');
+    assert.equal(toNumber(stats.classicPointsEarned), 265, 'Total earned should increase by 20');
+    assert.equal(stats.lastLoginClaimUtcDate, '2026-04-27', 'Should update last claim date');
+    assert.equal(stats.classicPointsBonusUtcDate, '', 'Bonus should be cleared (no longer Day 7)');
+
+    // Verify claim record
+    const claimBytes = plugin.state.get(keyHex(KeyForDailyLoginClaim('2026-04-27', playerAddress)));
+    assert.ok(claimBytes);
+    const [claimRaw] = decodeGame2048State('DailyLoginClaim', claimBytes as Uint8Array);
+    const claim = claimRaw as { bonusBps: number | Long; streakDay: number | Long; rewardPoints: number | Long };
+    assert.equal(toNumber(claim.streakDay), 1, 'Claim should record streak day as 1');
+    assert.equal(toNumber(claim.rewardPoints), 20, 'Claim should record Day 1 reward');
+    assert.equal(toNumber(claim.bonusBps), 0, 'No bonus on Day 1');
 });
 
 test('startClassicGame deducts fee, creates session, and increments classic starts', async () => {
@@ -660,8 +729,8 @@ test('submitGameResult finalizes an active session and writes a leaderboard entr
         Long.isLong(stats.totalScore) ? stats.totalScore.toNumber() : stats.totalScore,
         replay.score
     );
-    assert.equal(toNumber(stats.classicPointsBalance), Math.floor(replay.score / 32));
-    assert.equal(toNumber(stats.classicPointsEarned), Math.floor(replay.score / 32));
+    assert.equal(toNumber(stats.classicPointsBalance), Math.floor(replay.score / 24));
+    assert.equal(toNumber(stats.classicPointsEarned), Math.floor(replay.score / 24));
 
     const wroteLeaderboard = plugin.lastWriteSets.some((entry) => !keyHex(entry.key).includes(keyHex(KeyForGameSession(gameId))));
     assert.ok(wroteLeaderboard);
@@ -860,7 +929,7 @@ test('submitGameResult respects the daily classic-points cap without rejecting t
         classicPointsEarned: number | Long;
     };
     const expectedEarnedPoints = Math.min(
-        replay.score < 64 ? 0 : Math.floor(replay.score / 32),
+        replay.score < 64 ? 0 : Math.floor(replay.score / 24),
         5
     );
     assert.equal(toNumber(stats.classicPointsBalance), 100 + expectedEarnedPoints);

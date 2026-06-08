@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
-import MetricCard from '../components/app/MetricCard'
+import { Trophy, Target, TrendingUp, Award, Wallet, Copy, Settings as SettingsIcon, ArrowRight, Gamepad2 } from 'lucide-react'
 import { createGame2048Client } from '../lib/chain2048'
 import { shortAddress } from '../lib/address'
-import { getUtcDateString } from '../lib/game2048'
-import type { ClaimableRewardsSummary, DailyPrizePool, LeaderboardEntry, PlayerStats } from '../lib/mockChain2048'
+import { formatCNPY } from '../lib/utils'
+import type { ClaimableRewardsSummary, LeaderboardEntry, PlayerStats, RecentRun } from '../lib/mockChain2048'
 import { fetchRpcKeystoreAccounts, type RpcKeystoreAccount } from '../lib/rpcChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
 
+// Profile Page - Achievement Focused Design
 function ProfilePage() {
   const [wallets, setWallets] = useState<RpcKeystoreAccount[]>([])
   const [selectedAddress, setSelectedAddress] = useState('')
@@ -21,9 +22,9 @@ function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [loginPassword, setLoginPassword] = useState('')
   const [storedSessionAddress, setStoredSessionAddress] = useState('')
-  const [dailyPool, setDailyPool] = useState<DailyPrizePool | null>(null)
   const [claimableRewards, setClaimableRewards] = useState<ClaimableRewardsSummary | null>(null)
   const [isClaiming, setIsClaiming] = useState(false)
+  const [gameHistory, setGameHistory] = useState<RecentRun[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -52,23 +53,28 @@ function ProfilePage() {
       setLoginPassword(storedAuth?.address === initialAddress ? storedAuth.password : '')
 
       const nextLeaderboards = await client.getLeaderboards()
-      const nextDailyPool = await client.getDailyPrizePool(getUtcDateString())
       if (cancelled) {
         return
       }
       setLeaderboards(nextLeaderboards)
-      setDailyPool(nextDailyPool)
 
       if (initialAddress) {
-        const [nextPlayer, nextRewards] = await Promise.all([
+        const [nextPlayer, nextRewards, nextHistory] = await Promise.all([
           client.getPlayer(initialAddress),
           client.getClaimableRewards(initialAddress),
+          client.getRecentRuns(initialAddress),
         ])
         if (cancelled) {
           return
         }
+        console.log('📊 Game History Loaded:', {
+          address: initialAddress,
+          historyCount: nextHistory.length,
+          games: nextHistory,
+        })
         setPlayer(nextPlayer)
         setClaimableRewards(nextRewards)
+        setGameHistory(nextHistory)
       }
 
       setIsLoading(false)
@@ -91,46 +97,52 @@ function ProfilePage() {
       return
     }
 
+    // 🔒 RACE CONDITION FIX: Skip refresh if claim is in progress
+    // This prevents useEffect from overwriting fresh state that handleClaimReward just set
+    if (isClaiming) {
+      console.log('🔒 [useEffect selectedAddress] Skipping refresh - claim in progress')
+      return
+    }
+
     let cancelled = false
 
     async function refreshSelectedProfile() {
+      console.log('🔄 [useEffect selectedAddress] Triggered refresh for:', selectedAddress)
       const client = await createGame2048Client()
-      const [nextPlayer, nextLeaderboards, nextRewards, nextDailyPool] = await Promise.all([
+      const [nextPlayer, nextLeaderboards, nextRewards, nextHistory] = await Promise.all([
         client.getPlayer(selectedAddress),
         client.getLeaderboards(),
         client.getClaimableRewards(selectedAddress),
-        client.getDailyPrizePool(getUtcDateString()),
+        client.getRecentRuns(selectedAddress),
       ])
 
       if (cancelled) {
+        console.log('⚠️ [useEffect selectedAddress] Refresh cancelled, NOT updating state')
         return
       }
 
+      console.log('✅ [useEffect selectedAddress] Applying state updates:', {
+        balance: nextPlayer.balance,
+        unclaimedCount: nextRewards.unclaimedCount,
+      })
       setPlayer(nextPlayer)
       setLeaderboards(nextLeaderboards)
       setClaimableRewards(nextRewards)
-      setDailyPool(nextDailyPool)
+      setGameHistory(nextHistory)
     }
 
     refreshSelectedProfile().catch((error) => {
-      console.error(error)
+      console.error('[useEffect selectedAddress] Error:', error)
       toast.error('Unable to refresh this player profile.')
     })
 
     return () => {
+      console.log('🧹 [useEffect selectedAddress] Cleanup - marking cancelled')
       cancelled = true
     }
-  }, [selectedAddress])
+  }, [selectedAddress, isClaiming])
 
   const selectedWallet = wallets.find((wallet) => wallet.address === selectedAddress) ?? null
-  const dailyEntry = useMemo(
-    () => leaderboards.daily.find((entry) => entry.address === selectedAddress) ?? null,
-    [leaderboards.daily, selectedAddress],
-  )
-  const classicEntry = useMemo(
-    () => leaderboards.classic.find((entry) => entry.address === selectedAddress) ?? null,
-    [leaderboards.classic, selectedAddress],
-  )
 
   useEffect(() => {
     const storedAuth = loadStoredWalletAuth()
@@ -152,27 +164,92 @@ function ProfilePage() {
       return
     }
 
+    // Find the reward being claimed to get the amount
+    const rewardToClaim = claimableRewards?.rewards.find(r => r.utcDate === utcDate && !r.claimed)
+    const rewardAmount = rewardToClaim?.rewardAmount ?? 0
+
+    console.log('=== PROFILE REWARD CLAIM DIAGNOSTIC START ===')
+    console.log('Timestamp:', new Date().toISOString())
+    console.log('UTC Date:', utcDate)
+    console.log('Selected Address:', selectedAddress)
+    console.log('Reward Amount:', rewardAmount)
+    
+    const initialBalance = player?.balance ?? 0
+    const initialUnclaimedCount = claimableRewards?.unclaimedCount ?? 0
+    
+    console.log('📊 Initial State Snapshot:')
+    console.log('  - Balance:', initialBalance)
+    console.log('  - Unclaimed Count:', initialUnclaimedCount)
+    console.log('  - Reward Amount:', rewardAmount)
+
     try {
       setIsClaiming(true)
+      console.log('✅ Step 1: Set isClaiming = true')
+      
+      console.log('⚡ Step 2: Creating client...')
       const client = await createGame2048Client()
+      console.log('✅ Step 2 Complete: Client created, mode =', client.status.mode)
+      
+      console.log('⚡ Step 3: Calling claimDailyReward()...')
+      const claimStartTime = performance.now()
       const result = await client.claimDailyReward({
         address: selectedAddress,
         password: loginPassword,
         utcDate,
       })
-      const [nextPlayer, nextRewards, nextDailyPool] = await Promise.all([
-        client.getPlayer(selectedAddress),
-        client.getClaimableRewards(selectedAddress),
-        client.getDailyPrizePool(getUtcDateString()),
-      ])
-      setPlayer(nextPlayer)
-      setClaimableRewards(nextRewards)
-      setDailyPool(nextDailyPool)
-      toast.success(result.txHash ? `Reward claim submitted. ${result.txStage ?? 'submitted'}.` : 'Reward claim submitted.')
+      const claimEndTime = performance.now()
+      console.log(`✅ Step 3 Complete: Claim succeeded in ${(claimEndTime - claimStartTime).toFixed(2)}ms`)
+      console.log('  - TX Hash:', result.txHash)
+      console.log('  - TX Stage:', result.txStage)
+      console.log('  - Submitted:', result.submitted)
+      
+      // Apply optimistic update immediately if transaction was submitted successfully
+      const txSubmitted = result.submitted
+      
+      if (txSubmitted) {
+        console.log('✅ Transaction submitted successfully, applying optimistic update (stage:', result.txStage, ')')
+        
+        // Optimistically update the UI based on transaction result
+        if (player && claimableRewards && rewardAmount > 0) {
+          const optimisticPlayer = {
+            ...player,
+            balance: player.balance + rewardAmount,
+          }
+          
+          const optimisticRewards = {
+            ...claimableRewards,
+            unclaimedCount: Math.max(0, claimableRewards.unclaimedCount - 1),
+            totalClaimable: Math.max(0, claimableRewards.totalClaimable - rewardAmount),
+            rewards: claimableRewards.rewards.map(r =>
+              r.utcDate === utcDate ? { ...r, claimed: true, claimTxHash: result.txHash } : r
+            ),
+          }
+          
+          console.log('📊 Optimistic State Update:')
+          console.log('  - Old balance:', player.balance)
+          console.log('  - New balance:', optimisticPlayer.balance)
+          console.log('  - Old unclaimedCount:', claimableRewards.unclaimedCount)
+          console.log('  - New unclaimedCount:', optimisticRewards.unclaimedCount)
+          console.log('  - Reward Amount Added:', rewardAmount)
+          
+          setPlayer(optimisticPlayer)
+          setClaimableRewards(optimisticRewards)
+        }
+        
+        toast.success(result.txHash ? `Reward claimed! ${result.txStage ? `(${result.txStage})` : ''}` : 'Reward claim submitted.')
+      } else {
+        console.log('⚠️ Transaction submission failed, skipping optimistic update')
+        toast.error('Failed to submit reward claim transaction.')
+      }
+      
+      console.log('=== PROFILE REWARD CLAIM DIAGNOSTIC END ===')
     } catch (error) {
-      console.error(error)
+      console.error('❌ ERROR at some step in claim flow')
+      console.error('Error object:', error)
       toast.error(error instanceof Error ? error.message : 'Unable to claim daily reward.')
+      console.log('=== PROFILE REWARD CLAIM DIAGNOSTIC END (ERROR) ===')
     } finally {
+      console.log('🏁 Finally block: Setting isClaiming = false')
       setIsClaiming(false)
     }
   }
@@ -198,203 +275,369 @@ function ProfilePage() {
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8"
     >
+      {/* Player Identity Hero */}
       <section className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(83,166,255,0.15),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(240,207,82,0.12),_transparent_22%),linear-gradient(160deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.28)] sm:p-8">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-[#f6df84]">Player Profile</p>
-            <h1 className="mt-3 font-['Georgia'] text-4xl leading-none text-white sm:text-5xl">
-              {selectedWallet ? selectedWallet.nickname : 'Own your wallet, track your run history.'}
-            </h1>
-            {selectedWallet ? (
-              <button
-                onClick={handleCopyAddress}
-                className="mt-4 inline-flex max-w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-left text-sm text-slate-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
-              >
-                <span className="font-mono">{selectedWallet.address}</span>
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f6df84]">Copy</span>
-              </button>
-            ) : null}
-            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-              {selectedWallet
-                ? `Track how ${selectedWallet.nickname} is performing across points, rewards, leaderboards, and wallet activity on this device.`
-                : 'Create or import a wallet, keep it signed in on this device, and track how that account is performing across points, rewards, and leaderboard runs.'}
-            </p>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Snapshot</p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <MetricCard label="Daily rank" value={formatPlacement(leaderboards.daily, selectedAddress)} />
-              <MetricCard label="Classic rank" value={formatPlacement(leaderboards.classic, selectedAddress)} />
-              <MetricCard label="Balance" value={`${player?.balance ?? 0} PROOF`} />
-              <MetricCard label="Spendable points" value={`${player?.classicPointsBalance ?? 0}`} />
-            </div>
-            <Link
-              to="/settings"
-              className="mt-4 inline-flex rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
-            >
-              Open Settings
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <div className="mt-6">
-        <section className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <ProfilePanel
-              title="Claimable Rewards"
-              description="Daily rewards this wallet can claim. Claim cards use the reward day shown on each card."
-              rows={[
-                ['Total claimable', `${claimableRewards?.totalClaimable ?? 0} PROOF`],
-                ['Unclaimed rewards', `${claimableRewards?.unclaimedCount ?? 0}`],
-                ['Reward days', `${claimableRewards?.rewards.length ?? 0}`],
-              ]}
-            />
-
-            <ProfilePanel
-              title="Current UTC Daily Pool"
-              description="Live view of today’s reward pot. This is separate from older rewards still waiting to be claimed."
-              rows={[
-                ['UTC date', dailyPool?.utcDate ?? getUtcDateString()],
-                ['Entries', `${dailyPool?.entryCount ?? 0}`],
-                ['Gross fees', `${dailyPool?.grossFees ?? 0}`],
-                ['Reward pool', `${dailyPool?.rewardPool ?? 0} PROOF`],
-              ]}
-            />
-          </div>
-
-          <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Rewards</p>
-            <div className="mt-4 space-y-3">
-              {claimableRewards?.rewards.length ? (
-                claimableRewards.rewards.map((reward) => (
-                  <div
-                    key={`${reward.utcDate}-${reward.gameId}`}
-                    className="rounded-[1rem] border border-white/10 bg-slate-950/50 px-4 py-4"
+        {selectedWallet ? (
+          <>
+            {/* Player Header */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#f6df84]">Player</p>
+                <h1 className="mt-2 font-['Georgia'] text-5xl leading-tight text-white">
+                  {selectedWallet.nickname}
+                </h1>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={handleCopyAddress}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400 transition hover:border-white/20 hover:bg-white/10 hover:text-slate-300"
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-semibold text-white">
-                          {reward.utcDate} • Rank #{reward.rank}
-                        </p>
-                        <p className="mt-1 text-sm leading-6 text-slate-400">
-                          Score {reward.score} • Tile {reward.maxTile} • {reward.moveCount} moves
-                        </p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
-                          Reward day {reward.utcDate}
-                        </p>
-                        <p className="mt-1 text-sm font-semibold text-[#f6df84]">
-                          {reward.rewardAmount} PROOF
-                        </p>
-                      </div>
-                      {reward.claimed ? (
-                        <div className="rounded-full border border-[#53d7a6]/30 bg-[#53d7a6]/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#c7ffe9]">
-                          Claimed
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => handleClaimReward(reward.utcDate)}
-                          disabled={isClaiming || !storedSessionAddress}
-                          className="rounded-full bg-[#53a6ff] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#64b0ff] disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          Claim
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))
-                ) : (
-                  <div className="rounded-[1rem] border border-dashed border-white/10 bg-slate-950/30 px-4 py-4 text-sm text-slate-400">
-                    No claimable daily rewards for this wallet yet.
-                  </div>
-                )}
+                    <span className="font-mono">{shortAddress(selectedWallet.address)}</span>
+                    <Copy className="h-3 w-3" />
+                  </button>
+                  <Link
+                    to="/settings"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:border-white/20 hover:bg-white/10 hover:text-slate-300"
+                  >
+                    <SettingsIcon className="h-3 w-3" />
+                    <span>Settings</span>
+                  </Link>
+                </div>
               </div>
             </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            <ProfilePanel
-              title="Run Progress"
-              description="Core performance across daily and classic runs."
-              rows={[
-                ['Games completed', `${player?.gamesCompleted ?? 0}`],
-                ['Daily games started', `${player?.dailyGamesStarted ?? 0}`],
-                ['Classic games started', `${player?.classicGamesStarted ?? 0}`],
-                ['Win rate', formatPercent(player)],
-              ]}
-            />
+            {/* Key Achievements */}
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {/* Best Score */}
+              <div className="rounded-xl border border-white/10 bg-black/30 p-5">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-[#f6df84]" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Best Score</p>
+                </div>
+                <p className="mt-3 font-['Georgia'] text-4xl font-bold text-white">
+                  {Math.max(player?.bestDailyScore ?? 0, player?.bestClassicScore ?? 0).toLocaleString()}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {player?.bestDailyScore && player.bestDailyScore >= (player?.bestClassicScore ?? 0)
+                    ? 'Daily Challenge'
+                    : 'Classic Mode'}
+                </p>
+              </div>
 
-            <ProfilePanel
-              title="Point Economy"
-              description="Spendable and lifetime point totals for this wallet."
-              rows={[
-                ['Spendable points', `${player?.classicPointsBalance ?? 0}`],
-                ['Lifetime points earned', `${player?.classicPointsEarned ?? 0}`],
-                ['Balance', `${player?.balance ?? 0} PROOF`],
-                ['Total score', `${player?.totalScore ?? 0}`],
-              ]}
-            />
+              {/* Best Tile */}
+              <div className="rounded-xl border border-white/10 bg-black/30 p-5">
+                <div className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-[#53a6ff]" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Best Tile</p>
+                </div>
+                <p className="mt-3 font-['Georgia'] text-4xl font-bold text-white">
+                  {player?.bestTile ?? 0}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">Highest achieved</p>
+              </div>
 
-            <ProfilePanel
-              title="Best Runs"
-              description="Highest scores, placement, and tile milestones."
-              rows={[
-                ['Best daily', `${player?.bestDailyScore ?? 0}`],
-                ['Best classic', `${player?.bestClassicScore ?? 0}`],
-                ['Best tile', `${player?.bestTile ?? 0}`],
-                ['Classic live score', classicEntry ? `${classicEntry.score}` : 'Not ranked'],
-              ]}
-            />
+              {/* Current Rank */}
+              <div className="rounded-xl border border-white/10 bg-black/30 p-5">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-[#53d7a6]" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Current Rank</p>
+                </div>
+                {(() => {
+                  const rankData = formatRank(leaderboards.classic, selectedAddress)
+                  return (
+                    <>
+                      <p className="mt-3 font-['Georgia'] text-4xl font-bold text-white">
+                        {rankData.display}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {rankData.unranked ? (
+                          <Link to="/play" className="text-[#53a6ff] hover:text-[#7eb8ff] transition">
+                            Play to rank
+                          </Link>
+                        ) : (
+                          'Classic leaderboard'
+                        )}
+                      </p>
+                    </>
+                  )
+                })()}
+              </div>
+
+              {/* Balance */}
+              <div className="rounded-xl border border-white/10 bg-black/30 p-5">
+                <div className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-[#7e69ff]" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Balance</p>
+                </div>
+                <p className="mt-3 font-['Georgia'] text-4xl font-bold text-white">
+                  {formatCNPY(player?.balance ?? 0)}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">PROOF tokens</p>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="py-8 text-center">
+            <p className="text-xs uppercase tracking-wider text-[#f6df84]">Player Profile</p>
+            <h1 className="mt-3 font-['Georgia'] text-4xl text-white">No Wallet Selected</h1>
+            <p className="mt-4 text-base text-slate-400">
+              Create or import a wallet to view your profile and track your achievements
+            </p>
+            <Link
+              to="/auth"
+              className="mt-6 inline-flex rounded-2xl bg-gradient-to-r from-[#53a6ff] to-[#7e69ff] px-6 py-3 text-base font-semibold text-white shadow-[0_8px_24px_rgba(83,166,255,0.3)] transition hover:shadow-[0_12px_32px_rgba(83,166,255,0.4)]"
+            >
+              Create Wallet
+            </Link>
           </div>
-        </section>
-      </div>
+        )}
+      </section>
 
-      {isLoading ? (
-        <div className="mt-6 rounded-[1.4rem] border border-white/10 bg-black/20 px-5 py-4 text-sm text-slate-400">
-          Loading profile data...
+      {selectedWallet && (
+        <div className="mt-6 space-y-6">
+          {/* Claimable Rewards - Priority Section */}
+          {claimableRewards && claimableRewards.unclaimedCount > 0 && (
+            <section className="rounded-[1.8rem] border-2 border-[#f6df84]/40 bg-gradient-to-br from-[#f6df84]/10 to-[#f6df84]/5 p-6">
+              <div className="flex items-center gap-3">
+                <Award className="h-6 w-6 text-[#f6df84]" />
+                <div className="flex-1">
+                  <h2 className="text-lg font-bold text-white">Rewards Ready to Claim</h2>
+                  <p className="text-sm text-slate-300">
+                    You earned {claimableRewards.unclaimedCount} reward{claimableRewards.unclaimedCount === 1 ? '' : 's'} • {formatCNPY(claimableRewards.totalClaimable)} PROOF total
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                {claimableRewards.rewards
+                  .filter((r) => !r.claimed)
+                  .map((reward) => (
+                    <div
+                      key={`${reward.utcDate}-${reward.gameId}`}
+                      className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-black/30 px-5 py-4"
+                    >
+                      <div className="flex flex-1 items-center gap-4">
+                        <div className="text-center">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f6df84]/20">
+                            <span className="text-xl font-black text-[#f6df84]">#{reward.rank}</span>
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-baseline gap-2">
+                            <p className="font-['Georgia'] text-3xl font-bold text-[#f6df84]">
+                              {formatCNPY(reward.rewardAmount)}
+                            </p>
+                            <span className="text-sm font-semibold uppercase tracking-wide text-[#f6df84]/70">
+                              PROOF
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs text-slate-400">
+                            {reward.utcDate} • Score {reward.score.toLocaleString()} • Tile {reward.maxTile}
+                            {/* Diagnostic: raw={reward.rewardAmount} */}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleClaimReward(reward.utcDate)}
+                        disabled={isClaiming || !storedSessionAddress}
+                        className="shrink-0 rounded-xl bg-gradient-to-r from-[#f6df84] to-[#d4af37] px-6 py-3 text-sm font-bold text-[#2f2418] shadow-[0_4px_12px_rgba(246,223,132,0.3)] transition hover:shadow-[0_6px_16px_rgba(246,223,132,0.4)] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+                      >
+                        {isClaiming ? (
+                          <span className="flex items-center gap-2">
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                              className="h-4 w-4 rounded-full border-2 border-[#2f2418]/30 border-t-[#2f2418]"
+                            />
+                            Claiming...
+                          </span>
+                        ) : (
+                          'Claim Reward'
+                        )}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </section>
+          )}
+
+          {/* Progress & Stats */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Game Progress */}
+            <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-[#53a6ff]" />
+                <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Game Progress</h2>
+              </div>
+              <div className="mt-5 space-y-3">
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
+                  <span className="text-sm text-slate-400">Games Completed</span>
+                  <span className="text-lg font-bold text-white">{player?.gamesCompleted ?? 0}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
+                  <span className="text-sm text-slate-400">Win Rate</span>
+                  <span className="text-lg font-bold text-white">{formatPercent(player)}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
+                  <span className="text-sm text-slate-400">Total Score</span>
+                  <span className="text-lg font-bold text-white">{(player?.totalScore ?? 0).toLocaleString()}</span>
+                </div>
+              </div>
+            </section>
+
+            {/* Classic Points */}
+            <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-[#7e69ff]" />
+                <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Classic Points</h2>
+              </div>
+              <div className="mt-5 space-y-3">
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
+                  <span className="text-sm text-slate-400">Spendable</span>
+                  <span className="text-lg font-bold text-white">{player?.classicPointsBalance ?? 0}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
+                  <span className="text-sm text-slate-400">Lifetime Earned</span>
+                  <span className="text-lg font-bold text-white">{player?.classicPointsEarned ?? 0}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
+                  <span className="text-sm text-slate-400">Login Streak</span>
+                  <span className="text-lg font-bold text-white">
+                    {player?.loginStreak ?? 0} {(player?.loginStreak ?? 0) === 1 ? 'day' : 'days'}
+                  </span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* Claimed Rewards History */}
+          {claimableRewards && claimableRewards.rewards.some((r) => r.claimed) && (
+            <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Claimed Rewards</h2>
+              <p className="mt-1 text-xs text-slate-400">Your reward history</p>
+              <div className="mt-5 space-y-2">
+                {claimableRewards.rewards
+                  .filter((r) => r.claimed)
+                  .map((reward) => (
+                    reward.claimTxHash && reward.claimTxHash.length > 0 ? (
+                      <Link
+                        key={`${reward.utcDate}-${reward.gameId}`}
+                        to={`/transaction/${reward.claimTxHash}`}
+                        className="group flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 transition hover:border-[#53a6ff]/40 hover:bg-[#53a6ff]/5"
+                      >
+                        <div>
+                          <p className="text-sm font-semibold text-white group-hover:text-[#9fd0ff]">{reward.utcDate} • Rank #{reward.rank}</p>
+                          <p className="text-xs text-slate-500">
+                            Score {reward.score.toLocaleString()} • {formatCNPY(reward.rewardAmount)} PROOF
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
+                            Claimed
+                          </span>
+                          <ArrowRight className="h-4 w-4 text-slate-500 transition group-hover:text-[#53a6ff]" />
+                        </div>
+                      </Link>
+                    ) : (
+                      <div
+                        key={`${reward.utcDate}-${reward.gameId}`}
+                        className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3"
+                      >
+                        <div>
+                          <p className="text-sm font-semibold text-white">{reward.utcDate} • Rank #{reward.rank}</p>
+                          <p className="text-xs text-slate-500">
+                            Score {reward.score.toLocaleString()} • {formatCNPY(reward.rewardAmount)} PROOF
+                          </p>
+                        </div>
+                        <span className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
+                          Claimed
+                        </span>
+                      </div>
+                    )
+                  ))}
+              </div>
+            </section>
+          )}
+
+          {/* Game History */}
+          {gameHistory.length > 0 && (
+            <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Gamepad2 className="h-5 w-5 text-[#7e69ff]" />
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Recent Games</h2>
+                </div>
+                {gameHistory.length > 5 && (
+                  <Link
+                    to={`/game-history/${selectedAddress}`}
+                    className="text-sm font-semibold text-[#53a6ff] transition hover:text-[#7eb8ff]"
+                  >
+                    View Full History →
+                  </Link>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-slate-400">
+                {gameHistory.length > 5 ? 'Last 5 games' : `${gameHistory.length} game${gameHistory.length === 1 ? '' : 's'} played`}
+              </p>
+              <div className="mt-5 space-y-2">
+                {gameHistory.slice(0, 5).map((game) => (
+                  <div
+                    key={`${game.gameId}-${game.endedAt}`}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          game.mode === 'daily' 
+                            ? 'bg-[#f6df84]/20 text-[#f6df84]' 
+                            : 'bg-[#7e69ff]/20 text-[#9fd0ff]'
+                        }`}>
+                          {game.mode === 'daily' ? 'Daily' : 'Classic'}
+                        </span>
+                        <p className="text-sm font-semibold text-white">
+                          Score: {game.score.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                        <span>Tile: {game.maxTile}</span>
+                        <span>•</span>
+                        <span>{game.moveCount} moves</span>
+                        <span>•</span>
+                        <span>{formatStopReason(game.stopReason)}</span>
+                        <span>•</span>
+                        <span>{formatGameTime(game.endedAt)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
-      ) : null}
+      )}
+
+      {isLoading && (
+        <div className="mt-6 rounded-[1.6rem] border border-white/10 bg-black/20 px-6 py-6 text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            className="mx-auto h-6 w-6 rounded-full border-2 border-slate-700 border-t-slate-400"
+          />
+          <p className="mt-3 text-sm text-slate-400">Loading profile...</p>
+        </div>
+      )}
     </motion.div>
   )
 }
 
-function ProfilePanel({
-  title,
-  description,
-  rows,
-  footer,
-}: {
-  title: string
-  description: string
-  rows: Array<[string, string]>
-  footer?: ReactNode
-}) {
-  return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
-      <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
-      <div className="mt-4 space-y-3">
-        {rows.map(([label, value]) => (
-          <div
-            key={label}
-            className="flex items-center justify-between gap-4 rounded-[1rem] border border-white/10 bg-slate-950/50 px-4 py-3"
-          >
-            <p className="text-sm text-slate-400">{label}</p>
-            <p className="text-sm font-semibold text-white">{value}</p>
-          </div>
-        ))}
-      </div>
-      {footer ? <div className="mt-4">{footer}</div> : null}
-    </div>
-  )
-}
-
-function formatPlacement(entries: LeaderboardEntry[], address: string): string {
+function formatRank(entries: LeaderboardEntry[], address: string): { display: string; unranked: boolean } {
   if (!address) {
-    return 'No wallet selected'
+    return { display: '—', unranked: false }
   }
   const index = entries.findIndex((entry) => entry.address === address)
-  return index === -1 ? 'Not ranked' : `#${index + 1}`
+  if (index === -1) {
+    return { display: '—', unranked: true }
+  }
+  return { display: `#${index + 1}`, unranked: false }
 }
 
 function formatPercent(player: PlayerStats | null): string {
@@ -402,6 +645,39 @@ function formatPercent(player: PlayerStats | null): string {
     return '0%'
   }
   return `${Math.round((player.wins / player.gamesCompleted) * 100)}%`
+}
+
+function formatStopReason(reason: string): string {
+  switch (reason) {
+    case 'player_stopped':
+      return 'Manually stopped'
+    case 'no_moves':
+      return 'No moves available'
+    case 'max_moves':
+      return 'Move limit reached'
+    default:
+      return reason
+  }
+}
+
+function formatGameTime(endedAt: string): string {
+  try {
+    const date = new Date(endedAt)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / (1000 * 60))
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    
+    return date.toLocaleDateString()
+  } catch {
+    return endedAt
+  }
 }
 
 export default ProfilePage

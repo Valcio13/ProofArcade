@@ -1,5 +1,7 @@
 # 2048 Daily Prize Pool V1
 
+> **Note**: This specification describes the daily competitive prize pool system. For the complete treasury model including fee splits across all buckets (platform, reserve, shop), see `2048-treasury-v1.md`. This document focuses on the daily reward pool accounting and winner payout mechanics.
+
 ## Goal
 
 Turn the daily challenge into a real paid competition:
@@ -13,9 +15,11 @@ This is a V1 spec only. It is intentionally simple and avoids auto-payouts, roll
 
 ## Confirmed Product Rules
 
-- Daily challenge fee:
+- Daily challenge fee split (see `2048-treasury-v1.md` for complete treasury model):
   - `5%` platform fee
-  - `95%` daily reward pool
+  - `80%` daily reward pool
+  - `10%` reserve buffer
+  - `5%` shop funding
 - Finalization:
   - rewards become claimable only after the UTC day ends
 - Ranking / ties:
@@ -26,10 +30,14 @@ This is a V1 spec only. It is intentionally simple and avoids auto-payouts, roll
 - Claims:
   - rewards are claimable, not auto-paid
 - Treasury:
-  - platform fee goes to platform treasury
+  - platform fee (5%) goes to platform treasury
+  - daily reward (80%) goes to daily prize pool
+  - reserve (10%) goes to reserve treasury
+  - shop funding (5%) goes to shop treasury
 - Short boards:
   - if fewer than 10 players join, only existing ranks are paid
-  - leftover undistributed reward stays in treasury
+  - leftover undistributed reward (from unfilled ranks) stays in the daily pool
+  - unallocated portions are tracked in `treasuryLeftover`
 
 ## Proposed Reward Split
 
@@ -47,6 +55,48 @@ Pool split for the top 10:
 - `10th`: `3%`
 
 This totals `100%` of the distributable daily prize pool.
+
+## Treasury Model
+
+### Treasury Integration
+
+This specification works in conjunction with `2048-treasury-v1.md`, which defines the complete treasury model.
+
+**Daily Challenge Contributions**:
+
+Each 25 PROOF entry fee is split across four treasury buckets:
+
+| Bucket | Percentage | Amount per Entry | Purpose |
+|--------|------------|------------------|---------|
+| **Platform** | 5% | 1.25 PROOF | Protocol revenue |
+| **Daily Reward** | 80% | 20.00 PROOF | Competitive prize pool (distributed to winners) |
+| **Reserve** | 10% | 2.50 PROOF | Safety buffer and future flexibility |
+| **Shop** | 5% | 1.25 PROOF | Classic point redemption funding |
+| **TOTAL** | 100% | 25.00 PROOF | |
+
+**Example with 10 Players**:
+
+- Total entry fees: 10 × 25 = **250 PROOF**
+- Platform treasury: 250 × 0.05 = **12.5 PROOF**
+- Daily prize pool: 250 × 0.80 = **200 PROOF** (distributed to winners)
+- Reserve treasury: 250 × 0.10 = **25 PROOF**
+- Shop treasury: 250 × 0.05 = **12.5 PROOF**
+
+**Winner Payouts** (from 200 PROOF pool):
+
+- 1st place (30%): 60 PROOF
+- 2nd place (20%): 40 PROOF
+- 3rd place (12%): 24 PROOF
+- 4th place (9%): 18 PROOF
+- 5th place (7%): 14 PROOF
+- 6th place (6%): 12 PROOF
+- 7th place (5%): 10 PROOF
+- 8th place (4%): 8 PROOF
+- 9th place (4%): 8 PROOF
+- 10th place (3%): 6 PROOF
+- **Total**: 200 PROOF ✅
+
+This model ensures competitive rewards remain substantial (80% of fees) while supporting the broader game economy through reserve buffers and shop funding.
 
 ## Contract-Level Design
 
@@ -78,15 +128,18 @@ Daily finalization should reuse the existing daily leaderboard entries for winne
 Add:
 
 - `bytes platform_treasury_address`
-- `uint64 daily_platform_fee_bps`
+- `uint64 daily_platform_fee_bps` (default: `500` = 5%)
+- `uint64 daily_reward_fee_bps` (default: `8000` = 80%)
+- `uint64 daily_reserve_fee_bps` (default: `1000` = 10%)
+- `uint64 daily_shop_fee_bps` (default: `500` = 5%)
 - `repeated uint64 daily_payout_bps`
 
 Notes:
 
-- `daily_platform_fee_bps` should default to `500`
+- Fee split basis points should sum to `10000` (100%)
 - `daily_payout_bps` should contain:
   - `[3000, 2000, 1200, 900, 700, 600, 500, 400, 400, 300]`
-- payout basis points are applied to the distributable pool, not total fees
+- Payout basis points are applied to the **reward pool** (80% of total fees), not the gross fees
 
 ### 2. `DailyPrizePool`
 
@@ -203,16 +256,20 @@ Current behavior:
 V1 behavior:
 
 1. deduct the full daily fee from the player as before
-2. split daily fee:
-   - `treasuryCut = fee * daily_platform_fee_bps / 10000`
-   - `rewardCut = fee - treasuryCut`
-3. add:
-   - `treasuryCut` to platform treasury account
+2. split daily fee into four buckets:
+   - `platformCut = fee * daily_platform_fee_bps / 10000` (5%)
+   - `rewardCut = fee * daily_reward_fee_bps / 10000` (80%)
+   - `reserveCut = fee * daily_reserve_fee_bps / 10000` (10%)
+   - `shopCut = fee * daily_shop_fee_bps / 10000` (5%)
+3. add to respective pools:
+   - `platformCut` to platform treasury pool
    - `rewardCut` to `DailyPrizePool.rewardPool`
+   - `reserveCut` to reserve treasury pool
+   - `shopCut` to shop treasury pool
 4. increment:
    - `entryCount`
    - `grossFees`
-   - `treasuryFees`
+   - `treasuryFees` (platform + reserve + shop portions)
 5. still create:
    - `GameSession`
    - `DailyAttempt`
@@ -220,8 +277,10 @@ V1 behavior:
 
 Important:
 
-- this should **not** use the generic fee pool for the daily reward portion anymore
-- V1 should route platform fee directly to the treasury account
+- V1 routes fees to **four separate pools** as defined in Treasury V1
+- Platform fee (5%), reserve (10%), and shop (5%) go to their respective treasury pools
+- Only the reward portion (80%) goes to the daily prize pool for winner distribution
+- See `2048-treasury-v1.md` for complete treasury bucket accounting
 
 ### B. `DeliverMessageSubmitGameResult`
 
@@ -317,20 +376,22 @@ GameConfig should define:
 
 - `platformTreasuryAddress`
 
-If missing, contract should reject daily starts until configured, because we do not want silent mis-routing of fees.
+If missing, contract should reject daily starts until configured, to prevent fee mis-routing.
 
-### Treasury Funds
+### Treasury Funds Flow
 
-Treasury receives:
+**Daily Prize Pool receives**:
+- 80% of each daily entry fee (the reward portion)
 
-- daily platform fee (`5%`)
-- leftover undistributed daily reward amount
+**Daily Prize Pool pays**:
+- Claimed daily rewards to winners
 
-Treasury pays:
+**Other Treasury Pools** (see `2048-treasury-v1.md`):
+- Platform pool: receives 5% of daily fees
+- Reserve pool: receives 10% of daily fees
+- Shop pool: receives 5% of daily fees + pays classic redemptions
 
-- claimed daily rewards
-
-V1 uses the treasury account as the payout source for simplicity.
+V1 uses the daily pool's accumulated balance as the payout source for winner claims.
 
 ## Query Endpoints
 
@@ -475,11 +536,18 @@ Not included yet:
 
 ## Recommendation
 
-Implement V1 exactly as above, then only after it is stable:
+Implement V1 exactly as above in conjunction with Treasury V1, then only after both are stable:
 
 - daily login rewards
 - classic points redemption
 - shop
 - crates
 
-The daily prize pool should become the first real economic loop before more reward systems are layered on top.
+The daily prize pool (competitive rewards) and treasury model (fee distribution) together form the first complete economic loop before more reward systems are layered on top.
+
+**Implementation Dependencies**:
+1. Treasury V1 must be implemented first (defines fee splits)
+2. Daily Prize Pool V1 consumes the reward bucket (80% of fees)
+3. Shop redemption consumes the shop bucket (5% of daily + 50% of classic)
+
+See `2048-treasury-v1.md` for treasury implementation details.

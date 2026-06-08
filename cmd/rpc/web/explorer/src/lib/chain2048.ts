@@ -8,6 +8,7 @@ import {
   getRedeemPreview as getMockRedeemPreview,
   getRedemptions as getMockRedemptions,
   getPlayer as getMockPlayer,
+  getRecentRuns as getMockRecentRuns,
   resetMockChain,
   redeemClassicPoints as redeemMockClassicPoints,
   startSession as startMockSession,
@@ -19,6 +20,7 @@ import {
   type DailyPrizePool,
   type LeaderboardEntry,
   type PlayerStats,
+  type RecentRun,
   type RedeemPreview,
   type RedemptionHistory,
   type SessionStart,
@@ -106,6 +108,7 @@ export interface Game2048Client {
   getClaimableRewards(address: string): Promise<ClaimableRewardsSummary>
   getRedeemPreview(address: string, burnPoints: number): Promise<RedeemPreview>
   getRedemptions(address: string): Promise<RedemptionHistory>
+  getRecentRuns(address?: string): Promise<RecentRun[]>
   addFunds(address: string, amount?: number): Promise<FaucetResult>
   startSession(address: string, mode: GameMode, password?: string): Promise<SessionStart>
   submitSession(args: SubmitSessionArgs): Promise<SubmitSessionResult>
@@ -142,6 +145,9 @@ function createMockGame2048Client(): Game2048Client {
     },
     async getRedemptions(address: string) {
       return getMockRedemptions(address)
+    },
+    async getRecentRuns(address?: string) {
+      return getMockRecentRuns(address)
     },
     async addFunds(address: string, amount?: number) {
       return { player: addMockFunds(address, amount) }

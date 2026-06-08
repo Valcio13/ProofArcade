@@ -9,7 +9,8 @@ const HomePage = lazy(() => import('./pages/Home'))
 const ExplorerHomePage = lazy(() => import('./pages/ExplorerHome'))
 const AuthPage = lazy(() => import('./pages/Auth'))
 const ProfilePage = lazy(() => import('./pages/Profile'))
-const DailyLoginPage = lazy(() => import('./pages/DailyLogin'))
+const GameHistoryPage = lazy(() => import('./pages/GameHistory'))
+const CheckInPage = lazy(() => import('./pages/CheckIn'))
 const SettingsPage = lazy(() => import('./pages/Settings'))
 const ShopPage = lazy(() => import('./pages/Shop'))
 const SearchPage = lazy(() => import('./pages/Search'))
@@ -53,7 +54,9 @@ function AnimatedRoutes() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/explorer" element={<ExplorerHomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/daily-login" element={<DailyLoginPage />} />
+          <Route path="/game-history/:address" element={<GameHistoryPage />} />
+          <Route path="/check-in" element={<CheckInPage />} />
+          <Route path="/daily-login" element={<CheckInPage />} /> {/* Legacy redirect */}
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/search" element={<SearchPage />} />

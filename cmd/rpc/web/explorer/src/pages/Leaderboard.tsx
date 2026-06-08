@@ -96,30 +96,30 @@ function LeaderboardPage() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8"
+      className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8"
     >
       {/* Hero Header Section */}
-      <section className="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(240,207,82,0.18),_transparent_28%),radial-gradient(circle_at_80%_16%,_rgba(83,166,255,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(201,95,56,0.2),_transparent_24%),linear-gradient(145deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-6 shadow-[0_25px_90px_rgba(0,0,0,0.32)] sm:p-8 xl:p-10">
+      <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(240,207,82,0.18),_transparent_28%),radial-gradient(circle_at_80%_16%,_rgba(83,166,255,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(201,95,56,0.2),_transparent_24%),linear-gradient(145deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-5 shadow-[0_25px_90px_rgba(0,0,0,0.32)] sm:p-6">
         <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.05)_45%,transparent_100%)]" />
-        <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_420px] xl:items-stretch">
-          <div className="flex flex-col justify-between gap-8">
-            <div className="max-w-4xl">
+        <div className="relative grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-center">
+          <div className="flex flex-col justify-between gap-5">
+            <div className="max-w-3xl">
               <p className="text-xs uppercase tracking-[0.32em] text-[#f6df84]">ProofArcade 2048</p>
-              <h1 className="mt-4 font-['Georgia'] text-5xl leading-none text-white sm:text-6xl xl:text-7xl">
+              <h1 className="mt-3 font-['Georgia'] text-4xl leading-none text-white sm:text-5xl">
                 Leaderboards
               </h1>
-              <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
                 Track top players across daily challenges and classic runs. All scores are verified on-chain and publicly auditable.
               </p>
             </div>
 
-            {/* Mode Selector */}
-            <div className="inline-flex rounded-full border border-white/10 bg-black/20 p-1">
+            {/* Mode Selector - Tab Style */}
+            <div className="inline-flex self-start rounded-xl border border-white/10 bg-black/30 p-0.5">
               <button
                 onClick={() => switchMode('daily')}
-                className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+                className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
                   activeMode === 'daily'
-                    ? 'bg-[#f0cf52] text-[#2e2510]'
+                    ? 'bg-[#f0cf52] text-[#2e2510] shadow-sm'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
@@ -127,9 +127,9 @@ function LeaderboardPage() {
               </button>
               <button
                 onClick={() => switchMode('classic')}
-                className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+                className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
                   activeMode === 'classic'
-                    ? 'bg-[#53a6ff] text-white'
+                    ? 'bg-[#53a6ff] text-white shadow-sm'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
@@ -139,37 +139,37 @@ function LeaderboardPage() {
           </div>
 
           <motion.div
-            whileHover={{ y: -4 }}
+            whileHover={{ y: -2 }}
             transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-            className="rounded-[1.9rem] border border-white/10 bg-black/20 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
           >
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.28em] text-slate-500">Share</p>
-                <h2 className="mt-3 text-2xl font-bold text-white">Share this leaderboard</h2>
+                <h2 className="mt-2 text-lg font-bold text-white">Share Leaderboard</h2>
               </div>
-              <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] uppercase tracking-[0.2em] text-slate-400">
-                Shareable
+              <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-slate-400">
+                Link
               </div>
             </div>
 
-            <p className="mt-4 text-sm leading-6 text-slate-400">
-              Copy the link to share this {activeMode} leaderboard view with others.
+            <p className="mt-2 text-xs leading-5 text-slate-400">
+              Copy link to share this {activeMode} leaderboard.
             </p>
 
             <button
               onClick={copyShareLink}
-              className="mt-5 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
+              className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
             >
               <i className="bi bi-share mr-2"></i>
               Copy Share Link
             </button>
 
             {storedWallet && userRank !== -1 ? (
-              <div className="mt-5 rounded-[1rem] border border-[#53a6ff]/30 bg-[#53a6ff]/10 px-4 py-3">
+              <div className="mt-3 rounded-lg border border-[#53a6ff]/30 bg-[#53a6ff]/10 px-3 py-2">
                 <p className="text-[10px] uppercase tracking-[0.22em] text-[#9fd0ff]">Your Rank</p>
-                <p className="mt-2 text-2xl font-bold text-white">#{userRank + 1}</p>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xl font-bold text-white">#{userRank + 1}</p>
+                <p className="mt-0.5 text-xs text-slate-400">
                   {activeLeaderboard[userRank]?.score ?? 0} points
                 </p>
               </div>
@@ -180,19 +180,19 @@ function LeaderboardPage() {
 
       {/* Daily Prize Pool - Only show for daily mode */}
       {activeMode === 'daily' ? (
-        <section className="mt-6 rounded-[1.8rem] border border-[#f0cf52]/20 bg-[linear-gradient(135deg,_rgba(45,38,16,0.88),_rgba(20,21,28,0.96))] p-5">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <section className="mt-4 rounded-[1.5rem] border border-[#f0cf52]/20 bg-[linear-gradient(135deg,_rgba(45,38,16,0.88),_rgba(20,21,28,0.96))] p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.28em] text-[#f6df84]">Today's Prize Pool</p>
-              <h2 className="mt-2 text-3xl font-bold text-white">
+              <h2 className="mt-1 text-2xl font-bold text-white">
                 {dailyPool?.rewardPool ?? 0} PROOF
               </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+              <p className="mt-1 max-w-xl text-xs leading-5 text-slate-300">
                 Live pool for {dailyPool?.utcDate ?? getUtcDateString()}. Each entry adds to this reward pot.
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-2 sm:grid-cols-3">
               <PoolStat label="Entries" value={`${dailyPool?.entryCount ?? 0}`} />
               <PoolStat label="Gross Fees" value={`${dailyPool?.grossFees ?? 0} PROOF`} />
               <PoolStat label="Resets In" value={countdown} />
@@ -201,49 +201,87 @@ function LeaderboardPage() {
         </section>
       ) : null}
 
-      {/* User Rank Banner */}
-      {storedWallet && userRank !== -1 ? (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6 rounded-[1.6rem] border border-[#53a6ff]/30 bg-[#53a6ff]/10 p-5"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[#9fd0ff]">Your Position</p>
-              <p className="mt-2 text-2xl font-bold text-white">
-                #{userRank + 1} · {activeLeaderboard[userRank]?.score ?? 0} points
-              </p>
+      {/* User Position Card */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-4 rounded-[1.3rem] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/90 p-3"
+      >
+        {storedWallet && userRank !== -1 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#53a6ff]/15 border border-[#53a6ff]/30">
+                <span className="text-xl font-black text-[#53a6ff]">#{userRank + 1}</span>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
+                <p className="mt-0.5 text-xl font-bold text-white">
+                  {activeLeaderboard[userRank]?.score ?? 0} <span className="text-sm font-normal text-slate-400">points</span>
+                </p>
+              </div>
             </div>
-            <div className="rounded-full border border-[#53a6ff]/30 bg-[#53a6ff]/20 px-4 py-2 text-sm font-semibold text-white">
+            <div className="rounded-full border border-[#53a6ff]/30 bg-[#53a6ff]/15 px-3 py-1.5 text-sm font-semibold text-[#9fd0ff]">
               {storedWallet.nickname}
             </div>
           </div>
-        </motion.div>
-      ) : null}
+        ) : storedWallet ? (
+          <div className="flex flex-col items-center gap-3 py-2 sm:flex-row sm:justify-between">
+            <div className="text-center sm:text-left">
+              <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
+              <p className="mt-1 text-base font-semibold text-slate-400">Not ranked yet</p>
+            </div>
+            <a
+              href={`/play?mode=${activeMode}`}
+              className="rounded-xl border border-[#f0cf52]/30 bg-[#f0cf52]/10 px-4 py-2 text-sm font-semibold text-[#f6df84] transition hover:bg-[#f0cf52]/15"
+            >
+              Start Playing
+            </a>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-3 py-2 sm:flex-row sm:justify-between">
+            <div className="text-center sm:text-left">
+              <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
+              <p className="mt-1 text-base font-semibold text-slate-400">Sign in to compete</p>
+            </div>
+            <a
+              href="/auth"
+              className="rounded-xl border border-[#53a6ff]/30 bg-[#53a6ff]/10 px-4 py-2 text-sm font-semibold text-[#9fd0ff] transition hover:bg-[#53a6ff]/15"
+            >
+              Create Wallet
+            </a>
+          </div>
+        )}
+      </motion.div>
 
       {/* Leaderboard Table */}
-      <section className="mt-6 rounded-[1.8rem] border border-white/10 bg-black/20 p-5">
-        <div className="flex items-center justify-between gap-4">
+      <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
-              {activeMode === 'daily' ? 'Daily Leaders' : 'Classic Leaders'}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-slate-400">
+            <div className="flex items-center gap-2">
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
+                {activeMode === 'daily' ? 'Daily Leaders' : 'Classic Leaders'}
+              </p>
+              <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-emerald-400">Live</span>
+              </div>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-slate-400">
               {activeMode === 'daily'
                 ? "Top submitted daily scores for today's board."
                 : 'Highest verified classic runs so far.'}
             </p>
           </div>
-          <p className="text-sm text-slate-500">{activeLeaderboard.length} entries</p>
+          <p className="text-xs text-slate-500">{activeLeaderboard.length} {activeLeaderboard.length === 1 ? 'entry' : 'entries'}</p>
         </div>
 
         {isLoading ? (
-          <div className="mt-6 rounded-[1rem] border border-dashed border-white/10 bg-slate-950/30 px-4 py-6 text-center text-sm text-slate-400">
-            Loading leaderboard...
+          <div className="mt-4 rounded-lg border border-dashed border-white/10 bg-slate-950/30 px-3 py-6 text-center">
+            <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-slate-600 border-t-slate-300"></div>
+            <p className="mt-2 text-xs text-slate-400">Loading leaderboard...</p>
           </div>
         ) : activeLeaderboard.length > 0 ? (
-          <div className="mt-5 space-y-3">
+          <div className="mt-3 space-y-1.5">
             {activeLeaderboard.map((entry, index) => (
               <LeaderboardRow
                 key={`${entry.gameId}-${entry.address}`}
@@ -255,29 +293,43 @@ function LeaderboardPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-6 rounded-[1rem] border border-dashed border-white/10 bg-slate-950/30 px-4 py-6 text-center text-sm text-slate-400">
-            {activeMode === 'daily'
-              ? 'No daily submissions yet for today.'
-              : 'No classic submissions yet.'}
+          <div className="mt-4 rounded-lg border border-dashed border-white/10 bg-slate-950/30 px-4 py-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-800/50">
+              <span className="text-2xl">🏆</span>
+            </div>
+            <p className="mt-3 text-sm font-semibold text-white">
+              {activeMode === 'daily' ? 'No scores yet today' : 'No classic scores yet'}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              {activeMode === 'daily'
+                ? 'Be the first to submit a score for today\'s board!'
+                : 'Start a classic run and set the first record!'}
+            </p>
+            <a
+              href="/play"
+              className="mt-4 inline-block rounded-xl border border-[#f0cf52]/30 bg-[#f0cf52]/10 px-4 py-2 text-sm font-semibold text-[#f6df84] transition hover:bg-[#f0cf52]/15"
+            >
+              Play Now
+            </a>
           </div>
         )}
       </section>
 
       {/* Info Section */}
-      <section className="mt-6 grid gap-6 md:grid-cols-2">
-        <div className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
+      <section className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="rounded-[1.3rem] border border-white/10 bg-black/20 p-4">
           <p className="text-xs uppercase tracking-[0.24em] text-slate-500">About Daily</p>
-          <h3 className="mt-2 text-xl font-bold text-white">Daily Challenge</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
+          <h3 className="mt-1 text-base font-bold text-white">Daily Challenge</h3>
+          <p className="mt-2 text-xs leading-5 text-slate-400">
             Compete once per UTC day on a shared board. Entry fees build the prize pool, and top
             players claim rewards at day's end. Rankings reset daily at midnight UTC.
           </p>
         </div>
 
-        <div className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
+        <div className="rounded-[1.3rem] border border-white/10 bg-black/20 p-4">
           <p className="text-xs uppercase tracking-[0.24em] text-slate-500">About Classic</p>
-          <h3 className="mt-2 text-xl font-bold text-white">Classic Mode</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
+          <h3 className="mt-1 text-base font-bold text-white">Classic Mode</h3>
+          <p className="mt-2 text-xs leading-5 text-slate-400">
             Play unlimited runs with random seeds. Earn spendable points for progression and
             compete for the all-time high scores. Classic leaderboard tracks lifetime best runs.
           </p>
@@ -314,9 +366,9 @@ function LeaderboardRow({
 
   return (
     <motion.div
-      whileHover={{ x: 3, scale: 1.005 }}
+      whileHover={{ x: 2, scale: 1.002 }}
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className={`rounded-[1.2rem] border px-5 py-4 ${
+      className={`rounded-lg border px-3 py-2 ${
         isCurrentUser
           ? 'border-[#53a6ff]/40 bg-[#53a6ff]/10'
           : rank <= 3
@@ -324,10 +376,10 @@ function LeaderboardRow({
             : 'border-white/10 bg-slate-950/50'
       }`}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {/* Rank */}
-        <div className="flex w-16 items-center justify-center">
-          <span className={`text-2xl font-black ${getRankColor(rank)}`}>
+        <div className="flex w-10 shrink-0 items-center justify-center">
+          <span className={`text-base font-black ${getRankColor(rank)}`}>
             {getRankIcon(rank)}
           </span>
         </div>
@@ -335,28 +387,32 @@ function LeaderboardRow({
         {/* Player Info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="truncate text-base font-semibold text-white">
+            <p className="truncate text-sm font-semibold text-white">
               {shortAddress(entry.address)}
             </p>
             {isCurrentUser ? (
-              <span className="rounded-full bg-[#53a6ff] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
+              <span className="shrink-0 rounded-full bg-[#53a6ff] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
                 You
               </span>
             ) : null}
           </div>
-          <p className="mt-1 text-xs text-slate-500">
-            {entry.moveCount} moves • Max tile {entry.maxTile}
+          <p className="mt-0.5 text-[11px] text-slate-500">
+            {entry.moveCount} moves · Tile {entry.maxTile}
           </p>
         </div>
 
         {/* Score & Date */}
-        <div className="text-right">
-          <p className="text-2xl font-black text-white">{entry.score}</p>
+        <div className="shrink-0 text-right">
+          <p className="text-lg font-black leading-none text-white">{entry.score.toLocaleString()}</p>
           {showDate ? (
-            <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-slate-500">
+            <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-500">
               {entry.utcDate}
             </p>
-          ) : null}
+          ) : (
+            <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-500">
+              Points
+            </p>
+          )}
         </div>
       </div>
     </motion.div>
@@ -366,12 +422,12 @@ function LeaderboardRow({
 function PoolStat({ label, value }: { label: string; value: string }) {
   return (
     <motion.div
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -1 }}
       transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-      className="rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3"
+      className="rounded-lg border border-white/10 bg-black/20 px-3 py-2"
     >
       <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-white">{value}</p>
     </motion.div>
   )
 }

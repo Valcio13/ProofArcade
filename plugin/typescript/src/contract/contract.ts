@@ -992,11 +992,13 @@ export class ContractAsync {
         const classicBonusBps = stats.classicPointsBonusUtcDate === classicPointsUtcDate
             ? getConfiguredDailyLoginBonusBps(cfg)
             : 0;
-        const rawClassicPoints = isDaily ? 0 : baseClassicPoints + calculateBonusPoints(baseClassicPoints, classicBonusBps);
+        // Apply cap to base points, then add bonus on top (bonus doesn't count against cap)
         const classicPointsCap = getConfiguredClassicDailyPointsCap(cfg);
         const alreadyEarnedToday = toUint64(pointsLedger.earnedPoints as Long | number | undefined);
         const remainingClassicPoints = Math.max(0, classicPointsCap - alreadyEarnedToday);
-        const earnedClassicPoints = isDaily ? 0 : Math.min(rawClassicPoints, remainingClassicPoints);
+        const cappedBasePoints = isDaily ? 0 : Math.min(baseClassicPoints, remainingClassicPoints);
+        const bonusPoints = calculateBonusPoints(cappedBasePoints, classicBonusBps);
+        const earnedClassicPoints = cappedBasePoints + bonusPoints;
         const updatedStats = encodeGame2048State('PlayerStats', {
             playerAddress,
             dailyGamesStarted: toUint64(stats.dailyGamesStarted as Long | number | undefined),
@@ -1063,7 +1065,8 @@ export class ContractAsync {
                 value: encodeGame2048State('ClassicPointsDailyLedger', {
                     utcDate: classicPointsUtcDate,
                     playerAddress,
-                    earnedPoints: alreadyEarnedToday + earnedClassicPoints
+                    // Track only capped base points against daily limit (bonus doesn't count)
+                    earnedPoints: alreadyEarnedToday + cappedBasePoints
                 })
             });
         }
@@ -1251,14 +1254,36 @@ export class ContractAsync {
                 ? finalizationSummary.leftover.toNumber()
                 : toUint64(pool.treasuryLeftover as Long | number | undefined)
         });
+        // Compute transaction hash
+        const txMessage = types.Transaction.create(tx);
+        const txBytes = types.Transaction.encode(txMessage).finish();
+        const txHashBytes = sha256Bytes(txBytes);
+        const txHash = Buffer.from(txHashBytes).toString('hex').toUpperCase();
+
+        console.log("=== PLUGIN CLAIM WRITE ===");
+        console.log("TX_HASH_BEFORE_WRITE:", txHash);
+        console.log("TX_HASH_LENGTH:", txHash.length);
+
         const claimValue = encodeGame2048State('DailyRewardClaim', {
             utcDate,
             playerAddress,
             gameId: allocation?.gameId || new Uint8Array(),
             rank: toUint64(allocation?.rank as Long | number | undefined),
             claimedAmount: rewardAmount.toNumber(),
-            claimedAtUnix: nowMicros
+            claimedAtUnix: nowMicros,
+            txHash: txHash
         });
+        
+        console.log("RECORD_BEFORE_WRITE:", {
+            utcDate,
+            playerAddress: Buffer.from(playerAddress).toString('hex'),
+            rank: toUint64(allocation?.rank as Long | number | undefined),
+            claimedAmount: rewardAmount.toNumber(),
+            claimedAtUnix: nowMicros,
+            txHash: txHash
+        });
+        console.log("SERIALIZED_LENGTH:", claimValue.length);
+        console.log("=== END PLUGIN WRITE ===");
 
         const poolWriteKey = useDailyRewardPool ? dailyRewardPoolKey : daoPoolKey;
         const rewardPersistenceSets = !rewardBytes || rewardBytes.length === 0
@@ -1430,12 +1455,39 @@ export class ContractAsync {
             lastLoginClaimUtcDate: stats.lastLoginClaimUtcDate || '',
             classicPointsBonusUtcDate: stats.classicPointsBonusUtcDate || ''
         });
+        // Compute transaction hash
+        const txMessage = types.Transaction.create(tx);
+        const txBytes = types.Transaction.encode(txMessage).finish();
+        const txHashBytes = sha256Bytes(txBytes);
+        const txHash = Buffer.from(txHashBytes).toString('hex').toUpperCase();
+
+        console.log("=== PLUGIN REDEMPTION WRITE ===");
+        console.log("TX_HASH_BEFORE_WRITE:", txHash);
+        console.log("TX_HASH_LENGTH:", txHash.length);
+        console.log("TX_HASH_TYPE:", typeof txHash);
+        console.log("TX_HASH_IS_BUFFER:", Buffer.isBuffer(txHash));
+
         const redemptionValue = encodeGame2048State('ClassicPointRedemption', {
             playerAddress,
             burnPoints,
             payoutAmount,
-            redeemedAtUnix
+            redeemedAtUnix,
+            txHash: txHash
         });
+        
+        console.log("RECORD_BEFORE_WRITE:", {
+            playerAddress: Buffer.from(playerAddress).toString('hex'),
+            burnPoints,
+            payoutAmount,
+            redeemedAtUnix,
+            txHash: txHash,
+            txHashType: typeof txHash
+        });
+        console.log("TX_HASH_IN_RECORD_TYPE:", typeof {txHash: txHash}.txHash);
+        console.log("SERIALIZED_LENGTH:", redemptionValue.length);
+        console.log("SERIALIZED_BYTES_SAMPLE:", Array.from(redemptionValue.slice(0, 50)));
+        console.log("=== END PLUGIN WRITE ===");
+        console.log("=== END PLUGIN WRITE ===");
 
         const poolWriteKey = useShopPool ? shopPoolKey : daoPoolKey;
         const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, {
@@ -1503,7 +1555,10 @@ export class ContractAsync {
         let nextStreak = 1;
         if (previousClaimUtcDate === previousUtcDate(utcDate)) {
             const streakSchedule = getConfiguredDailyLoginRewardPoints(cfg);
-            nextStreak = Math.min(toUint64(stats.loginStreak as Long | number | undefined) + 1, streakSchedule.length || 7);
+            const currentStreak = toUint64(stats.loginStreak as Long | number | undefined);
+            const scheduleLength = streakSchedule.length || 7;
+            // Cycle: 1→2→3→4→5→6→7→1 (wraps back to 1 after 7)
+            nextStreak = currentStreak >= scheduleLength ? 1 : currentStreak + 1;
         }
 
         const streakSchedule = getConfiguredDailyLoginRewardPoints(cfg);
@@ -1675,7 +1730,7 @@ function calculateClassicPoints(score: number): number {
     if (score < 64) {
         return 0;
     }
-    return Math.min(1000, Math.floor(score / 32));
+    return Math.min(1000, Math.floor(score / 24));
 }
 
 export function KeyForDailyRewardAllocation(utcDate: string, rank: number, gameId: Uint8Array): Uint8Array {

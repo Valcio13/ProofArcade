@@ -104,21 +104,22 @@ type game2048ConfigResponse struct {
 }
 
 type game2048PlayerResponse struct {
-	Address              string `json:"address"`
-	Balance              uint64 `json:"balance"`
-	DailyGamesStarted    uint64 `json:"dailyGamesStarted"`
-	ClassicGamesStarted  uint64 `json:"classicGamesStarted"`
-	GamesCompleted       uint64 `json:"gamesCompleted"`
-	Wins                 uint64 `json:"wins"`
-	Losses               uint64 `json:"losses"`
-	BestDailyScore       uint64 `json:"bestDailyScore"`
-	BestClassicScore     uint64 `json:"bestClassicScore"`
-	BestTile             uint64 `json:"bestTile"`
-	TotalScore           uint64 `json:"totalScore"`
-	ClassicPointsBalance uint64 `json:"classicPointsBalance"`
-	ClassicPointsEarned  uint64 `json:"classicPointsEarned"`
-	LoginStreak          uint64 `json:"loginStreak"`
-	LastLoginClaimUTCDate string `json:"lastLoginClaimUtcDate"`
+	Address                   string `json:"address"`
+	Balance                   uint64 `json:"balance"`
+	DailyGamesStarted         uint64 `json:"dailyGamesStarted"`
+	ClassicGamesStarted       uint64 `json:"classicGamesStarted"`
+	GamesCompleted            uint64 `json:"gamesCompleted"`
+	Wins                      uint64 `json:"wins"`
+	Losses                    uint64 `json:"losses"`
+	BestDailyScore            uint64 `json:"bestDailyScore"`
+	BestClassicScore          uint64 `json:"bestClassicScore"`
+	BestTile                  uint64 `json:"bestTile"`
+	TotalScore                uint64 `json:"totalScore"`
+	ClassicPointsBalance      uint64 `json:"classicPointsBalance"`
+	ClassicPointsEarned       uint64 `json:"classicPointsEarned"`
+	ClassicPointsEarnedToday  uint64 `json:"classicPointsEarnedToday"`
+	LoginStreak               uint64 `json:"loginStreak"`
+	LastLoginClaimUTCDate     string `json:"lastLoginClaimUtcDate"`
 	ClassicPointsBonusUTCDate string `json:"classicPointsBonusUtcDate"`
 }
 
@@ -181,6 +182,7 @@ type game2048ClaimableRewardResponse struct {
 	MoveCount    uint64 `json:"moveCount"`
 	EndedAt      string `json:"endedAt"`
 	Claimed      bool   `json:"claimed"`
+	ClaimTxHash  string `json:"claimTxHash"`
 }
 
 type game2048ClaimableRewardsSummary struct {
@@ -273,11 +275,28 @@ type game2048RedemptionHistoryEntry struct {
 	PayoutAmount   uint64 `json:"payoutAmount"`
 	RedeemedAtUnix uint64 `json:"redeemedAtUnix"`
 	RedeemedAt     string `json:"redeemedAt"`
+	TxHash         string `json:"txHash"`
 }
 
 type game2048RedemptionHistoryResponse struct {
 	Address     string                           `json:"address"`
 	Redemptions []game2048RedemptionHistoryEntry `json:"redemptions"`
+}
+
+type game2048GameHistoryEntry struct {
+	GameID     string `json:"gameId"`
+	Mode       string `json:"mode"`
+	Score      uint64 `json:"score"`
+	MaxTile    uint64 `json:"maxTile"`
+	MoveCount  uint64 `json:"moveCount"`
+	StopReason string `json:"stopReason"`
+	UTCDate    string `json:"utcDate"`
+	EndedAt    string `json:"endedAt"`
+}
+
+type game2048GameHistoryResponse struct {
+	Address string                     `json:"address"`
+	Games   []game2048GameHistoryEntry `json:"games"`
 }
 
 type game2048RedeemClassicPointsRequest struct {
@@ -450,6 +469,25 @@ func (s *Server) Game2048Redemptions(w http.ResponseWriter, r *http.Request, _ h
 	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
 		var gameErr lib.ErrorI
 		response, gameErr = loadGame2048Redemptions(state, req.Address)
+		return gameErr
+	})
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	write(w, response, http.StatusOK)
+}
+
+func (s *Server) Game2048GameHistory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(addressRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	var response game2048GameHistoryResponse
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		var gameErr lib.ErrorI
+		response, gameErr = loadGame2048GameHistory(state, req.Address)
 		return gameErr
 	})
 	if err != nil {
@@ -1053,6 +1091,14 @@ func loadGame2048ClaimableRewards(state *fsm.StateMachine, address []byte) (game
 			return summary, claimErr
 		}
 		claimed := len(claimBytes) > 0
+		var claimTxHash string
+		if claimed {
+			// Parse the claim record to get the tx_hash
+			claimMessage, claimDecodeErr := decodeGame2048State("DailyRewardClaim", claimBytes)
+			if claimDecodeErr == nil {
+				claimTxHash = stringField(claimMessage, "tx_hash", "")
+			}
+		}
 		rewardAmount := uint64Field(message, "reward_amount", 0)
 		if !claimed {
 			summary.TotalClaimable += rewardAmount
@@ -1069,6 +1115,7 @@ func loadGame2048ClaimableRewards(state *fsm.StateMachine, address []byte) (game
 			MoveCount:    uint64Field(message, "move_count", 0),
 			EndedAt:      unixMicrosToISO(uint64Field(message, "ended_at_unix", 0)),
 			Claimed:      claimed,
+			ClaimTxHash:  claimTxHash,
 		})
 		iterator.Next()
 	}
@@ -1144,7 +1191,20 @@ func loadGame2048ClaimableRewards(state *fsm.StateMachine, address []byte) (game
 			continue
 		}
 
-		rewardAmount := calculateGame2048BpsAmount(pool.RewardPool, cfg.DailyPayoutBps[rank-1])
+		// Calculate active player count (capped at payout array length)
+		activePlayerCount := len(entries)
+		if activePlayerCount > len(cfg.DailyPayoutBps) {
+			activePlayerCount = len(cfg.DailyPayoutBps)
+		}
+
+		// Sum weights for active players only
+		var activeWeightTotal uint64 = 0
+		for i := 0; i < activePlayerCount; i++ {
+			activeWeightTotal += cfg.DailyPayoutBps[i]
+		}
+
+		// Calculate normalized reward (entire pool is distributed among active players)
+		rewardAmount := calculateNormalizedBpsAmount(pool.RewardPool, cfg.DailyPayoutBps[rank-1], activeWeightTotal)
 		if rewardAmount == 0 {
 			pendingIterator.Next()
 			continue
@@ -1181,6 +1241,17 @@ func calculateGame2048BpsAmount(amount uint64, bps uint64) uint64 {
 		return 0
 	}
 	return (amount * bps) / 10000
+}
+
+// calculateNormalizedBpsAmount calculates a reward amount by normalizing the rank weight
+// against the total active player weights. This ensures the entire prize pool is distributed
+// when fewer than 10 players participate.
+// Formula: (poolAmount × rankWeight) ÷ totalActiveWeights
+func calculateNormalizedBpsAmount(poolAmount uint64, rankBps uint64, totalActiveBps uint64) uint64 {
+	if rankBps == 0 || totalActiveBps == 0 || poolAmount == 0 {
+		return 0
+	}
+	return (poolAmount * rankBps) / totalActiveBps
 }
 
 func hasUTCDateEnded(utcDate string, now time.Time) bool {
@@ -1268,11 +1339,31 @@ func loadGame2048Redemptions(state *fsm.StateMachine, address []byte) (game2048R
 			return response, decodeErr
 		}
 		redeemedAtUnix := uint64Field(message, "redeemed_at_unix", 0)
+		txHash := stringField(message, "tx_hash", "")
+		
+		// DEBUG: Log what we're reading from state
+		fmt.Printf("=== BACKEND READ REDEMPTION ===\n")
+		fmt.Printf("redeemed_at=%d\n", redeemedAtUnix)
+		fmt.Printf("tx_hash=%s\n", txHash)
+		fmt.Printf("tx_hash_len=%d\n", len(txHash))
+		fmt.Printf("tx_hash_type=%T\n", txHash)
+		
+		// Check field descriptor
+		field := message.Descriptor().Fields().ByName("tx_hash")
+		if field != nil {
+			fmt.Printf("proto_field_kind=%v\n", field.Kind())
+			fmt.Printf("proto_field_has=%v\n", message.Has(field))
+			rawValue := message.Get(field)
+			fmt.Printf("proto_raw_value_type=%T\n", rawValue.Interface())
+		}
+		fmt.Printf("=== END BACKEND READ ===\n")
+		
 		response.Redemptions = append(response.Redemptions, game2048RedemptionHistoryEntry{
 			BurnPoints:     uint64Field(message, "burn_points", 0),
 			PayoutAmount:   uint64Field(message, "payout_amount", 0),
 			RedeemedAtUnix: redeemedAtUnix,
 			RedeemedAt:     unixMicrosToISO(redeemedAtUnix),
+			TxHash:         txHash,
 		})
 		iterator.Next()
 	}
@@ -1280,6 +1371,90 @@ func loadGame2048Redemptions(state *fsm.StateMachine, address []byte) (game2048R
 	sort.Slice(response.Redemptions, func(i, j int) bool {
 		return response.Redemptions[i].RedeemedAtUnix > response.Redemptions[j].RedeemedAtUnix
 	})
+
+	return response, nil
+}
+
+func loadGame2048GameHistory(state *fsm.StateMachine, address []byte) (game2048GameHistoryResponse, lib.ErrorI) {
+	response := game2048GameHistoryResponse{
+		Address: hex.EncodeToString(address),
+		Games:   make([]game2048GameHistoryEntry, 0),
+	}
+
+	addressHex := hex.EncodeToString(address)
+
+	// Get classic leaderboard entries
+	classicIterator, err := state.Iterator(keyForClassicLeaderboardPrefix())
+	if err != nil {
+		return response, err
+	}
+	defer classicIterator.Close()
+
+	for classicIterator.Valid() {
+		message, decodeErr := decodeGame2048State("LeaderboardEntry", classicIterator.Value())
+		if decodeErr != nil {
+			return response, decodeErr
+		}
+		playerAddress := hex.EncodeToString(bytesField(message, "player_address"))
+		if playerAddress == addressHex {
+			response.Games = append(response.Games, game2048GameHistoryEntry{
+				GameID:     hex.EncodeToString(bytesField(message, "game_id")),
+				Mode:       "classic",
+				Score:      uint64Field(message, "score", 0),
+				MaxTile:    uint64Field(message, "max_tile", 0),
+				MoveCount:  uint64Field(message, "move_count", 0),
+				StopReason: "player_stopped",
+				UTCDate:    "",
+				EndedAt:    unixMicrosToISO(uint64Field(message, "ended_at_unix", 0)),
+			})
+		}
+		classicIterator.Next()
+	}
+
+	// Get daily leaderboard entries from recent days
+	now := time.Now().UTC()
+	for dayOffset := 0; dayOffset < 7; dayOffset++ {
+		dayDate := now.AddDate(0, 0, -dayOffset)
+		utcDate := dayDate.Format("2006-01-02")
+		
+		dailyIterator, err := state.Iterator(keyForDailyLeaderboardPrefix(utcDate))
+		if err != nil {
+			continue // Skip this day if there's an error
+		}
+		
+		for dailyIterator.Valid() {
+			message, decodeErr := decodeGame2048State("LeaderboardEntry", dailyIterator.Value())
+			if decodeErr != nil {
+				dailyIterator.Close()
+				continue
+			}
+			playerAddress := hex.EncodeToString(bytesField(message, "player_address"))
+			if playerAddress == addressHex {
+				response.Games = append(response.Games, game2048GameHistoryEntry{
+					GameID:     hex.EncodeToString(bytesField(message, "game_id")),
+					Mode:       "daily",
+					Score:      uint64Field(message, "score", 0),
+					MaxTile:    uint64Field(message, "max_tile", 0),
+					MoveCount:  uint64Field(message, "move_count", 0),
+					StopReason: "player_stopped",
+					UTCDate:    utcDate,
+					EndedAt:    unixMicrosToISO(uint64Field(message, "ended_at_unix", 0)),
+				})
+			}
+			dailyIterator.Next()
+		}
+		dailyIterator.Close()
+	}
+
+	// Sort by ended time, newest first
+	sort.Slice(response.Games, func(i, j int) bool {
+		return response.Games[i].EndedAt > response.Games[j].EndedAt
+	})
+
+	// Limit to 24 most recent games
+	if len(response.Games) > 24 {
+		response.Games = response.Games[:24]
+	}
 
 	return response, nil
 }
@@ -1306,22 +1481,35 @@ func loadGame2048Player(state *fsm.StateMachine, address []byte) (game2048Player
 		return game2048PlayerResponse{}, decodeErr
 	}
 
+	// Fetch today's classic points ledger
+	utcDate := currentUTCDate()
+	ledgerKey := keyForClassicPointsDailyLedger(utcDate, address)
+	ledgerBz, ledgerErr := state.Get(ledgerKey)
+	var earnedToday uint64 = 0
+	if ledgerErr == nil && len(ledgerBz) > 0 {
+		ledgerMsg, ledgerDecodeErr := decodeGame2048State("ClassicPointsDailyLedger", ledgerBz)
+		if ledgerDecodeErr == nil {
+			earnedToday = uint64Field(ledgerMsg, "earned_points", 0)
+		}
+	}
+
 	return game2048PlayerResponse{
-		Address:              hex.EncodeToString(address),
-		Balance:              account.Amount,
-		DailyGamesStarted:    uint64Field(message, "daily_games_started", 0),
-		ClassicGamesStarted:  uint64Field(message, "classic_games_started", 0),
-		GamesCompleted:       uint64Field(message, "games_completed", 0),
-		Wins:                 uint64Field(message, "wins", 0),
-		Losses:               uint64Field(message, "losses", 0),
-		BestDailyScore:       uint64Field(message, "best_daily_score", 0),
-		BestClassicScore:     uint64Field(message, "best_classic_score", 0),
-		BestTile:             uint64Field(message, "best_tile", 0),
-		TotalScore:           uint64Field(message, "total_score", 0),
-		ClassicPointsBalance: uint64Field(message, "classic_points_balance", 0),
-		ClassicPointsEarned:  uint64Field(message, "classic_points_earned", 0),
-		LoginStreak:          uint64Field(message, "login_streak", 0),
-		LastLoginClaimUTCDate: stringField(message, "last_login_claim_utc_date", ""),
+		Address:                  hex.EncodeToString(address),
+		Balance:                  account.Amount,
+		DailyGamesStarted:        uint64Field(message, "daily_games_started", 0),
+		ClassicGamesStarted:      uint64Field(message, "classic_games_started", 0),
+		GamesCompleted:           uint64Field(message, "games_completed", 0),
+		Wins:                     uint64Field(message, "wins", 0),
+		Losses:                   uint64Field(message, "losses", 0),
+		BestDailyScore:           uint64Field(message, "best_daily_score", 0),
+		BestClassicScore:         uint64Field(message, "best_classic_score", 0),
+		BestTile:                 uint64Field(message, "best_tile", 0),
+		TotalScore:               uint64Field(message, "total_score", 0),
+		ClassicPointsBalance:     uint64Field(message, "classic_points_balance", 0),
+		ClassicPointsEarned:      uint64Field(message, "classic_points_earned", 0),
+		ClassicPointsEarnedToday: earnedToday,
+		LoginStreak:              uint64Field(message, "login_streak", 0),
+		LastLoginClaimUTCDate:    stringField(message, "last_login_claim_utc_date", ""),
 		ClassicPointsBonusUTCDate: stringField(message, "classic_points_bonus_utc_date", ""),
 	}, nil
 }
@@ -1783,6 +1971,7 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				uint64FieldDescriptor("rank", 4),
 				uint64FieldDescriptor("claimed_amount", 5),
 				uint64FieldDescriptor("claimed_at_unix", 6),
+				stringFieldDescriptor("tx_hash", 7),
 			}),
 			messageDescriptor("ClassicPointsDailyLedger", []*descriptorpb.FieldDescriptorProto{
 				stringFieldDescriptor("utc_date", 1),
@@ -1794,6 +1983,7 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				uint64FieldDescriptor("burn_points", 2),
 				uint64FieldDescriptor("payout_amount", 3),
 				uint64FieldDescriptor("redeemed_at_unix", 4),
+				stringFieldDescriptor("tx_hash", 5),
 			}),
 			messageDescriptor("DailyLoginClaim", []*descriptorpb.FieldDescriptorProto{
 				stringFieldDescriptor("utc_date", 1),

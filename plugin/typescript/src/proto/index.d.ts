@@ -2314,6 +2314,9 @@ export namespace types {
 
         /** DailyRewardClaim claimedAtUnix */
         claimedAtUnix?: (number|Long|null);
+
+        /** DailyRewardClaim txHash */
+        txHash?: (string|null);
     }
 
     /** Represents a DailyRewardClaim. */
@@ -2342,6 +2345,9 @@ export namespace types {
 
         /** DailyRewardClaim claimedAtUnix. */
         public claimedAtUnix: (number|Long);
+
+        /** DailyRewardClaim txHash. */
+        public txHash: string;
 
         /**
          * Creates a new DailyRewardClaim instance using the specified properties.
@@ -2544,6 +2550,9 @@ export namespace types {
 
         /** ClassicPointRedemption redeemedAtUnix */
         redeemedAtUnix?: (number|Long|null);
+
+        /** ClassicPointRedemption txHash */
+        txHash?: (string|null);
     }
 
     /** Represents a ClassicPointRedemption. */
@@ -2566,6 +2575,9 @@ export namespace types {
 
         /** ClassicPointRedemption redeemedAtUnix. */
         public redeemedAtUnix: (number|Long);
+
+        /** ClassicPointRedemption txHash. */
+        public txHash: string;
 
         /**
          * Creates a new ClassicPointRedemption instance using the specified properties.

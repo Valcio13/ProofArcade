@@ -170,3 +170,16 @@ export const formatLocaleNumber = (num: number, minFractionDigits: number = 0, m
         minimumFractionDigits: minFractionDigits,
     });
 };
+
+// formatCNPY formats amounts with decimals
+// Backend stores in display units, so just format with decimals
+export function formatCNPY(amount: number, maxDecimals: number = 2, minDecimals: number = 0): string {
+    if (isNaN(amount) || amount === null || amount === undefined) {
+        return "0";
+    }
+    
+    return amount.toLocaleString("en-US", {
+        minimumFractionDigits: minDecimals,
+        maximumFractionDigits: maxDecimals,
+    });
+}

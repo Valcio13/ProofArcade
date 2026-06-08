@@ -57,6 +57,7 @@ export interface PlayerStats {
   totalScore: number
   classicPointsBalance: number
   classicPointsEarned: number
+  classicPointsEarnedToday: number
   loginStreak: number
   lastLoginClaimUtcDate: string
   classicPointsBonusUtcDate: string
@@ -96,6 +97,7 @@ export interface ClaimableReward {
   moveCount: number
   endedAt: string
   claimed: boolean
+  claimTxHash?: string
 }
 
 export interface ClaimableRewardsSummary {
@@ -118,6 +120,7 @@ export interface RedemptionHistoryEntry {
   payoutAmount: number
   redeemedAtUnix: number
   redeemedAt: string
+  txHash?: string
 }
 
 export interface RedemptionHistory {
@@ -170,6 +173,11 @@ export function getPlayer(address: string): PlayerStats {
     state.players[address] = player
     saveState(state)
   }
+  
+  // Calculate today's earned points from the ledger
+  const dayKey = `${getUtcDateString()}:${address}`
+  player.classicPointsEarnedToday = state.classicPointDays[dayKey] ?? 0
+  
   return player
 }
 
@@ -254,17 +262,18 @@ export function submitSession(args: {
   } else {
     player.bestClassicScore = Math.max(player.bestClassicScore, replay.score)
     const basePoints = calculateClassicPoints(replay.score)
-    const bonusPoints = player.classicPointsBonusUtcDate === getUtcDateString()
-      ? Math.floor((basePoints * (state.config.dailyLoginBonusBps ?? 2000)) / 10000)
-      : 0
-    const rawPoints = basePoints + bonusPoints
     const dayKey = `${getUtcDateString()}:${args.address}`
     const earnedToday = state.classicPointDays[dayKey] ?? 0
     const dailyCap = state.config.classicDailyPointsCap ?? 2000
-    const earnedPoints = Math.max(0, Math.min(rawPoints, dailyCap - earnedToday))
+    // Cap base points first, then add bonus on top (bonus doesn't count against cap)
+    const cappedBasePoints = Math.max(0, Math.min(basePoints, dailyCap - earnedToday))
+    const bonusPoints = player.classicPointsBonusUtcDate === getUtcDateString()
+      ? Math.floor((cappedBasePoints * (state.config.dailyLoginBonusBps ?? 2000)) / 10000)
+      : 0
+    const earnedPoints = cappedBasePoints + bonusPoints
     player.classicPointsBalance += earnedPoints
     player.classicPointsEarned += earnedPoints
-    state.classicPointDays[dayKey] = earnedToday + earnedPoints
+    state.classicPointDays[dayKey] = earnedToday + cappedBasePoints // Track only base points against cap
   }
 
   if (replay.maxTile >= 2048) {
@@ -368,7 +377,7 @@ export function claimDailyLoginReward(address: string): { submitted: boolean; ut
   const previousUtcDate = new Date(Date.parse(`${utcDate}T00:00:00.000Z`) - 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
   const schedule = state.config.dailyLoginRewardPoints ?? [20, 25, 30, 35, 40, 45, 50]
   const nextStreak = player.lastLoginClaimUtcDate === previousUtcDate
-    ? Math.min(player.loginStreak + 1, schedule.length)
+    ? (player.loginStreak >= schedule.length ? 1 : player.loginStreak + 1)
     : 1
   const rewardPoints = schedule[Math.max(0, Math.min(schedule.length - 1, nextStreak - 1))] ?? 0
   const bonusUnlocked = nextStreak >= schedule.length
@@ -444,10 +453,19 @@ export function resetMockChain(): void {
 export function getRecentRuns(address?: string): RecentRun[] {
   const state = loadState()
   const runs = state.recentRuns || []
+  console.log('🎮 getRecentRuns called:', {
+    requestedAddress: address,
+    totalRuns: runs.length,
+    runAddresses: runs.map(r => r.address),
+  })
   if (!address) {
     return runs
   }
-  return runs.filter(run => run.address === address)
+  const filtered = runs.filter(run => run.address === address)
+  console.log('🎮 getRecentRuns filtered:', {
+    matchCount: filtered.length,
+  })
+  return filtered
 }
 
 function createPlayer(address: string): PlayerStats {
@@ -465,6 +483,7 @@ function createPlayer(address: string): PlayerStats {
     totalScore: 0,
     classicPointsBalance: 0,
     classicPointsEarned: 0,
+    classicPointsEarnedToday: 0,
     loginStreak: 0,
     lastLoginClaimUtcDate: '',
     classicPointsBonusUtcDate: '',
@@ -475,7 +494,7 @@ function calculateClassicPoints(score: number): number {
   if (score < 64) {
     return 0
   }
-  return Math.min(1000, Math.floor(score / 32))
+  return Math.min(1000, Math.floor(score / 24))
 }
 
 function loadState(): MockChainState {

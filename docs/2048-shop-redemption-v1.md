@@ -26,7 +26,7 @@ These are already true or already implemented:
 
 - classic point formula:
   - score `< 64` => `0`
-  - otherwise `floor(score / 32)`
+  - otherwise `floor(score / 24)`
   - per-run cap: `1000`
 - classic point daily cap:
   - `2000` points per UTC day per player

@@ -189,6 +189,7 @@ message DailyRewardClaim {
   uint64 rank = 4;
   uint64 claimed_amount = 5; // @gotags: json:"claimedAmount"
   uint64 claimed_at_unix = 6; // @gotags: json:"claimedAtUnix"
+  string tx_hash = 7; // @gotags: json:"txHash"
 }
 
 // ClassicPointsDailyLedger tracks how many classic points a player earned in one UTC day.
@@ -204,6 +205,7 @@ message ClassicPointRedemption {
   uint64 burn_points = 2; // @gotags: json:"burnPoints"
   uint64 payout_amount = 3; // @gotags: json:"payoutAmount"
   uint64 redeemed_at_unix = 4; // @gotags: json:"redeemedAtUnix"
+  string tx_hash = 5; // @gotags: json:"txHash"
 }
 
 // DailyLoginClaim records one claimed UTC-day login reward.

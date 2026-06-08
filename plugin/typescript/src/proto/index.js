@@ -7089,6 +7089,7 @@ $root.types = (function() {
          * @property {number|Long|null} [rank] DailyRewardClaim rank
          * @property {number|Long|null} [claimedAmount] DailyRewardClaim claimedAmount
          * @property {number|Long|null} [claimedAtUnix] DailyRewardClaim claimedAtUnix
+         * @property {string|null} [txHash] DailyRewardClaim txHash
          */
 
         /**
@@ -7155,6 +7156,14 @@ $root.types = (function() {
         DailyRewardClaim.prototype.claimedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
 
         /**
+         * DailyRewardClaim txHash.
+         * @member {string} txHash
+         * @memberof types.DailyRewardClaim
+         * @instance
+         */
+        DailyRewardClaim.prototype.txHash = "";
+
+        /**
          * Creates a new DailyRewardClaim instance using the specified properties.
          * @function create
          * @memberof types.DailyRewardClaim
@@ -7190,6 +7199,8 @@ $root.types = (function() {
                 writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.claimedAmount);
             if (message.claimedAtUnix != null && Object.hasOwnProperty.call(message, "claimedAtUnix"))
                 writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.claimedAtUnix);
+            if (message.txHash != null && Object.hasOwnProperty.call(message, "txHash"))
+                writer.uint32(/* id 7, wireType 2 =*/58).string(message.txHash);
             return writer;
         };
 
@@ -7250,6 +7261,10 @@ $root.types = (function() {
                         message.claimedAtUnix = reader.uint64();
                         break;
                     }
+                case 7: {
+                        message.txHash = reader.string();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -7303,6 +7318,9 @@ $root.types = (function() {
             if (message.claimedAtUnix != null && message.hasOwnProperty("claimedAtUnix"))
                 if (!$util.isInteger(message.claimedAtUnix) && !(message.claimedAtUnix && $util.isInteger(message.claimedAtUnix.low) && $util.isInteger(message.claimedAtUnix.high)))
                     return "claimedAtUnix: integer|Long expected";
+            if (message.txHash != null && message.hasOwnProperty("txHash"))
+                if (!$util.isString(message.txHash))
+                    return "txHash: string expected";
             return null;
         };
 
@@ -7357,6 +7375,8 @@ $root.types = (function() {
                     message.claimedAtUnix = object.claimedAtUnix;
                 else if (typeof object.claimedAtUnix === "object")
                     message.claimedAtUnix = new $util.LongBits(object.claimedAtUnix.low >>> 0, object.claimedAtUnix.high >>> 0).toNumber(true);
+            if (object.txHash != null)
+                message.txHash = String(object.txHash);
             return message;
         };
 
@@ -7404,6 +7424,7 @@ $root.types = (function() {
                     object.claimedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                 } else
                     object.claimedAtUnix = options.longs === String ? "0" : 0;
+                object.txHash = "";
             }
             if (message.utcDate != null && message.hasOwnProperty("utcDate"))
                 object.utcDate = message.utcDate;
@@ -7426,6 +7447,8 @@ $root.types = (function() {
                     object.claimedAtUnix = options.longs === String ? String(message.claimedAtUnix) : message.claimedAtUnix;
                 else
                     object.claimedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.claimedAtUnix) : options.longs === Number ? new $util.LongBits(message.claimedAtUnix.low >>> 0, message.claimedAtUnix.high >>> 0).toNumber(true) : message.claimedAtUnix;
+            if (message.txHash != null && message.hasOwnProperty("txHash"))
+                object.txHash = message.txHash;
             return object;
         };
 
@@ -7743,6 +7766,7 @@ $root.types = (function() {
          * @property {number|Long|null} [burnPoints] ClassicPointRedemption burnPoints
          * @property {number|Long|null} [payoutAmount] ClassicPointRedemption payoutAmount
          * @property {number|Long|null} [redeemedAtUnix] ClassicPointRedemption redeemedAtUnix
+         * @property {string|null} [txHash] ClassicPointRedemption txHash
          */
 
         /**
@@ -7793,6 +7817,14 @@ $root.types = (function() {
         ClassicPointRedemption.prototype.redeemedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
 
         /**
+         * ClassicPointRedemption txHash.
+         * @member {string} txHash
+         * @memberof types.ClassicPointRedemption
+         * @instance
+         */
+        ClassicPointRedemption.prototype.txHash = "";
+
+        /**
          * Creates a new ClassicPointRedemption instance using the specified properties.
          * @function create
          * @memberof types.ClassicPointRedemption
@@ -7824,6 +7856,8 @@ $root.types = (function() {
                 writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.payoutAmount);
             if (message.redeemedAtUnix != null && Object.hasOwnProperty.call(message, "redeemedAtUnix"))
                 writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.redeemedAtUnix);
+            if (message.txHash != null && Object.hasOwnProperty.call(message, "txHash"))
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.txHash);
             return writer;
         };
 
@@ -7876,6 +7910,10 @@ $root.types = (function() {
                         message.redeemedAtUnix = reader.uint64();
                         break;
                     }
+                case 5: {
+                        message.txHash = reader.string();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -7923,6 +7961,9 @@ $root.types = (function() {
             if (message.redeemedAtUnix != null && message.hasOwnProperty("redeemedAtUnix"))
                 if (!$util.isInteger(message.redeemedAtUnix) && !(message.redeemedAtUnix && $util.isInteger(message.redeemedAtUnix.low) && $util.isInteger(message.redeemedAtUnix.high)))
                     return "redeemedAtUnix: integer|Long expected";
+            if (message.txHash != null && message.hasOwnProperty("txHash"))
+                if (!$util.isString(message.txHash))
+                    return "txHash: string expected";
             return null;
         };
 
@@ -7970,6 +8011,8 @@ $root.types = (function() {
                     message.redeemedAtUnix = object.redeemedAtUnix;
                 else if (typeof object.redeemedAtUnix === "object")
                     message.redeemedAtUnix = new $util.LongBits(object.redeemedAtUnix.low >>> 0, object.redeemedAtUnix.high >>> 0).toNumber(true);
+            if (object.txHash != null)
+                message.txHash = String(object.txHash);
             return message;
         };
 
@@ -8009,6 +8052,7 @@ $root.types = (function() {
                     object.redeemedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                 } else
                     object.redeemedAtUnix = options.longs === String ? "0" : 0;
+                object.txHash = "";
             }
             if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
                 object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
@@ -8027,6 +8071,8 @@ $root.types = (function() {
                     object.redeemedAtUnix = options.longs === String ? String(message.redeemedAtUnix) : message.redeemedAtUnix;
                 else
                     object.redeemedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.redeemedAtUnix) : options.longs === Number ? new $util.LongBits(message.redeemedAtUnix.low >>> 0, message.redeemedAtUnix.high >>> 0).toNumber(true) : message.redeemedAtUnix;
+            if (message.txHash != null && message.hasOwnProperty("txHash"))
+                object.txHash = message.txHash;
             return object;
         };
 

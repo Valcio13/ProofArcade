@@ -110,6 +110,7 @@ function Play2048Page() {
   const [lastSubmitTx, setLastSubmitTx] = useState<TxStatusView | null>(null)
   const [lastFaucetTx, setLastFaucetTx] = useState<TxStatusView | null>(null)
   const [lastActionError, setLastActionError] = useState<string | null>(null)
+  const [classicPointsEarnedToday, setClassicPointsEarnedToday] = useState(0)
   const sessionRef = useRef<LocalSession | null>(null)
   const movesRef = useRef<MoveDirection[]>([])
   const boardRef = useRef<number[]>(board)
@@ -250,6 +251,13 @@ function Play2048Page() {
     }
     refreshPlayerState(client, address)
   }, [client, address])
+
+  // Initialize earned today from player stats when loaded
+  useEffect(() => {
+    if (player) {
+      setClassicPointsEarnedToday(player.classicPointsEarnedToday ?? 0)
+    }
+  }, [player])
 
   useEffect(() => {
     if (clientStatus.mode !== 'rpc') {
@@ -547,6 +555,26 @@ function Play2048Page() {
         detail: result.txDetail ?? 'Hash returned by RPC.',
       } : null)
       setLastActionError(null)
+      
+      // Update today's Classic Points earned for Classic Mode submissions
+      if (chainSession.mode === 'classic') {
+        const basePoints = Math.floor(expected.score / 24)
+        const dailyCap = config.classicDailyPointsCap ?? 2000
+        const remainingCap = Math.max(0, dailyCap - classicPointsEarnedToday)
+        const cappedBasePoints = Math.min(basePoints, remainingCap)
+        const bonusBps = player?.classicPointsBonusUtcDate === getUtcDateString() ? (config.dailyLoginBonusBps ?? 2000) : 0
+        const bonusPoints = Math.floor((cappedBasePoints * bonusBps) / 10000)
+        
+        const newTotal = classicPointsEarnedToday + cappedBasePoints
+        setClassicPointsEarnedToday(newTotal)
+        
+        console.log('Classic Points earned this game:')
+        console.log('  - Base points:', basePoints)
+        console.log('  - Capped base points:', cappedBasePoints)
+        console.log('  - Bonus points:', bonusPoints)
+        console.log('  - Total earned today:', newTotal)
+      }
+      
       await refreshPlayerState(client)
       toast.success(
         result.txHash
@@ -569,6 +597,7 @@ function Play2048Page() {
     setLastOutcome(null)
     setLastActionError(null)
     setBoard(initializeBoard(createSeedFromText('demo')))
+    // Reset daily earned points when date changes (checked on next game start)
   }
 
   function newIdentity() {
@@ -629,11 +658,11 @@ function Play2048Page() {
       <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(83,166,255,0.14),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(201,95,56,0.14),_transparent_24%),linear-gradient(180deg,_rgba(14,17,25,1),_rgba(9,12,18,1))] p-4 shadow-[0_24px_90px_rgba(0,0,0,0.3)] sm:p-6 xl:p-8">
         <div className="space-y-5">
             <div className="rounded-[1.8rem] border border-white/10 bg-black/20 p-5 sm:p-6">
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-end">
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
                 <div className="min-w-0">
                   <p className="text-xs uppercase tracking-[0.3em] text-[#f6df84]">ProofArcade 2048</p>
                   <h1 className="mt-2 font-['Georgia'] text-4xl leading-none text-white sm:text-6xl">
-                    Play first.
+                    Choose Your Mode
                   </h1>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
                     Practice in Training Mode, then compete in Daily Challenge or Classic Mode for rewards.
@@ -746,7 +775,7 @@ function Play2048Page() {
                   <div className={`rounded-[1.4rem] border border-white/10 bg-gradient-to-r ${selectedModeConfig.accent} px-4 py-4`}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-[10px] uppercase tracking-[0.24em] text-slate-400">Selected Lane</p>
+                        <p className="text-[10px] uppercase tracking-[0.24em] text-slate-400">Selected Mode</p>
                         <h2 className="mt-1 text-2xl font-bold text-white">{selectedModeConfig.title}</h2>
                         <p className="mt-1 text-sm leading-6 text-slate-300">{selectedModeConfig.detail}</p>
                       </div>
@@ -930,23 +959,20 @@ function ModePanel(args: {
       </div>
       <div className="mt-3 flex items-center justify-between gap-3">
         <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">{args.meta}</p>
-        <div className="flex gap-2">
+        {args.selected ? (
+          <div className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-white">
+            <span>✓</span>
+            <span>Selected</span>
+          </div>
+        ) : (
           <motion.button
             onClick={args.onSelect}
-            className={`rounded-full px-3 py-2 text-xs font-semibold transition ${args.selected ? 'bg-white text-slate-900' : 'border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'}`}
+            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
             whileTap={{ scale: 0.96 }}
           >
             Select
           </motion.button>
-          <motion.button
-            onClick={args.onStart}
-            disabled={args.disabled}
-            className="rounded-full border border-white/10 bg-black/30 px-3 py-2 text-xs font-semibold text-white transition hover:bg-black/50 disabled:cursor-not-allowed disabled:opacity-50"
-            whileTap={args.disabled ? undefined : { scale: 0.96 }}
-          >
-            Start
-          </motion.button>
-        </div>
+        )}
       </div>
     </motion.div>
   )

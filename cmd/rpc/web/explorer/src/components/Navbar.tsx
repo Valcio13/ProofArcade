@@ -40,8 +40,8 @@ const Navbar = () => {
         },
         {
             label: 'Check-In',
-            path: '/daily-login',
-            active: pathname === '/daily-login',
+            path: '/check-in',
+            active: pathname === '/check-in' || pathname === '/daily-login',
             requiresSession: true,
         },
         {

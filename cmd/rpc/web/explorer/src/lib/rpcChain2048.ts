@@ -18,6 +18,7 @@ import type {
   DailyPrizePool,
   LeaderboardEntry,
   PlayerStats,
+  RecentRun,
   RedeemPreview,
   RedemptionHistory,
   SessionStart,
@@ -31,6 +32,7 @@ const queryClaimableRewardsPath = '/v1/query/2048/claimable-rewards'
 const queryShopConfigPath = '/v1/query/2048/shop-config'
 const queryRedeemPreviewPath = '/v1/query/2048/redeem-preview'
 const queryRedemptionsPath = '/v1/query/2048/redemptions'
+const queryGameHistoryPath = '/v1/query/2048/game-history'
 const txStartDailyPath = '/v1/admin/tx-2048-start-daily'
 const txStartClassicPath = '/v1/admin/tx-2048-start-classic'
 const txSubmitPath = '/v1/admin/tx-2048-submit'
@@ -394,12 +396,18 @@ export function createRpcGame2048Client(): {
           totalScore: 0,
           classicPointsBalance: 0,
           classicPointsEarned: 0,
+          classicPointsEarnedToday: 0,
           loginStreak: 0,
           lastLoginClaimUtcDate: '',
           classicPointsBonusUtcDate: '',
         }
       }
-      return postJson<PlayerStats>(rpcURL, queryPlayerPath, { address: normalized })
+      const result = await postJson<PlayerStats>(rpcURL, queryPlayerPath, { address: normalized })
+      // Ensure classicPointsEarnedToday exists for backwards compatibility
+      if (result.classicPointsEarnedToday === undefined) {
+        result.classicPointsEarnedToday = 0
+      }
+      return result
     },
     async getLeaderboards() {
       return getJson<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>(queryLeaderboardsPath)
@@ -419,6 +427,15 @@ export function createRpcGame2048Client(): {
     async getRedemptions(address: string) {
       const liveAddress = assertHexAddress(address)
       return postJson<RedemptionHistory>(rpcURL, queryRedemptionsPath, { address: liveAddress })
+    },
+    async getRecentRuns(address?: string) {
+      if (!address) {
+        // Without address, return empty array
+        return []
+      }
+      const liveAddress = assertHexAddress(address)
+      const response = await postJson<{ address: string; games: RecentRun[] }>(rpcURL, queryGameHistoryPath, { address: liveAddress })
+      return response.games || []
     },
     async addFunds(address: string, amount = 500): Promise<FaucetResult> {
       const liveAddress = assertHexAddress(address)

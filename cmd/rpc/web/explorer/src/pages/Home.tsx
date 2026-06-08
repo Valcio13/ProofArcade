@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { createGame2048Client } from '../lib/chain2048'
 import { shortAddress } from '../lib/address'
+import { getUtcDateString } from '../lib/game2048'
 import type { LeaderboardEntry } from '../lib/mockChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
 import { ArrowRight, Zap, Trophy, Target, Shield, Clock, Award } from 'lucide-react'
@@ -56,7 +57,7 @@ const HomePage = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="mx-auto flex max-w-[1200px] flex-col gap-12 px-4 py-8 sm:px-6 lg:px-8"
+      className="mx-auto flex max-w-[1200px] flex-col gap-12 px-4 py-2 sm:px-6 lg:px-8"
     >
       {hasLocalSession ? (
         /* AUTHENTICATED USER VIEW */
@@ -152,6 +153,9 @@ const HomePage = () => {
                   icon={<Award className="h-6 w-6" />}
                 />
               </div>
+
+              {/* Daily Cap Progress - Larger Card Below Stats */}
+              <DailyCapProgressCard playerStats={playerStats} />
             </section>
           )}
 
@@ -649,6 +653,93 @@ function TopPlayerCard({
         <span>{moveCount} moves</span>
         <span>•</span>
         <span>tile {maxTile}</span>
+      </div>
+    </motion.div>
+  )
+}
+
+function DailyCapProgressCard({ playerStats }: { playerStats: any }) {
+  const dailyCap = 2000
+  const utcDate = getUtcDateString()
+  const hasDaySevenBonus = playerStats.classicPointsBonusUtcDate === utcDate
+  const earnedToday = playerStats.classicPointsEarnedToday ?? 0
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      className={`mt-6 rounded-[1.8rem] border p-6 sm:p-8 ${
+        hasDaySevenBonus
+          ? 'border-[#f6df84]/30 bg-gradient-to-br from-[#f6df84]/15 to-[#f6df84]/5'
+          : 'border-white/10 bg-[linear-gradient(135deg,_rgba(20,25,35,0.9),_rgba(12,16,24,0.9))]'
+      }`}
+    >
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        {/* Left: Progress Info */}
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            <div className={`rounded-xl p-3 ${
+              hasDaySevenBonus ? 'bg-[#f6df84]/15 text-[#f6df84]' : 'bg-[#53a6ff]/10 text-[#9fd0ff]'
+            }`}>
+              <Target className="h-7 w-7" />
+            </div>
+            <div>
+              <p className={`text-xs font-semibold uppercase tracking-[0.24em] ${
+                hasDaySevenBonus ? 'text-[#f6df84]' : 'text-slate-400'
+              }`}>
+                Daily Cap Progress
+              </p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-3xl font-black text-white">{earnedToday}</span>
+                <span className="text-xl font-medium text-slate-400">/ {dailyCap}</span>
+              </div>
+            </div>
+          </div>
+
+          <p className={`mt-4 text-sm ${
+            hasDaySevenBonus ? 'text-[#f6df84]/80' : 'text-slate-500'
+          }`}>
+            {hasDaySevenBonus 
+              ? 'Base Classic Points earned today (bonus adds +20% on top)'
+              : 'Classic Points earned today in Classic Mode'}
+          </p>
+
+          {/* Progress Bar */}
+          <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-slate-900/50">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{
+                width: `${Math.min(100, (earnedToday / dailyCap) * 100)}%`,
+              }}
+              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
+              className={`h-full ${
+                hasDaySevenBonus
+                  ? 'bg-gradient-to-r from-[#f6df84] to-[#f0cf52]'
+                  : 'bg-gradient-to-r from-[#53a6ff] to-[#7e69ff]'
+              }`}
+            />
+          </div>
+
+          {hasDaySevenBonus && (
+            <p className="mt-3 text-xs text-slate-500">
+              With your Day 7 bonus, you can earn up to {Math.floor(dailyCap * 1.2)} points total today
+            </p>
+          )}
+        </div>
+
+        {/* Right: Day 7 Bonus Badge (if active) */}
+        {hasDaySevenBonus && (
+          <div className="rounded-xl border border-[#f6df84]/30 bg-[#f6df84]/10 px-6 py-4">
+            <div className="text-center">
+              <Award className="mx-auto h-8 w-8 text-[#f6df84]" />
+              <p className="mt-2 text-sm font-bold uppercase tracking-wider text-[#f6df84]">
+                +20% Bonus Active
+              </p>
+              <p className="mt-1 text-xs text-[#f6df84]/70">Day 7 Reward</p>
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   )
