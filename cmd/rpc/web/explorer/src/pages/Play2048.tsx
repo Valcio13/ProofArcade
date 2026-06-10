@@ -340,7 +340,7 @@ function Play2048Page() {
   const selectedModeConfig = selectedMode === 'daily'
     ? {
         title: 'Daily Challenge',
-        accent: 'from-[#c95f38]/30 to-transparent',
+        accent: 'bg-[#c95f38]/30',
         actionTone: 'bg-[#c95f38] hover:bg-[#d36c49]',
         fee: config.dailyFee,
         detail: `One attempt per address. Seed changes ${dailyWindowLabel}.`,
@@ -348,7 +348,7 @@ function Play2048Page() {
       }
     : selectedMode === 'classic' ? {
         title: 'Classic Mode',
-        accent: 'from-[#53a6ff]/30 to-transparent',
+        accent: 'bg-[#53a6ff]/30',
         actionTone: 'bg-[#53a6ff] hover:bg-[#64b0ff]',
         fee: config.classicFee,
         detail: 'Unlimited runs with a fresh deterministic seed each paid session.',
@@ -356,7 +356,7 @@ function Play2048Page() {
       }
     : {
         title: 'Training Mode',
-        accent: 'from-[#53d7a6]/30 to-transparent',
+        accent: 'bg-[#53d7a6]/30',
         actionTone: 'bg-[#53d7a6] hover:bg-[#67ddb3]',
         fee: 0,
         detail: 'Free local board for warm-up runs. No wallet, no fee, no blockchain.',
@@ -655,13 +655,13 @@ function Play2048Page() {
           Dedicated Game View
         </div>
       </div>
-      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(83,166,255,0.14),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(201,95,56,0.14),_transparent_24%),linear-gradient(180deg,_rgba(14,17,25,1),_rgba(9,12,18,1))] p-4 shadow-[0_24px_90px_rgba(0,0,0,0.3)] sm:p-6 xl:p-8">
+      <section className="overflow-hidden rounded-3xl border border-white/10 bg-card p-4 sm:p-6 xl:p-8">
         <div className="space-y-5">
-            <div className="rounded-[1.8rem] border border-white/10 bg-black/20 p-5 sm:p-6">
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5 sm:p-6">
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
                 <div className="min-w-0">
                   <p className="text-xs uppercase tracking-[0.3em] text-[#f6df84]">ProofArcade 2048</p>
-                  <h1 className="mt-2 font-['Georgia'] text-4xl leading-none text-white sm:text-6xl">
+                  <h1 className="mt-2 font-bold text-4xl leading-none text-white sm:text-6xl">
                     Choose Your Mode
                   </h1>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
@@ -669,8 +669,8 @@ function Play2048Page() {
                   </p>
                 </div>
 
-                <div className="rounded-[1.4rem] border border-white/10 bg-slate-950/40 p-4">
-                  <p className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Session</p>
+                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Session</p>
                   
                   {/* Connected Wallet */}
                   {clientStatus.mode === 'rpc' && wallets.length > 0 ? (
@@ -718,9 +718,9 @@ function Play2048Page() {
                 {/* COMPETITIVE RUNS SECTION */}
                 <div>
                   <div className="mb-3 flex items-center gap-3">
-                    <div className="h-px flex-1 bg-gradient-to-r from-[#f0cf52]/40 to-transparent"></div>
+                    <div className="h-px flex-1 bg-white/10"></div>
                     <p className="text-xs uppercase tracking-[0.3em] text-[#f6df84]">Competitive Runs</p>
-                    <div className="h-px flex-1 bg-gradient-to-l from-[#f0cf52]/40 to-transparent"></div>
+                    <div className="h-px flex-1 bg-white/10"></div>
                   </div>
                   <div className="grid gap-3 lg:grid-cols-2">
                     <ModePanel
@@ -751,9 +751,9 @@ function Play2048Page() {
                 {/* PRACTICE SECTION */}
                 <div>
                   <div className="mb-3 flex items-center gap-3">
-                    <div className="h-px flex-1 bg-gradient-to-r from-[#53d7a6]/40 to-transparent"></div>
+                    <div className="h-px flex-1 bg-white/10"></div>
                     <p className="text-xs uppercase tracking-[0.3em] text-[#53d7a6]">Practice</p>
-                    <div className="h-px flex-1 bg-gradient-to-l from-[#53d7a6]/40 to-transparent"></div>
+                    <div className="h-px flex-1 bg-white/10"></div>
                   </div>
                   <ModePanel
                     title="Training Mode"
@@ -770,17 +770,17 @@ function Play2048Page() {
               </div>
             </div>
 
-            <div className="rounded-[1.8rem] border border-white/10 bg-[#11161f]/90 p-4 sm:p-5">
+            <div className="rounded-2xl border border-white/10 bg-[#11161f]/90 p-4 sm:p-5">
                 <div className="mx-auto w-full max-w-[800px]">
-                  <div className={`rounded-[1.4rem] border border-white/10 bg-gradient-to-r ${selectedModeConfig.accent} px-4 py-4`}>
+                  <div className={`rounded-2xl border border-white/10 ${selectedModeConfig.accent} px-4 py-4`}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-[10px] uppercase tracking-[0.24em] text-slate-400">Selected Mode</p>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Selected Mode</p>
                         <h2 className="mt-1 text-2xl font-bold text-white">{selectedModeConfig.title}</h2>
                         <p className="mt-1 text-sm leading-6 text-slate-300">{selectedModeConfig.detail}</p>
                       </div>
-                      <div className="rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3 text-right">
-                        <p className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Entry Fee</p>
+                      <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-right">
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Entry Fee</p>
                         <p className="mt-1 text-2xl font-black text-white">{selectedModeConfig.fee}</p>
                         <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">{selectedModeConfig.meta}</p>
                       </div>
@@ -799,7 +799,7 @@ function Play2048Page() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.18, ease: 'easeOut' }}
-                        className="mt-4 rounded-[1.25rem] border border-[#c95f38]/40 bg-[#c95f38]/10 px-4 py-3 text-sm text-[#ffd3c5]"
+                        className="mt-4 rounded-2xl border border-[#c95f38]/40 bg-[#c95f38]/10 px-4 py-3 text-sm text-[#ffd3c5]"
                       >
                         {lastActionError}
                       </motion.div>
@@ -810,7 +810,7 @@ function Play2048Page() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.18, ease: 'easeOut' }}
-                        className="mt-4 rounded-[1.25rem] border border-amber-500/40 bg-amber-950/20 px-4 py-3"
+                        className="mt-4 rounded-2xl border border-amber-500/40 bg-amber-950/20 px-4 py-3"
                       >
                         <p className="text-sm font-semibold text-amber-300">Wallet authentication required</p>
                         <p className="mt-1 text-sm text-amber-200/80">
@@ -823,19 +823,19 @@ function Play2048Page() {
                   <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(280px,330px)_minmax(0,780px)] xl:items-start xl:justify-center">
                     <div className="space-y-3 xl:order-1">
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-[1.1rem] border border-[#f6df84]/20 bg-[#f6df84]/10 px-4 py-3">
+                        <div className="rounded-xl border border-[#f6df84]/20 bg-[#f6df84]/10 px-4 py-3">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Score</p>
                           <p className="mt-1 text-3xl font-black text-white">{score}</p>
                         </div>
-                        <div className="rounded-[1.1rem] border border-white/10 bg-slate-950/70 px-4 py-3">
+                        <div className="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Best Tile</p>
                           <p className="mt-1 text-3xl font-black text-white">{maxTile}</p>
                         </div>
-                        <div className="rounded-[1.1rem] border border-white/10 bg-slate-950/70 px-4 py-3">
+                        <div className="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Moves</p>
                           <p className="mt-1 text-3xl font-black text-white">{moves.length}</p>
                         </div>
-                        <div className="rounded-[1.1rem] border border-white/10 bg-slate-950/70 px-4 py-3">
+                        <div className="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Mode</p>
                           <p className="mt-1 text-lg font-bold uppercase tracking-[0.18em] text-white">{session?.mode ?? 'idle'}</p>
                           <p className="mt-1 text-xs text-slate-500">{session ? (session.mode === 'training' ? 'No fee, no chain' : `${currentFee} PROOF fee`) : 'Choose a run'}</p>
@@ -846,29 +846,25 @@ function Play2048Page() {
                         <motion.button
                           onClick={() => start(selectedMode)}
                           disabled={!canStart || isLoadingClient || !canUseLiveWallet}
-                          className={`rounded-[1.15rem] px-4 py-4 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${selectedModeConfig.actionTone}`}
-                          whileHover={!canStart || isLoadingClient || !canUseLiveWallet ? undefined : { y: -2, scale: 1.01 }}
-                          whileTap={!canStart || isLoadingClient || !canUseLiveWallet ? undefined : { scale: 0.98 }}
+                          className={`rounded-2xl px-4 py-4 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${selectedModeConfig.actionTone}`}
                         >
                           {selectedMode === 'daily' ? 'Start Daily Run' : selectedMode === 'classic' ? 'Start Classic Run' : 'Start Training Run'}
                         </motion.button>
                         <motion.button
                           onClick={() => finishRun('player_stopped')}
                           disabled={!session || isSubmitted || (session.mode !== 'training' && !canUseLiveWallet)}
-                          className="rounded-[1.15rem] border border-white/10 bg-white/5 px-4 py-4 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                          whileHover={!session || isSubmitted || (session.mode !== 'training' && !canUseLiveWallet) ? undefined : { y: -2 }}
-                          whileTap={!session || isSubmitted || (session.mode !== 'training' && !canUseLiveWallet) ? undefined : { scale: 0.98 }}
+                          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {session?.mode === 'training' ? 'Stop Training Run' : 'Stop + Submit'}
                         </motion.button>
                       </div>
 
-                      <div className="rounded-[1.1rem] border border-white/10 bg-black/20 px-4 py-3">
+                      <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
                         <p className="text-sm text-slate-300">Use arrow keys or WASD to move the board.</p>
                       </div>
                     </div>
 
-                    <div className="mx-auto w-full max-w-[700px] rounded-[1.6rem] border border-white/10 bg-[#171d28] p-4 sm:max-w-[740px] sm:p-5 xl:order-2">
+                    <div className="mx-auto w-full max-w-[700px] rounded-2xl border border-white/10 bg-[#171d28] p-4 sm:max-w-[740px] sm:p-5 xl:order-2">
                       <div className="grid grid-cols-4 gap-4 sm:gap-5">
                         {board.map((value, index) => (
                           <motion.div
@@ -877,7 +873,7 @@ function Play2048Page() {
                             initial={{ scale: 0.92, opacity: 0.78 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ type: 'spring', stiffness: 220, damping: 16 }}
-                            className={`flex aspect-square items-center justify-center rounded-[1rem] border border-black/10 text-[1.7rem] font-black sm:text-[2.2rem] ${tileStyles[value] ?? 'bg-[#111827] text-white'}`}
+                            className={`flex aspect-square items-center justify-center rounded-xl border border-black/10 text-[1.7rem] font-black sm:text-[2.2rem] ${tileStyles[value] ?? 'bg-[#111827] text-white'}`}
                           >
                             {value || ''}
                           </motion.div>
@@ -895,7 +891,7 @@ function Play2048Page() {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1rem] border border-white/10 bg-black/20 px-4 py-3">
+    <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
       <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">{label}</p>
       <p className="mt-1 text-lg font-bold text-white">{value}</p>
     </div>
@@ -917,7 +913,7 @@ function ActionBanner({ banner }: { banner: ActionBannerState }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
-      className={`mt-4 rounded-[1.2rem] border px-4 py-3 ${toneClass}`}
+      className={`mt-4 rounded-xl border px-4 py-3 ${toneClass}`}
     >
       <p className="text-sm font-semibold">{banner.title}</p>
       <p className="mt-1 text-sm leading-6 opacity-90">{banner.detail}</p>
@@ -944,9 +940,8 @@ function ModePanel(args: {
 
   return (
     <motion.div
-      whileHover={args.disabled ? undefined : { y: -4 }}
       transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-      className={`rounded-[1.35rem] border p-4 transition ${args.selected ? toneClass : 'border-white/10 bg-slate-950/50'}`}
+      className={`rounded-2xl border p-4 transition ${args.selected ? toneClass : 'border-white/10 bg-slate-950/50'}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -968,7 +963,6 @@ function ModePanel(args: {
           <motion.button
             onClick={args.onSelect}
             className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-            whileTap={{ scale: 0.96 }}
           >
             Select
           </motion.button>

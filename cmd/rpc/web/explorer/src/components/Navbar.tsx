@@ -105,7 +105,7 @@ const Navbar = () => {
                     ) : (
                         <Link
                             to="/auth"
-                            className={`whitespace-nowrap rounded-full px-5 py-2 text-sm font-semibold shadow-[0_10px_30px_rgba(240,207,82,0.18)] transition-colors duration-200 ${
+                            className={`whitespace-nowrap rounded-full px-5 py-2 text-sm font-semibold transition-colors duration-200 ${
                                 isAuthRoute
                                     ? 'bg-[#4ade80] text-[#0a0e1a]'
                                     : 'bg-[#f0cf52] text-[#2f2418] hover:brightness-105'

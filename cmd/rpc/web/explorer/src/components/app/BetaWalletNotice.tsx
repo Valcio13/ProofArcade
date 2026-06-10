@@ -5,11 +5,11 @@ type BetaWalletNoticeProps = {
 
 export default function BetaWalletNotice({
   title = 'Beta wallet notice',
-  body = 'ProofArcade wallet access is still beta. Back up your encrypted wallet after creating it, and avoid storing meaningful value until the custody model is fully client-side.',
+  body = 'ProofArcade wallet access is still beta. Avoid storing meaningful value until the custody model is fully client-side. Back up your encrypted wallet after creating one — use the Export Backup option in the wallet menu.',
 }: BetaWalletNoticeProps) {
   return (
-    <div className="rounded-[1.35rem] border border-[#f0cf52]/25 bg-[#f0cf52]/8 px-4 py-4 text-sm text-[#f7e5a6]">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f0cf52]">{title}</p>
+    <div className="rounded-r-xl border-l-4 border-[#f0cf52] bg-[#f0cf52]/10 py-4 pl-5 pr-5 text-sm">
+      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#f0cf52]">⚠ {title}</p>
       <p className="mt-2 leading-6 text-[#f2e7be]">{body}</p>
     </div>
   )

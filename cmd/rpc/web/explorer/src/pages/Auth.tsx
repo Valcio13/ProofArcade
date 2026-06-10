@@ -50,6 +50,8 @@ function AuthPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [walletMenuOpen, setWalletMenuOpen] = useState<string | null>(null)
   const [isManageWalletsExpanded, setIsManageWalletsExpanded] = useState(false)
+  const [justCreated, setJustCreated] = useState<RpcKeystoreAccount | null>(null)
+  const [isFauceting, setIsFauceting] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -158,12 +160,30 @@ function AuthPage() {
       setPassword('')
       setConfirmPassword('')
       toast.success(`${created.nickname} is ready and signed in on this device.`)
-      navigate('/')
+      setJustCreated(created)
     } catch (error) {
       console.error(error)
       toast.error(error instanceof Error ? error.message : 'Unable to create a wallet.')
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  async function handleClaimFaucet() {
+    if (!justCreated) {
+      return
+    }
+    try {
+      setIsFauceting(true)
+      const client = await createGame2048Client()
+      await client.addFunds(justCreated.address, 500)
+      toast.success('Test PROOF added to your wallet.')
+      navigate('/play')
+    } catch (error) {
+      console.error(error)
+      toast.error(error instanceof Error ? error.message : 'Faucet request failed.')
+    } finally {
+      setIsFauceting(false)
     }
   }
 
@@ -305,17 +325,19 @@ function AuthPage() {
         <ProductHero
           eyebrow="ProofArcade Wallet"
           title="Unlock your wallet and start playing."
-          description="Create a wallet, import an encrypted backup, or unlock an existing player on this device. Once signed in, the game, profile, shop, and check-in pages can use it automatically."
+          description="Create a wallet, import a backup, or unlock an existing player — then compete across all game modes."
         />
 
-        <BetaWalletNotice />
+        <div className="mt-6">
+          <BetaWalletNotice />
+        </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           {/* Login Section */}
-          <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+          <section className="rounded-2xl border border-white/15 p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Log In</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Returning Player</p>
                 <h2 className="mt-2 text-2xl font-bold text-white">Unlock existing wallet</h2>
               </div>
               {wallets.length > 0 ? (
@@ -324,10 +346,6 @@ function AuthPage() {
                 </div>
               ) : null}
             </div>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Pick a saved wallet and enter its password to sign in locally.
-            </p>
-
             <div className="mt-5 space-y-4">
               {wallets.length > 0 ? (
                 <>
@@ -491,14 +509,11 @@ function AuthPage() {
           </section>
 
           {/* Register Section */}
-          <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+          <section className="rounded-2xl border border-white/15 p-6">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Register</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">New Player</p>
               <h2 className="mt-2 text-2xl font-bold text-white">Create new wallet</h2>
             </div>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Create a wallet in the node keystore and sign in automatically.
-            </p>
 
             <form onSubmit={(e) => { e.preventDefault(); handleRegister(); }} className="mt-5 space-y-4">
               <FieldCard label="Nickname">
@@ -531,7 +546,7 @@ function AuthPage() {
               </FieldCard>
 
               {password && confirmPassword && password !== confirmPassword ? (
-                <div className="rounded-[1rem] border border-[#f6df84]/30 bg-[#f6df84]/8 px-4 py-3 text-sm text-[#f8e8a5]">
+                <div className="rounded-xl border border-[#f6df84]/30 bg-[#f6df84]/8 px-4 py-3 text-sm text-[#f8e8a5]">
                   Passwords do not match
                 </div>
               ) : null}
@@ -545,14 +560,14 @@ function AuthPage() {
                   !password ||
                   password !== confirmPassword
                 }
-                className="w-full rounded-2xl bg-[#f0cf52] px-5 py-3 text-sm font-semibold text-[#2f2418] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-2xl bg-[#4ade80] px-5 py-3 text-sm font-semibold text-[#0f1a14] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isCreating ? (
                   <span className="flex items-center justify-center gap-2">
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="h-4 w-4 rounded-full border-2 border-[#2f2418]/30 border-t-[#2f2418]"
+                      className="h-4 w-4 rounded-full border-2 border-[#0f1a14]/30 border-t-[#0f1a14]"
                     />
                     Creating...
                   </span>
@@ -566,8 +581,8 @@ function AuthPage() {
 
         {/* Import & Session Section */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          <section className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Import Backup</p>
+          <section className="rounded-2xl border border-white/10 bg-black/20 p-5">
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Import Backup</p>
             <h3 className="mt-2 text-xl font-bold text-white">Restore from file</h3>
             <p className="mt-2 text-sm leading-6 text-slate-400">
               Restore an encrypted wallet backup. You'll still need the original password to unlock it.
@@ -603,8 +618,8 @@ function AuthPage() {
             </label>
           </section>
 
-          <section className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Current Session</p>
+          <section className="rounded-2xl border border-white/10 bg-black/20 p-5">
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Current Session</p>
             <div className="mt-3 flex items-center gap-3">
               <div
                 className={`h-3 w-3 rounded-full ${storedWallet ? 'bg-[#53d7a6]' : 'bg-slate-600'}`}
@@ -615,7 +630,7 @@ function AuthPage() {
             </div>
             {storedWallet ? (
               <div className="mt-3 space-y-2">
-                <div className="rounded-[1rem] border border-white/10 bg-slate-950/50 px-3 py-2">
+                <div className="rounded-xl border border-white/10 bg-slate-950/50 px-3 py-2">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Address</p>
                   <p className="mt-1 break-all font-mono text-xs text-slate-300">
                     {storedWallet.address}
@@ -632,11 +647,72 @@ function AuthPage() {
         </div>
 
         {isLoading && !isCreating ? (
-          <div className="mt-6 rounded-[1.4rem] border border-white/10 bg-black/20 px-5 py-4 text-sm text-slate-400">
+          <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-sm text-slate-400">
             Loading wallet access...
           </div>
         ) : null}
       </PageShell>
+
+      {/* Wallet Created — Faucet Step */}
+      <AnimatePresence>
+        {justCreated && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-md rounded-2xl border border-[#53a6ff]/30 bg-card p-8"
+            >
+              <p className="text-xs uppercase tracking-[0.18em] text-[#9fd0ff]">Wallet Created</p>
+              <h2 className="mt-2 text-2xl font-bold text-white">Claim test PROOF to start</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                {justCreated.nickname} is signed in on this device. Claim some test PROOF so you can
+                enter daily challenges and competitive runs.
+              </p>
+
+              <div className="mt-4 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Address</p>
+                <p className="mt-1 break-all font-mono text-xs text-slate-300">{justCreated.address}</p>
+              </div>
+
+              <button
+                onClick={handleClaimFaucet}
+                disabled={isFauceting}
+                className="mt-5 w-full rounded-xl bg-[#53a6ff] px-5 py-3 text-sm font-semibold text-[#0a0e1a] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isFauceting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="h-4 w-4 rounded-full border-2 border-[#0a0e1a]/30 border-t-[#0a0e1a]"
+                    />
+                    Claiming...
+                  </span>
+                ) : (
+                  'Claim test PROOF & Play'
+                )}
+              </button>
+
+              <button
+                onClick={() => {
+                  setJustCreated(null)
+                  navigate('/')
+                }}
+                disabled={isFauceting}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Skip for now
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Wallet Confirmation Modal */}
       <AnimatePresence>
@@ -653,7 +729,7 @@ function AuthPage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md rounded-[2rem] border border-red-500/30 bg-[linear-gradient(135deg,_rgba(60,20,20,0.95),_rgba(30,10,10,0.98))] p-8 shadow-[0_25px_100px_rgba(0,0,0,0.5)]"
+              className="w-full max-w-md rounded-2xl border border-red-500/30 bg-card p-8"
             >
               <div className="flex items-start justify-between">
                 <div>
