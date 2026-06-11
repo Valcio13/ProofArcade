@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <Logo size={250} showText={false} />
                         <span className="text-gray-400 text-sm">
-                            © 2025 ProofArcade. All rights reserved.
+                            © {new Date().getFullYear()} ProofArcade. All rights reserved.
                         </span>
                     </div>
                 </div>
@@ -26,7 +26,7 @@ const Footer: React.FC = () => {
                     {/* Copyright */}
                     <div className="text-center">
                         <span className="text-gray-400 text-xs">
-                            © 2025 ProofArcade. All rights reserved.
+                            © {new Date().getFullYear()} ProofArcade. All rights reserved.
                         </span>
                     </div>
                 </div>

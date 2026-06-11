@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { Trophy } from 'lucide-react'
 import { createGame2048Client } from '../lib/chain2048'
 import { shortAddress } from '../lib/address'
 import { getUtcDateString } from '../lib/game2048'
@@ -99,13 +100,12 @@ function LeaderboardPage() {
       className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8"
     >
       {/* Hero Header Section */}
-      <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(240,207,82,0.18),_transparent_28%),radial-gradient(circle_at_80%_16%,_rgba(83,166,255,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(201,95,56,0.2),_transparent_24%),linear-gradient(145deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-5 shadow-[0_25px_90px_rgba(0,0,0,0.32)] sm:p-6">
-        <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.05)_45%,transparent_100%)]" />
-        <div className="relative grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-center">
+      <section className="rounded-3xl p-5 sm:p-6">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-center">
           <div className="flex flex-col justify-between gap-5">
             <div className="max-w-3xl">
-              <p className="text-xs uppercase tracking-[0.32em] text-[#f6df84]">ProofArcade 2048</p>
-              <h1 className="mt-3 font-['Georgia'] text-4xl leading-none text-white sm:text-5xl">
+              <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">ProofArcade 2048</p>
+              <h1 className="mt-3 text-4xl font-bold leading-none text-white sm:text-5xl">
                 Leaderboards
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
@@ -119,7 +119,7 @@ function LeaderboardPage() {
                 onClick={() => switchMode('daily')}
                 className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
                   activeMode === 'daily'
-                    ? 'bg-[#f0cf52] text-[#2e2510] shadow-sm'
+                    ? 'bg-[#f0cf52] text-[#2e2510]'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
@@ -129,7 +129,7 @@ function LeaderboardPage() {
                 onClick={() => switchMode('classic')}
                 className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
                   activeMode === 'classic'
-                    ? 'bg-[#53a6ff] text-white shadow-sm'
+                    ? 'bg-[#53a6ff] text-white'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
@@ -138,52 +138,68 @@ function LeaderboardPage() {
             </div>
           </div>
 
-          <motion.div
-            whileHover={{ y: -2 }}
-            transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-            className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.28em] text-slate-500">Share</p>
-                <h2 className="mt-2 text-lg font-bold text-white">Share Leaderboard</h2>
+          {/* Aside: Get Started (logged out) or Share (logged in) */}
+          {storedWallet ? (
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Share</p>
+                  <h2 className="mt-2 text-lg font-bold text-white">Share Leaderboard</h2>
+                </div>
+                <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-slate-400">
+                  Link
+                </div>
               </div>
-              <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-slate-400">
-                Link
-              </div>
+
+              <p className="mt-2 text-xs leading-5 text-slate-400">
+                Copy link to share this {activeMode} leaderboard.
+              </p>
+
+              <button
+                onClick={copyShareLink}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
+              >
+                <i className="bi bi-share mr-2"></i>
+                Copy Share Link
+              </button>
+
+              {userRank !== -1 ? (
+                <div className="mt-3 rounded-lg border border-[#53a6ff]/30 bg-[#53a6ff]/10 px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-[#9fd0ff]">Your Rank</p>
+                  <p className="mt-1 text-xl font-bold text-white">#{userRank + 1}</p>
+                  <p className="mt-0.5 text-xs text-slate-400">
+                    {activeLeaderboard[userRank]?.score ?? 0} points
+                  </p>
+                </div>
+              ) : null}
             </div>
-
-            <p className="mt-2 text-xs leading-5 text-slate-400">
-              Copy link to share this {activeMode} leaderboard.
-            </p>
-
-            <button
-              onClick={copyShareLink}
-              className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
-            >
-              <i className="bi bi-share mr-2"></i>
-              Copy Share Link
-            </button>
-
-            {storedWallet && userRank !== -1 ? (
-              <div className="mt-3 rounded-lg border border-[#53a6ff]/30 bg-[#53a6ff]/10 px-3 py-2">
-                <p className="text-[10px] uppercase tracking-[0.22em] text-[#9fd0ff]">Your Rank</p>
-                <p className="mt-1 text-xl font-bold text-white">#{userRank + 1}</p>
-                <p className="mt-0.5 text-xs text-slate-400">
-                  {activeLeaderboard[userRank]?.score ?? 0} points
-                </p>
-              </div>
-            ) : null}
-          </motion.div>
+          ) : (
+            <div className="rounded-2xl border border-[#53a6ff]/30 bg-[#53a6ff]/5 p-4">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#9fd0ff]">Get Started</p>
+              <h2 className="mt-2 text-lg font-bold text-white">Create a wallet to compete</h2>
+              <p className="mt-2 text-xs leading-5 text-slate-400">
+                Save your scores, climb the board, and earn rewards.
+              </p>
+              <a
+                href="/auth"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#4ade80] px-3 py-2.5 text-sm font-semibold text-[#0f1a14] transition hover:brightness-105"
+              >
+                Create Wallet
+              </a>
+              <p className="mt-2 text-center text-[11px] text-slate-500">
+                Then claim test PROOF to start playing.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
       {/* Daily Prize Pool - Only show for daily mode */}
       {activeMode === 'daily' ? (
-        <section className="mt-4 rounded-[1.5rem] border border-[#f0cf52]/20 bg-[linear-gradient(135deg,_rgba(45,38,16,0.88),_rgba(20,21,28,0.96))] p-4">
+        <section className="mt-4 rounded-2xl border border-[#f0cf52]/20 bg-card p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-[#f6df84]">Today's Prize Pool</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">Today's Prize Pool</p>
               <h2 className="mt-1 text-2xl font-bold text-white">
                 {dailyPool?.rewardPool ?? 0} PROOF
               </h2>
@@ -205,7 +221,7 @@ function LeaderboardPage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-4 rounded-[1.3rem] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/90 p-3"
+        className="mt-4 rounded-2xl border border-white/10 bg-card p-3"
       >
         {storedWallet && userRank !== -1 ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -214,7 +230,7 @@ function LeaderboardPage() {
                 <span className="text-xl font-black text-[#53a6ff]">#{userRank + 1}</span>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
                 <p className="mt-0.5 text-xl font-bold text-white">
                   {activeLeaderboard[userRank]?.score ?? 0} <span className="text-sm font-normal text-slate-400">points</span>
                 </p>
@@ -227,7 +243,7 @@ function LeaderboardPage() {
         ) : storedWallet ? (
           <div className="flex flex-col items-center gap-3 py-2 sm:flex-row sm:justify-between">
             <div className="text-center sm:text-left">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
               <p className="mt-1 text-base font-semibold text-slate-400">Not ranked yet</p>
             </div>
             <a
@@ -238,27 +254,19 @@ function LeaderboardPage() {
             </a>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3 py-2 sm:flex-row sm:justify-between">
-            <div className="text-center sm:text-left">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
-              <p className="mt-1 text-base font-semibold text-slate-400">Sign in to compete</p>
-            </div>
-            <a
-              href="/auth"
-              className="rounded-xl border border-[#53a6ff]/30 bg-[#53a6ff]/10 px-4 py-2 text-sm font-semibold text-[#9fd0ff] transition hover:bg-[#53a6ff]/15"
-            >
-              Create Wallet
-            </a>
+          <div className="py-2 text-center sm:text-left">
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
+            <p className="mt-1 text-base font-semibold text-slate-400">Sign in to appear on the board</p>
           </div>
         )}
       </motion.div>
 
       {/* Leaderboard Table */}
-      <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+      <section className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
                 {activeMode === 'daily' ? 'Daily Leaders' : 'Classic Leaders'}
               </p>
               <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5">
@@ -276,7 +284,7 @@ function LeaderboardPage() {
         </div>
 
         {isLoading ? (
-          <div className="mt-4 rounded-lg border border-dashed border-white/10 bg-slate-950/30 px-3 py-6 text-center">
+          <div className="mt-4 rounded-lg border border-dashed border-white/10 bg-black/20 px-3 py-6 text-center">
             <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-slate-600 border-t-slate-300"></div>
             <p className="mt-2 text-xs text-slate-400">Loading leaderboard...</p>
           </div>
@@ -293,10 +301,8 @@ function LeaderboardPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-4 rounded-lg border border-dashed border-white/10 bg-slate-950/30 px-4 py-8 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-800/50">
-              <span className="text-2xl">🏆</span>
-            </div>
+          <div className="mt-4 rounded-lg border border-dashed border-white/10 bg-black/20 px-4 py-8 text-center">
+            <Trophy className="mx-auto h-10 w-10 text-slate-600" />
             <p className="mt-3 text-sm font-semibold text-white">
               {activeMode === 'daily' ? 'No scores yet today' : 'No classic scores yet'}
             </p>
@@ -317,8 +323,8 @@ function LeaderboardPage() {
 
       {/* Info Section */}
       <section className="mt-4 grid gap-4 md:grid-cols-2">
-        <div className="rounded-[1.3rem] border border-white/10 bg-black/20 p-4">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-500">About Daily</p>
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">About Daily</p>
           <h3 className="mt-1 text-base font-bold text-white">Daily Challenge</h3>
           <p className="mt-2 text-xs leading-5 text-slate-400">
             Compete once per UTC day on a shared board. Entry fees build the prize pool, and top
@@ -326,8 +332,8 @@ function LeaderboardPage() {
           </p>
         </div>
 
-        <div className="rounded-[1.3rem] border border-white/10 bg-black/20 p-4">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-500">About Classic</p>
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">About Classic</p>
           <h3 className="mt-1 text-base font-bold text-white">Classic Mode</h3>
           <p className="mt-2 text-xs leading-5 text-slate-400">
             Play unlimited runs with random seeds. Earn spendable points for progression and
@@ -357,30 +363,21 @@ function LeaderboardRow({
     return 'text-slate-400'
   }
 
-  const getRankIcon = (position: number) => {
-    if (position === 1) return '🥇'
-    if (position === 2) return '🥈'
-    if (position === 3) return '🥉'
-    return `#${position}`
-  }
-
   return (
-    <motion.div
-      whileHover={{ x: 2, scale: 1.002 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className={`rounded-lg border px-3 py-2 ${
+    <div
+      className={`rounded-lg border px-3 py-2 transition-colors ${
         isCurrentUser
           ? 'border-[#53a6ff]/40 bg-[#53a6ff]/10'
           : rank <= 3
-            ? 'border-[#f6df84]/20 bg-[#f6df84]/5'
-            : 'border-white/10 bg-slate-950/50'
+            ? 'border-[#f6df84]/20 bg-[#f6df84]/5 hover:border-[#f6df84]/30'
+            : 'border-white/10 bg-black/20 hover:border-white/20'
       }`}
     >
       <div className="flex items-center gap-3">
         {/* Rank */}
         <div className="flex w-10 shrink-0 items-center justify-center">
           <span className={`text-base font-black ${getRankColor(rank)}`}>
-            {getRankIcon(rank)}
+            #{rank}
           </span>
         </div>
 
@@ -415,20 +412,16 @@ function LeaderboardRow({
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
 function PoolStat({ label, value }: { label: string; value: string }) {
   return (
-    <motion.div
-      whileHover={{ y: -1 }}
-      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-      className="rounded-lg border border-white/10 bg-black/20 px-3 py-2"
-    >
-      <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">{label}</p>
+    <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">{label}</p>
       <p className="mt-1 text-sm font-semibold text-white">{value}</p>
-    </motion.div>
+    </div>
   )
 }
 

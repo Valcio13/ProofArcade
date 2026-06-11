@@ -276,14 +276,14 @@ function ProfilePage() {
       className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8"
     >
       {/* Player Identity Hero */}
-      <section className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(83,166,255,0.15),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(240,207,82,0.12),_transparent_22%),linear-gradient(160deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.28)] sm:p-8">
+      <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
         {selectedWallet ? (
           <>
             {/* Player Header */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#f6df84]">Player</p>
-                <h1 className="mt-2 font-['Georgia'] text-5xl leading-tight text-white">
+                <h1 className="mt-2 font-bold text-5xl leading-tight text-white">
                   {selectedWallet.nickname}
                 </h1>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -313,7 +313,7 @@ function ProfilePage() {
                   <Trophy className="h-5 w-5 text-[#f6df84]" />
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Best Score</p>
                 </div>
-                <p className="mt-3 font-['Georgia'] text-4xl font-bold text-white">
+                <p className="mt-3 text-4xl font-bold text-white">
                   {Math.max(player?.bestDailyScore ?? 0, player?.bestClassicScore ?? 0).toLocaleString()}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
@@ -329,7 +329,7 @@ function ProfilePage() {
                   <Target className="h-5 w-5 text-[#53a6ff]" />
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Best Tile</p>
                 </div>
-                <p className="mt-3 font-['Georgia'] text-4xl font-bold text-white">
+                <p className="mt-3 text-4xl font-bold text-white">
                   {player?.bestTile ?? 0}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">Highest achieved</p>
@@ -345,7 +345,7 @@ function ProfilePage() {
                   const rankData = formatRank(leaderboards.classic, selectedAddress)
                   return (
                     <>
-                      <p className="mt-3 font-['Georgia'] text-4xl font-bold text-white">
+                      <p className="mt-3 text-4xl font-bold text-white">
                         {rankData.display}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
@@ -368,7 +368,7 @@ function ProfilePage() {
                   <Wallet className="h-5 w-5 text-[#7e69ff]" />
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Balance</p>
                 </div>
-                <p className="mt-3 font-['Georgia'] text-4xl font-bold text-white">
+                <p className="mt-3 text-4xl font-bold text-white">
                   {formatCNPY(player?.balance ?? 0)}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">PROOF tokens</p>
@@ -378,13 +378,13 @@ function ProfilePage() {
         ) : (
           <div className="py-8 text-center">
             <p className="text-xs uppercase tracking-wider text-[#f6df84]">Player Profile</p>
-            <h1 className="mt-3 font-['Georgia'] text-4xl text-white">No Wallet Selected</h1>
+            <h1 className="mt-3 font-bold text-4xl text-white">No Wallet Selected</h1>
             <p className="mt-4 text-base text-slate-400">
               Create or import a wallet to view your profile and track your achievements
             </p>
             <Link
               to="/auth"
-              className="mt-6 inline-flex rounded-2xl bg-gradient-to-r from-[#53a6ff] to-[#7e69ff] px-6 py-3 text-base font-semibold text-white shadow-[0_8px_24px_rgba(83,166,255,0.3)] transition hover:shadow-[0_12px_32px_rgba(83,166,255,0.4)]"
+              className="mt-6 inline-flex rounded-2xl bg-[#4ade80] px-6 py-3 text-base font-semibold text-[#0f1a14] transition hover:brightness-105"
             >
               Create Wallet
             </Link>
@@ -396,7 +396,7 @@ function ProfilePage() {
         <div className="mt-6 space-y-6">
           {/* Claimable Rewards - Priority Section */}
           {claimableRewards && claimableRewards.unclaimedCount > 0 && (
-            <section className="rounded-[1.8rem] border-2 border-[#f6df84]/40 bg-gradient-to-br from-[#f6df84]/10 to-[#f6df84]/5 p-6">
+            <section className="rounded-2xl border-2 border-[#f6df84]/40 bg-[#f6df84]/10 p-6">
               <div className="flex items-center gap-3">
                 <Award className="h-6 w-6 text-[#f6df84]" />
                 <div className="flex-1">
@@ -423,7 +423,7 @@ function ProfilePage() {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-baseline gap-2">
-                            <p className="font-['Georgia'] text-3xl font-bold text-[#f6df84]">
+                            <p className="text-3xl font-bold text-[#f6df84]">
                               {formatCNPY(reward.rewardAmount)}
                             </p>
                             <span className="text-sm font-semibold uppercase tracking-wide text-[#f6df84]/70">
@@ -439,7 +439,7 @@ function ProfilePage() {
                       <button
                         onClick={() => handleClaimReward(reward.utcDate)}
                         disabled={isClaiming || !storedSessionAddress}
-                        className="shrink-0 rounded-xl bg-gradient-to-r from-[#f6df84] to-[#d4af37] px-6 py-3 text-sm font-bold text-[#2f2418] shadow-[0_4px_12px_rgba(246,223,132,0.3)] transition hover:shadow-[0_6px_16px_rgba(246,223,132,0.4)] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+                        className="shrink-0 rounded-xl bg-[#f6df84] px-6 py-3 text-sm font-bold text-[#2f2418] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {isClaiming ? (
                           <span className="flex items-center gap-2">
@@ -463,7 +463,7 @@ function ProfilePage() {
           {/* Progress & Stats */}
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Game Progress */}
-            <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+            <section className="rounded-2xl border border-white/10 bg-black/20 p-6">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-[#53a6ff]" />
                 <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Game Progress</h2>
@@ -485,7 +485,7 @@ function ProfilePage() {
             </section>
 
             {/* Classic Points */}
-            <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+            <section className="rounded-2xl border border-white/10 bg-black/20 p-6">
               <div className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-[#7e69ff]" />
                 <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Classic Points</h2>
@@ -511,7 +511,7 @@ function ProfilePage() {
 
           {/* Claimed Rewards History */}
           {claimableRewards && claimableRewards.rewards.some((r) => r.claimed) && (
-            <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+            <section className="rounded-2xl border border-white/10 bg-black/20 p-6">
               <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Claimed Rewards</h2>
               <p className="mt-1 text-xs text-slate-400">Your reward history</p>
               <div className="mt-5 space-y-2">
@@ -560,7 +560,7 @@ function ProfilePage() {
 
           {/* Game History */}
           {gameHistory.length > 0 && (
-            <section className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
+            <section className="rounded-2xl border border-white/10 bg-black/20 p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Gamepad2 className="h-5 w-5 text-[#7e69ff]" />
@@ -616,7 +616,7 @@ function ProfilePage() {
       )}
 
       {isLoading && (
-        <div className="mt-6 rounded-[1.6rem] border border-white/10 bg-black/20 px-6 py-6 text-center">
+        <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 px-6 py-6 text-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}

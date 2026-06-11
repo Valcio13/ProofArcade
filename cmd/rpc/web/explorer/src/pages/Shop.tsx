@@ -326,9 +326,9 @@ function ShopPage() {
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8"
     >
-      <section className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(83,166,255,0.14),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(240,207,82,0.12),_transparent_22%),linear-gradient(155deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-5 shadow-[0_25px_90px_rgba(0,0,0,0.25)]">
+      <section className="rounded-3xl border border-white/10 bg-card p-5">
         <p className="text-xs font-semibold uppercase tracking-wider text-[#f6df84]">Shop</p>
-        <h1 className="mt-1.5 font-['Georgia'] text-3xl leading-tight text-white sm:text-4xl">
+        <h1 className="mt-1.5 font-bold text-3xl leading-tight text-white sm:text-4xl">
           Redeem Classic Points
         </h1>
         <div className="mt-3 grid gap-2.5 md:grid-cols-3">
@@ -341,7 +341,7 @@ function ShopPage() {
       <section className="mt-4 space-y-4">
         {/* Progress Card - Show when user cannot redeem yet */}
         {!canRedeemNow && (
-          <div className="rounded-[1.6rem] border border-[#53a6ff]/30 bg-gradient-to-br from-[#53a6ff]/10 to-[#53a6ff]/5 p-4">
+          <div className="rounded-2xl border border-[#53a6ff]/30 bg-[#53a6ff]/10 p-4">
             <div className="flex items-start gap-2.5">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#53a6ff]/20">
                 <span className="text-base">🎯</span>
@@ -363,7 +363,7 @@ function ShopPage() {
                       initial={{ width: 0 }}
                       animate={{ width: `${progress}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
-                      className="h-full bg-gradient-to-r from-[#53a6ff] to-[#7e69ff]"
+                      className="h-full bg-[#53a6ff]"
                     />
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
@@ -381,7 +381,7 @@ function ShopPage() {
           </div>
         )}
 
-        <div className="rounded-[1.6rem] border border-white/10 bg-black/20 p-4">
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div>
             <h2 className="text-sm font-bold text-white">Redeem Points</h2>
             <p className="mt-0.5 text-xs text-slate-400">
@@ -394,7 +394,7 @@ function ShopPage() {
             <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
               <form onSubmit={(e) => { e.preventDefault(); handleRedeem(); }} className="space-y-2.5">
                 {/* Active Wallet Display - Ultra Compact Identity Row */}
-                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-gradient-to-r from-[#53a6ff]/5 to-transparent px-3 py-2">
+                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#53a6ff]/5 px-3 py-2">
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#53a6ff]/20">
                     <span className="text-sm">👤</span>
                   </div>
@@ -418,14 +418,14 @@ function ShopPage() {
                 </div>
               </form>
 
-              <div className="rounded-[1.5rem] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/90 p-3.5">
+              <div className="rounded-2xl border border-white/10 bg-slate-900/90 p-3.5">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Reward Preview</p>
                 
                 {numericBurnPoints > 0 ? (
                   <>
                     <div className="mt-2.5 text-center">
                       <div className="inline-flex items-baseline gap-1.5">
-                        <p className="font-['Georgia'] text-3xl font-bold text-[#f6df84]">{formatCNPY(preview?.payoutAmount ?? 0)}</p>
+                        <p className="text-3xl font-bold text-[#f6df84]">{formatCNPY(preview?.payoutAmount ?? 0)}</p>
                         <span className="text-sm font-semibold uppercase tracking-wide text-[#f6df84]/70">PROOF</span>
                       </div>
                     </div>
@@ -481,7 +481,7 @@ function ShopPage() {
                 <button
                   onClick={handleRedeem}
                   disabled={!canRedeem}
-                  className="mt-3 w-full rounded-xl bg-gradient-to-r from-[#53a6ff] to-[#7e69ff] px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(83,166,255,0.3)] transition hover:shadow-[0_6px_16px_rgba(83,166,255,0.4)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+                  className="mt-3 w-full rounded-xl bg-[#53a6ff] px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isRedeeming ? (
                     <span className="flex items-center justify-center gap-2">
@@ -510,7 +510,7 @@ function ShopPage() {
               </p>
               <a
                 href="/auth"
-                className="mt-4 inline-flex rounded-xl bg-gradient-to-r from-[#53a6ff] to-[#7e69ff] px-6 py-2.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(83,166,255,0.3)] transition hover:shadow-[0_6px_16px_rgba(83,166,255,0.4)]"
+                className="mt-4 inline-flex rounded-xl bg-[#53a6ff] px-6 py-2.5 text-sm font-bold text-white transition hover:brightness-105"
               >
                 Log In to Continue
               </a>
@@ -518,7 +518,7 @@ function ShopPage() {
           )}
         </div>
 
-        <div className="rounded-[1.6rem] border border-white/10 bg-black/20 p-4">
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-xs font-bold uppercase tracking-wide text-slate-200">Redemption History</h2>
@@ -544,7 +544,7 @@ function ShopPage() {
       </section>
 
       {isLoading ? (
-        <div className="rounded-[1.2rem] border border-white/10 bg-black/20 px-4 py-4 text-sm text-slate-400">
+        <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-4 text-sm text-slate-400">
           Loading shop state...
         </div>
       ) : null}
@@ -554,7 +554,7 @@ function ShopPage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.2rem] border border-white/10 bg-black/20 p-2.5">
+    <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
       <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-black text-white">{value}</p>
     </div>

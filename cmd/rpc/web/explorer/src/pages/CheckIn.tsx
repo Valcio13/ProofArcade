@@ -257,19 +257,19 @@ function CheckInPage() {
       className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8"
     >
       {/* Streak Hero Section */}
-      <section className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(83,166,255,0.15),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(240,207,82,0.12),_transparent_22%),linear-gradient(160deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.28)] sm:p-8">
+      <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           {/* Left: Streak Focus */}
           <div>
             {/* Streak Display */}
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-600 shadow-[0_8px_20px_rgba(249,115,22,0.35)]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-500">
                 <Flame className="h-7 w-7 text-white" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.26em] text-[#f6df84]">Current Streak</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f6df84]">Current Streak</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <h1 className="font-['Georgia'] text-6xl leading-none text-white">
+                  <h1 className="font-bold text-6xl leading-none text-white">
                     {player?.loginStreak ?? 0}
                   </h1>
                   <span className="text-2xl font-medium text-slate-400">
@@ -280,12 +280,12 @@ function CheckInPage() {
             </div>
 
             {/* Progress to Day 7 */}
-            <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-black/30 p-5">
+            <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-5">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Weekly Cycle Progress</p>
                   <div className="mt-2 flex items-baseline gap-2">
-                    <span className="font-['Georgia'] text-3xl font-bold text-white">
+                    <span className="text-3xl font-bold text-white">
                       {loginRewardStatus.completedCheckIns}
                     </span>
                     <span className="text-lg font-medium text-slate-400">of 7</span>
@@ -307,7 +307,7 @@ function CheckInPage() {
                     width: `${(loginRewardStatus.completedCheckIns / 7) * 100}%`,
                   }}
                   transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                  className="h-full bg-gradient-to-r from-[#53a6ff] to-[#f6df84]"
+                  className="h-full bg-[#53a6ff]"
                 />
               </div>
 
@@ -329,12 +329,12 @@ function CheckInPage() {
           </div>
 
           {/* Right: Claim Card */}
-          <div className="rounded-[1.8rem] border border-white/10 bg-gradient-to-b from-black/40 to-black/20 p-6">
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
             {loginRewardStatus.claimedToday ? (
               // Already Claimed State
               <>
                 <div className="flex items-center justify-center py-2">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-600">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-500">
                     <Check className="h-10 w-10 text-white" strokeWidth={2.5} />
                   </div>
                 </div>
@@ -354,7 +354,7 @@ function CheckInPage() {
                 <div className="text-center">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-[#53a6ff]">Today's Reward</p>
                   <div className="mt-3">
-                    <p className="font-['Georgia'] text-5xl font-bold text-white">
+                    <p className="text-5xl font-bold text-white">
                       {loginRewardStatus.rewardPoints}
                     </p>
                     <p className="mt-1.5 text-sm font-semibold uppercase tracking-wide text-slate-400">
@@ -367,7 +367,7 @@ function CheckInPage() {
                   <button
                     onClick={handleClaimLoginReward}
                     disabled={!loginRewardStatus.canClaim || isClaiming}
-                    className="mt-6 w-full rounded-2xl bg-gradient-to-r from-[#53a6ff] to-[#7e69ff] px-5 py-4 text-base font-bold text-white shadow-[0_8px_24px_rgba(83,166,255,0.3)] transition hover:shadow-[0_12px_32px_rgba(83,166,255,0.4)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+                    className="mt-6 w-full rounded-2xl bg-[#53a6ff] px-5 py-4 text-base font-bold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isClaiming ? (
                       <span className="flex items-center justify-center gap-2">
@@ -401,7 +401,7 @@ function CheckInPage() {
       </section>
 
       {/* 7-Day Reward Track */}
-      <section className="mt-6 rounded-[1.8rem] border border-white/10 bg-black/20 p-6 sm:p-7">
+      <section className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-6 sm:p-7">
         <div className="mb-5">
           <p className="text-sm font-bold uppercase tracking-wider text-slate-200">Reward Track</p>
           <p className="mt-1 text-xs text-slate-400">
@@ -436,9 +436,9 @@ function CheckInPage() {
                 transition={{ delay: index * 0.05 }}
                 className={`relative rounded-xl p-4 transition-all ${
                   isCurrent
-                    ? 'border-2 border-[#53a6ff] bg-[#53a6ff]/10 shadow-[0_0_20px_rgba(83,166,255,0.15)]'
+                    ? 'border-2 border-[#53a6ff] bg-[#53a6ff]/10'
                     : isCompleted
-                      ? 'border border-green-500/40 bg-green-500/5 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
+                      ? 'border border-green-500/40 bg-green-500/5'
                       : isMissed
                         ? 'border border-red-500/40 bg-red-500/5 opacity-75'
                         : isBonusDay
@@ -449,14 +449,14 @@ function CheckInPage() {
                 {/* Status Indicator */}
                 {isCompleted && (
                   <div className="absolute -right-1.5 -top-1.5">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 shadow-[0_2px_8px_rgba(34,197,94,0.4)]">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500">
                       <Check className="h-4 w-4 text-white" strokeWidth={2.5} />
                     </div>
                   </div>
                 )}
                 {isMissed && (
                   <div className="absolute -right-1.5 -top-1.5">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500 shadow-[0_2px_8px_rgba(239,68,68,0.4)]">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500">
                       <span className="text-sm font-bold text-white">✕</span>
                     </div>
                   </div>
@@ -520,7 +520,7 @@ function CheckInPage() {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="mt-6 rounded-[1.6rem] border border-white/10 bg-black/20 px-6 py-6 text-center">
+        <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 px-6 py-6 text-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
