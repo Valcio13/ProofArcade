@@ -192,6 +192,7 @@ function CheckInPage() {
         // Fall back to polling if transaction wasn't indexed
         const todayUtc = loginRewardStatus.utcDate
         let nextPlayer, nextConfig
+        let confirmedOnChain = false
         let attempts = 0
         const maxAttempts = 35 // 35 × 200ms = 7 seconds
         const delayMs = 200
@@ -214,6 +215,7 @@ function CheckInPage() {
           if (dataIsFresh) {
             nextPlayer = player
             nextConfig = config
+            confirmedOnChain = true
             console.log(`  ✅ Fresh data detected on attempt ${attempts}!`)
             break
           }
@@ -230,11 +232,24 @@ function CheckInPage() {
         setPlayer(nextPlayer)
         setConfig(nextConfig)
         
-        toast.success(
-          result.txHash
-            ? `Check-in reward submitted for ${result.utcDate ?? loginRewardStatus.utcDate}.`
-            : 'Check-in reward claimed.',
-        )
+        if (confirmedOnChain) {
+          toast.success(
+            result.txHash
+              ? `Check-in reward confirmed for ${result.utcDate ?? loginRewardStatus.utcDate}.`
+              : 'Check-in reward claimed.',
+          )
+        } else {
+          // The transaction hash was returned but never appeared on-chain
+          // (not indexed, and player state never updated). Surface this as a
+          // failure instead of a false success, and leave no fake optimistic state.
+          console.warn('❌ Check-in not confirmed on-chain', {
+            txHash: result.txHash,
+            txStage: result.txStage,
+          })
+          toast.error(
+            "Your check-in couldn't be confirmed on-chain. No points were deducted - please try again in a moment.",
+          )
+        }
       }
       
       console.log('=== CHECK-IN CLAIM DIAGNOSTIC END ===')

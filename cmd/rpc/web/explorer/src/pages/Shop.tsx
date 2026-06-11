@@ -256,6 +256,7 @@ function ShopPage() {
         
         // Fall back to polling if transaction wasn't indexed
         let nextPlayer, nextPreview, nextHistory, nextConfig
+        let confirmedOnChain = false
         let attempts = 0
         const maxAttempts = 35 // 35 × 200ms = 7 seconds (covers ~5s block time)
         const delayMs = 200
@@ -284,6 +285,7 @@ function ShopPage() {
             nextPreview = preview
             nextHistory = history
             nextConfig = config
+            confirmedOnChain = true
             console.log(`  ✅ Fresh data detected on attempt ${attempts}!`)
             break
           }
@@ -304,7 +306,20 @@ function ShopPage() {
         setHistory(nextHistory)
         setConfig(nextConfig)
         
-        toast.success(result.txHash ? 'Redemption submitted.' : 'Redemption submitted.')
+        if (confirmedOnChain) {
+          toast.success(`Redeemed ${formatCNPY(result.payoutAmount)} PROOF successfully!`)
+        } else {
+          // Hash returned but redemption never took effect on-chain
+          // (not indexed, balances/history never changed). Surface as failure
+          // rather than a false success, and leave no fake optimistic state.
+          console.warn('❌ Redemption not confirmed on-chain', {
+            txHash: result.txHash,
+            txStage: result.txStage,
+          })
+          toast.error(
+            "Your redemption couldn't be confirmed on-chain. No points were deducted - please try again in a moment.",
+          )
+        }
       }
       
       console.log('=== SHOP REDEMPTION DIAGNOSTIC END ===')

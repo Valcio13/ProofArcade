@@ -140,7 +140,7 @@ function ProfilePage() {
       console.log('🧹 [useEffect selectedAddress] Cleanup - marking cancelled')
       cancelled = true
     }
-  }, [selectedAddress, isClaiming])
+  }, [selectedAddress])
 
   const selectedWallet = wallets.find((wallet) => wallet.address === selectedAddress) ?? null
 
@@ -203,11 +203,11 @@ function ProfilePage() {
       console.log('  - TX Stage:', result.txStage)
       console.log('  - Submitted:', result.submitted)
       
-      // Apply optimistic update immediately if transaction was submitted successfully
-      const txSubmitted = result.submitted
+      // Fast path: transaction already indexed on-chain → confirmed
+      const txIndexed = result.txStage === 'indexed' && result.submitted
       
-      if (txSubmitted) {
-        console.log('✅ Transaction submitted successfully, applying optimistic update (stage:', result.txStage, ')')
+      if (txIndexed) {
+        console.log('✅ Transaction indexed on-chain, applying optimistic update')
         
         // Optimistically update the UI based on transaction result
         if (player && claimableRewards && rewardAmount > 0) {
@@ -236,16 +236,79 @@ function ProfilePage() {
           setClaimableRewards(optimisticRewards)
         }
         
-        toast.success(result.txHash ? `Reward claimed! ${result.txStage ? `(${result.txStage})` : ''}` : 'Reward claim submitted.')
+        toast.success(result.txHash ? 'Reward claimed!' : 'Reward claim submitted.')
       } else {
-        console.log('⚠️ Transaction submission failed, skipping optimistic update')
-        toast.error('Failed to submit reward claim transaction.')
+        console.log('⚠️ Transaction not indexed yet, polling for on-chain confirmation...')
+        
+        // The backend returns submitted:true even when the tx is silently
+        // rejected during async admission. Confirm the claim actually took
+        // effect on-chain before declaring success - never fake a balance bump.
+        let nextPlayer, nextRewards
+        let confirmedOnChain = false
+        let attempts = 0
+        const maxAttempts = 35 // 35 × 200ms = 7 seconds
+        const delayMs = 200
+        
+        while (attempts < maxAttempts) {
+          attempts++
+          console.log(`  🔄 Polling attempt ${attempts}/${maxAttempts}...`)
+          
+          const [polledPlayer, polledRewards] = await Promise.all([
+            client.getPlayer(selectedAddress),
+            client.getClaimableRewards(selectedAddress),
+          ])
+          
+          const balanceIncreased = polledPlayer.balance > initialBalance
+          const unclaimedDecreased = polledRewards.unclaimedCount < initialUnclaimedCount
+          const rewardMarkedClaimed = polledRewards.rewards.some(
+            r => r.utcDate === utcDate && r.claimed
+          )
+          const dataIsFresh = balanceIncreased || unclaimedDecreased || rewardMarkedClaimed
+          
+          console.log(`    - balance: ${polledPlayer.balance} (initial: ${initialBalance})`)
+          console.log(`    - unclaimedCount: ${polledRewards.unclaimedCount} (initial: ${initialUnclaimedCount})`)
+          console.log(`    - dataIsFresh: ${dataIsFresh}`)
+          
+          if (dataIsFresh) {
+            nextPlayer = polledPlayer
+            nextRewards = polledRewards
+            confirmedOnChain = true
+            console.log(`  ✅ Claim confirmed on-chain on attempt ${attempts}!`)
+            break
+          }
+          
+          if (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, delayMs))
+          } else {
+            nextPlayer = polledPlayer
+            nextRewards = polledRewards
+            console.log(`  ⚠️ Max attempts reached without confirmation`)
+          }
+        }
+        
+        if (confirmedOnChain) {
+          setPlayer(nextPlayer)
+          setClaimableRewards(nextRewards)
+          toast.success('Reward claimed!')
+        } else {
+          // Hash returned but claim never landed on-chain. Surface as failure
+          // and leave no fake optimistic balance.
+          console.warn('❌ Reward claim not confirmed on-chain', {
+            txHash: result.txHash,
+            txStage: result.txStage,
+          })
+          toast.error(
+            "Your reward claim couldn't be confirmed on-chain. Your balance is unchanged - please try again in a moment.",
+          )
+        }
       }
       
       console.log('=== PROFILE REWARD CLAIM DIAGNOSTIC END ===')
     } catch (error) {
       console.error('❌ ERROR at some step in claim flow')
       console.error('Error object:', error)
+      // CRITICAL: Do NOT apply optimistic update on error
+      console.log('⚠️ Error caught - optimistic update will NOT be applied')
       toast.error(error instanceof Error ? error.message : 'Unable to claim daily reward.')
       console.log('=== PROFILE REWARD CLAIM DIAGNOSTIC END (ERROR) ===')
     } finally {
