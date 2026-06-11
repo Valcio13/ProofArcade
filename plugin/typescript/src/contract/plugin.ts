@@ -76,6 +76,57 @@ export function DefaultConfig(): Config {
     };
 }
 
+// tryReadChainIdFromNodeConfig attempts to read ChainId from the Canopy node's config.json
+async function tryReadChainIdFromNodeConfig(): Promise<number | null> {
+    // Try common Canopy data directory locations
+    const possiblePaths = [
+        process.env.CANOPY_DATA_DIR,
+        path.join(os.homedir(), '.canopy'),
+        '/root/.canopy',
+        'C:\\Users\\' + os.userInfo().username + '\\.canopy',
+    ].filter(Boolean) as string[];
+
+    for (const dataDir of possiblePaths) {
+        try {
+            const configPath = path.join(dataDir, 'config.json');
+            const configBytes = await fs.readFile(configPath, 'utf-8');
+            const config = JSON.parse(configBytes);
+            
+            // Try all case variants: ChainId, chain_id, chainId
+            const chainId = config.ChainId || config.chain_id || config.chainId;
+            if (chainId && typeof chainId === 'number') {
+                console.log(`Auto-detected ChainId ${chainId} from ${configPath}`);
+                return chainId;
+            }
+        } catch {
+            // File doesn't exist or can't be read, try next path
+            continue;
+        }
+    }
+    return null;
+}
+
+// LoadConfig loads plugin configuration with automatic ChainId detection
+export async function LoadConfig(): Promise<Config> {
+    // 1. Check for explicit plugin config file
+    const pluginConfigPath = process.env.CANOPY_PLUGIN_CONFIG_PATH;
+    if (pluginConfigPath) {
+        console.log(`Loading plugin config from ${pluginConfigPath}`);
+        return await NewConfigFromFile(pluginConfigPath);
+    }
+
+    // 2. Try to auto-detect ChainId from node config
+    const config = DefaultConfig();
+    const detectedChainId = await tryReadChainIdFromNodeConfig();
+    if (detectedChainId !== null) {
+        config.ChainId = detectedChainId;
+    } else {
+        console.warn(`Could not auto-detect ChainId from node config, using default: ${config.ChainId}`);
+    }
+
+    return config;
+}
+
 // NewConfigFromFile() populates a Config object from a JSON file
 export async function NewConfigFromFile(filepath: string): Promise<Config> {
     const fileBytes = await fs.readFile(filepath, 'utf-8');

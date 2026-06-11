@@ -1,11 +1,20 @@
-import { StartPlugin, DefaultConfig, initializeContract } from './contract/plugin.js';
+import { StartPlugin, LoadConfig, initializeContract } from './contract/plugin.js';
 import { Contract, ContractConfig, ContractAsync } from './contract/contract.js';
 
 // Initialize the contract references to avoid circular dependencies
 initializeContract(Contract, ContractConfig, ContractAsync);
 
-// start the plugin
-StartPlugin(DefaultConfig());
+// start the plugin with automatic config loading
+async function main() {
+    const config = await LoadConfig();
+    console.log(`Starting plugin with ChainId: ${config.ChainId}`);
+    StartPlugin(config);
+}
+
+main().catch((err) => {
+    console.error('Failed to start plugin:', err);
+    process.exit(1);
+});
 
 // create a cancellable context that listens for kill signals
 process.on('SIGINT', () => process.exit(0));
