@@ -1,0 +1,81 @@
+syntax = "proto3";
+package types;
+option go_package = "github.com/canopy-network/go-plugin/contract";
+
+// GameMode identifies which 2048 mode a session belongs to.
+enum GameMode {
+  GAME_MODE_UNSPECIFIED = 0;
+  GAME_MODE_DAILY = 1;
+  GAME_MODE_CLASSIC = 2;
+}
+
+// SessionStatus tracks the lifecycle of a game session.
+enum SessionStatus {
+  SESSION_STATUS_UNSPECIFIED = 0;
+  SESSION_STATUS_ACTIVE = 1;
+  SESSION_STATUS_COMPLETED = 2;
+  SESSION_STATUS_EXPIRED = 3;
+}
+
+// StopReason records how the run ended.
+enum StopReason {
+  STOP_REASON_UNSPECIFIED = 0;
+  STOP_REASON_PLAYER_STOPPED = 1;
+  STOP_REASON_NO_MOVES = 2;
+  STOP_REASON_MAX_MOVES = 3;
+}
+
+// MoveDirection is used for deterministic replay.
+enum MoveDirection {
+  MOVE_DIRECTION_UNSPECIFIED = 0;
+  MOVE_DIRECTION_UP = 1;
+  MOVE_DIRECTION_RIGHT = 2;
+  MOVE_DIRECTION_DOWN = 3;
+  MOVE_DIRECTION_LEFT = 4;
+}
+
+// MessageStartDailyGame starts a daily challenge session.
+message MessageStartDailyGame {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  string utc_date = 2; // @gotags: json:"utcDate"
+  bytes game_id = 3; // @gotags: json:"gameId"
+}
+
+// MessageStartClassicGame starts a classic session.
+message MessageStartClassicGame {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  bytes game_id = 2; // @gotags: json:"gameId"
+}
+
+// MessageSubmitGameResult submits the final move list for replay verification.
+message MessageSubmitGameResult {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  bytes game_id = 2; // @gotags: json:"gameId"
+  repeated MoveDirection moves = 3;
+  uint64 declared_score = 4; // @gotags: json:"declaredScore"
+  uint64 declared_max_tile = 5; // @gotags: json:"declaredMaxTile"
+  StopReason stop_reason = 6; // @gotags: json:"stopReason"
+}
+
+// MessageClaimDailyReward claims the finalized reward for one UTC day.
+message MessageClaimDailyReward {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  string utc_date = 2; // @gotags: json:"utcDate"
+}
+
+// MessageRedeemClassicPoints burns classic points to redeem CNPY from treasury.
+message MessageRedeemClassicPoints {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  uint64 burn_points = 2; // @gotags: json:"burnPoints"
+}
+
+// MessageClaimDailyLoginReward grants the UTC-day login reward and activates the same-day classic bonus.
+message MessageClaimDailyLoginReward {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+}
+
+// MessageSetUsername sets or updates the player's on-chain username.
+message MessageSetUsername {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  string username = 2;
+}

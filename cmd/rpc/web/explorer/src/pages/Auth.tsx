@@ -801,11 +801,7 @@ function AuthPage() {
                   >
                     {isDeleting ? (
                       <span className="flex items-center justify-center gap-2">
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                          className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
-                        />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                         Deleting...
                       </span>
                     ) : (

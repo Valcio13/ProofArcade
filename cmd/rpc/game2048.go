@@ -1983,7 +1983,7 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				uint64FieldDescriptor("burn_points", 2),
 				uint64FieldDescriptor("payout_amount", 3),
 				uint64FieldDescriptor("redeemed_at_unix", 4),
-				stringFieldDescriptor("tx_hash", 5),
+				bytesFieldDescriptor("tx_hash", 5),
 			}),
 			messageDescriptor("DailyLoginClaim", []*descriptorpb.FieldDescriptorProto{
 				stringFieldDescriptor("utc_date", 1),

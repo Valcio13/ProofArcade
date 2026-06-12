@@ -7,6 +7,20 @@ body,
   font-family: "DM Sans", sans-serif;
 }
 
+/* Spinner animation fallback for when Framer Motion fails */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 /* Explicit custom colors */
 .bg-background {
   background-color: #1a1b23 !important;

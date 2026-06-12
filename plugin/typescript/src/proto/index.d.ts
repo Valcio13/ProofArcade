@@ -1122,6 +1122,109 @@ export namespace types {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** Properties of a MessageSetUsername. */
+    interface IMessageSetUsername {
+
+        /** MessageSetUsername playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** MessageSetUsername username */
+        username?: (string|null);
+    }
+
+    /** Represents a MessageSetUsername. */
+    class MessageSetUsername implements IMessageSetUsername {
+
+        /**
+         * Constructs a new MessageSetUsername.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageSetUsername);
+
+        /** MessageSetUsername playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** MessageSetUsername username. */
+        public username: string;
+
+        /**
+         * Creates a new MessageSetUsername instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageSetUsername instance
+         */
+        public static create(properties?: types.IMessageSetUsername): types.MessageSetUsername;
+
+        /**
+         * Encodes the specified MessageSetUsername message. Does not implicitly {@link types.MessageSetUsername.verify|verify} messages.
+         * @param message MessageSetUsername message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageSetUsername, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageSetUsername message, length delimited. Does not implicitly {@link types.MessageSetUsername.verify|verify} messages.
+         * @param message MessageSetUsername message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageSetUsername, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageSetUsername message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageSetUsername
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageSetUsername;
+
+        /**
+         * Decodes a MessageSetUsername message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageSetUsername
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageSetUsername;
+
+        /**
+         * Verifies a MessageSetUsername message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageSetUsername message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageSetUsername
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageSetUsername;
+
+        /**
+         * Creates a plain object from a MessageSetUsername message. Also converts values to other types if specified.
+         * @param message MessageSetUsername
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageSetUsername, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageSetUsername to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageSetUsername
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a GameConfig. */
     interface IGameConfig {
 
@@ -2031,6 +2134,9 @@ export namespace types {
         /** LeaderboardEntry playerAddress */
         playerAddress?: (Uint8Array|null);
 
+        /** LeaderboardEntry username */
+        username?: (string|null);
+
         /** LeaderboardEntry score */
         score?: (number|Long|null);
 
@@ -2058,6 +2164,9 @@ export namespace types {
 
         /** LeaderboardEntry playerAddress. */
         public playerAddress: Uint8Array;
+
+        /** LeaderboardEntry username. */
+        public username: string;
 
         /** LeaderboardEntry score. */
         public score: (number|Long);
@@ -2784,11 +2893,129 @@ export namespace types {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** Properties of a UsernameRegistration. */
+    interface IUsernameRegistration {
+
+        /** UsernameRegistration playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** UsernameRegistration username */
+        username?: (string|null);
+
+        /** UsernameRegistration registeredAtUnix */
+        registeredAtUnix?: (number|Long|null);
+
+        /** UsernameRegistration lastChangedAtUnix */
+        lastChangedAtUnix?: (number|Long|null);
+    }
+
+    /** Represents a UsernameRegistration. */
+    class UsernameRegistration implements IUsernameRegistration {
+
+        /**
+         * Constructs a new UsernameRegistration.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IUsernameRegistration);
+
+        /** UsernameRegistration playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** UsernameRegistration username. */
+        public username: string;
+
+        /** UsernameRegistration registeredAtUnix. */
+        public registeredAtUnix: (number|Long);
+
+        /** UsernameRegistration lastChangedAtUnix. */
+        public lastChangedAtUnix: (number|Long);
+
+        /**
+         * Creates a new UsernameRegistration instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns UsernameRegistration instance
+         */
+        public static create(properties?: types.IUsernameRegistration): types.UsernameRegistration;
+
+        /**
+         * Encodes the specified UsernameRegistration message. Does not implicitly {@link types.UsernameRegistration.verify|verify} messages.
+         * @param message UsernameRegistration message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IUsernameRegistration, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified UsernameRegistration message, length delimited. Does not implicitly {@link types.UsernameRegistration.verify|verify} messages.
+         * @param message UsernameRegistration message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IUsernameRegistration, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a UsernameRegistration message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns UsernameRegistration
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.UsernameRegistration;
+
+        /**
+         * Decodes a UsernameRegistration message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns UsernameRegistration
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.UsernameRegistration;
+
+        /**
+         * Verifies a UsernameRegistration message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a UsernameRegistration message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns UsernameRegistration
+         */
+        public static fromObject(object: { [k: string]: any }): types.UsernameRegistration;
+
+        /**
+         * Creates a plain object from a UsernameRegistration message. Also converts values to other types if specified.
+         * @param message UsernameRegistration
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.UsernameRegistration, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this UsernameRegistration to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for UsernameRegistration
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a PlayerStats. */
     interface IPlayerStats {
 
         /** PlayerStats playerAddress */
         playerAddress?: (Uint8Array|null);
+
+        /** PlayerStats username */
+        username?: (string|null);
 
         /** PlayerStats dailyGamesStarted */
         dailyGamesStarted?: (number|Long|null);
@@ -2844,6 +3071,9 @@ export namespace types {
 
         /** PlayerStats playerAddress. */
         public playerAddress: Uint8Array;
+
+        /** PlayerStats username. */
+        public username: string;
 
         /** PlayerStats dailyGamesStarted. */
         public dailyGamesStarted: (number|Long);

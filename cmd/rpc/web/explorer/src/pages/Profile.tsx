@@ -338,6 +338,25 @@ function ProfilePage() {
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8"
     >
+      {isLoading ? (
+        /* Skeleton Loader */
+        <>
+          <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
+            <div className="h-6 w-32 animate-pulse rounded bg-white/10" />
+            <div className="mt-4 h-12 w-64 animate-pulse rounded bg-white/10" />
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 animate-pulse rounded-xl bg-white/5" />
+              ))}
+            </div>
+          </section>
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div className="h-64 animate-pulse rounded-2xl bg-white/5" />
+            <div className="h-64 animate-pulse rounded-2xl bg-white/5" />
+          </div>
+        </>
+      ) : (
+        <>
       {/* Player Identity Hero */}
       <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
         {selectedWallet ? (
@@ -506,11 +525,7 @@ function ProfilePage() {
                       >
                         {isClaiming ? (
                           <span className="flex items-center gap-2">
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                              className="h-4 w-4 rounded-full border-2 border-[#2f2418]/30 border-t-[#2f2418]"
-                            />
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#2f2418]/30 border-t-[#2f2418]" />
                             Claiming...
                           </span>
                         ) : (
@@ -680,13 +695,11 @@ function ProfilePage() {
 
       {isLoading && (
         <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 px-6 py-6 text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="mx-auto h-6 w-6 rounded-full border-2 border-slate-700 border-t-slate-400"
-          />
+          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-700 border-t-slate-400" />
           <p className="mt-3 text-sm text-slate-400">Loading profile...</p>
         </div>
+      )}
+      </>
       )}
     </motion.div>
   )

@@ -18,8 +18,18 @@ function CheckInPage() {
   const [storedSessionAddress, setStoredSessionAddress] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isClaiming, setIsClaiming] = useState(false)
+  const [lastClaimTimestamp, setLastClaimTimestamp] = useState(0)
 
   useEffect(() => {
+    // 🔧 COOLDOWN: Skip fetch for 2s after claim to preserve optimistic update
+    // Only apply cooldown if we've actually claimed (timestamp > 0)
+    if (lastClaimTimestamp > 0) {
+      const timeSinceLastClaim = Date.now() - lastClaimTimestamp
+      if (timeSinceLastClaim < 2000) {
+        return
+      }
+    }
+
     let cancelled = false
 
     async function bootstrap() {
@@ -64,7 +74,7 @@ function CheckInPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [lastClaimTimestamp])
 
   const loginRewardStatus = useMemo(() => {
     const utcDate = getUtcDateString()
@@ -85,9 +95,11 @@ function CheckInPage() {
     const rewardPoints = rewardSchedule[Math.max(0, nextStreak - 1)] ?? rewardSchedule[rewardSchedule.length - 1] ?? 0
     const daySevenUnlocked = nextStreak >= rewardSchedule.length
     
-    // 🔧 FIX: Completed check-ins = current streak if claimed today, otherwise currentStreak
-    // This represents actual completed days, not including today's unclaimed check-in
-    const completedCheckIns = claimedToday ? currentStreak : currentStreak
+    // 🔧 FIX: Weekly cycle calculation (wraps 1-7, not resetting streak)
+    // Show position in 7-day cycle: 1→1, 2→2, ..., 7→7, 8→1, 9→2, etc.
+    const completedCheckIns = currentStreak === 0 
+      ? 0 
+      : (currentStreak % 7 === 0 ? 7 : currentStreak % 7)
 
     return {
       utcDate,
@@ -179,6 +191,7 @@ function CheckInPage() {
           console.log('  - Reward Points Added:', rewardPoints)
           
           setPlayer(optimisticPlayer)
+          setLastClaimTimestamp(Date.now()) // Cooldown
         }
         
         toast.success(
@@ -233,6 +246,7 @@ function CheckInPage() {
         setConfig(nextConfig)
         
         if (confirmedOnChain) {
+          setLastClaimTimestamp(Date.now()) // Cooldown
           toast.success(
             result.txHash
               ? `Check-in reward confirmed for ${result.utcDate ?? loginRewardStatus.utcDate}.`
@@ -271,6 +285,35 @@ function CheckInPage() {
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8"
     >
+      {isLoading ? (
+        /* Skeleton Loader */
+        <>
+          <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+              <div>
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 animate-pulse rounded-full bg-white/10" />
+                  <div>
+                    <div className="h-3 w-24 animate-pulse rounded bg-white/10" />
+                    <div className="mt-2 h-12 w-32 animate-pulse rounded bg-white/10" />
+                  </div>
+                </div>
+                <div className="mt-6 h-32 animate-pulse rounded-2xl bg-white/5" />
+              </div>
+              <div className="h-64 animate-pulse rounded-2xl bg-white/5" />
+            </div>
+          </section>
+          <section className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-6">
+            <div className="h-4 w-32 animate-pulse rounded bg-white/10" />
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className="h-32 animate-pulse rounded-xl bg-white/5" />
+              ))}
+            </div>
+          </section>
+        </>
+      ) : (
+        <>
       {/* Streak Hero Section */}
       <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -386,11 +429,7 @@ function CheckInPage() {
                   >
                     {isClaiming ? (
                       <span className="flex items-center justify-center gap-2">
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                          className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
-                        />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                         Claiming...
                       </span>
                     ) : (
@@ -536,13 +575,11 @@ function CheckInPage() {
       {/* Loading State */}
       {isLoading && (
         <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 px-6 py-6 text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="mx-auto h-6 w-6 rounded-full border-2 border-slate-700 border-t-slate-400"
-          />
+          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-700 border-t-slate-400" />
           <p className="mt-3 text-sm text-slate-400">Loading check-in rewards...</p>
         </div>
+      )}
+      </>
       )}
     </motion.div>
   )
