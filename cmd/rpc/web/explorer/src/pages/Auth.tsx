@@ -27,6 +27,10 @@ import {
 } from '../lib/walletAuth'
 
 function AuthPage() {
+  useEffect(() => {
+    document.title = 'Wallet Auth | ProofArcade'
+  }, [])
+
   const navigate = useNavigate()
 
   const [status, setStatus] = useState<Game2048ClientStatus>({
@@ -176,7 +180,24 @@ function AuthPage() {
     try {
       setIsFauceting(true)
       const client = await createGame2048Client()
+      
+      // Add test funds
       await client.addFunds(justCreated.address, 500)
+      
+      // Set on-chain username using the nickname
+      try {
+        await client.setUsername({
+          address: justCreated.address,
+          password: loginPassword,
+          username: justCreated.nickname
+        })
+        toast.success('Username registered on-chain!')
+      } catch (usernameError) {
+        console.error('Failed to set username:', usernameError)
+        // Don't fail the whole flow if username fails
+        toast('Username registration will be available in Settings', { icon: 'ℹ️' })
+      }
+      
       toast.success('Test PROOF added to your wallet.')
       navigate('/play')
     } catch (error) {
@@ -579,8 +600,8 @@ function AuthPage() {
           </section>
         </div>
 
-        {/* Import & Session Section */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {/* Import Section */}
+        <div className="mt-6">
           <section className="rounded-2xl border border-white/10 bg-black/20 p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Import Backup</p>
             <h3 className="mt-2 text-xl font-bold text-white">Restore from file</h3>
@@ -617,33 +638,6 @@ function AuthPage() {
               )}
             </label>
           </section>
-
-          <section className="rounded-2xl border border-white/10 bg-black/20 p-5">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Current Session</p>
-            <div className="mt-3 flex items-center gap-3">
-              <div
-                className={`h-3 w-3 rounded-full ${storedWallet ? 'bg-[#53d7a6]' : 'bg-slate-600'}`}
-              />
-              <p className="text-xl font-bold text-white">
-                {storedWallet ? storedWallet.nickname : 'Guest Mode'}
-              </p>
-            </div>
-            {storedWallet ? (
-              <div className="mt-3 space-y-2">
-                <div className="rounded-xl border border-white/10 bg-slate-950/50 px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Address</p>
-                  <p className="mt-1 break-all font-mono text-xs text-slate-300">
-                    {storedWallet.address}
-                  </p>
-                </div>
-                <p className="text-xs text-slate-400">Signed in locally on this device</p>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm leading-6 text-slate-400">
-                No wallet is signed in. Log in or create a wallet to start playing.
-              </p>
-            )}
-          </section>
         </div>
 
         {isLoading && !isCreating ? (
@@ -671,8 +665,8 @@ function AuthPage() {
               <p className="text-xs uppercase tracking-[0.18em] text-[#9fd0ff]">Wallet Created</p>
               <h2 className="mt-2 text-2xl font-bold text-white">Claim test PROOF to start</h2>
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                {justCreated.nickname} is signed in on this device. Claim some test PROOF so you can
-                enter daily challenges and competitive runs.
+                {justCreated.nickname} is signed in on this device. Claim some test PROOF and we'll
+                register your username on-chain so you can compete on the leaderboards.
               </p>
 
               <div className="mt-4 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
@@ -695,7 +689,7 @@ function AuthPage() {
                     Claiming...
                   </span>
                 ) : (
-                  'Claim test PROOF & Play'
+                  'Claim PROOF & Set Username'
                 )}
               </button>
 

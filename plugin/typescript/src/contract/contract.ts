@@ -26,7 +26,9 @@ import {
     ErrSessionNotActive,
     ErrSessionNotFound,
     ErrSessionOwnerMismatch,
-    ErrTxFeeBelowStateLimit
+    ErrTxFeeBelowStateLimit,
+    ErrUsernameInvalid,
+    ErrUsernameTaken
 } from './error.js';
 
 import type { Plugin, Config } from './plugin.js';
@@ -47,7 +49,7 @@ export const ContractConfig: any = {
     name: 'game2048_contract',
     id: 1,
     version: 1,
-    supportedTransactions: ['send', 'startDailyGame', 'startClassicGame', 'submitGameResult', 'claimDailyReward', 'redeemClassicPoints', 'claimDailyLoginReward'],
+    supportedTransactions: ['send', 'startDailyGame', 'startClassicGame', 'submitGameResult', 'claimDailyReward', 'redeemClassicPoints', 'claimDailyLoginReward', 'setUsername'],
     transactionTypeUrls: [
         'type.googleapis.com/types.MessageSend',
         GAME2048_TYPE_URLS.startDailyGame,
@@ -55,7 +57,8 @@ export const ContractConfig: any = {
         GAME2048_TYPE_URLS.submitGameResult,
         GAME2048_TYPE_URLS.claimDailyReward,
         GAME2048_TYPE_URLS.redeemClassicPoints,
-        GAME2048_TYPE_URLS.claimDailyLoginReward
+        GAME2048_TYPE_URLS.claimDailyLoginReward,
+        GAME2048_TYPE_URLS.setUsername
     ],
     eventTypeUrls: [],
     fileDescriptorProtos
@@ -210,6 +213,18 @@ export class Contract {
             authorizedSigners: [playerAddress]
         };
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    CheckMessageSetUsername(msg: any): any {
+        const playerAddress = normalizeBytes(msg?.playerAddress);
+        if (playerAddress.length !== 20) {
+            return { error: ErrInvalidAddress() };
+        }
+        return {
+            recipient: playerAddress,
+            authorizedSigners: [playerAddress]
+        };
+    }
 }
 
 // Async versions of contract methods for proper state handling
@@ -299,6 +314,8 @@ export class ContractAsync {
                     return contract.CheckMessageRedeemClassicPoints(msg);
                 case 'MessageClaimDailyLoginReward':
                     return contract.CheckMessageClaimDailyLoginReward(msg);
+                case 'MessageSetUsername':
+                    return contract.CheckMessageSetUsername(msg);
                 default:
                     return { error: ErrInvalidMessageCast() };
             }
@@ -331,6 +348,8 @@ export class ContractAsync {
                     return ContractAsync.DeliverMessageRedeemClassicPoints(contract, msg, request.tx);
                 case 'MessageClaimDailyLoginReward':
                     return ContractAsync.DeliverMessageClaimDailyLoginReward(contract, msg, request.tx);
+                case 'MessageSetUsername':
+                    return ContractAsync.DeliverMessageSetUsername(contract, msg, request.tx);
                 default:
                     return { error: ErrInvalidMessageCast() };
             }
@@ -888,6 +907,7 @@ export class ContractAsync {
         const sessionQueryId = randomQueryId();
         const statsQueryId = randomQueryId();
         const configQueryId = randomQueryId();
+        const usernameQueryId = randomQueryId();
         const endedAtUnix = toUint64(tx?.time as Long | number | undefined);
         const classicPointsUtcDate = utcDateFromMicros(endedAtUnix);
         const classicPointsLedgerKey = KeyForClassicPointsDailyLedger(classicPointsUtcDate, playerAddress);
@@ -897,7 +917,8 @@ export class ContractAsync {
                 { queryId: sessionQueryId, key: KeyForGameSession(gameId) },
                 { queryId: statsQueryId, key: KeyForPlayerStats(playerAddress) },
                 { queryId: configQueryId, key: KeyForGameConfig() },
-                { queryId: classicPointsLedgerQueryId, key: classicPointsLedgerKey }
+                { queryId: classicPointsLedgerQueryId, key: classicPointsLedgerKey },
+                { queryId: usernameQueryId, key: KeyForUsernameByAddress(playerAddress) }
             ]
         });
 
@@ -912,8 +933,18 @@ export class ContractAsync {
         const statsBytes = getQueryValue(response, statsQueryId);
         const configBytes = getQueryValue(response, configQueryId);
         const classicPointsLedgerBytes = getQueryValue(response, classicPointsLedgerQueryId);
+        const usernameBytes = getQueryValue(response, usernameQueryId);
         if (!sessionBytes || sessionBytes.length === 0) {
             return { error: ErrSessionNotFound() };
+        }
+
+        // Get username if exists
+        let username = '';
+        if (usernameBytes && usernameBytes.length > 0) {
+            const [usernameReg] = decodeGame2048State('UsernameRegistration', usernameBytes);
+            if (usernameReg) {
+                username = (usernameReg as any).username || '';
+            }
         }
 
         const [session, sessionErr] = decodeGame2048State('GameSession', sessionBytes);
@@ -1023,7 +1054,8 @@ export class ContractAsync {
             score: replay.score,
             maxTile: replay.maxTile,
             moveCount: replay.moveCount,
-            endedAtUnix
+            endedAtUnix,
+            username
         });
 
         const sets = [
@@ -1607,6 +1639,153 @@ export class ContractAsync {
 
         return {};
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static async DeliverMessageSetUsername(contract: Contract, msg: any, tx: any): Promise<any> {
+        const playerAddress = normalizeBytes(msg?.playerAddress);
+        const username = (msg?.username || '').toString().trim();
+        const setAtUnix = toUint64(tx?.time as Long | number | undefined);
+
+        // Validate username format
+        if (!validateUsername(username)) {
+            return { error: ErrUsernameInvalid() };
+        }
+
+        const normalizedUsername = normalizeUsername(username);
+        const playerIdentityKey = KeyForPlayerIdentity(playerAddress);
+        const usernameByAddressKey = KeyForUsernameByAddress(playerAddress); // Keep for backward compatibility
+        const addressByUsernameKey = KeyForAddressByUsername(normalizedUsername);
+        const playerStatsKey = KeyForPlayerStats(playerAddress);
+
+        const identityQueryId = randomQueryId();
+        const usernameQueryId = randomQueryId();
+        const lookupQueryId = randomQueryId();
+        const statsQueryId = randomQueryId();
+
+        const [response, readErr] = await contract.plugin.StateRead(contract, {
+            keys: [
+                { queryId: identityQueryId, key: playerIdentityKey },
+                { queryId: usernameQueryId, key: usernameByAddressKey },
+                { queryId: lookupQueryId, key: addressByUsernameKey },
+                { queryId: statsQueryId, key: playerStatsKey }
+            ]
+        });
+
+        if (readErr) {
+            return { error: readErr };
+        }
+        if (response?.error) {
+            return { error: response.error };
+        }
+
+        const existingIdentityBytes = getQueryValue(response, identityQueryId);
+        const existingUsernameBytes = getQueryValue(response, usernameQueryId);
+        const existingOwnerBytes = getQueryValue(response, lookupQueryId);
+        const statsBytes = getQueryValue(response, statsQueryId);
+
+        // Check if username is already taken by someone else
+        if (existingOwnerBytes && existingOwnerBytes.length > 0) {
+            // Compare addresses - if they're the same, it's the player updating their own username
+            if (!buffersEqual(existingOwnerBytes, playerAddress)) {
+                return { error: ErrUsernameTaken() };
+            }
+        }
+
+        // Try to read from PlayerIdentity first, fallback to UsernameRegistration for migration
+        let existingIdentity = null;
+        let registeredAtUnix = setAtUnix;
+        let oldNormalizedUsername = null;
+
+        if (existingIdentityBytes && existingIdentityBytes.length > 0) {
+            [existingIdentity] = decodeGame2048State('PlayerIdentity', existingIdentityBytes);
+            if (existingIdentity) {
+                registeredAtUnix = toUint64((existingIdentity as any).registeredAtUnix as Long | number | undefined);
+                oldNormalizedUsername = normalizeUsername((existingIdentity as any).username || '');
+            }
+        } else if (existingUsernameBytes && existingUsernameBytes.length > 0) {
+            // Migration path: read from old UsernameRegistration
+            const [existingUsername] = decodeGame2048State('UsernameRegistration', existingUsernameBytes);
+            if (existingUsername) {
+                registeredAtUnix = toUint64((existingUsername as any).registeredAtUnix as Long | number | undefined);
+                oldNormalizedUsername = normalizeUsername((existingUsername as any).username || '');
+            }
+        }
+
+        // Build the sets array for state write
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sets: any[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const deletes: any[] = [];
+
+        // Store new PlayerIdentity (with empty avatar/title/bio for now)
+        const playerIdentity = encodeGame2048State('PlayerIdentity', {
+            playerAddress,
+            username,
+            avatarUrl: existingIdentity ? (existingIdentity as any).avatarUrl || '' : '',
+            title: existingIdentity ? (existingIdentity as any).title || '' : '',
+            bio: existingIdentity ? (existingIdentity as any).bio || '' : '',
+            registeredAtUnix,
+            lastUpdatedUnix: setAtUnix
+        });
+
+        sets.push({ key: playerIdentityKey, value: playerIdentity });
+
+        // Also store in old UsernameRegistration format for backward compatibility
+        const usernameRegistration = encodeGame2048State('UsernameRegistration', {
+            playerAddress,
+            username,
+            registeredAtUnix,
+            lastChangedAtUnix: setAtUnix
+        });
+
+        sets.push({ key: usernameByAddressKey, value: usernameRegistration });
+        sets.push({ key: addressByUsernameKey, value: playerAddress });
+
+        // If player had a different username before, delete the old lookup
+        if (oldNormalizedUsername && oldNormalizedUsername !== normalizedUsername) {
+            const oldLookupKey = KeyForAddressByUsername(oldNormalizedUsername);
+            deletes.push({ key: oldLookupKey });
+        }
+
+        // Update PlayerStats with username
+        const [playerStats] = decodeGame2048State('PlayerStats', statsBytes || new Uint8Array());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const stats = (playerStats as any) || {};
+
+        const updatedStats = encodeGame2048State('PlayerStats', {
+            playerAddress,
+            dailyGamesStarted: toUint64(stats.dailyGamesStarted as Long | number | undefined),
+            classicGamesStarted: toUint64(stats.classicGamesStarted as Long | number | undefined),
+            gamesCompleted: toUint64(stats.gamesCompleted as Long | number | undefined),
+            wins: toUint64(stats.wins as Long | number | undefined),
+            losses: toUint64(stats.losses as Long | number | undefined),
+            bestDailyScore: toUint64(stats.bestDailyScore as Long | number | undefined),
+            bestClassicScore: toUint64(stats.bestClassicScore as Long | number | undefined),
+            bestTile: toUint64(stats.bestTile as Long | number | undefined),
+            totalScore: toUint64(stats.totalScore as Long | number | undefined),
+            classicPointsBalance: toUint64(stats.classicPointsBalance as Long | number | undefined),
+            classicPointsEarned: toUint64(stats.classicPointsEarned as Long | number | undefined),
+            loginStreak: toUint64(stats.loginStreak as Long | number | undefined),
+            lastLoginClaimUtcDate: stats.lastLoginClaimUtcDate || '',
+            classicPointsBonusUtcDate: stats.classicPointsBonusUtcDate || ''
+        });
+
+        sets.push({ key: playerStatsKey, value: updatedStats });
+
+        const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, {
+            sets,
+            deletes: deletes.length > 0 ? deletes : undefined
+        });
+
+        if (writeErr) {
+            return { error: writeErr };
+        }
+        if (writeResp?.error) {
+            return { error: writeResp.error };
+        }
+
+        return {};
+    }
 }
 
 const accountPrefix = Buffer.from([1]); // store key prefix for accounts
@@ -1767,6 +1946,21 @@ export function KeyForClassicPointRedemptionPrefix(playerAddress: Uint8Array): U
     return JoinLenPrefix(gamePrefix, Buffer.from('classic-redeem'), Buffer.from(playerAddress));
 }
 
+// KeyForUsernameByAddress stores the username for a specific address
+export function KeyForUsernameByAddress(playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('username-addr'), Buffer.from(playerAddress));
+}
+
+// KeyForPlayerIdentity stores the unified identity for a specific address
+export function KeyForPlayerIdentity(playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('player-identity'), Buffer.from(playerAddress));
+}
+
+// KeyForAddressByUsername stores the address that owns a normalized username
+export function KeyForAddressByUsername(normalizedUsername: string): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('username-lookup'), Buffer.from(normalizedUsername.toLowerCase(), 'utf8'));
+}
+
 function formatUint64(u: Long): Buffer {
     const b = Buffer.alloc(8);
     b.writeBigUInt64BE(BigInt(u.toString()));
@@ -1782,6 +1976,37 @@ function invertUint64(u: Long): Buffer {
 
 function randomQueryId(): Long {
     return Long.fromNumber(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
+}
+
+// normalizeUsername converts a username to lowercase for case-insensitive uniqueness checks
+function normalizeUsername(username: string): string {
+    return username.toLowerCase();
+}
+
+// validateUsername checks if a username meets the requirements:
+// - 3-20 characters
+// - Alphanumeric + underscore only
+// Returns true if valid, false otherwise
+function validateUsername(username: string): boolean {
+    if (!username || username.length < 3 || username.length > 20) {
+        return false;
+    }
+    // Only allow letters, numbers, and underscore
+    const validPattern = /^[a-zA-Z0-9_]+$/;
+    return validPattern.test(username);
+}
+
+// buffersEqual compares two byte arrays for equality
+function buffersEqual(a: Uint8Array, b: Uint8Array): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

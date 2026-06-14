@@ -35,6 +35,7 @@ export interface SessionStart {
 export interface LeaderboardEntry {
   gameId: string
   address: string
+  username?: string
   score: number
   maxTile: number
   moveCount: number
@@ -45,6 +46,7 @@ export interface LeaderboardEntry {
 
 export interface PlayerStats {
   address: string
+  username?: string
   balance: number
   dailyGamesStarted: number
   classicGamesStarted: number
@@ -128,6 +130,25 @@ export interface RedemptionHistory {
   redemptions: RedemptionHistoryEntry[]
 }
 
+export interface UsernameRegistration {
+  address: string
+  username: string
+  registeredAtUnix: number
+  lastChangedAtUnix: number
+}
+
+export interface UsernameResponse {
+  address: string
+  username?: string
+  registeredAtUnix?: number
+  lastChangedAtUnix?: number
+}
+
+export interface AddressByUsernameResponse {
+  username: string
+  address?: string
+}
+
 interface MockChainState {
   config: ChainConfig
   players: Record<string, PlayerStats>
@@ -137,6 +158,8 @@ interface MockChainState {
   dailyLeaderboard: LeaderboardEntry[]
   classicLeaderboard: LeaderboardEntry[]
   recentRuns: RecentRun[]
+  usernames: Record<string, UsernameRegistration> // address -> username registration
+  usernamesLookup: Record<string, string> // normalized username -> address
 }
 
 const STORAGE_KEY = 'canopy-2048-mock-chain'
@@ -468,6 +491,88 @@ export function getRecentRuns(address?: string): RecentRun[] {
   return filtered
 }
 
+export function getUsernameByAddress(address: string): UsernameResponse {
+  const state = loadState()
+  const registration = state.usernames[address]
+  if (!registration) {
+    return { address }
+  }
+  return {
+    address,
+    username: registration.username,
+    registeredAtUnix: registration.registeredAtUnix,
+    lastChangedAtUnix: registration.lastChangedAtUnix,
+  }
+}
+
+export function getAddressByUsername(username: string): AddressByUsernameResponse {
+  const state = loadState()
+  const normalizedUsername = username.toLowerCase()
+  const address = state.usernamesLookup[normalizedUsername]
+  return {
+    username,
+    address: address || undefined,
+  }
+}
+
+export function validateUsername(username: string): { valid: boolean; reason: string } {
+  if (!username || username.length < 3) {
+    return { valid: false, reason: 'Username must be at least 3 characters' }
+  }
+  if (username.length > 20) {
+    return { valid: false, reason: 'Username must be 20 characters or less' }
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    return { valid: false, reason: 'Username can only contain letters, numbers, and underscores' }
+  }
+  return { valid: true, reason: '' }
+}
+
+export function setUsername(address: string, username: string): { submitted: boolean; player: PlayerStats } {
+  const state = loadState()
+  const validation = validateUsername(username)
+  if (!validation.valid) {
+    throw new Error(validation.reason)
+  }
+
+  const normalizedUsername = username.toLowerCase()
+  const existingOwner = state.usernamesLookup[normalizedUsername]
+  
+  // Check if username is taken by someone else
+  if (existingOwner && existingOwner !== address) {
+    throw new Error('Username is already taken')
+  }
+
+  // Get old username for this address if exists
+  const oldRegistration = state.usernames[address]
+  const oldNormalizedUsername = oldRegistration ? oldRegistration.username.toLowerCase() : null
+
+  // Remove old username lookup if changing username
+  if (oldNormalizedUsername && oldNormalizedUsername !== normalizedUsername) {
+    delete state.usernamesLookup[oldNormalizedUsername]
+  }
+
+  // Create or update registration
+  const now = Date.now() * 1000 // microseconds
+  const registration: UsernameRegistration = {
+    address,
+    username,
+    registeredAtUnix: oldRegistration ? oldRegistration.registeredAtUnix : now,
+    lastChangedAtUnix: now,
+  }
+
+  state.usernames[address] = registration
+  state.usernamesLookup[normalizedUsername] = address
+
+  // Update player stats
+  const player = state.players[address] ?? createPlayer(address)
+  player.username = username
+  state.players[address] = player
+
+  saveState(state)
+  return { submitted: true, player }
+}
+
 function createPlayer(address: string): PlayerStats {
   return {
     address,
@@ -507,6 +612,8 @@ function loadState(): MockChainState {
     dailyLeaderboard: [],
     classicLeaderboard: [],
     recentRuns: [],
+    usernames: {},
+    usernamesLookup: {},
   }
 
   const raw = localStorage.getItem(STORAGE_KEY)

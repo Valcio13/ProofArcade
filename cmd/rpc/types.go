@@ -160,6 +160,10 @@ type addressRequest struct {
 	Address lib.HexBytes `json:"address"`
 }
 
+type usernameRequest struct {
+	Username string `json:"username"`
+}
+
 type faucetRequest struct {
 	addressRequest
 	Amount uint64 `json:"amount"`

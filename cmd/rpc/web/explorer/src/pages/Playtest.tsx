@@ -89,6 +89,10 @@ function persistPlaytestState(state: StoredPlaytestState) {
 }
 
 function PlaytestPage() {
+  useEffect(() => {
+    document.title = 'Playtest | ProofArcade'
+  }, [])
+
   // Always start with a fresh playtest state - clear any previous session
   useEffect(() => {
     // Clear any stored playtest state when entering the page

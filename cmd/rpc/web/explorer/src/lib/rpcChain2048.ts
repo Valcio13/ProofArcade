@@ -8,6 +8,8 @@ import type {
   Game2048Client,
   RedeemClassicPointsArgs,
   RedeemClassicPointsResult,
+  SetUsernameArgs,
+  SetUsernameResult,
   SubmitSessionArgs,
   SubmitSessionResult,
 } from './chain2048'
@@ -22,6 +24,8 @@ import type {
   RedeemPreview,
   RedemptionHistory,
   SessionStart,
+  UsernameResponse,
+  AddressByUsernameResponse,
 } from './mockChain2048'
 
 const queryConfigPath = '/v1/query/2048/config'
@@ -33,6 +37,9 @@ const queryShopConfigPath = '/v1/query/2048/shop-config'
 const queryRedeemPreviewPath = '/v1/query/2048/redeem-preview'
 const queryRedemptionsPath = '/v1/query/2048/redemptions'
 const queryGameHistoryPath = '/v1/query/2048/game-history'
+const queryUsernamePath = '/v1/query/2048/username'
+const queryAddressByUsernamePath = '/v1/query/2048/address-by-username'
+const txSetUsernamePath = '/v1/admin/tx-2048-set-username'
 const txStartDailyPath = '/v1/admin/tx-2048-start-daily'
 const txStartClassicPath = '/v1/admin/tx-2048-start-classic'
 const txSubmitPath = '/v1/admin/tx-2048-submit'
@@ -428,6 +435,13 @@ export function createRpcGame2048Client(): {
       const liveAddress = assertHexAddress(address)
       return postJson<RedemptionHistory>(rpcURL, queryRedemptionsPath, { address: liveAddress })
     },
+    async getUsernameByAddress(address: string) {
+      const liveAddress = assertHexAddress(address)
+      return postJson<UsernameResponse>(rpcURL, queryUsernamePath, { address: liveAddress })
+    },
+    async getAddressByUsername(username: string) {
+      return postJson<AddressByUsernameResponse>(rpcURL, queryAddressByUsernamePath, { username })
+    },
     async getRecentRuns(address?: string) {
       if (!address) {
         // Without address, return empty array
@@ -535,6 +549,24 @@ export function createRpcGame2048Client(): {
         address: liveAddress,
         password: args.password,
         burnPoints: args.burnPoints,
+        submit: true,
+      })
+      if (result.txHash) {
+        const tracking = await trackRpcTx(result.txHash)
+        result.txStage = tracking.stage
+        result.txDetail = tracking.detail
+      }
+      return result
+    },
+    async setUsername(args: SetUsernameArgs): Promise<SetUsernameResult> {
+      const liveAddress = assertHexAddress(args.address)
+      if (!args.password) {
+        throw new Error('Live mode needs the wallet password to sign the username change.')
+      }
+      const result = await postJson<SetUsernameResult>(adminRPCURL, txSetUsernamePath, {
+        address: liveAddress,
+        password: args.password,
+        username: args.username,
         submit: true,
       })
       if (result.txHash) {

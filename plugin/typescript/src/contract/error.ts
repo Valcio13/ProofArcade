@@ -143,3 +143,11 @@ export function ErrInvalidMoveDirection(): IPluginError {
 export function ErrDailyLoginAlreadyClaimed(): IPluginError {
     return NewError(32, DefaultModule, 'daily login reward already claimed for this UTC day');
 }
+
+export function ErrUsernameInvalid(): IPluginError {
+    return NewError(33, DefaultModule, 'username is invalid (must be 3-20 characters, alphanumeric + underscore only)');
+}
+
+export function ErrUsernameTaken(): IPluginError {
+    return NewError(34, DefaultModule, 'username is already taken');
+}

@@ -16,6 +16,10 @@ function rankColor(rank: number): string {
 }
 
 const HomePage = () => {
+  useEffect(() => {
+    document.title = 'ProofArcade | Play 2048 On-Chain'
+  }, [])
+
   const storedWallet = loadStoredWalletAuth()
   const hasLocalSession = !!storedWallet?.address
   const [topPlayers, setTopPlayers] = useState<LeaderboardEntry[]>([])
@@ -28,10 +32,8 @@ const HomePage = () => {
       const client = await createGame2048Client()
       const leaderboards = await client.getLeaderboards()
       if (!cancelled) {
-        // Combine both leaderboards and take top 3 by score
-        const combined = [...leaderboards.daily, ...leaderboards.classic]
-        const sorted = combined.sort((a, b) => b.score - a.score)
-        setTopPlayers(sorted.slice(0, 3))
+        // Show only Daily Challenge leaders (top 3)
+        setTopPlayers(leaderboards.daily.slice(0, 3))
       }
 
       // Load player stats if authenticated
@@ -245,7 +247,7 @@ const HomePage = () => {
               <h2 className="text-3xl font-bold text-white sm:text-4xl">Choose Your Path</h2>
             </div>
 
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-3 md:auto-rows-fr items-stretch">
               <GameModeCard
                 icon={<Target className="h-10 w-10" />}
                 title="Playtest"
@@ -296,12 +298,33 @@ const HomePage = () => {
 // Helper Components
 
 function LeaderboardPreview({ topPlayers }: { topPlayers: LeaderboardEntry[] }) {
+  // Calculate time until next UTC day
+  const getTimeUntilReset = () => {
+    const now = new Date()
+    const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0))
+    const diff = tomorrow.getTime() - now.getTime()
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    return { hours, minutes }
+  }
+  
+  const { hours, minutes } = getTimeUntilReset()
+  
   return (
     <section>
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">Current Champions</h2>
+      <div className="mb-6">
+        <div className="flex items-baseline gap-3">
+          <h2 className="text-3xl font-bold text-white sm:text-4xl">Daily Challenge Leaders</h2>
+          <span className="rounded-full border border-[#f0cf52]/30 bg-[#f0cf52]/10 px-3 py-1 text-xs font-semibold text-[#f6df84]">
+            Today
+          </span>
         </div>
+        <p className="mt-2 text-sm text-slate-400">
+          Top scores for today's challenge • Resets in {hours}h {minutes}m
+        </p>
+      </div>
+      
+      <div className="mb-6 flex items-end justify-between">
         <Link
           to="/leaderboard"
           className="flex items-center gap-2 text-sm font-semibold text-[#f6df84] transition hover:text-[#f0cf52]"
@@ -318,6 +341,7 @@ function LeaderboardPreview({ topPlayers }: { topPlayers: LeaderboardEntry[] }) 
               key={player.gameId}
               rank={index + 1}
               address={player.address}
+              username={player.username}
               score={player.score}
               maxTile={player.maxTile}
               moveCount={player.moveCount}
@@ -373,45 +397,51 @@ function GameModeCard({
 
   return (
     <div
-      className={`rounded-2xl border bg-card p-6 transition-colors ${
+      className={`flex flex-col h-full rounded-2xl border bg-card p-6 transition-colors ${
         highlighted
           ? 'border-[#f0cf52]/30 hover:border-[#f0cf52]/50'
           : 'border-white/10 hover:border-white/20'
       }`}
     >
-      <div className={`rounded-xl p-3 inline-block ${
-        highlighted ? 'bg-[#f0cf52]/15 text-[#f6df84]' : 'bg-white/5 text-slate-300'
-      }`}>
-        {icon}
+      {/* Card Content - Grows to fill space */}
+      <div className="flex-1">
+        <div className={`rounded-xl p-3 inline-block ${
+          highlighted ? 'bg-[#f0cf52]/15 text-[#f6df84]' : 'bg-white/5 text-slate-300'
+        }`}>
+          {icon}
+        </div>
+
+        <h3 className="mt-4 text-2xl font-bold text-white">{title}</h3>
+
+        <ul className="mt-4 space-y-2">
+          {features.map((feature, index) => (
+            <li key={index} className="flex items-start gap-2 text-sm text-slate-400">
+              <span className="mt-1 text-[#53a6ff]">•</span>
+              {feature}
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <h3 className="mt-4 text-2xl font-bold text-white">{title}</h3>
-
-      <ul className="mt-4 space-y-2">
-        {features.map((feature, index) => (
-          <li key={index} className="flex items-start gap-2 text-sm text-slate-400">
-            <span className="mt-1 text-[#53a6ff]">•</span>
-            {feature}
-          </li>
-        ))}
-      </ul>
-
-      {isDisabled ? (
-        <div className="mt-6 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-center text-sm text-slate-500">
-          Requires wallet
-        </div>
-      ) : (
-        <Link
-          to={ctaLink}
-          className={`mt-6 block rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
-            highlighted
-              ? 'bg-[#f0cf52] text-[#2e2510] hover:brightness-105'
-              : 'border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10'
-          }`}
-        >
-          {ctaText}
-        </Link>
-      )}
+      {/* CTA - Pinned to bottom */}
+      <div className="mt-6">
+        {isDisabled ? (
+          <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-center text-sm text-slate-500">
+            Requires wallet
+          </div>
+        ) : (
+          <Link
+            to={ctaLink}
+            className={`block rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
+              highlighted
+                ? 'bg-[#f0cf52] text-[#2e2510] hover:brightness-105'
+                : 'border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10'
+            }`}
+          >
+            {ctaText}
+          </Link>
+        )}
+      </div>
     </div>
   )
 }
@@ -468,12 +498,14 @@ function QuickActionCard({
 function TopPlayerCard({
   rank,
   address,
+  username,
   score,
   maxTile,
   moveCount
 }: {
   rank: number;
   address: string;
+  username?: string;
   score: number;
   maxTile: number;
   moveCount: number;
@@ -489,7 +521,12 @@ function TopPlayerCard({
       <div className="flex items-start justify-between">
         <div>
           <div className="text-2xl font-black" style={{ color: rankColor(rank) }}>#{rank}</div>
-          <p className="mt-2 text-sm font-semibold text-white">{shortAddress(address)}</p>
+          <Link
+            to={`/player/${address}`}
+            className="mt-2 inline-block text-sm font-semibold text-white transition hover:text-[#53a6ff] hover:underline"
+          >
+            {username || shortAddress(address)}
+          </Link>
         </div>
         <div className="text-right">
           <p className="text-2xl font-black text-[#f6df84]">{score}</p>

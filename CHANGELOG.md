@@ -2,6 +2,100 @@
 
 All notable changes to ProofArcade will be documented in this file.
 
+## [0.2.0] - 2026-06-14
+
+### Added
+
+- **PlayerIdentity System**: Complete identity architecture with address-based routing and mutable usernames
+  - New protobuf message: `PlayerIdentity` with address and username fields
+  - Query-time username enrichment for backward compatibility
+  - New RPC endpoints: `getUsernameByAddress`, `setUsername`
+  - Dual-write strategy (state + database) for username persistence
+  
+- **Public Profile Pages**: New `/player/:address` route for persistent player identity
+  - 6 achievement metrics (Best Score, Highest Tile, Total Games, Daily Challenges, Classic Points, All-Time Rank)
+  - Recent activity feed (last 10 games with badges)
+  - All-time ranking card
+  - Profile sharing button
+  - Responsive design
+  
+- **Clickable Leaderboard Usernames**: All leaderboards now link to public profiles
+  - Daily leaderboard usernames clickable
+  - Classic leaderboard usernames clickable
+  - Home page top players clickable
+  
+- **Dynamic Page Titles**: Route-aware browser tab titles (11 pages)
+  - Static titles: Home, Profile, CheckIn, Settings, Shop, Auth, Explorer, Playtest
+  - Dynamic titles: Play2048 (mode-based), Leaderboard (mode-based), PublicProfile (username-based)
+  - Improves tab management, bookmarking, browser history, accessibility, and SEO
+
+### Changed
+
+- **Settings Page Refactor**: Complete redesign focused on identity, security, and recovery
+  - Removed: Wallet Nickname (duplicate identity system)
+  - Removed: Dev Faucet (moved to developer context)
+  - Enhanced: Beta Wallet Notice (more prominent)
+  - Elevated: Username Management (now "Public Username")
+  - Elevated: Wallet Backup with "Why Backup?" educational section
+  - Added: Recovery best practices and instructions
+  - Layout: Side-by-side responsive grid with aligned CTAs
+  
+- **Check-In Page Redesign**: Progression-focused UX overhaul
+  - Compact status summary banner (single row, 4 metrics)
+  - Reward Track elevated as hero element
+  - Integrated claim button directly into active reward tile
+  - Removed duplicate Weekly Cycle Progress card
+  - Compressed claimed state to inline message
+  - Enhanced Day 7 motivation with countdown badges
+  
+- **Mode Card CTA Alignment**: Visual consistency improvements
+  - Home page mode selection cards (Daily, Classic, Training) have aligned CTAs
+  - Play2048 compact mode cards have aligned CTAs
+  - All CTAs at same horizontal baseline using flexbox layout
+
+### Technical
+
+- **Backend (Go)**:
+  - Query-time username enrichment in RPC handlers
+  - Dual-write username updates (state + database)
+  - Backward compatible dual-write strategy
+  
+- **Frontend (React/TypeScript)**:
+  - New page: `PublicProfile.tsx` (11.54 KB)
+  - Updated: 11 pages with new features and titles
+  - Type-safe username operations
+  - Mock implementations for development
+  
+- **Contract Layer (TypeScript/Protobuf)**:
+  - New protobuf message: `PlayerIdentity`
+  - New documentation: `PROTOBUF_RULES.md`
+  - Backward compatible schema evolution
+  - Username validation (3-20 chars, alphanumeric + underscore)
+
+### Documentation
+
+- Added: `RELEASE_NOTES_v0.2.0.md` - Comprehensive release documentation
+- Added: `DYNAMIC_PAGE_TITLES.md` - Page titles implementation details
+- Updated: `UNCOMMITTED_CHANGES_SUMMARY.md` - Complete technical breakdown
+- Added: `.kiro/specs/platform-architecture-v2/` - Architecture design documents
+
+### Performance
+
+- Main bundle: 409.12 KB (gzip: 132.28 KB) - no significant change
+- All component chunks optimized
+- Minimal performance impact from new features
+
+### Breaking Changes
+
+**None** - This release maintains full backward compatibility with all existing:
+- Data structures
+- API endpoints
+- Client code
+- Player data
+- Leaderboard logic
+
+---
+
 ## Unreleased
 
 ### Added

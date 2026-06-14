@@ -2,18 +2,19 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
-import { Check, Flame, Trophy } from 'lucide-react'
-import { shortAddress } from '../lib/address'
+import { Check, Flame, Trophy, Clock } from 'lucide-react'
 import { createGame2048Client } from '../lib/chain2048'
 import { getUtcDateString } from '../lib/game2048'
 import type { ChainConfig, PlayerStats } from '../lib/mockChain2048'
-import { fetchRpcKeystoreAccounts, type RpcKeystoreAccount } from '../lib/rpcChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
 
 function CheckInPage() {
+  useEffect(() => {
+    document.title = 'Daily Check-In | ProofArcade'
+  }, [])
+
   const [player, setPlayer] = useState<PlayerStats | null>(null)
   const [config, setConfig] = useState<ChainConfig | null>(null)
-  const [selectedWallet, setSelectedWallet] = useState<RpcKeystoreAccount | null>(null)
   const [loginPassword, setLoginPassword] = useState('')
   const [storedSessionAddress, setStoredSessionAddress] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -48,14 +49,6 @@ function CheckInPage() {
         setIsLoading(false)
         return
       }
-
-      const nextWallets = client.status.mode === 'rpc' ? await fetchRpcKeystoreAccounts() : []
-      if (cancelled) {
-        return
-      }
-
-      const activeWallet = nextWallets.find((wallet) => wallet.address === storedAuth.address) ?? null
-      setSelectedWallet(activeWallet)
 
       const nextPlayer = await client.getPlayer(storedAuth.address)
       if (cancelled) {
@@ -95,11 +88,21 @@ function CheckInPage() {
     const rewardPoints = rewardSchedule[Math.max(0, nextStreak - 1)] ?? rewardSchedule[rewardSchedule.length - 1] ?? 0
     const daySevenUnlocked = nextStreak >= rewardSchedule.length
     
-    // 🔧 FIX: Weekly cycle calculation (wraps 1-7, not resetting streak)
-    // Show position in 7-day cycle: 1→1, 2→2, ..., 7→7, 8→1, 9→2, etc.
+    // Weekly cycle calculation (wraps 1-7, not resetting streak)
     const completedCheckIns = currentStreak === 0 
       ? 0 
       : (currentStreak % 7 === 0 ? 7 : currentStreak % 7)
+    
+    // Calculate next reward (tomorrow)
+    const tomorrowStreak = claimedToday 
+      ? Math.min(currentStreak + 1, rewardSchedule.length)
+      : nextStreak
+    const nextRewardPoints = rewardSchedule[Math.max(0, tomorrowStreak - 1)] ?? rewardSchedule[rewardSchedule.length - 1] ?? 0
+    
+    // Calculate days until Day 7 bonus
+    const daysUntilBonus = claimedToday 
+      ? (7 - completedCheckIns)
+      : (7 - completedCheckIns) + (completedCheckIns === 0 ? 0 : 0)
 
     return {
       utcDate,
@@ -107,12 +110,14 @@ function CheckInPage() {
       nextStreak,
       completedCheckIns,
       rewardPoints,
+      nextRewardPoints,
       bonusBps,
       claimedToday,
       daySevenUnlocked,
       bonusActiveToday: player?.classicPointsBonusUtcDate === utcDate,
       canClaim: !!storedSessionAddress && !claimedToday,
       schedule: rewardSchedule,
+      daysUntilBonus: Math.max(0, daysUntilBonus),
     }
   }, [config, player, storedSessionAddress])
 
@@ -204,7 +209,8 @@ function CheckInPage() {
         
         // Fall back to polling if transaction wasn't indexed
         const todayUtc = loginRewardStatus.utcDate
-        let nextPlayer, nextConfig
+        let nextPlayer: PlayerStats | null = null
+        let nextConfig: ChainConfig | null = null
         let confirmedOnChain = false
         let attempts = 0
         const maxAttempts = 35 // 35 × 200ms = 7 seconds
@@ -288,20 +294,8 @@ function CheckInPage() {
       {isLoading ? (
         /* Skeleton Loader */
         <>
-          <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
-            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-              <div>
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 animate-pulse rounded-full bg-white/10" />
-                  <div>
-                    <div className="h-3 w-24 animate-pulse rounded bg-white/10" />
-                    <div className="mt-2 h-12 w-32 animate-pulse rounded bg-white/10" />
-                  </div>
-                </div>
-                <div className="mt-6 h-32 animate-pulse rounded-2xl bg-white/5" />
-              </div>
-              <div className="h-64 animate-pulse rounded-2xl bg-white/5" />
-            </div>
+          <section className="rounded-3xl border border-white/10 bg-card p-6">
+            <div className="h-16 animate-pulse rounded-xl bg-white/5" />
           </section>
           <section className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-6">
             <div className="h-4 w-32 animate-pulse rounded bg-white/10" />
@@ -314,173 +308,130 @@ function CheckInPage() {
         </>
       ) : (
         <>
-      {/* Streak Hero Section */}
-      <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          {/* Left: Streak Focus */}
-          <div>
-            {/* Streak Display */}
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-500">
-                <Flame className="h-7 w-7 text-white" />
+          {/* Compact Status Summary Banner */}
+          <section className="rounded-2xl border border-white/10 bg-card p-5">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              {/* Current Streak */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500">
+                  <Flame className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Streak</p>
+                  <p className="mt-0.5 text-2xl font-bold text-white">{loginRewardStatus.currentStreak}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f6df84]">Current Streak</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <h1 className="font-bold text-6xl leading-none text-white">
-                    {player?.loginStreak ?? 0}
-                  </h1>
-                  <span className="text-2xl font-medium text-slate-400">
-                    {(player?.loginStreak ?? 0) === 1 ? 'day' : 'days'}
-                  </span>
+
+              {/* Check-In Status */}
+              <div className="flex items-center gap-3">
+                {loginRewardStatus.claimedToday ? (
+                  <>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500">
+                      <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Status</p>
+                      <p className="mt-0.5 text-sm font-bold text-green-400">Checked In</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#53a6ff] bg-[#53a6ff]/20">
+                      <div className="h-2 w-2 rounded-full bg-[#53a6ff]" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Status</p>
+                      <p className="mt-0.5 text-sm font-bold text-[#53a6ff]">Ready to Claim</p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Next Reward */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#53a6ff]/20">
+                  <span className="text-lg">🎁</span>
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    {loginRewardStatus.claimedToday ? 'Tomorrow' : 'Today'}
+                  </p>
+                  <p className="mt-0.5 text-sm font-bold text-white">
+                    {loginRewardStatus.claimedToday 
+                      ? `${loginRewardStatus.nextRewardPoints} Points`
+                      : `${loginRewardStatus.rewardPoints} Points`
+                    }
+                  </p>
+                </div>
+              </div>
+
+              {/* Next Check-In Time */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700">
+                  <Clock className="h-5 w-5 text-slate-300" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Next Check-In</p>
+                  <p className="mt-0.5 text-sm font-bold text-white">
+                    {loginRewardStatus.claimedToday ? 'Tomorrow' : 'Now'}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Progress to Day 7 */}
-            <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Weekly Cycle Progress</p>
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-white">
-                      {loginRewardStatus.completedCheckIns}
-                    </span>
-                    <span className="text-lg font-medium text-slate-400">of 7</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-[#f6df84]">
-                    {Math.round((loginRewardStatus.completedCheckIns / 7) * 100)}%
-                  </div>
-                  <p className="mt-0.5 text-[10px] uppercase tracking-wider text-slate-500">Complete</p>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-800">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: `${(loginRewardStatus.completedCheckIns / 7) * 100}%`,
-                  }}
-                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                  className="h-full bg-[#53a6ff]"
-                />
-              </div>
-
-              {/* Day 7 Bonus Status */}
-              {loginRewardStatus.daySevenUnlocked || loginRewardStatus.completedCheckIns >= 7 ? (
-                <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#f6df84]/40 bg-[#f6df84]/10 p-3.5">
-                  <Trophy className="h-5 w-5 text-[#f6df84]" />
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-[#f6df84]">+20% Bonus Active</p>
-                    <p className="text-xs text-slate-300">Play Classic Mode today to earn +20% bonus points (up to 2400 total)</p>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-4 text-center text-xs text-slate-500">
-                  Reach Day 7 to unlock +20% bonus when playing Classic Mode (earn up to 2400 points instead of 2000)
+            {/* Inline Claimed Message */}
+            {loginRewardStatus.claimedToday && (
+              <div className="mt-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5 text-center">
+                <p className="text-sm font-semibold text-green-400">
+                  ✓ Checked In Today · +{loginRewardStatus.rewardPoints} Classic Points Earned
                 </p>
+              </div>
+            )}
+          </section>
+
+          {/* 7-Day Reward Track - Hero Element */}
+          <section className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-6 sm:p-7">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold uppercase tracking-wider text-white">7-Day Reward Track</h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Check in daily to earn Classic Points and unlock weekly bonus
+                </p>
+              </div>
+
+              {/* Days Until Bonus Highlight */}
+              {loginRewardStatus.daysUntilBonus > 0 && (
+                <div className="rounded-xl border border-[#f6df84]/40 bg-[#f6df84]/10 px-4 py-2">
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#f6df84]">
+                    {loginRewardStatus.daysUntilBonus} {loginRewardStatus.daysUntilBonus === 1 ? 'Day' : 'Days'} Until +20% Bonus
+                  </p>
+                </div>
+              )}
+
+              {/* Bonus Active Badge */}
+              {loginRewardStatus.daySevenUnlocked && (
+                <div className="flex items-center gap-2 rounded-xl border border-[#f6df84]/40 bg-[#f6df84]/10 px-4 py-2">
+                  <Trophy className="h-4 w-4 text-[#f6df84]" />
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#f6df84]">
+                    +20% Bonus Active
+                  </p>
+                </div>
               )}
             </div>
-          </div>
 
-          {/* Right: Claim Card */}
-          <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
-            {loginRewardStatus.claimedToday ? (
-              // Already Claimed State
-              <>
-                <div className="flex items-center justify-center py-2">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-500">
-                    <Check className="h-10 w-10 text-white" strokeWidth={2.5} />
-                  </div>
-                </div>
-                <h3 className="mt-5 text-center text-xl font-bold text-white">Claimed!</h3>
-                <p className="mt-2 text-center text-sm text-slate-400">
-                  You earned {loginRewardStatus.rewardPoints} Classic Points
-                </p>
-                <div className="mt-5 rounded-xl border border-white/10 bg-slate-950/50 p-4 text-center">
-                  <p className="text-xs uppercase tracking-wider text-slate-500">Next Check-In</p>
-                  <p className="mt-1.5 text-lg font-bold text-white">Tomorrow</p>
-                  <p className="mt-1 text-xs text-slate-400">Come back to continue your streak</p>
-                </div>
-              </>
-            ) : (
-              // Ready to Claim State
-              <>
-                <div className="text-center">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#53a6ff]">Today's Reward</p>
-                  <div className="mt-3">
-                    <p className="text-5xl font-bold text-white">
-                      {loginRewardStatus.rewardPoints}
-                    </p>
-                    <p className="mt-1.5 text-sm font-semibold uppercase tracking-wide text-slate-400">
-                      Classic Points
-                    </p>
-                  </div>
-                </div>
-
-                {storedSessionAddress ? (
-                  <button
-                    onClick={handleClaimLoginReward}
-                    disabled={!loginRewardStatus.canClaim || isClaiming}
-                    className="mt-6 w-full rounded-2xl bg-[#53a6ff] px-5 py-4 text-base font-bold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {isClaiming ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Claiming...
-                      </span>
-                    ) : (
-                      'Claim Reward'
-                    )}
-                  </button>
-                ) : (
-                  <Link
-                    to="/auth"
-                    className="mt-6 inline-flex w-full items-center justify-center rounded-2xl border-2 border-white/10 bg-white/5 px-5 py-4 text-base font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
-                  >
-                    Log In To Claim
-                  </Link>
-                )}
-
-                <p className="mt-3 text-center text-[10px] uppercase tracking-wider text-slate-600">
-                  {loginRewardStatus.utcDate}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 7-Day Reward Track */}
-      <section className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-6 sm:p-7">
-        <div className="mb-5">
-          <p className="text-sm font-bold uppercase tracking-wider text-slate-200">Reward Track</p>
-          <p className="mt-1 text-xs text-slate-400">
-            Check in daily to earn Classic Points and unlock Day 7 bonus
-          </p>
-        </div>
-
-        {/* Simplified Reward Track */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
+            {/* Reward Track Grid */}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
           {loginRewardStatus.schedule.map((points, index) => {
             const day = index + 1
             const completedCheckIns = loginRewardStatus.completedCheckIns
             const nextStreak = loginRewardStatus.nextStreak
             const claimedToday = loginRewardStatus.claimedToday
             
-            // 🔧 FIX: Proper state calculation
-            // - Current Day: nextStreak === day AND not yet claimed today
-            // - Completed: day <= completedCheckIns (already claimed days)
-            // - Missed: day < nextStreak AND day > completedCheckIns (skipped days in broken streak)
-            // - Future: day > nextStreak (not reached yet)
-            
             const isCurrent = nextStreak === day && !claimedToday
             const isCompleted = day <= completedCheckIns
             const isMissed = !isCompleted && !isCurrent && day < nextStreak
             const isBonusDay = day === 7
+            const isClaimable = isCurrent && storedSessionAddress && loginRewardStatus.canClaim
 
             return (
               <motion.div
@@ -550,6 +501,35 @@ function CheckInPage() {
                   </p>
                 </div>
 
+                {/* Integrated Claim Button for Current Day */}
+                {isCurrent && (
+                  <div className="mt-4">
+                    {storedSessionAddress ? (
+                      <button
+                        onClick={handleClaimLoginReward}
+                        disabled={!loginRewardStatus.canClaim || isClaiming}
+                        className="w-full rounded-lg bg-[#53a6ff] py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {isClaiming ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            <span className="text-xs">Claiming...</span>
+                          </span>
+                        ) : (
+                          'Claim Now'
+                        )}
+                      </button>
+                    ) : (
+                      <Link
+                        to="/auth"
+                        className="block w-full rounded-lg border border-white/20 bg-white/5 py-2.5 text-center text-xs font-semibold text-slate-300 transition hover:border-white/30 hover:bg-white/10"
+                      >
+                        Log In
+                      </Link>
+                    )}
+                  </div>
+                )}
+
                 {isBonusDay && (
                   <div className={`mt-3 flex items-center gap-1.5 rounded-lg px-2 py-1.5 ${
                     isCompleted || isCurrent
@@ -570,15 +550,26 @@ function CheckInPage() {
             )
           })}
         </div>
-      </section>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 px-6 py-6 text-center">
-          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-700 border-t-slate-400" />
-          <p className="mt-3 text-sm text-slate-400">Loading check-in rewards...</p>
-        </div>
-      )}
+        {/* Day 7 Bonus Explanation */}
+        {loginRewardStatus.daySevenUnlocked ? (
+          <div className="mt-5 rounded-xl border border-[#f6df84]/40 bg-[#f6df84]/10 p-4">
+            <div className="flex items-start gap-3">
+              <Trophy className="h-5 w-5 text-[#f6df84]" />
+              <div className="flex-1">
+                <p className="text-sm font-bold text-[#f6df84]">Weekly Bonus Unlocked!</p>
+                <p className="mt-1 text-xs text-slate-300">
+                  Play Classic Mode today to earn +20% bonus points (up to 2400 total instead of 2000)
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-5 text-center text-xs text-slate-500">
+            Complete 7 consecutive check-ins to unlock +20% Classic Mode bonus (earn up to 2400 points instead of 2000)
+          </p>
+        )}
+      </section>
       </>
       )}
     </motion.div>

@@ -9,71 +9,73 @@ import (
 
 // Canopy RPC Paths
 const (
-	VersionRoutePath               = "/v1/"
-	TxRoutePath                    = "/v1/tx"
-	TxsRoutePath                   = "/v1/txs"
-	HeightRoutePath                = "/v1/query/height"
-	IndexerBlobsRoutePath          = "/v1/query/indexer-blobs"
-	AccountRoutePath               = "/v1/query/account"
-	AccountsRoutePath              = "/v1/query/accounts"
-	PoolRoutePath                  = "/v1/query/pool"
-	PoolsRoutePath                 = "/v1/query/pools"
-	ValidatorRoutePath             = "/v1/query/validator"
-	ValidatorsRoutePath            = "/v1/query/validators"
-	CommitteeDataRoutePath         = "/v1/query/committee-data"
-	CommitteesDataRoutePath        = "/v1/query/committees-data"
-	SubsidizedCommitteesRoutePath  = "/v1/query/subsidized-committees"
-	RetiredCommitteesRoutePath     = "/v1/query/retired-committees"
-	NonSignersRoutePath            = "/v1/query/non-signers"
-	ParamRoutePath                 = "/v1/query/params"
-	SupplyRoutePath                = "/v1/query/supply"
-	FeeParamRoutePath              = "/v1/query/fee-params"
-	GovParamRoutePath              = "/v1/query/gov-params"
-	ConParamsRoutePath             = "/v1/query/con-params"
-	ValParamRoutePath              = "/v1/query/val-params"
-	EcoParamRoutePath              = "/v1/query/eco-params"
-	StateRoutePath                 = "/v1/query/state"
-	StateDiffRoutePath             = "/v1/query/state-diff"
-	StateDiffGetRoutePath          = "/v1/query/state-diff"
-	CertByHeightRoutePath          = "/v1/query/cert-by-height"
-	BlockByHeightRoutePath         = "/v1/query/block-by-height"
-	BlocksRoutePath                = "/v1/query/blocks"
-	BlockByHashRoutePath           = "/v1/query/block-by-hash"
-	TxsByHeightRoutePath           = "/v1/query/txs-by-height"
-	TxsBySenderRoutePath           = "/v1/query/txs-by-sender"
-	TxsByRecRoutePath              = "/v1/query/txs-by-rec"
-	TxByHashRoutePath              = "/v1/query/tx-by-hash"
-	EventsByHeightRoutePath        = "/v1/query/events-by-height"
-	EventsByAddressRoutePath       = "/v1/query/events-by-address"
-	EventsByChainRoutePath         = "/v1/query/events-by-chain"
-	OrderRoutePath                 = "/v1/query/order"
-	OrdersRoutePath                = "/v1/query/orders"
-	DexPriceRoutePath              = "/v1/query/dex-price"
-	DexBatchRoutePath              = "/v1/query/dex-batch"
-	NextDexBatchRoutePath          = "/v1/query/next-dex-batch"
-	LastProposersRoutePath         = "/v1/query/last-proposers"
-	IsValidDoubleSignerRoutePath   = "/v1/query/valid-double-signer"
-	DoubleSignersRoutePath         = "/v1/query/double-signers"
-	MinimumEvidenceHeightRoutePath = "/v1/query/minimum-evidence-height"
-	LotteryRoutePath               = "/v1/query/lottery"
-	PendingRoutePath               = "/v1/query/pending"
-	FailedTxRoutePath              = "/v1/query/failed-txs"
-	ProposalsRoutePath             = "/v1/gov/proposals"
-	PollRoutePath                  = "/v1/gov/poll"
-	RootChainInfoRoutePath         = "/v1/query/root-chain-info"
-	ValidatorSetRoutePath          = "/v1/query/validator-set"
-	CheckpointRoutePath            = "/v1/query/checkpoint"
-	Game2048ConfigRoutePath        = "/v1/query/2048/config"
-	Game2048PlayerRoutePath        = "/v1/query/2048/player"
-	Game2048LeaderboardsRoutePath  = "/v1/query/2048/leaderboards"
-	Game2048DailyPoolRoutePath     = "/v1/query/2048/daily-pool"
-	Game2048TreasuryRoutePath      = "/v1/query/2048/treasury"
-	Game2048ClaimableRewardsPath   = "/v1/query/2048/claimable-rewards"
-	Game2048ShopConfigRoutePath    = "/v1/query/2048/shop-config"
-	Game2048RedeemPreviewRoutePath = "/v1/query/2048/redeem-preview"
-	Game2048RedemptionsRoutePath   = "/v1/query/2048/redemptions"
-	Game2048GameHistoryRoutePath   = "/v1/query/2048/game-history"
-	SubscribeRCInfoPath            = "/v1/subscribe-rc-info"
+	VersionRoutePath                   = "/v1/"
+	TxRoutePath                        = "/v1/tx"
+	TxsRoutePath                       = "/v1/txs"
+	HeightRoutePath                    = "/v1/query/height"
+	IndexerBlobsRoutePath              = "/v1/query/indexer-blobs"
+	AccountRoutePath                   = "/v1/query/account"
+	AccountsRoutePath                  = "/v1/query/accounts"
+	PoolRoutePath                      = "/v1/query/pool"
+	PoolsRoutePath                     = "/v1/query/pools"
+	ValidatorRoutePath                 = "/v1/query/validator"
+	ValidatorsRoutePath                = "/v1/query/validators"
+	CommitteeDataRoutePath             = "/v1/query/committee-data"
+	CommitteesDataRoutePath            = "/v1/query/committees-data"
+	SubsidizedCommitteesRoutePath      = "/v1/query/subsidized-committees"
+	RetiredCommitteesRoutePath         = "/v1/query/retired-committees"
+	NonSignersRoutePath                = "/v1/query/non-signers"
+	ParamRoutePath                     = "/v1/query/params"
+	SupplyRoutePath                    = "/v1/query/supply"
+	FeeParamRoutePath                  = "/v1/query/fee-params"
+	GovParamRoutePath                  = "/v1/query/gov-params"
+	ConParamsRoutePath                 = "/v1/query/con-params"
+	ValParamRoutePath                  = "/v1/query/val-params"
+	EcoParamRoutePath                  = "/v1/query/eco-params"
+	StateRoutePath                     = "/v1/query/state"
+	StateDiffRoutePath                 = "/v1/query/state-diff"
+	StateDiffGetRoutePath              = "/v1/query/state-diff"
+	CertByHeightRoutePath              = "/v1/query/cert-by-height"
+	BlockByHeightRoutePath             = "/v1/query/block-by-height"
+	BlocksRoutePath                    = "/v1/query/blocks"
+	BlockByHashRoutePath               = "/v1/query/block-by-hash"
+	TxsByHeightRoutePath               = "/v1/query/txs-by-height"
+	TxsBySenderRoutePath               = "/v1/query/txs-by-sender"
+	TxsByRecRoutePath                  = "/v1/query/txs-by-rec"
+	TxByHashRoutePath                  = "/v1/query/tx-by-hash"
+	EventsByHeightRoutePath            = "/v1/query/events-by-height"
+	EventsByAddressRoutePath           = "/v1/query/events-by-address"
+	EventsByChainRoutePath             = "/v1/query/events-by-chain"
+	OrderRoutePath                     = "/v1/query/order"
+	OrdersRoutePath                    = "/v1/query/orders"
+	DexPriceRoutePath                  = "/v1/query/dex-price"
+	DexBatchRoutePath                  = "/v1/query/dex-batch"
+	NextDexBatchRoutePath              = "/v1/query/next-dex-batch"
+	LastProposersRoutePath             = "/v1/query/last-proposers"
+	IsValidDoubleSignerRoutePath       = "/v1/query/valid-double-signer"
+	DoubleSignersRoutePath             = "/v1/query/double-signers"
+	MinimumEvidenceHeightRoutePath     = "/v1/query/minimum-evidence-height"
+	LotteryRoutePath                   = "/v1/query/lottery"
+	PendingRoutePath                   = "/v1/query/pending"
+	FailedTxRoutePath                  = "/v1/query/failed-txs"
+	ProposalsRoutePath                 = "/v1/gov/proposals"
+	PollRoutePath                      = "/v1/gov/poll"
+	RootChainInfoRoutePath             = "/v1/query/root-chain-info"
+	ValidatorSetRoutePath              = "/v1/query/validator-set"
+	CheckpointRoutePath                = "/v1/query/checkpoint"
+	Game2048ConfigRoutePath            = "/v1/query/2048/config"
+	Game2048PlayerRoutePath            = "/v1/query/2048/player"
+	Game2048LeaderboardsRoutePath      = "/v1/query/2048/leaderboards"
+	Game2048DailyPoolRoutePath         = "/v1/query/2048/daily-pool"
+	Game2048TreasuryRoutePath          = "/v1/query/2048/treasury"
+	Game2048ClaimableRewardsPath       = "/v1/query/2048/claimable-rewards"
+	Game2048ShopConfigRoutePath        = "/v1/query/2048/shop-config"
+	Game2048RedeemPreviewRoutePath     = "/v1/query/2048/redeem-preview"
+	Game2048RedemptionsRoutePath       = "/v1/query/2048/redemptions"
+	Game2048GameHistoryRoutePath       = "/v1/query/2048/game-history"
+	Game2048UsernameRoutePath          = "/v1/query/2048/username"
+	Game2048AddressByUsernameRoutePath = "/v1/query/2048/address-by-username"
+	SubscribeRCInfoPath                = "/v1/subscribe-rc-info"
 	// eth
 	EthereumRoutePath = "/v1/eth"
 	// admin
@@ -113,6 +115,7 @@ const (
 	Tx2048ClaimDailyRoutePath    = "/v1/admin/tx-2048-claim-daily-reward"
 	Tx2048RedeemClassicRoutePath = "/v1/admin/tx-2048-redeem-classic-points"
 	Tx2048ClaimLoginRoutePath    = "/v1/admin/tx-2048-claim-daily-login"
+	Tx2048SetUsernameRoutePath   = "/v1/admin/tx-2048-set-username"
 	DevFaucetRoutePath           = "/v1/admin/dev-faucet"
 	ConfigRoutePath              = "/v1/admin/config"
 	LogsRoutePath                = "/v1/admin/log"
@@ -121,70 +124,72 @@ const (
 )
 
 const (
-	VersionRouteName               = "version"
-	TxRouteName                    = "tx"
-	TxsRouteName                   = "txs"
-	HeightRouteName                = "height"
-	IndexerBlobsRouteName          = "indexer-blobs"
-	AccountRouteName               = "account"
-	AccountsRouteName              = "accounts"
-	PoolRouteName                  = "pool"
-	PoolsRouteName                 = "pools"
-	ValidatorRouteName             = "validator"
-	ValidatorsRouteName            = "validators"
-	ValidatorSetRouteName          = "validator-set"
-	CommitteeDataRouteName         = "committee-data"
-	CommitteesDataRouteName        = "committees-data"
-	SubsidizedCommitteesRouteName  = "subsidized-committees"
-	RetiredCommitteesRouteName     = "retired-committees"
-	NonSignersRouteName            = "non-signers"
-	SupplyRouteName                = "supply"
-	ParamRouteName                 = "params"
-	FeeParamRouteName              = "fee-params"
-	GovParamRouteName              = "gov-params"
-	ConParamsRouteName             = "con-params"
-	ValParamRouteName              = "val-params"
-	EcoParamRouteName              = "eco-params"
-	StateRouteName                 = "state"
-	StateDiffRouteName             = "state-diff"
-	StateDiffGetRouteName          = "state-diff-get"
-	CertByHeightRouteName          = "cert-by-height"
-	BlocksRouteName                = "blocks"
-	BlockByHeightRouteName         = "block-by-height"
-	BlockByHashRouteName           = "block-by-hash"
-	TxsByHeightRouteName           = "txs-by-height"
-	TxsBySenderRouteName           = "txs-by-sender"
-	TxsByRecRouteName              = "txs-by-rec"
-	TxByHashRouteName              = "tx-by-hash"
-	EventsByHeightRouteName        = "events-by-height"
-	EventsByAddressRouteName       = "events-by-address"
-	EventsByChainRouteName         = "events-by-chain"
-	PendingRouteName               = "pending"
-	FailedTxRouteName              = "failed-txs"
-	ProposalsRouteName             = "proposals"
-	PollRouteName                  = "poll"
-	OrderRouteName                 = "order"
-	OrdersRouteName                = "orders"
-	DexPriceRouteName              = "dex-price"
-	DexBatchRouteName              = "dex-batch"
-	NextDexBatchRouteName          = "next-dex-batch"
-	LastProposersRouteName         = "last-proposers"
-	IsValidDoubleSignerRouteName   = "valid-double-signer"
-	DoubleSignersRouteName         = "double-signers"
-	MinimumEvidenceHeightRouteName = "minimum-evidence-height"
-	LotteryRouteName               = "lottery"
-	RootChainInfoRouteName         = "root-chain-info"
-	CheckpointRouteName            = "checkpoint"
-	Game2048ConfigRouteName        = "2048-config"
-	Game2048PlayerRouteName        = "2048-player"
-	Game2048LeaderboardsRouteName  = "2048-leaderboards"
-	Game2048DailyPoolRouteName     = "2048-daily-pool"
-	Game2048TreasuryRouteName      = "2048-treasury"
-	Game2048ClaimableRewardsName   = "2048-claimable-rewards"
-	Game2048ShopConfigRouteName    = "2048-shop-config"
-	Game2048RedeemPreviewRouteName = "2048-redeem-preview"
-	Game2048RedemptionsRouteName   = "2048-redemptions"
-	Game2048GameHistoryRouteName   = "2048-game-history"
+	VersionRouteName                   = "version"
+	TxRouteName                        = "tx"
+	TxsRouteName                       = "txs"
+	HeightRouteName                    = "height"
+	IndexerBlobsRouteName              = "indexer-blobs"
+	AccountRouteName                   = "account"
+	AccountsRouteName                  = "accounts"
+	PoolRouteName                      = "pool"
+	PoolsRouteName                     = "pools"
+	ValidatorRouteName                 = "validator"
+	ValidatorsRouteName                = "validators"
+	ValidatorSetRouteName              = "validator-set"
+	CommitteeDataRouteName             = "committee-data"
+	CommitteesDataRouteName            = "committees-data"
+	SubsidizedCommitteesRouteName      = "subsidized-committees"
+	RetiredCommitteesRouteName         = "retired-committees"
+	NonSignersRouteName                = "non-signers"
+	SupplyRouteName                    = "supply"
+	ParamRouteName                     = "params"
+	FeeParamRouteName                  = "fee-params"
+	GovParamRouteName                  = "gov-params"
+	ConParamsRouteName                 = "con-params"
+	ValParamRouteName                  = "val-params"
+	EcoParamRouteName                  = "eco-params"
+	StateRouteName                     = "state"
+	StateDiffRouteName                 = "state-diff"
+	StateDiffGetRouteName              = "state-diff-get"
+	CertByHeightRouteName              = "cert-by-height"
+	BlocksRouteName                    = "blocks"
+	BlockByHeightRouteName             = "block-by-height"
+	BlockByHashRouteName               = "block-by-hash"
+	TxsByHeightRouteName               = "txs-by-height"
+	TxsBySenderRouteName               = "txs-by-sender"
+	TxsByRecRouteName                  = "txs-by-rec"
+	TxByHashRouteName                  = "tx-by-hash"
+	EventsByHeightRouteName            = "events-by-height"
+	EventsByAddressRouteName           = "events-by-address"
+	EventsByChainRouteName             = "events-by-chain"
+	PendingRouteName                   = "pending"
+	FailedTxRouteName                  = "failed-txs"
+	ProposalsRouteName                 = "proposals"
+	PollRouteName                      = "poll"
+	OrderRouteName                     = "order"
+	OrdersRouteName                    = "orders"
+	DexPriceRouteName                  = "dex-price"
+	DexBatchRouteName                  = "dex-batch"
+	NextDexBatchRouteName              = "next-dex-batch"
+	LastProposersRouteName             = "last-proposers"
+	IsValidDoubleSignerRouteName       = "valid-double-signer"
+	DoubleSignersRouteName             = "double-signers"
+	MinimumEvidenceHeightRouteName     = "minimum-evidence-height"
+	LotteryRouteName                   = "lottery"
+	RootChainInfoRouteName             = "root-chain-info"
+	CheckpointRouteName                = "checkpoint"
+	Game2048ConfigRouteName            = "2048-config"
+	Game2048PlayerRouteName            = "2048-player"
+	Game2048LeaderboardsRouteName      = "2048-leaderboards"
+	Game2048DailyPoolRouteName         = "2048-daily-pool"
+	Game2048TreasuryRouteName          = "2048-treasury"
+	Game2048ClaimableRewardsName       = "2048-claimable-rewards"
+	Game2048ShopConfigRouteName        = "2048-shop-config"
+	Game2048RedeemPreviewRouteName     = "2048-redeem-preview"
+	Game2048RedemptionsRouteName       = "2048-redemptions"
+	Game2048GameHistoryRouteName       = "2048-game-history"
+	Game2048UsernameRouteName          = "2048-username"
+	Game2048AddressByUsernameRouteName = "2048-address-by-username"
 	// debug
 	DebugBlockedRouteName   = "blocked"
 	DebugHeapRouteName      = "heap"
@@ -229,6 +234,7 @@ const (
 	Tx2048ClaimDailyRouteName       = "2048-claim-daily-reward"
 	Tx2048RedeemClassicRouteName    = "2048-redeem-classic-points"
 	Tx2048ClaimLoginRouteName       = "2048-claim-daily-login"
+	Tx2048SetUsernameRouteName      = "2048-set-username"
 	DevFaucetRouteName              = "dev-faucet"
 	ConfigRouteName                 = "config"
 	LogsRouteName                   = "logs"
@@ -245,70 +251,72 @@ type routes map[string]struct {
 
 // routePaths is a mapping from route names to their corresponding HTTP methods and paths.
 var routePaths = routes{
-	VersionRouteName:               {Method: http.MethodGet, Path: VersionRoutePath},
-	TxRouteName:                    {Method: http.MethodPost, Path: TxRoutePath},
-	TxsRouteName:                   {Method: http.MethodPost, Path: TxsRoutePath},
-	HeightRouteName:                {Method: http.MethodPost, Path: HeightRoutePath},
-	IndexerBlobsRouteName:          {Method: http.MethodPost, Path: IndexerBlobsRoutePath},
-	AccountRouteName:               {Method: http.MethodPost, Path: AccountRoutePath},
-	AccountsRouteName:              {Method: http.MethodPost, Path: AccountsRoutePath},
-	PoolRouteName:                  {Method: http.MethodPost, Path: PoolRoutePath},
-	PoolsRouteName:                 {Method: http.MethodPost, Path: PoolsRoutePath},
-	ValidatorRouteName:             {Method: http.MethodPost, Path: ValidatorRoutePath},
-	ValidatorsRouteName:            {Method: http.MethodPost, Path: ValidatorsRoutePath},
-	CommitteeDataRouteName:         {Method: http.MethodPost, Path: CommitteeDataRoutePath},
-	CommitteesDataRouteName:        {Method: http.MethodPost, Path: CommitteesDataRoutePath},
-	SubsidizedCommitteesRouteName:  {Method: http.MethodPost, Path: SubsidizedCommitteesRoutePath},
-	RetiredCommitteesRouteName:     {Method: http.MethodPost, Path: RetiredCommitteesRoutePath},
-	NonSignersRouteName:            {Method: http.MethodPost, Path: NonSignersRoutePath},
-	ParamRouteName:                 {Method: http.MethodPost, Path: ParamRoutePath},
-	SupplyRouteName:                {Method: http.MethodPost, Path: SupplyRoutePath},
-	FeeParamRouteName:              {Method: http.MethodPost, Path: FeeParamRoutePath},
-	GovParamRouteName:              {Method: http.MethodPost, Path: GovParamRoutePath},
-	ConParamsRouteName:             {Method: http.MethodPost, Path: ConParamsRoutePath},
-	ValParamRouteName:              {Method: http.MethodPost, Path: ValParamRoutePath},
-	EcoParamRouteName:              {Method: http.MethodPost, Path: EcoParamRoutePath},
-	StateRouteName:                 {Method: http.MethodGet, Path: StateRoutePath},
-	StateDiffRouteName:             {Method: http.MethodPost, Path: StateDiffRoutePath},
-	StateDiffGetRouteName:          {Method: http.MethodGet, Path: StateDiffGetRoutePath},
-	CertByHeightRouteName:          {Method: http.MethodPost, Path: CertByHeightRoutePath},
-	BlockByHeightRouteName:         {Method: http.MethodPost, Path: BlockByHeightRoutePath},
-	BlocksRouteName:                {Method: http.MethodPost, Path: BlocksRoutePath},
-	BlockByHashRouteName:           {Method: http.MethodPost, Path: BlockByHashRoutePath},
-	TxsByHeightRouteName:           {Method: http.MethodPost, Path: TxsByHeightRoutePath},
-	TxsBySenderRouteName:           {Method: http.MethodPost, Path: TxsBySenderRoutePath},
-	TxsByRecRouteName:              {Method: http.MethodPost, Path: TxsByRecRoutePath},
-	TxByHashRouteName:              {Method: http.MethodPost, Path: TxByHashRoutePath},
-	EventsByHeightRouteName:        {Method: http.MethodPost, Path: EventsByHeightRoutePath},
-	EventsByAddressRouteName:       {Method: http.MethodPost, Path: EventsByAddressRoutePath},
-	EventsByChainRouteName:         {Method: http.MethodPost, Path: EventsByChainRoutePath},
-	OrderRouteName:                 {Method: http.MethodPost, Path: OrderRoutePath},
-	OrdersRouteName:                {Method: http.MethodPost, Path: OrdersRoutePath},
-	DexPriceRouteName:              {Method: http.MethodPost, Path: DexPriceRoutePath},
-	DexBatchRouteName:              {Method: http.MethodPost, Path: DexBatchRoutePath},
-	NextDexBatchRouteName:          {Method: http.MethodPost, Path: NextDexBatchRoutePath},
-	LastProposersRouteName:         {Method: http.MethodPost, Path: LastProposersRoutePath},
-	IsValidDoubleSignerRouteName:   {Method: http.MethodPost, Path: IsValidDoubleSignerRoutePath},
-	DoubleSignersRouteName:         {Method: http.MethodPost, Path: DoubleSignersRoutePath},
-	MinimumEvidenceHeightRouteName: {Method: http.MethodPost, Path: MinimumEvidenceHeightRoutePath},
-	LotteryRouteName:               {Method: http.MethodPost, Path: LotteryRoutePath},
-	PendingRouteName:               {Method: http.MethodPost, Path: PendingRoutePath},
-	FailedTxRouteName:              {Method: http.MethodPost, Path: FailedTxRoutePath},
-	ProposalsRouteName:             {Method: http.MethodGet, Path: ProposalsRoutePath},
-	PollRouteName:                  {Method: http.MethodGet, Path: PollRoutePath},
-	RootChainInfoRouteName:         {Method: http.MethodPost, Path: RootChainInfoRoutePath},
-	ValidatorSetRouteName:          {Method: http.MethodPost, Path: ValidatorSetRoutePath},
-	CheckpointRouteName:            {Method: http.MethodPost, Path: CheckpointRoutePath},
-	Game2048ConfigRouteName:        {Method: http.MethodGet, Path: Game2048ConfigRoutePath},
-	Game2048PlayerRouteName:        {Method: http.MethodPost, Path: Game2048PlayerRoutePath},
-	Game2048LeaderboardsRouteName:  {Method: http.MethodGet, Path: Game2048LeaderboardsRoutePath},
-	Game2048DailyPoolRouteName:     {Method: http.MethodGet, Path: Game2048DailyPoolRoutePath},
-	Game2048TreasuryRouteName:      {Method: http.MethodGet, Path: Game2048TreasuryRoutePath},
-	Game2048ClaimableRewardsName:   {Method: http.MethodPost, Path: Game2048ClaimableRewardsPath},
-	Game2048ShopConfigRouteName:    {Method: http.MethodGet, Path: Game2048ShopConfigRoutePath},
-	Game2048RedeemPreviewRouteName: {Method: http.MethodPost, Path: Game2048RedeemPreviewRoutePath},
-	Game2048RedemptionsRouteName:   {Method: http.MethodPost, Path: Game2048RedemptionsRoutePath},
-	Game2048GameHistoryRouteName:   {Method: http.MethodPost, Path: Game2048GameHistoryRoutePath},
+	VersionRouteName:                   {Method: http.MethodGet, Path: VersionRoutePath},
+	TxRouteName:                        {Method: http.MethodPost, Path: TxRoutePath},
+	TxsRouteName:                       {Method: http.MethodPost, Path: TxsRoutePath},
+	HeightRouteName:                    {Method: http.MethodPost, Path: HeightRoutePath},
+	IndexerBlobsRouteName:              {Method: http.MethodPost, Path: IndexerBlobsRoutePath},
+	AccountRouteName:                   {Method: http.MethodPost, Path: AccountRoutePath},
+	AccountsRouteName:                  {Method: http.MethodPost, Path: AccountsRoutePath},
+	PoolRouteName:                      {Method: http.MethodPost, Path: PoolRoutePath},
+	PoolsRouteName:                     {Method: http.MethodPost, Path: PoolsRoutePath},
+	ValidatorRouteName:                 {Method: http.MethodPost, Path: ValidatorRoutePath},
+	ValidatorsRouteName:                {Method: http.MethodPost, Path: ValidatorsRoutePath},
+	CommitteeDataRouteName:             {Method: http.MethodPost, Path: CommitteeDataRoutePath},
+	CommitteesDataRouteName:            {Method: http.MethodPost, Path: CommitteesDataRoutePath},
+	SubsidizedCommitteesRouteName:      {Method: http.MethodPost, Path: SubsidizedCommitteesRoutePath},
+	RetiredCommitteesRouteName:         {Method: http.MethodPost, Path: RetiredCommitteesRoutePath},
+	NonSignersRouteName:                {Method: http.MethodPost, Path: NonSignersRoutePath},
+	ParamRouteName:                     {Method: http.MethodPost, Path: ParamRoutePath},
+	SupplyRouteName:                    {Method: http.MethodPost, Path: SupplyRoutePath},
+	FeeParamRouteName:                  {Method: http.MethodPost, Path: FeeParamRoutePath},
+	GovParamRouteName:                  {Method: http.MethodPost, Path: GovParamRoutePath},
+	ConParamsRouteName:                 {Method: http.MethodPost, Path: ConParamsRoutePath},
+	ValParamRouteName:                  {Method: http.MethodPost, Path: ValParamRoutePath},
+	EcoParamRouteName:                  {Method: http.MethodPost, Path: EcoParamRoutePath},
+	StateRouteName:                     {Method: http.MethodGet, Path: StateRoutePath},
+	StateDiffRouteName:                 {Method: http.MethodPost, Path: StateDiffRoutePath},
+	StateDiffGetRouteName:              {Method: http.MethodGet, Path: StateDiffGetRoutePath},
+	CertByHeightRouteName:              {Method: http.MethodPost, Path: CertByHeightRoutePath},
+	BlockByHeightRouteName:             {Method: http.MethodPost, Path: BlockByHeightRoutePath},
+	BlocksRouteName:                    {Method: http.MethodPost, Path: BlocksRoutePath},
+	BlockByHashRouteName:               {Method: http.MethodPost, Path: BlockByHashRoutePath},
+	TxsByHeightRouteName:               {Method: http.MethodPost, Path: TxsByHeightRoutePath},
+	TxsBySenderRouteName:               {Method: http.MethodPost, Path: TxsBySenderRoutePath},
+	TxsByRecRouteName:                  {Method: http.MethodPost, Path: TxsByRecRoutePath},
+	TxByHashRouteName:                  {Method: http.MethodPost, Path: TxByHashRoutePath},
+	EventsByHeightRouteName:            {Method: http.MethodPost, Path: EventsByHeightRoutePath},
+	EventsByAddressRouteName:           {Method: http.MethodPost, Path: EventsByAddressRoutePath},
+	EventsByChainRouteName:             {Method: http.MethodPost, Path: EventsByChainRoutePath},
+	OrderRouteName:                     {Method: http.MethodPost, Path: OrderRoutePath},
+	OrdersRouteName:                    {Method: http.MethodPost, Path: OrdersRoutePath},
+	DexPriceRouteName:                  {Method: http.MethodPost, Path: DexPriceRoutePath},
+	DexBatchRouteName:                  {Method: http.MethodPost, Path: DexBatchRoutePath},
+	NextDexBatchRouteName:              {Method: http.MethodPost, Path: NextDexBatchRoutePath},
+	LastProposersRouteName:             {Method: http.MethodPost, Path: LastProposersRoutePath},
+	IsValidDoubleSignerRouteName:       {Method: http.MethodPost, Path: IsValidDoubleSignerRoutePath},
+	DoubleSignersRouteName:             {Method: http.MethodPost, Path: DoubleSignersRoutePath},
+	MinimumEvidenceHeightRouteName:     {Method: http.MethodPost, Path: MinimumEvidenceHeightRoutePath},
+	LotteryRouteName:                   {Method: http.MethodPost, Path: LotteryRoutePath},
+	PendingRouteName:                   {Method: http.MethodPost, Path: PendingRoutePath},
+	FailedTxRouteName:                  {Method: http.MethodPost, Path: FailedTxRoutePath},
+	ProposalsRouteName:                 {Method: http.MethodGet, Path: ProposalsRoutePath},
+	PollRouteName:                      {Method: http.MethodGet, Path: PollRoutePath},
+	RootChainInfoRouteName:             {Method: http.MethodPost, Path: RootChainInfoRoutePath},
+	ValidatorSetRouteName:              {Method: http.MethodPost, Path: ValidatorSetRoutePath},
+	CheckpointRouteName:                {Method: http.MethodPost, Path: CheckpointRoutePath},
+	Game2048ConfigRouteName:            {Method: http.MethodGet, Path: Game2048ConfigRoutePath},
+	Game2048PlayerRouteName:            {Method: http.MethodPost, Path: Game2048PlayerRoutePath},
+	Game2048LeaderboardsRouteName:      {Method: http.MethodGet, Path: Game2048LeaderboardsRoutePath},
+	Game2048DailyPoolRouteName:         {Method: http.MethodGet, Path: Game2048DailyPoolRoutePath},
+	Game2048TreasuryRouteName:          {Method: http.MethodGet, Path: Game2048TreasuryRoutePath},
+	Game2048ClaimableRewardsName:       {Method: http.MethodPost, Path: Game2048ClaimableRewardsPath},
+	Game2048ShopConfigRouteName:        {Method: http.MethodGet, Path: Game2048ShopConfigRoutePath},
+	Game2048RedeemPreviewRouteName:     {Method: http.MethodPost, Path: Game2048RedeemPreviewRoutePath},
+	Game2048RedemptionsRouteName:       {Method: http.MethodPost, Path: Game2048RedemptionsRoutePath},
+	Game2048GameHistoryRouteName:       {Method: http.MethodPost, Path: Game2048GameHistoryRoutePath},
+	Game2048UsernameRouteName:          {Method: http.MethodPost, Path: Game2048UsernameRoutePath},
+	Game2048AddressByUsernameRouteName: {Method: http.MethodPost, Path: Game2048AddressByUsernameRoutePath},
 	// eth
 	EthereumRouteName: {Method: http.MethodPost, Path: EthereumRoutePath},
 	// admin
@@ -348,6 +356,7 @@ var routePaths = routes{
 	Tx2048ClaimDailyRouteName:       {Method: http.MethodPost, Path: Tx2048ClaimDailyRoutePath},
 	Tx2048RedeemClassicRouteName:    {Method: http.MethodPost, Path: Tx2048RedeemClassicRoutePath},
 	Tx2048ClaimLoginRouteName:       {Method: http.MethodPost, Path: Tx2048ClaimLoginRoutePath},
+	Tx2048SetUsernameRouteName:      {Method: http.MethodPost, Path: Tx2048SetUsernameRoutePath},
 	DevFaucetRouteName:              {Method: http.MethodPost, Path: DevFaucetRoutePath},
 	ConfigRouteName:                 {Method: http.MethodGet, Path: ConfigRoutePath},
 	LogsRouteName:                   {Method: http.MethodGet, Path: LogsRoutePath},
@@ -362,72 +371,74 @@ type httpRouteHandlers map[string]httprouter.Handle
 // createRouter initializes and returns a new HTTP router with predefined route handlers.
 func createRouter(s *Server) *httprouter.Router {
 	var r = httpRouteHandlers{
-		VersionRouteName:               s.Version,
-		TxRouteName:                    s.Transaction,
-		TxsRouteName:                   s.Transactions,
-		HeightRouteName:                s.Height,
-		IndexerBlobsRouteName:          s.IndexerBlobs,
-		AccountRouteName:               s.Account,
-		AccountsRouteName:              s.Accounts,
-		PoolRouteName:                  s.Pool,
-		PoolsRouteName:                 s.Pools,
-		ValidatorRouteName:             s.Validator,
-		ValidatorsRouteName:            s.Validators,
-		ValidatorSetRouteName:          s.ValidatorSet,
-		CommitteeDataRouteName:         s.CommitteeData,
-		CommitteesDataRouteName:        s.CommitteesData,
-		SubsidizedCommitteesRouteName:  s.SubsidizedCommittees,
-		RetiredCommitteesRouteName:     s.RetiredCommittees,
-		NonSignersRouteName:            s.NonSigners,
-		ParamRouteName:                 s.Params,
-		FeeParamRouteName:              s.FeeParams,
-		GovParamRouteName:              s.GovParams,
-		ConParamsRouteName:             s.ConParams,
-		ValParamRouteName:              s.ValParams,
-		EcoParamRouteName:              s.EcoParameters,
-		SupplyRouteName:                s.Supply,
-		StateRouteName:                 s.State,
-		StateDiffRouteName:             s.StateDiff,
-		StateDiffGetRouteName:          s.StateDiff,
-		CertByHeightRouteName:          s.CertByHeight,
-		BlockByHeightRouteName:         s.BlockByHeight,
-		BlocksRouteName:                s.Blocks,
-		BlockByHashRouteName:           s.BlockByHash,
-		TxsByHeightRouteName:           s.TransactionsByHeight,
-		TxsBySenderRouteName:           s.TransactionsBySender,
-		TxsByRecRouteName:              s.TransactionsByRecipient,
-		EventsByHeightRouteName:        s.EventsByHeight,
-		EventsByAddressRouteName:       s.EventsByAddress,
-		EventsByChainRouteName:         s.EventsByChain,
-		TxByHashRouteName:              s.TransactionByHash,
-		OrderRouteName:                 s.Order,
-		OrdersRouteName:                s.Orders,
-		DexPriceRouteName:              s.DexPrice,
-		DexBatchRouteName:              s.DexBatch,
-		NextDexBatchRouteName:          s.NextDexBatch,
-		LastProposersRouteName:         s.LastProposers,
-		IsValidDoubleSignerRouteName:   s.IsValidDoubleSigner,
-		DoubleSignersRouteName:         s.DoubleSigners,
-		MinimumEvidenceHeightRouteName: s.MinimumEvidenceHeight,
-		LotteryRouteName:               s.Lottery,
-		PendingRouteName:               s.Pending,
-		FailedTxRouteName:              s.FailedTxs,
-		ProposalsRouteName:             s.Proposals,
-		PollRouteName:                  s.Poll,
-		RootChainInfoRouteName:         s.RootChainInfo,
-		CheckpointRouteName:            s.Checkpoint,
-		Game2048ConfigRouteName:        s.Game2048Config,
-		Game2048PlayerRouteName:        s.Game2048Player,
-		Game2048LeaderboardsRouteName:  s.Game2048Leaderboards,
-		Game2048DailyPoolRouteName:     s.Game2048DailyPool,
-		Game2048TreasuryRouteName:      s.Game2048Treasury,
-		Game2048ClaimableRewardsName:   s.Game2048ClaimableRewards,
-		Game2048ShopConfigRouteName:    s.Game2048ShopConfig,
-		Game2048RedeemPreviewRouteName: s.Game2048RedeemPreview,
-		Game2048RedemptionsRouteName:   s.Game2048Redemptions,
-		Game2048GameHistoryRouteName:   s.Game2048GameHistory,
-		EthereumRouteName:              s.EthereumHandler,
-		SubscribeRCInfoName:            s.WebSocket,
+		VersionRouteName:                   s.Version,
+		TxRouteName:                        s.Transaction,
+		TxsRouteName:                       s.Transactions,
+		HeightRouteName:                    s.Height,
+		IndexerBlobsRouteName:              s.IndexerBlobs,
+		AccountRouteName:                   s.Account,
+		AccountsRouteName:                  s.Accounts,
+		PoolRouteName:                      s.Pool,
+		PoolsRouteName:                     s.Pools,
+		ValidatorRouteName:                 s.Validator,
+		ValidatorsRouteName:                s.Validators,
+		ValidatorSetRouteName:              s.ValidatorSet,
+		CommitteeDataRouteName:             s.CommitteeData,
+		CommitteesDataRouteName:            s.CommitteesData,
+		SubsidizedCommitteesRouteName:      s.SubsidizedCommittees,
+		RetiredCommitteesRouteName:         s.RetiredCommittees,
+		NonSignersRouteName:                s.NonSigners,
+		ParamRouteName:                     s.Params,
+		FeeParamRouteName:                  s.FeeParams,
+		GovParamRouteName:                  s.GovParams,
+		ConParamsRouteName:                 s.ConParams,
+		ValParamRouteName:                  s.ValParams,
+		EcoParamRouteName:                  s.EcoParameters,
+		SupplyRouteName:                    s.Supply,
+		StateRouteName:                     s.State,
+		StateDiffRouteName:                 s.StateDiff,
+		StateDiffGetRouteName:              s.StateDiff,
+		CertByHeightRouteName:              s.CertByHeight,
+		BlockByHeightRouteName:             s.BlockByHeight,
+		BlocksRouteName:                    s.Blocks,
+		BlockByHashRouteName:               s.BlockByHash,
+		TxsByHeightRouteName:               s.TransactionsByHeight,
+		TxsBySenderRouteName:               s.TransactionsBySender,
+		TxsByRecRouteName:                  s.TransactionsByRecipient,
+		EventsByHeightRouteName:            s.EventsByHeight,
+		EventsByAddressRouteName:           s.EventsByAddress,
+		EventsByChainRouteName:             s.EventsByChain,
+		TxByHashRouteName:                  s.TransactionByHash,
+		OrderRouteName:                     s.Order,
+		OrdersRouteName:                    s.Orders,
+		DexPriceRouteName:                  s.DexPrice,
+		DexBatchRouteName:                  s.DexBatch,
+		NextDexBatchRouteName:              s.NextDexBatch,
+		LastProposersRouteName:             s.LastProposers,
+		IsValidDoubleSignerRouteName:       s.IsValidDoubleSigner,
+		DoubleSignersRouteName:             s.DoubleSigners,
+		MinimumEvidenceHeightRouteName:     s.MinimumEvidenceHeight,
+		LotteryRouteName:                   s.Lottery,
+		PendingRouteName:                   s.Pending,
+		FailedTxRouteName:                  s.FailedTxs,
+		ProposalsRouteName:                 s.Proposals,
+		PollRouteName:                      s.Poll,
+		RootChainInfoRouteName:             s.RootChainInfo,
+		CheckpointRouteName:                s.Checkpoint,
+		Game2048ConfigRouteName:            s.Game2048Config,
+		Game2048PlayerRouteName:            s.Game2048Player,
+		Game2048LeaderboardsRouteName:      s.Game2048Leaderboards,
+		Game2048DailyPoolRouteName:         s.Game2048DailyPool,
+		Game2048TreasuryRouteName:          s.Game2048Treasury,
+		Game2048ClaimableRewardsName:       s.Game2048ClaimableRewards,
+		Game2048ShopConfigRouteName:        s.Game2048ShopConfig,
+		Game2048RedeemPreviewRouteName:     s.Game2048RedeemPreview,
+		Game2048RedemptionsRouteName:       s.Game2048Redemptions,
+		Game2048GameHistoryRouteName:       s.Game2048GameHistory,
+		Game2048UsernameRouteName:          s.Game2048Username,
+		Game2048AddressByUsernameRouteName: s.Game2048AddressByUsername,
+		EthereumRouteName:                  s.EthereumHandler,
+		SubscribeRCInfoName:                s.WebSocket,
 	}
 
 	// Initialize a new router using the httprouter package.
@@ -483,6 +494,7 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		Tx2048ClaimDailyRouteName:       s.Game2048ClaimDailyReward,
 		Tx2048RedeemClassicRouteName:    s.Game2048RedeemClassicPoints,
 		Tx2048ClaimLoginRouteName:       s.Game2048ClaimDailyLoginReward,
+		Tx2048SetUsernameRouteName:      s.Game2048SetUsername,
 		DevFaucetRouteName:              s.DevFaucet,
 		ConfigRouteName:                 s.Config,
 		LogsRouteName:                   logsHandler(s),

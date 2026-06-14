@@ -168,11 +168,11 @@ message GameTreasury {
 message LeaderboardEntry {
   bytes game_id = 1; // @gotags: json:"gameId"
   bytes player_address = 2; // @gotags: json:"playerAddress"
-  string username = 3; // @gotags: json:"username"
-  uint64 score = 4;
-  uint64 max_tile = 5; // @gotags: json:"maxTile"
-  uint64 move_count = 6; // @gotags: json:"moveCount"
-  uint64 ended_at_unix = 7; // @gotags: json:"endedAtUnix"
+  uint64 score = 3;
+  uint64 max_tile = 4; // @gotags: json:"maxTile"
+  uint64 move_count = 5; // @gotags: json:"moveCount"
+  uint64 ended_at_unix = 6; // @gotags: json:"endedAtUnix"
+  string username = 7; // @gotags: json:"username"
 }
 
 // DailyRewardAllocation stores the finalized payout record for a winner.
@@ -233,22 +233,32 @@ message UsernameRegistration {
   uint64 last_changed_at_unix = 4; // @gotags: json:"lastChangedAtUnix"
 }
 
+// PlayerIdentity stores unified identity information for a player.
+message PlayerIdentity {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  string username = 2;
+  string avatar_url = 3; // @gotags: json:"avatarUrl"
+  string title = 4;
+  string bio = 5;
+  uint64 registered_at_unix = 6; // @gotags: json:"registeredAtUnix"
+  uint64 last_updated_unix = 7; // @gotags: json:"lastUpdatedUnix"
+}
+
 // PlayerStats stores aggregate performance and usage data per player.
 message PlayerStats {
   bytes player_address = 1; // @gotags: json:"playerAddress"
-  string username = 2; // @gotags: json:"username"
-  uint64 daily_games_started = 3; // @gotags: json:"dailyGamesStarted"
-  uint64 classic_games_started = 4; // @gotags: json:"classicGamesStarted"
-  uint64 games_completed = 5; // @gotags: json:"gamesCompleted"
-  uint64 wins = 6;
-  uint64 losses = 7;
-  uint64 best_daily_score = 8; // @gotags: json:"bestDailyScore"
-  uint64 best_classic_score = 9; // @gotags: json:"bestClassicScore"
-  uint64 best_tile = 10; // @gotags: json:"bestTile"
-  uint64 total_score = 11; // @gotags: json:"totalScore"
-  uint64 classic_points_balance = 12; // @gotags: json:"classicPointsBalance"
-  uint64 classic_points_earned = 13; // @gotags: json:"classicPointsEarned"
-  uint64 login_streak = 14; // @gotags: json:"loginStreak"
-  string last_login_claim_utc_date = 15; // @gotags: json:"lastLoginClaimUtcDate"
-  string classic_points_bonus_utc_date = 16; // @gotags: json:"classicPointsBonusUtcDate"
+  uint64 daily_games_started = 2; // @gotags: json:"dailyGamesStarted"
+  uint64 classic_games_started = 3; // @gotags: json:"classicGamesStarted"
+  uint64 games_completed = 4; // @gotags: json:"gamesCompleted"
+  uint64 wins = 5;
+  uint64 losses = 6;
+  uint64 best_daily_score = 7; // @gotags: json:"bestDailyScore"
+  uint64 best_classic_score = 8; // @gotags: json:"bestClassicScore"
+  uint64 best_tile = 9; // @gotags: json:"bestTile"
+  uint64 total_score = 10; // @gotags: json:"totalScore"
+  uint64 classic_points_balance = 11; // @gotags: json:"classicPointsBalance"
+  uint64 classic_points_earned = 12; // @gotags: json:"classicPointsEarned"
+  uint64 login_streak = 13; // @gotags: json:"loginStreak"
+  string last_login_claim_utc_date = 14; // @gotags: json:"lastLoginClaimUtcDate"
+  string classic_points_bonus_utc_date = 15; // @gotags: json:"classicPointsBonusUtcDate"
 }

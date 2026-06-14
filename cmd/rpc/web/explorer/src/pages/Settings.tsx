@@ -8,12 +8,15 @@ import { createGame2048Client, type Game2048ClientStatus } from '../lib/chain204
 import {
   exportRpcKeystoreWallet,
   fetchRpcKeystoreAccounts,
-  renameRpcKeystoreWallet,
   type RpcKeystoreAccount,
 } from '../lib/rpcChain2048'
-import { loadStoredWalletAuth, persistStoredWalletAuth } from '../lib/walletAuth'
+import { loadStoredWalletAuth } from '../lib/walletAuth'
 
 function SettingsPage() {
+  useEffect(() => {
+    document.title = 'Settings | ProofArcade'
+  }, [])
+
   const [status, setStatus] = useState<Game2048ClientStatus>({
     mode: 'mock',
     label: 'Checking backend',
@@ -21,11 +24,10 @@ function SettingsPage() {
   })
   const [wallets, setWallets] = useState<RpcKeystoreAccount[]>([])
   const [selectedAddress, setSelectedAddress] = useState('')
-  const [username, setUsername] = useState('')
+  const [onChainUsername, setOnChainUsername] = useState('')
   const [isLoading, setIsLoading] = useState(true)
-  const [isSavingName, setIsSavingName] = useState(false)
+  const [isSavingUsername, setIsSavingUsername] = useState(false)
   const [isExportingWallet, setIsExportingWallet] = useState(false)
-  const [isFauceting, setIsFauceting] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -52,8 +54,11 @@ function SettingsPage() {
         setWallets(nextWallets)
         setSelectedAddress(initialAddress)
 
-        const initialWallet = nextWallets.find((wallet) => wallet.address === initialAddress) ?? null
-        setUsername(initialWallet?.nickname ?? '')
+        // Fetch on-chain username
+        if (initialAddress) {
+          const usernameResponse = await client.getUsernameByAddress(initialAddress)
+          setOnChainUsername(usernameResponse.username ?? '')
+        }
       }
 
       setIsLoading(false)
@@ -76,68 +81,67 @@ function SettingsPage() {
   )
 
   useEffect(() => {
-    setUsername(selectedWallet?.nickname ?? '')
-  }, [selectedWallet])
-
-  async function refreshWallets(preferredAddress?: string) {
-    const nextWallets = await fetchRpcKeystoreAccounts()
-    setWallets(nextWallets)
-    const nextAddress = preferredAddress && nextWallets.some((wallet) => wallet.address === preferredAddress)
-      ? preferredAddress
-      : nextWallets[0]?.address ?? ''
-    setSelectedAddress(nextAddress)
-    return nextWallets.find((wallet) => wallet.address === nextAddress) ?? null
-  }
-
-  async function handleRenameWallet() {
-    if (status.mode !== 'rpc') {
-      toast.error('Username changes are only available with the live backend.')
-      return
+    // Fetch on-chain username when wallet changes
+    if (selectedAddress) {
+      createGame2048Client().then(async (client) => {
+        const usernameResponse = await client.getUsernameByAddress(selectedAddress)
+        setOnChainUsername(usernameResponse.username ?? '')
+      }).catch((error) => {
+        console.error('Failed to load username:', error)
+      })
+    } else {
+      setOnChainUsername('')
     }
+  }, [selectedWallet, selectedAddress])
+
+  async function handleSetUsername() {
     if (!selectedWallet) {
-      toast.error('No wallet is selected for this device.')
+      toast.error('No wallet is selected.')
       return
     }
-    const nextUsername = username.trim()
+    
+    const nextUsername = onChainUsername.trim()
     if (!nextUsername) {
       toast.error('Enter a username first.')
       return
     }
-    if (nextUsername === selectedWallet.nickname) {
-      toast.error('That username is already in use for this wallet.')
+    
+    // Validation: 3-20 chars, alphanumeric + underscore
+    if (nextUsername.length < 3 || nextUsername.length > 20) {
+      toast.error('Username must be 3-20 characters.')
+      return
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(nextUsername)) {
+      toast.error('Username can only contain letters, numbers, and underscores.')
+      return
+    }
+    
+    const storedAuth = loadStoredWalletAuth()
+    if (!storedAuth || storedAuth.address !== selectedAddress) {
+      toast.error('Please log in to set your username.')
       return
     }
 
     try {
-      setIsSavingName(true)
-      const renamed = await renameRpcKeystoreWallet(selectedWallet.address, nextUsername)
+      setIsSavingUsername(true)
+      const client = await createGame2048Client()
       
-      // ✅ Refresh wallet list to update UI immediately
-      const nextWallets = await fetchRpcKeystoreAccounts()
-      setWallets(nextWallets)
+      const result = await client.setUsername({
+        address: selectedAddress,
+        password: storedAuth.password,
+        username: nextUsername,
+      })
       
-      // ✅ Find and set the updated wallet
-      const refreshed = nextWallets.find((wallet) => wallet.address === renamed.address) ?? null
-      if (refreshed) {
-        setSelectedAddress(refreshed.address)
-        setUsername(refreshed.nickname)
+      if (result.submitted) {
+        toast.success(`Username set to ${nextUsername}!`)
+      } else {
+        toast.error('Username update was not confirmed.')
       }
-      
-      // ✅ Update stored auth if this is the active session wallet
-      const storedAuth = loadStoredWalletAuth()
-      if (storedAuth?.address === renamed.address) {
-        persistStoredWalletAuth({
-          ...storedAuth,
-          nickname: renamed.nickname,
-        })
-      }
-      
-      toast.success(`Username updated to ${renamed.nickname}.`)
     } catch (error) {
       console.error(error)
-      toast.error(error instanceof Error ? error.message : 'Unable to update the username.')
+      toast.error(error instanceof Error ? error.message : 'Unable to set username.')
     } finally {
-      setIsSavingName(false)
+      setIsSavingUsername(false)
     }
   }
 
@@ -173,29 +177,6 @@ function SettingsPage() {
     }
   }
 
-  async function handleFaucet() {
-    if (status.mode !== 'rpc') {
-      toast.error('Faucet is only available with live backend.')
-      return
-    }
-    if (!selectedWallet) {
-      toast.error('No wallet selected.')
-      return
-    }
-
-    try {
-      setIsFauceting(true)
-      const client = await createGame2048Client()
-      await client.addFunds(selectedWallet.address, 1000)
-      toast.success('Added 1000 PROOF to your wallet!')
-    } catch (error) {
-      console.error(error)
-      toast.error(error instanceof Error ? error.message : 'Faucet failed.')
-    } finally {
-      setIsFauceting(false)
-    }
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 18 }}
@@ -207,17 +188,13 @@ function SettingsPage() {
       <section className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(83,166,255,0.15),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(240,207,82,0.12),_transparent_22%),linear-gradient(160deg,_rgba(15,18,27,1),_rgba(9,12,18,1))] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.28)] sm:p-8">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#f6df84]">Settings</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#f6df84]">Account Settings</p>
             <h1 className="mt-2 font-['Georgia'] text-4xl leading-tight text-white">
-              Wallet & Account
+              Identity & Security
             </h1>
-            {selectedWallet && (
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
-                <span className="text-sm font-semibold text-white">{selectedWallet.nickname}</span>
-                <span className="text-xs text-slate-500">•</span>
-                <span className="font-mono text-xs text-slate-400">{shortAddress(selectedWallet.address)}</span>
-              </div>
-            )}
+            <p className="mt-2 text-sm text-slate-400">
+              Manage your public identity, secure your wallet, and protect access to your account
+            </p>
           </div>
           <Link
             to="/profile"
@@ -226,166 +203,199 @@ function SettingsPage() {
             Profile
           </Link>
         </div>
+
+        {selectedWallet && (
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+            <span className="font-mono text-xs text-slate-400">{shortAddress(selectedWallet.address)}</span>
+            {onChainUsername && (
+              <>
+                <span className="text-xs text-slate-600">•</span>
+                <span className="text-sm font-semibold text-white">{onChainUsername}</span>
+              </>
+            )}
+          </div>
+        )}
       </section>
 
       <div className="mt-6 space-y-6">
-        {/* Beta Notice - Reduced prominence */}
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-          <div className="flex items-start gap-3">
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-xs">
-              ⚠️
+        {/* Beta Wallet Notice - Prominent */}
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
+              <span className="text-2xl">⚠️</span>
             </div>
             <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-amber-400">Beta Feature</p>
-              <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                Export your encrypted backup immediately. This is a beta hosted-wallet model—treat it accordingly.
+              <h3 className="text-sm font-bold uppercase tracking-wide text-amber-400">Beta Wallet Notice</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                This is a beta hosted-wallet model. <strong className="text-white">Export your encrypted backup immediately</strong> and store it securely.
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                Your backup file contains your encrypted keys. Keep it safe along with your password for recovery.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Main Settings Grid */}
-        <section className="grid gap-4 lg:grid-cols-2">
-          {/* Dev Faucet */}
-          {status.mode === 'rpc' && (
-            <div className="rounded-[1.5rem] border border-emerald-500/30 bg-emerald-500/10 p-6">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20">
-                  <span className="text-base">💰</span>
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-sm font-bold text-white">Dev Faucet</h2>
-                </div>
+        {/* Main Settings Sections - Side by Side */}
+        <div className="grid gap-6 lg:auto-rows-fr lg:grid-cols-2">
+          {/* Username - Public Identity */}
+          <section className="flex flex-col rounded-2xl border border-[#f6df84]/30 bg-[#f6df84]/5 p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f6df84]/20">
+                <span className="text-2xl">👤</span>
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-slate-400">
-                Get test PROOF tokens for development and testing
-              </p>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-white">Public Username</h2>
+                <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                  Your public identity shown on leaderboards, profiles, and across ProofArcade
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); handleSetUsername(); }} className="mt-6 flex flex-1 flex-col justify-between">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Username
+                </label>
+                <input
+                  value={onChainUsername}
+                  onChange={(event) => setOnChainUsername(event.target.value)}
+                  placeholder="3-20 characters (a-z, 0-9, _)"
+                  disabled={!selectedWallet}
+                  className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-base text-white outline-none transition focus:border-[#f6df84] focus:ring-2 focus:ring-[#f6df84]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  maxLength={20}
+                />
+                <p className="text-xs text-slate-500">
+                  Letters, numbers, and underscores only. Visible to all players.
+                </p>
+              </div>
+
               <button
-                onClick={handleFaucet}
-                disabled={!selectedWallet || isFauceting}
-                className="mt-4 w-full rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+                type="submit"
+                disabled={!selectedWallet || isSavingUsername}
+                className="mt-4 w-full rounded-xl bg-gradient-to-r from-[#f6df84] to-[#d4af37] px-6 py-3.5 text-base font-bold text-[#2f2418] shadow-[0_4px_16px_rgba(246,223,132,0.3)] transition hover:shadow-[0_6px_20px_rgba(246,223,132,0.4)] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
               >
-                {isFauceting ? (
+                {isSavingUsername ? (
                   <span className="flex items-center justify-center gap-2">
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
+                      className="h-5 w-5 rounded-full border-2 border-[#2f2418]/30 border-t-[#2f2418]"
                     />
-                    Requesting...
+                    Setting Username...
                   </span>
                 ) : (
-                  'Get 1000 PROOF'
-                )}
-              </button>
-            </div>
-          )}
-          
-          {/* Profile Name */}
-          <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-6">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#53a6ff]/15">
-                <span className="text-base">👤</span>
-              </div>
-              <div className="flex-1">
-                <h2 className="text-sm font-bold text-white">Profile Name</h2>
-              </div>
-            </div>
-            <p className="mt-2 text-xs leading-relaxed text-slate-400">
-              Display name for your profile and leaderboards
-            </p>
-            <form onSubmit={(e) => { e.preventDefault(); handleRenameWallet(); }}>
-              <input
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                placeholder="Enter username"
-                disabled={!selectedWallet || status.mode !== 'rpc'}
-                className="mt-4 w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-2.5 text-sm text-white outline-none transition focus:border-[#53a6ff] disabled:cursor-not-allowed disabled:opacity-50"
-              />
-              <button
-                type="submit"
-                disabled={status.mode !== 'rpc' || !selectedWallet || isSavingName}
-                className="mt-3 w-full rounded-xl bg-[#53a6ff] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#64b0ff] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSavingName ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    Saving...
-                  </span>
-                ) : (
-                  'Save Name'
+                  'Update Username'
                 )}
               </button>
             </form>
-          </div>
+          </section>
 
-          {/* Backup Wallet */}
-          <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-6">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f6df84]/15">
-                <span className="text-base">📦</span>
+          {/* Wallet Backup - Security */}
+          <section className="flex flex-col rounded-2xl border border-white/10 bg-black/20 p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#53a6ff]/15">
+                <span className="text-2xl">🔐</span>
               </div>
               <div className="flex-1">
-                <h2 className="text-sm font-bold text-white">Backup Wallet</h2>
+                <h2 className="text-lg font-bold text-white">Wallet Backup</h2>
+                <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                  Export your encrypted wallet backup for recovery and safekeeping
+                </p>
               </div>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-slate-400">
-              Download encrypted backup file for recovery
-            </p>
-            <div className="mt-4 flex-1"></div>
-            <button
-              onClick={handleExportWallet}
-              disabled={status.mode !== 'rpc' || !selectedWallet || isExportingWallet}
-              className="mt-auto w-full rounded-xl bg-gradient-to-r from-[#f6df84] to-[#d4af37] px-4 py-2.5 text-sm font-bold text-[#2f2418] shadow-[0_4px_12px_rgba(246,223,132,0.25)] transition hover:shadow-[0_6px_16px_rgba(246,223,132,0.35)] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
-            >
-              {isExportingWallet ? (
-                <span className="flex items-center justify-center gap-2">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="h-4 w-4 rounded-full border-2 border-[#2f2418]/30 border-t-[#2f2418]"
-                  />
-                  Exporting...
-                </span>
-              ) : (
-                'Export Backup'
-              )}
-            </button>
-          </div>
-        </section>
 
-        {/* Backup Best Practices */}
+            <div className="mt-6 flex flex-1 flex-col justify-between space-y-4">
+              <div className="space-y-4">
+                <div className="rounded-xl border border-white/5 bg-slate-950/50 p-4">
+                  <h3 className="text-sm font-semibold text-white">Why Backup?</h3>
+                  <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-400">
+                    <li>• <strong className="text-slate-300">Recover your wallet</strong> if you lose access to this device</li>
+                    <li>• <strong className="text-slate-300">Restore on other devices</strong> to access your account anywhere</li>
+                    <li>• <strong className="text-slate-300">Protect your assets</strong> - your backup is your last line of defense</li>
+                  </ul>
+                </div>
+
+                <p className="text-xs text-slate-500">
+                  Backup file stays encrypted. Store separately from your password.
+                </p>
+              </div>
+
+              <button
+                onClick={handleExportWallet}
+                disabled={status.mode !== 'rpc' || !selectedWallet || isExportingWallet}
+                className="w-full rounded-xl bg-gradient-to-r from-[#53a6ff] to-[#4a8edc] px-6 py-3.5 text-base font-bold text-white shadow-[0_4px_16px_rgba(83,166,255,0.3)] transition hover:shadow-[0_6px_20px_rgba(83,166,255,0.4)] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              >
+                {isExportingWallet ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white"
+                    />
+                    Exporting Backup...
+                  </span>
+                ) : (
+                  'Export Encrypted Backup'
+                )}
+              </button>
+            </div>
+          </section>
+        </div>
+
+        {/* Recovery Information */}
         <div className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-black/20 p-5">
+          <div className="rounded-xl border border-white/10 bg-black/20 p-6">
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#53d7a6]/15">
-                <span className="text-lg">✓</span>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#53d7a6]/15">
+                <span className="text-xl">✓</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-white">Backup Best Practices</p>
-                <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-slate-400">
-                  <li>• Export your backup immediately after creating your wallet</li>
-                  <li>• Store the backup file separately from your password</li>
-                  <li>• Keep multiple copies in secure locations</li>
-                  <li>• Test your backup by restoring on another device</li>
+                <h3 className="text-sm font-bold text-white">Backup Best Practices</h3>
+                <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-400">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 text-[#53d7a6]">•</span>
+                    <span>Export your backup immediately after creating your wallet</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 text-[#53d7a6]">•</span>
+                    <span>Store the backup file and password separately</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 text-[#53d7a6]">•</span>
+                    <span>Keep multiple copies in secure locations</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 text-[#53d7a6]">•</span>
+                    <span>Test your backup by restoring on another device</span>
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-black/20 p-5">
+          <div className="rounded-xl border border-white/10 bg-black/20 p-6">
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0cf52]/15">
-                <span className="text-lg">🔐</span>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f6df84]/15">
+                <span className="text-xl">🔐</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-white">Security Reminder</p>
-                <p className="mt-2 text-xs leading-relaxed text-slate-400">
-                  Your backup file stays encrypted. Anyone with both the backup file and your password can restore your wallet. Never share both together.
-                </p>
-                <p className="mt-3 text-xs leading-relaxed text-slate-400">
-                  To restore a wallet, use the authentication page during initial setup.
-                </p>
+                <h3 className="text-sm font-bold text-white">Recovery Instructions</h3>
+                <div className="mt-3 space-y-3 text-sm leading-relaxed text-slate-400">
+                  <p>
+                    Your backup file contains your encrypted wallet keys. Anyone with both the backup file <strong className="text-slate-300">and</strong> your password can restore your wallet.
+                  </p>
+                  <p>
+                    To restore a wallet, navigate to the{' '}
+                    <Link to="/auth" className="font-semibold text-[#53a6ff] transition hover:text-[#7eb8ff] hover:underline">
+                      authentication page
+                    </Link>{' '}
+                    and select "Restore from Backup" during wallet creation.
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Never share your backup file and password together.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

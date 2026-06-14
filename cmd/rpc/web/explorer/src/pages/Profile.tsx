@@ -10,11 +10,16 @@ import type { ClaimableRewardsSummary, LeaderboardEntry, PlayerStats, RecentRun 
 import { fetchRpcKeystoreAccounts, type RpcKeystoreAccount } from '../lib/rpcChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
 
-// Profile Page - Achievement Focused Design
+// Profile Page - Gaming Achievement Profile Design
 function ProfilePage() {
+  useEffect(() => {
+    document.title = 'My Profile | ProofArcade'
+  }, [])
+
   const [wallets, setWallets] = useState<RpcKeystoreAccount[]>([])
   const [selectedAddress, setSelectedAddress] = useState('')
   const [player, setPlayer] = useState<PlayerStats | null>(null)
+  const [displayUsername, setDisplayUsername] = useState<string>('')
   const [leaderboards, setLeaderboards] = useState<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>({
     daily: [],
     classic: [],
@@ -73,6 +78,7 @@ function ProfilePage() {
           games: nextHistory,
         })
         setPlayer(nextPlayer)
+        setDisplayUsername(nextPlayer.username || '')
         setClaimableRewards(nextRewards)
         setGameHistory(nextHistory)
       }
@@ -126,6 +132,7 @@ function ProfilePage() {
         unclaimedCount: nextRewards.unclaimedCount,
       })
       setPlayer(nextPlayer)
+      setDisplayUsername(nextPlayer.username || '')
       setLeaderboards(nextLeaderboards)
       setClaimableRewards(nextRewards)
       setGameHistory(nextHistory)
@@ -233,6 +240,7 @@ function ProfilePage() {
           console.log('  - Reward Amount Added:', rewardAmount)
           
           setPlayer(optimisticPlayer)
+          setDisplayUsername(optimisticPlayer.username || '')
           setClaimableRewards(optimisticRewards)
         }
         
@@ -288,6 +296,7 @@ function ProfilePage() {
         
         if (confirmedOnChain) {
           setPlayer(nextPlayer)
+          setDisplayUsername(nextPlayer.username || '')
           setClaimableRewards(nextRewards)
           toast.success('Reward claimed!')
         } else {
@@ -364,9 +373,9 @@ function ProfilePage() {
             {/* Player Header */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wider text-[#f6df84]">Player</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#f6df84]">Player Profile</p>
                 <h1 className="mt-2 font-bold text-5xl leading-tight text-white">
-                  {selectedWallet.nickname}
+                  {displayUsername || selectedWallet.nickname}
                 </h1>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <button
@@ -405,23 +414,11 @@ function ProfilePage() {
                 </p>
               </div>
 
-              {/* Best Tile */}
-              <div className="rounded-xl border border-white/10 bg-black/30 p-5">
-                <div className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-[#53a6ff]" />
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Best Tile</p>
-                </div>
-                <p className="mt-3 text-4xl font-bold text-white">
-                  {player?.bestTile ?? 0}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">Highest achieved</p>
-              </div>
-
-              {/* Current Rank */}
+              {/* All-Time Rank */}
               <div className="rounded-xl border border-white/10 bg-black/30 p-5">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-[#53d7a6]" />
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Current Rank</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">All-Time Rank</p>
                 </div>
                 {(() => {
                   const rankData = formatRank(leaderboards.classic, selectedAddress)
@@ -444,10 +441,22 @@ function ProfilePage() {
                 })()}
               </div>
 
+              {/* Classic Points */}
+              <div className="rounded-xl border border-white/10 bg-black/30 p-5">
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-[#7e69ff]" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Available Points</p>
+                </div>
+                <p className="mt-3 text-4xl font-bold text-white">
+                  {player?.classicPointsBalance ?? 0}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">Classic Points</p>
+              </div>
+
               {/* Balance */}
               <div className="rounded-xl border border-white/10 bg-black/30 p-5">
                 <div className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5 text-[#7e69ff]" />
+                  <Wallet className="h-5 w-5 text-[#53a6ff]" />
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Balance</p>
                 </div>
                 <p className="mt-3 text-4xl font-bold text-white">
@@ -540,47 +549,56 @@ function ProfilePage() {
 
           {/* Progress & Stats */}
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Game Progress */}
+            {/* Player Achievements */}
             <section className="rounded-2xl border border-white/10 bg-black/20 p-6">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-[#53a6ff]" />
-                <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Game Progress</h2>
+                <Trophy className="h-5 w-5 text-[#f6df84]" />
+                <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Player Achievements</h2>
               </div>
               <div className="mt-5 space-y-3">
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
-                  <span className="text-sm text-slate-400">Games Completed</span>
-                  <span className="text-lg font-bold text-white">{player?.gamesCompleted ?? 0}</span>
+                  <span className="text-sm text-slate-400">Highest Tile Achieved</span>
+                  <span className="text-lg font-bold text-white">{player?.bestTile ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
-                  <span className="text-sm text-slate-400">Win Rate</span>
-                  <span className="text-lg font-bold text-white">{formatPercent(player)}</span>
+                  <span className="text-sm text-slate-400">Best Daily Rank</span>
+                  <span className="text-lg font-bold text-white">
+                    {(() => {
+                      const dailyRankData = formatRank(leaderboards.daily, selectedAddress)
+                      return dailyRankData.display
+                    })()}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
-                  <span className="text-sm text-slate-400">Total Score</span>
-                  <span className="text-lg font-bold text-white">{(player?.totalScore ?? 0).toLocaleString()}</span>
+                  <span className="text-sm text-slate-400">Current Login Streak</span>
+                  <span className="text-lg font-bold text-white">
+                    {player?.loginStreak ?? 0} {(player?.loginStreak ?? 0) === 1 ? 'day' : 'days'}
+                  </span>
                 </div>
               </div>
             </section>
 
-            {/* Classic Points */}
+            {/* Account Progression */}
             <section className="rounded-2xl border border-white/10 bg-black/20 p-6">
               <div className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-[#7e69ff]" />
-                <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Classic Points</h2>
+                <TrendingUp className="h-5 w-5 text-[#7e69ff]" />
+                <h2 className="text-sm font-bold uppercase tracking-wide text-slate-200">Account Progression</h2>
               </div>
               <div className="mt-5 space-y-3">
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
-                  <span className="text-sm text-slate-400">Spendable</span>
-                  <span className="text-lg font-bold text-white">{player?.classicPointsBalance ?? 0}</span>
+                  <span className="text-sm text-slate-400">Lifetime PROOF Earned</span>
+                  <span className="text-lg font-bold text-white">
+                    {formatCNPY((player?.balance ?? 0) + (claimableRewards?.totalClaimable ?? 0))}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
-                  <span className="text-sm text-slate-400">Lifetime Earned</span>
+                  <span className="text-sm text-slate-400">Lifetime Classic Points</span>
                   <span className="text-lg font-bold text-white">{player?.classicPointsEarned ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
-                  <span className="text-sm text-slate-400">Login Streak</span>
+                  <span className="text-sm text-slate-400">Daily Challenges Completed</span>
                   <span className="text-lg font-bold text-white">
-                    {player?.loginStreak ?? 0} {(player?.loginStreak ?? 0) === 1 ? 'day' : 'days'}
+                    {player?.dailyGamesStarted ?? 0}
                   </span>
                 </div>
               </div>

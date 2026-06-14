@@ -84,6 +84,19 @@ interface ActionBannerState {
 
 function Play2048Page() {
   const [searchParams] = useSearchParams()
+  
+  // Set dynamic document title based on selected mode
+  useEffect(() => {
+    const modeParam = searchParams.get('mode')
+    if (modeParam === 'daily') {
+      document.title = 'Daily Challenge | ProofArcade'
+    } else if (modeParam === 'classic') {
+      document.title = 'Classic Mode | ProofArcade'
+    } else {
+      document.title = 'Training Mode | ProofArcade'
+    }
+  }, [searchParams])
+
   const [address, setAddress] = useState('')
   const [password, setPassword] = useState('')
   const [wallets, setWallets] = useState<RpcKeystoreAccount[]>([])
@@ -97,6 +110,7 @@ function Play2048Page() {
   const [isLoadingClient, setIsLoadingClient] = useState(true)
   const [player, setPlayer] = useState<PlayerStats | null>(null)
   const [leaderboards, setLeaderboards] = useState<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>({ daily: [], classic: [] })
+  const [dailyPrizePool, setDailyPrizePool] = useState<number>(0)
   const [session, setSession] = useState<LocalSession | null>(null)
   const [board, setBoard] = useState<number[]>(() => initializeBoard(createSeedFromText('demo')))
   const [score, setScore] = useState(0)
@@ -185,9 +199,10 @@ function Play2048Page() {
       const restoredSession = shouldIgnoreLocalRestore ? null : rawRestoredSession
       const restoredRunState = shouldIgnoreLocalRestore ? null : rawRestoredRunState
 
-      const [nextPlayer, nextLeaderboards] = await Promise.all([
+      const [nextPlayer, nextLeaderboards, nextDailyPool] = await Promise.all([
         nextClient.getPlayer(bootstrapAddress),
         nextClient.getLeaderboards(),
+        nextClient.getDailyPrizePool(getUtcDateString()),
       ])
       if (cancelled) {
         return
@@ -195,6 +210,7 @@ function Play2048Page() {
       startTransition(() => {
         setPlayer(nextPlayer)
         setLeaderboards(nextLeaderboards)
+        setDailyPrizePool(nextDailyPool?.rewardPool ?? 0)
         setSession(restoredSession)
         if (restoredRunState) {
           const restoredMode = restoredRunState.selectedMode ?? restoredRunState.selectedBoard ?? 'training'
@@ -337,31 +353,22 @@ function Play2048Page() {
   const canStart = !session || isSubmitted
   const canUseLiveWallet = selectedMode === 'training' || clientStatus.mode !== 'rpc' || (/^[0-9a-f]{40}$/.test(address.trim().toLowerCase()) && password.length > 0)
   const currentFee = session?.mode === 'daily' ? config.dailyFee : session?.mode === 'classic' ? config.classicFee : 0
-  const selectedModeConfig = selectedMode === 'daily'
-    ? {
-        title: 'Daily Challenge',
-        accent: 'bg-[#c95f38]/30',
-        actionTone: 'bg-[#c95f38] hover:bg-[#d36c49]',
-        fee: config.dailyFee,
-        detail: `One attempt per address. Seed changes ${dailyWindowLabel}.`,
-        meta: `${config.dailyMaxMoves} move cap`,
-      }
-    : selectedMode === 'classic' ? {
-        title: 'Classic Mode',
-        accent: 'bg-[#53a6ff]/30',
-        actionTone: 'bg-[#53a6ff] hover:bg-[#64b0ff]',
-        fee: config.classicFee,
-        detail: 'Unlimited runs with a fresh deterministic seed each paid session.',
-        meta: 'No move cap',
-      }
-    : {
-        title: 'Training Mode',
-        accent: 'bg-[#53d7a6]/30',
-        actionTone: 'bg-[#53d7a6] hover:bg-[#67ddb3]',
-        fee: 0,
-        detail: 'Free local board for warm-up runs. No wallet, no fee, no blockchain.',
-        meta: 'No tx, no rewards',
-      }
+  
+  // Check if player has already completed today's Daily Challenge
+  const todayUtcDate = getUtcDateString()
+  const hasCompletedDailyToday = player?.dailyGamesStarted > 0 && 
+    leaderboards.daily.some(entry => entry.address === address && entry.utcDate === todayUtcDate)
+  
+  // Calculate time until next UTC day (reset)
+  const getTimeUntilReset = () => {
+    const now = new Date()
+    const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0))
+    const diff = tomorrow.getTime() - now.getTime()
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    return { hours, minutes, totalMinutes: Math.floor(diff / (1000 * 60)) }
+  }
+  
   const actionBanner = getActionBanner({
     session,
     isSubmitted,
@@ -377,14 +384,16 @@ function Play2048Page() {
       return
     }
 
-    const [nextPlayer, nextLeaderboards] = await Promise.all([
+    const [nextPlayer, nextLeaderboards, nextDailyPool] = await Promise.all([
       activeClient.getPlayer(nextAddress),
       activeClient.getLeaderboards(),
+      activeClient.getDailyPrizePool(getUtcDateString()),
     ])
 
     startTransition(() => {
       setPlayer(nextPlayer)
       setLeaderboards(nextLeaderboards)
+      setDailyPrizePool(nextDailyPool?.rewardPool ?? 0)
     })
   }
 
@@ -655,138 +664,111 @@ function Play2048Page() {
           Dedicated Game View
         </div>
       </div>
-      <section className="overflow-hidden rounded-3xl border border-white/10 bg-card p-4 sm:p-6 xl:p-8">
-        <div className="space-y-5">
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-5 sm:p-6">
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
-                <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-[0.3em] text-[#f6df84]">ProofArcade 2048</p>
-                  <h1 className="mt-2 font-bold text-4xl leading-none text-white sm:text-6xl">
+      <section className="overflow-hidden rounded-3xl border border-white/10 bg-card p-4 sm:p-5">
+        <div className="space-y-4">
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              {/* Ultra-Compact Header */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h1 className="font-bold text-2xl leading-none text-white sm:text-3xl">
                     Choose Your Mode
                   </h1>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-                    Practice in Training Mode, then compete in Daily Challenge or Classic Mode for rewards.
-                  </p>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Session</p>
-                  
-                  {/* Connected Wallet */}
-                  {clientStatus.mode === 'rpc' && wallets.length > 0 ? (
-                    <div className="mt-3">
-                      <p className="text-xs font-semibold text-slate-400">Connected Wallet</p>
-                      <p className="mt-1 text-sm font-bold text-white">
-                        {wallets.find(w => w.address === address)?.nickname || 'Unknown'}
-                      </p>
-                      <p className="mt-0.5 font-mono text-xs text-slate-400">{shortAddress(address)}</p>
-                    </div>
-                  ) : (
-                    <div className="mt-3">
-                      <p className="text-xs font-semibold text-slate-400">Mode</p>
-                      <p className="mt-1 text-sm font-bold text-white">Local Only</p>
-                    </div>
-                  )}
-
-                  {/* Selected Mode */}
-                  <div className="mt-3">
-                    <p className="text-xs font-semibold text-slate-400">Selected Mode</p>
-                    <p className="mt-1 text-sm font-bold text-white">
-                      {selectedMode === 'daily' ? 'Daily Challenge' : selectedMode === 'classic' ? 'Classic Mode' : 'Training Mode'}
+                {/* Compact Inline Stats */}
+                {clientStatus.mode === 'rpc' && wallets.length > 0 && player ? (
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className="rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 font-semibold text-white">
+                      {player.balance} PROOF
+                    </span>
+                    <span className="text-slate-600">|</span>
+                    <span className="rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 font-semibold text-white">
+                      {player.classicPointsBalance} Points
+                    </span>
+                    <span className="text-slate-600">|</span>
+                    <span className="rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 font-semibold text-white">
+                      {player.loginStreak}d Streak
+                    </span>
+                  </div>
+                ) : clientStatus.mode === 'rpc' && wallets.length > 0 ? (
+                  <div className="rounded-lg border border-white/10 bg-slate-950/50 px-3 py-1.5">
+                    <p className="text-sm font-semibold text-white">
+                      {wallets.find(w => w.address === address)?.nickname || shortAddress(address)}
                     </p>
                   </div>
-
-                  {/* Entry Fee */}
-                  <div className="mt-3">
-                    <p className="text-xs font-semibold text-slate-400">Entry Fee</p>
-                    <p className="mt-1 text-sm font-bold text-white">
-                      {selectedMode === 'daily' ? `${config.dailyFee} PROOF` : selectedMode === 'classic' ? `${config.classicFee} PROOF` : 'FREE'}
-                    </p>
-                  </div>
-
-                  {/* Status */}
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className={`h-2 w-2 rounded-full ${clientStatus.mode === 'rpc' && address && password ? 'bg-[#53d7a6]' : selectedMode === 'training' ? 'bg-[#53d7a6]' : 'bg-amber-500'}`} />
-                    <p className="text-xs font-semibold text-slate-400">
-                      {clientStatus.mode === 'rpc' && address && password ? 'Connected' : selectedMode === 'training' ? 'Ready' : 'Wallet Required'}
-                    </p>
-                  </div>
-                </div>
+                ) : null}
               </div>
 
-              <div className="mt-5 space-y-5">
-                {/* COMPETITIVE RUNS SECTION */}
-                <div>
-                  <div className="mb-3 flex items-center gap-3">
-                    <div className="h-px flex-1 bg-white/10"></div>
-                    <p className="text-xs uppercase tracking-[0.3em] text-[#f6df84]">Competitive Runs</p>
-                    <div className="h-px flex-1 bg-white/10"></div>
-                  </div>
-                  <div className="grid gap-3 lg:grid-cols-2">
-                    <ModePanel
-                      title="Daily Challenge"
-                      fee={config.dailyFee}
-                      detail={`One attempt per address. Seed changes ${dailyWindowLabel}.`}
-                      meta={`${config.dailyMaxMoves} move cap`}
-                      selected={selectedMode === 'daily'}
-                      disabled={!canStart || isLoadingClient || !canUseLiveWallet}
-                      tone="daily"
-                      onSelect={() => setSelectedMode('daily')}
-                      onStart={() => start('daily')}
-                    />
-                    <ModePanel
-                      title="Classic Mode"
-                      fee={config.classicFee}
-                      detail="Unlimited runs with a fresh deterministic seed each paid session."
-                      meta="Warm-up friendly"
-                      selected={selectedMode === 'classic'}
-                      disabled={!canStart || isLoadingClient || !canUseLiveWallet}
-                      tone="classic"
-                      onSelect={() => setSelectedMode('classic')}
-                      onStart={() => start('classic')}
-                    />
-                  </div>
-                </div>
+              {/* Compact Mode Cards - Single Row on Desktop */}
+              <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3 items-stretch lg:auto-rows-fr">
+                {/* Daily Challenge Card - Featured */}
+                <CompactModeCard
+                  icon="🏆"
+                  title="Daily Challenge"
+                  specs={[
+                    `${config.dailyFee} PROOF entry`,
+                    `${config.dailyMaxMoves} move limit`,
+                  ]}
+                  infoBadges={[
+                    `💰 Prize: ${dailyPrizePool} PROOF`,
+                    `⏱ Resets ${getTimeUntilReset().hours}h ${getTimeUntilReset().minutes}m`,
+                    '✓ One attempt per day',
+                  ]}
+                  ctaLabel={hasCompletedDailyToday ? "Completed" : "Play Daily"}
+                  tone="daily"
+                  featured={true}
+                  selected={selectedMode === 'daily'}
+                  disabled={!canStart || isLoadingClient || !canUseLiveWallet || hasCompletedDailyToday}
+                  onSelect={() => setSelectedMode('daily')}
+                  onStart={() => {
+                    if (!hasCompletedDailyToday) start('daily')
+                  }}
+                />
 
-                {/* PRACTICE SECTION */}
-                <div>
-                  <div className="mb-3 flex items-center gap-3">
-                    <div className="h-px flex-1 bg-white/10"></div>
-                    <p className="text-xs uppercase tracking-[0.3em] text-[#53d7a6]">Practice</p>
-                    <div className="h-px flex-1 bg-white/10"></div>
-                  </div>
-                  <ModePanel
-                    title="Training Mode"
-                    fee="free"
-                    detail="Practice for free before entering competitive runs. No fees, no submissions, no risk."
-                    meta="Local only"
-                    selected={selectedMode === 'training'}
-                    disabled={!canStart || isLoadingClient}
-                    tone="training"
-                    onSelect={() => setSelectedMode('training')}
-                    onStart={() => start('training')}
-                  />
-                </div>
+                {/* Classic Mode Card */}
+                <CompactModeCard
+                  icon="⭐"
+                  title="Classic Mode"
+                  specs={[
+                    `${config.classicFee} PROOF entry`,
+                    'Unlimited moves',
+                  ]}
+                  infoBadges={[
+                    '🏅 Earn Classic Points',
+                    '📈 All-Time Leaderboard',
+                  ]}
+                  ctaLabel="Play Classic"
+                  tone="classic"
+                  selected={selectedMode === 'classic'}
+                  disabled={!canStart || isLoadingClient || !canUseLiveWallet}
+                  onSelect={() => setSelectedMode('classic')}
+                  onStart={() => start('classic')}
+                />
+
+                {/* Training Mode Card */}
+                <CompactModeCard
+                  icon="🎮"
+                  title="Training Mode"
+                  specs={[
+                    'Free practice',
+                    'No leaderboard',
+                  ]}
+                  infoBadges={[
+                    '🚫 No rewards',
+                    '💻 Local only',
+                  ]}
+                  ctaLabel="Practice"
+                  tone="training"
+                  selected={selectedMode === 'training'}
+                  disabled={!canStart || isLoadingClient}
+                  onSelect={() => setSelectedMode('training')}
+                  onStart={() => start('training')}
+                />
               </div>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-[#11161f]/90 p-4 sm:p-5">
                 <div className="mx-auto w-full max-w-[800px]">
-                  <div className={`rounded-2xl border border-white/10 ${selectedModeConfig.accent} px-4 py-4`}>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Selected Mode</p>
-                        <h2 className="mt-1 text-2xl font-bold text-white">{selectedModeConfig.title}</h2>
-                        <p className="mt-1 text-sm leading-6 text-slate-300">{selectedModeConfig.detail}</p>
-                      </div>
-                      <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-right">
-                        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Entry Fee</p>
-                        <p className="mt-1 text-2xl font-black text-white">{selectedModeConfig.fee}</p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">{selectedModeConfig.meta}</p>
-                      </div>
-                    </div>
-                  </div>
-
                   <AnimatePresence mode="popLayout">
                     {actionBanner ? <ActionBanner key={`${actionBanner.title}-${actionBanner.detail}`} banner={actionBanner} /> : null}
                   </AnimatePresence>
@@ -820,64 +802,113 @@ function Play2048Page() {
                     ) : null}
                   </AnimatePresence>
 
-                  <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(280px,330px)_minmax(0,780px)] xl:items-start xl:justify-center">
-                    <div className="space-y-3 xl:order-1">
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-xl border border-[#f6df84]/20 bg-[#f6df84]/10 px-4 py-3">
+                  <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(200px,240px)_minmax(0,1fr)] xl:items-start xl:justify-center">
+                    {/* Left Sidebar - Stats & Actions */}
+                    <div className="space-y-2 xl:order-1">
+                      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+                        <div className="rounded-lg border border-[#f6df84]/20 bg-[#f6df84]/10 px-3 py-2">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Score</p>
                           <p className="mt-1 text-3xl font-black text-white">{score}</p>
                         </div>
-                        <div className="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3">
+                        <div className="rounded-lg border border-white/10 bg-slate-950/70 px-3 py-2">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Best Tile</p>
                           <p className="mt-1 text-3xl font-black text-white">{maxTile}</p>
                         </div>
-                        <div className="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3">
-                          <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Moves</p>
-                          <p className="mt-1 text-3xl font-black text-white">{moves.length}</p>
-                        </div>
-                        <div className="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3">
-                          <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Mode</p>
-                          <p className="mt-1 text-lg font-bold uppercase tracking-[0.18em] text-white">{session?.mode ?? 'idle'}</p>
-                          <p className="mt-1 text-xs text-slate-500">{session ? (session.mode === 'training' ? 'No fee, no chain' : `${currentFee} PROOF fee`) : 'Choose a run'}</p>
-                        </div>
+                        
+                        {/* Move Count - Classic & Training Only */}
+                        {session?.mode !== 'daily' && (
+                          <div className="rounded-lg border border-white/10 bg-slate-950/70 px-3 py-2">
+                            <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Moves</p>
+                            <p className="mt-1 text-3xl font-black text-white">{moves.length}</p>
+                          </div>
+                        )}
+                        
+                        {/* Prize Pool - Daily Only */}
+                        {session?.mode === 'daily' && (
+                          <div className="rounded-lg border border-[#53d7a6]/20 bg-[#53d7a6]/10 px-3 py-2">
+                            <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Prize Pool</p>
+                            <p className="mt-1 text-xl font-black text-[#53d7a6]">Active</p>
+                            <p className="mt-1 text-xs text-slate-400">Top 10 rewards</p>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
+                      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_140px] xl:grid-cols-1">
                         <motion.button
                           onClick={() => start(selectedMode)}
-                          disabled={!canStart || isLoadingClient || !canUseLiveWallet}
-                          className={`rounded-2xl px-4 py-4 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${selectedModeConfig.actionTone}`}
+                          disabled={!canStart || isLoadingClient || !canUseLiveWallet || (selectedMode === 'daily' && hasCompletedDailyToday)}
+                          className={`rounded-xl px-3 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                            selectedMode === 'daily' 
+                              ? 'bg-[#c95f38] hover:bg-[#d36c49]' 
+                              : selectedMode === 'classic' 
+                                ? 'bg-[#53a6ff] hover:bg-[#64b0ff]' 
+                                : 'bg-[#53d7a6] hover:bg-[#67ddb3]'
+                          }`}
                         >
-                          {selectedMode === 'daily' ? 'Start Daily Run' : selectedMode === 'classic' ? 'Start Classic Run' : 'Start Training Run'}
+                          {selectedMode === 'daily' && hasCompletedDailyToday ? 'Daily Completed' : selectedMode === 'daily' ? 'Start Daily' : selectedMode === 'classic' ? 'Start Classic' : 'Start Training'}
                         </motion.button>
                         <motion.button
                           onClick={() => finishRun('player_stopped')}
                           disabled={!session || isSubmitted || (session.mode !== 'training' && !canUseLiveWallet)}
-                          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {session?.mode === 'training' ? 'Stop Training Run' : 'Stop + Submit'}
+                          {session?.mode === 'training' ? 'Stop' : 'Submit'}
                         </motion.button>
                       </div>
 
-                      <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
-                        <p className="text-sm text-slate-300">Use arrow keys or WASD to move the board.</p>
+                      {/* Daily Challenge Completed Notice */}
+                      {selectedMode === 'daily' && hasCompletedDailyToday && !session && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="rounded-lg border border-[#53d7a6]/30 bg-[#53d7a6]/10 px-3 py-2.5"
+                        >
+                          <div className="flex items-start gap-2">
+                            <span className="text-base">✓</span>
+                            <div className="flex-1">
+                              <p className="text-xs font-semibold text-[#53d7a6]">Today's Challenge Complete</p>
+                              <p className="mt-1 text-xs leading-relaxed text-slate-300">
+                                New challenge in {(() => {
+                                  const { hours, minutes } = getTimeUntilReset()
+                                  return `${hours}h ${minutes}m`
+                                })()}
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+                        <p className="text-sm text-slate-300">Arrow keys or WASD</p>
                       </div>
                     </div>
 
-                    <div className="mx-auto w-full max-w-[700px] rounded-2xl border border-white/10 bg-[#171d28] p-4 sm:max-w-[740px] sm:p-5 xl:order-2">
-                      <div className="grid grid-cols-4 gap-4 sm:gap-5">
-                        {board.map((value, index) => (
-                          <motion.div
-                            key={`${index}-${value}`}
-                            layout
-                            initial={{ scale: 0.92, opacity: 0.78 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: 'spring', stiffness: 220, damping: 16 }}
-                            className={`flex aspect-square items-center justify-center rounded-xl border border-black/10 text-[1.7rem] font-black sm:text-[2.2rem] ${tileStyles[value] ?? 'bg-[#111827] text-white'}`}
-                          >
-                            {value || ''}
-                          </motion.div>
-                        ))}
+                    {/* Right Side - Move Banner + Game Board */}
+                    <div className="space-y-4 xl:order-2">
+                      {/* Move Counter Banner (Daily Challenge Only) */}
+                      {session?.mode === 'daily' && session.maxMoves > 0 && (
+                        <MoveCounterBanner 
+                          currentMoves={moves.length} 
+                          maxMoves={session.maxMoves} 
+                        />
+                      )}
+                      
+                      {/* Game Board - Much Larger */}
+                      <div className="mx-auto w-full max-w-[980px] rounded-2xl border border-white/10 bg-[#171d28] p-5 sm:p-7 lg:p-8">
+                        <div className="grid grid-cols-4 gap-4 sm:gap-6 lg:gap-7">
+                          {board.map((value, index) => (
+                            <motion.div
+                              key={`${index}-${value}`}
+                              layout
+                              initial={{ scale: 0.92, opacity: 0.78 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ type: 'spring', stiffness: 220, damping: 16 }}
+                              className={`flex aspect-square items-center justify-center rounded-xl border border-black/10 text-[2rem] font-black sm:text-[3rem] lg:text-[3.5rem] ${tileStyles[value] ?? 'bg-[#111827] text-white'}`}
+                            >
+                              {value || ''}
+                            </motion.div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -972,6 +1003,197 @@ function ModePanel(args: {
   )
 }
 
+function LauncherModeCard(args: {
+  title: string
+  description: string
+  entryFee: number | string
+  moveLimit?: number
+  features: string[]
+  ctaLabel: string
+  tone: 'daily' | 'classic' | 'training'
+  selected: boolean
+  disabled: boolean
+  onSelect: () => void
+  onStart: () => void
+}) {
+  const toneConfig = {
+    daily: {
+      accent: 'border-[#c95f38]/40 bg-[#c95f38]/15',
+      button: 'bg-[#c95f38] hover:bg-[#d36c49] text-white',
+      icon: '🏆',
+    },
+    classic: {
+      accent: 'border-[#53a6ff]/40 bg-[#53a6ff]/15',
+      button: 'bg-[#53a6ff] hover:bg-[#64b0ff] text-white',
+      icon: '⭐',
+    },
+    training: {
+      accent: 'border-[#53d7a6]/40 bg-[#53d7a6]/15',
+      button: 'bg-[#53d7a6] hover:bg-[#67ddb3] text-[#0f1a14]',
+      icon: '🎮',
+    },
+  }
+
+  const config = toneConfig[args.tone]
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
+      className={`rounded-2xl border p-5 transition ${
+        args.selected 
+          ? config.accent 
+          : 'border-white/10 bg-slate-950/50 hover:border-white/20'
+      }`}
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{config.icon}</span>
+            <h3 className="text-xl font-bold text-white">{args.title}</h3>
+          </div>
+          <p className="mt-1 text-sm text-slate-400">{args.description}</p>
+        </div>
+        
+        {/* Entry Fee Badge */}
+        <div className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-center">
+          <p className="text-xs font-bold text-white">
+            {typeof args.entryFee === 'number' ? `${args.entryFee} PROOF` : args.entryFee}
+          </p>
+        </div>
+      </div>
+
+      {/* Features List */}
+      <div className="mt-4 space-y-2">
+        {args.features.map((feature, idx) => (
+          <div key={idx} className="flex items-center gap-2 text-sm text-slate-300">
+            <span className="text-slate-500">•</span>
+            <span>{feature}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA Button */}
+      <motion.button
+        onClick={args.selected ? args.onStart : args.onSelect}
+        disabled={args.disabled}
+        whileHover={!args.disabled ? { scale: 1.02 } : {}}
+        whileTap={!args.disabled ? { scale: 0.98 } : {}}
+        className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${config.button}`}
+      >
+        {args.selected ? args.ctaLabel : `Select ${args.title}`}
+      </motion.button>
+    </motion.div>
+  )
+}
+
+function CompactModeCard(args: {
+  icon: string
+  title: string
+  specs: string[]
+  infoBadges?: string[]
+  ctaLabel: string
+  tone: 'daily' | 'classic' | 'training'
+  featured?: boolean
+  selected: boolean
+  disabled: boolean
+  onSelect: () => void
+  onStart: () => void
+}) {
+  const toneConfig = {
+    daily: {
+      accent: 'border-[#c95f38]/50 bg-[#c95f38]/20',
+      button: 'bg-[#c95f38] hover:bg-[#d36c49] text-white',
+      badge: 'bg-[#c95f38]/20 border-[#c95f38]/30 text-[#ffcfbf]',
+    },
+    classic: {
+      accent: 'border-[#53a6ff]/50 bg-[#53a6ff]/20',
+      button: 'bg-[#53a6ff] hover:bg-[#64b0ff] text-white',
+      badge: 'bg-[#53a6ff]/20 border-[#53a6ff]/30 text-[#d7e9ff]',
+    },
+    training: {
+      accent: 'border-[#53d7a6]/50 bg-[#53d7a6]/20',
+      button: 'bg-[#53d7a6] hover:bg-[#67ddb3] text-[#0f1a14]',
+      badge: 'bg-[#53d7a6]/20 border-[#53d7a6]/30 text-[#bdf5e3]',
+    },
+  }
+
+  const config = toneConfig[args.tone]
+
+  return (
+    <motion.div
+      onClick={args.onSelect}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className={`flex flex-col h-full cursor-pointer rounded-xl border p-4 text-left transition ${
+        args.selected 
+          ? config.accent 
+          : 'border-white/10 bg-slate-950/50 hover:border-white/20'
+      } ${args.featured ? 'md:col-span-2 lg:col-span-1' : ''}`}
+    >
+      {/* Card Content - Grows to fill space */}
+      <div className="flex-1">
+        {/* Icon + Title */}
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">{args.icon}</span>
+          <h3 className="text-lg font-bold text-white">{args.title}</h3>
+          {args.featured && (
+            <span className="ml-auto rounded-full border border-[#f0cf52]/40 bg-[#f0cf52]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#f6df84]">
+              Featured
+            </span>
+          )}
+        </div>
+
+        {/* Compact Specs */}
+        <div className="mt-3 space-y-1">
+          {args.specs.map((spec, idx) => (
+            <p key={idx} className="text-sm font-semibold text-white">
+              {spec}
+            </p>
+          ))}
+        </div>
+
+        {/* Info Badges */}
+        {args.infoBadges && args.infoBadges.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {args.infoBadges.map((badge, idx) => (
+              <span
+                key={idx}
+                className={`rounded-md border px-2 py-1 text-xs font-medium ${config.badge}`}
+              >
+                {badge}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* CTA Button - Pinned to bottom */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation() // Prevent card click from firing
+          args.onStart()
+        }}
+        disabled={args.disabled}
+        className={`mt-4 w-full rounded-lg px-3 py-2.5 text-center text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${config.button}`}
+      >
+        {args.ctaLabel}
+      </button>
+    </motion.div>
+  )
+}
+
+function getTimeUntilReset(): { hours: number; minutes: number } {
+  const now = new Date()
+  const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0))
+  const diff = tomorrow.getTime() - now.getTime()
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+  return { hours, minutes }
+}
+
 function RankBadge({ index }: { index: number }) {
   const tone = index === 0
     ? 'bg-[#f0cf52]/20 text-[#f6df84]'
@@ -998,11 +1220,79 @@ function formatAddress(address: string): string {
   return `${address.slice(0, 8)}...${address.slice(-4)}`
 }
 
+function MoveCounterBanner({ currentMoves, maxMoves }: { currentMoves: number; maxMoves: number }) {
+  const remaining = maxMoves - currentMoves
+  
+  // Determine styling based on remaining moves
+  const isDanger = remaining <= 10
+  const isWarning = remaining > 10 && remaining <= 20
+  const isNormal = remaining > 20
+  
+  const containerClass = isDanger
+    ? 'border-[#c95f38]/50 bg-[#c95f38]/20'
+    : isWarning
+      ? 'border-[#f0cf52]/50 bg-[#f0cf52]/15'
+      : 'border-[#53a6ff]/30 bg-[#53a6ff]/10'
+  
+  const textClass = isDanger
+    ? 'text-[#ffd3c5]'
+    : isWarning
+      ? 'text-[#fff0b3]'
+      : 'text-[#d7e9ff]'
+  
+  const accentClass = isDanger
+    ? 'text-[#ff9375]'
+    : isWarning
+      ? 'text-[#f6df84]'
+      : 'text-[#9fd0ff]'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`rounded-2xl border px-6 py-5 ${containerClass}`}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-baseline gap-3">
+          <span className={`text-[10px] uppercase tracking-[0.24em] ${textClass} opacity-70`}>
+            Moves
+          </span>
+          <span className={`font-black text-5xl leading-none ${accentClass}`}>
+            {currentMoves}
+          </span>
+          <span className={`font-bold text-3xl ${textClass} opacity-60`}>
+            / {maxMoves}
+          </span>
+        </div>
+        <div className="text-right">
+          <p className={`text-[11px] uppercase tracking-[0.2em] ${textClass} opacity-70`}>
+            Remaining
+          </p>
+          <p className={`mt-1 font-black text-4xl leading-none ${accentClass}`}>
+            {remaining}
+          </p>
+          {isDanger && (
+            <p className="mt-1 text-xs font-semibold text-[#ffd3c5]">
+              ⚠️ Final moves!
+            </p>
+          )}
+          {isWarning && (
+            <p className="mt-1 text-xs font-semibold text-[#fff0b3]">
+              Running low
+            </p>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
 function normalizeActionError(message: string): string {
   const text = message.trim()
   const lower = text.toLowerCase()
 
-  if (lower.includes('player already used their daily attempt') || lower.includes('already played for this address today')) {
+  if (lower.includes('player already used their daily attempt') || 
+      lower.includes('already played for this address today') ||
+      lower.includes('daily challenge already played')) {
     return 'This wallet already used its daily attempt for today’s UTC board.'
   }
   if (lower.includes('wait for the start transaction to finish indexing')) {
@@ -1019,6 +1309,9 @@ function normalizeActionError(message: string): string {
   }
   if (lower.includes('game session not found')) {
     return 'The session could not be found on-chain. Start a fresh run and try again.'
+  }
+  if (lower.includes('invalid params') && lower.includes('{}')) {
+    return 'This action is not allowed. You may have already completed today\'s Daily Challenge or another validation check failed.'
   }
   return text
 }
@@ -1164,3 +1457,6 @@ function boardsEqual(a: number[], b: number[]): boolean {
 }
 
 export default Play2048Page
+
+
+

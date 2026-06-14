@@ -1,9 +1,14 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Stages from '../components/Home/Stages'
 import OverviewCards from '../components/Home/OverviewCards'
 import ExtraTables from '../components/Home/ExtraTables'
 
 const ExplorerHomePage = () => {
+  useEffect(() => {
+    document.title = 'Explorer | ProofArcade'
+  }, [])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

@@ -12,20 +12,19 @@ import { fetchRpcKeystoreAccounts, type RpcKeystoreAccount } from '../lib/rpcCha
 import { loadStoredWalletAuth } from '../lib/walletAuth'
 
 function ShopPage() {
-  const [wallets, setWallets] = useState<RpcKeystoreAccount[]>([])
+  useEffect(() => {
+    document.title = 'Shop | ProofArcade'
+  }, [])
+
+  const [selectedWallet, setSelectedWallet] = useState<RpcKeystoreAccount | null>(null)
   const [selectedAddress, setSelectedAddress] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [storedSessionAddress, setStoredSessionAddress] = useState('')
   const [player, setPlayer] = useState<PlayerStats | null>(null)
   const [config, setConfig] = useState<ChainConfig | null>(null)
   const [preview, setPreview] = useState<RedeemPreview | null>(null)
   const [history, setHistory] = useState<RedemptionHistory | null>(null)
-  const [status, setStatus] = useState<Game2048ClientStatus>({
-    mode: 'mock',
-    label: 'Checking backend',
-    detail: 'Looking for the live shop backend.',
-  })
   const [burnPoints, setBurnPoints] = useState('300')
-  const [loginPassword, setLoginPassword] = useState('')
-  const [storedSessionAddress, setStoredSessionAddress] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isRedeeming, setIsRedeeming] = useState(false)
 
@@ -34,11 +33,6 @@ function ShopPage() {
 
     async function bootstrap() {
       const client = await createGame2048Client()
-      if (cancelled) {
-        return
-      }
-
-      setStatus(client.status)
       const nextConfig = await client.getConfig()
       if (cancelled) {
         return
@@ -49,24 +43,25 @@ function ShopPage() {
       setStoredSessionAddress(storedAuth?.address ?? '')
       setLoginPassword(storedAuth?.password ?? '')
 
-      // Set selected address to stored session for authenticated users
-      const initialAddress = storedAuth?.address ?? ''
-      setSelectedAddress(initialAddress)
-
-      // Load wallets for display purposes
-      if (client.status.mode === 'rpc') {
-        const nextWallets = await fetchRpcKeystoreAccounts()
-        if (cancelled) {
-          return
-        }
-        setWallets(nextWallets)
+      if (!storedAuth?.address) {
+        setIsLoading(false)
+        return
       }
 
-      if (initialAddress) {
+      const nextWallets = client.status.mode === 'rpc' ? await fetchRpcKeystoreAccounts() : []
+      if (cancelled) {
+        return
+      }
+
+      const activeWallet = nextWallets.find((wallet) => wallet.address === storedAuth.address) ?? null
+      setSelectedWallet(activeWallet)
+      setSelectedAddress(storedAuth.address)
+
+      if (storedAuth.address) {
         const [nextPlayer, nextPreview, nextHistory] = await Promise.all([
-          client.getPlayer(initialAddress),
-          client.getRedeemPreview(initialAddress, Number(burnPoints) || 0),
-          client.getRedemptions(initialAddress),
+          client.getPlayer(storedAuth.address),
+          client.getRedeemPreview(storedAuth.address, Number(burnPoints) || 0),
+          client.getRedemptions(storedAuth.address),
         ])
         if (cancelled) {
           return
@@ -136,9 +131,8 @@ function ShopPage() {
     }
   }, [selectedAddress, burnPoints])
 
-  const selectedWallet = wallets.find((wallet) => wallet.address === storedSessionAddress) ?? null
   const numericBurnPoints = Number(burnPoints) || 0
-  const effectivePassword = loadStoredWalletAuth()?.password ?? loginPassword
+  const effectivePassword = loginPassword || storedSessionAddress === selectedAddress ? loginPassword : ''
   const canRedeem = !!storedSessionAddress && !!effectivePassword && !!preview?.valid && !isRedeeming
 
   // Progress calculations
@@ -341,6 +335,26 @@ function ShopPage() {
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8"
     >
+      {isLoading ? (
+        /* Skeleton Loader */
+        <>
+          <section className="rounded-3xl border border-white/10 bg-card p-5">
+            <div className="h-3 w-12 animate-pulse rounded bg-white/10" />
+            <div className="mt-2 h-10 w-64 animate-pulse rounded bg-white/10" />
+            <div className="mt-3 grid gap-2.5 md:grid-cols-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-20 animate-pulse rounded-xl bg-white/5" />
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-4 space-y-4">
+            <div className="h-64 animate-pulse rounded-2xl bg-white/5" />
+            <div className="h-48 animate-pulse rounded-2xl bg-white/5" />
+          </section>
+        </>
+      ) : (
+        <>
       <section className="rounded-3xl border border-white/10 bg-card p-5">
         <p className="text-xs font-semibold uppercase tracking-wider text-[#f6df84]">Shop</p>
         <h1 className="mt-1.5 font-bold text-3xl leading-tight text-white sm:text-4xl">
@@ -500,11 +514,7 @@ function ShopPage() {
                 >
                   {isRedeeming ? (
                     <span className="flex items-center justify-center gap-2">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
-                      />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                       Redeeming...
                     </span>
                   ) : (
@@ -558,11 +568,15 @@ function ShopPage() {
         </div>
       </section>
 
-      {isLoading ? (
-        <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-4 text-sm text-slate-400">
-          Loading shop state...
+      {/* Loading State */}
+      {isLoading && (
+        <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 px-6 py-6 text-center">
+          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-700 border-t-slate-400" />
+          <p className="mt-3 text-sm text-slate-400">Loading shop state...</p>
         </div>
-      ) : null}
+      )}
+      </>
+      )}
     </motion.div>
   )
 }

@@ -2134,9 +2134,6 @@ export namespace types {
         /** LeaderboardEntry playerAddress */
         playerAddress?: (Uint8Array|null);
 
-        /** LeaderboardEntry username */
-        username?: (string|null);
-
         /** LeaderboardEntry score */
         score?: (number|Long|null);
 
@@ -2148,6 +2145,9 @@ export namespace types {
 
         /** LeaderboardEntry endedAtUnix */
         endedAtUnix?: (number|Long|null);
+
+        /** LeaderboardEntry username */
+        username?: (string|null);
     }
 
     /** Represents a LeaderboardEntry. */
@@ -2165,9 +2165,6 @@ export namespace types {
         /** LeaderboardEntry playerAddress. */
         public playerAddress: Uint8Array;
 
-        /** LeaderboardEntry username. */
-        public username: string;
-
         /** LeaderboardEntry score. */
         public score: (number|Long);
 
@@ -2179,6 +2176,9 @@ export namespace types {
 
         /** LeaderboardEntry endedAtUnix. */
         public endedAtUnix: (number|Long);
+
+        /** LeaderboardEntry username. */
+        public username: string;
 
         /**
          * Creates a new LeaderboardEntry instance using the specified properties.
@@ -3008,14 +3008,144 @@ export namespace types {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** Properties of a PlayerIdentity. */
+    interface IPlayerIdentity {
+
+        /** PlayerIdentity playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** PlayerIdentity username */
+        username?: (string|null);
+
+        /** PlayerIdentity avatarUrl */
+        avatarUrl?: (string|null);
+
+        /** PlayerIdentity title */
+        title?: (string|null);
+
+        /** PlayerIdentity bio */
+        bio?: (string|null);
+
+        /** PlayerIdentity registeredAtUnix */
+        registeredAtUnix?: (number|Long|null);
+
+        /** PlayerIdentity lastUpdatedUnix */
+        lastUpdatedUnix?: (number|Long|null);
+    }
+
+    /** Represents a PlayerIdentity. */
+    class PlayerIdentity implements IPlayerIdentity {
+
+        /**
+         * Constructs a new PlayerIdentity.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IPlayerIdentity);
+
+        /** PlayerIdentity playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** PlayerIdentity username. */
+        public username: string;
+
+        /** PlayerIdentity avatarUrl. */
+        public avatarUrl: string;
+
+        /** PlayerIdentity title. */
+        public title: string;
+
+        /** PlayerIdentity bio. */
+        public bio: string;
+
+        /** PlayerIdentity registeredAtUnix. */
+        public registeredAtUnix: (number|Long);
+
+        /** PlayerIdentity lastUpdatedUnix. */
+        public lastUpdatedUnix: (number|Long);
+
+        /**
+         * Creates a new PlayerIdentity instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns PlayerIdentity instance
+         */
+        public static create(properties?: types.IPlayerIdentity): types.PlayerIdentity;
+
+        /**
+         * Encodes the specified PlayerIdentity message. Does not implicitly {@link types.PlayerIdentity.verify|verify} messages.
+         * @param message PlayerIdentity message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IPlayerIdentity, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified PlayerIdentity message, length delimited. Does not implicitly {@link types.PlayerIdentity.verify|verify} messages.
+         * @param message PlayerIdentity message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IPlayerIdentity, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a PlayerIdentity message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns PlayerIdentity
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.PlayerIdentity;
+
+        /**
+         * Decodes a PlayerIdentity message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns PlayerIdentity
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.PlayerIdentity;
+
+        /**
+         * Verifies a PlayerIdentity message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a PlayerIdentity message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns PlayerIdentity
+         */
+        public static fromObject(object: { [k: string]: any }): types.PlayerIdentity;
+
+        /**
+         * Creates a plain object from a PlayerIdentity message. Also converts values to other types if specified.
+         * @param message PlayerIdentity
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.PlayerIdentity, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this PlayerIdentity to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for PlayerIdentity
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a PlayerStats. */
     interface IPlayerStats {
 
         /** PlayerStats playerAddress */
         playerAddress?: (Uint8Array|null);
-
-        /** PlayerStats username */
-        username?: (string|null);
 
         /** PlayerStats dailyGamesStarted */
         dailyGamesStarted?: (number|Long|null);
@@ -3071,9 +3201,6 @@ export namespace types {
 
         /** PlayerStats playerAddress. */
         public playerAddress: Uint8Array;
-
-        /** PlayerStats username. */
-        public username: string;
 
         /** PlayerStats dailyGamesStarted. */
         public dailyGamesStarted: (number|Long);

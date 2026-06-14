@@ -6436,11 +6436,11 @@ $root.types = (function() {
          * @interface ILeaderboardEntry
          * @property {Uint8Array|null} [gameId] LeaderboardEntry gameId
          * @property {Uint8Array|null} [playerAddress] LeaderboardEntry playerAddress
-         * @property {string|null} [username] LeaderboardEntry username
          * @property {number|Long|null} [score] LeaderboardEntry score
          * @property {number|Long|null} [maxTile] LeaderboardEntry maxTile
          * @property {number|Long|null} [moveCount] LeaderboardEntry moveCount
          * @property {number|Long|null} [endedAtUnix] LeaderboardEntry endedAtUnix
+         * @property {string|null} [username] LeaderboardEntry username
          */
 
         /**
@@ -6475,14 +6475,6 @@ $root.types = (function() {
         LeaderboardEntry.prototype.playerAddress = $util.newBuffer([]);
 
         /**
-         * LeaderboardEntry username.
-         * @member {string} username
-         * @memberof types.LeaderboardEntry
-         * @instance
-         */
-        LeaderboardEntry.prototype.username = "";
-
-        /**
          * LeaderboardEntry score.
          * @member {number|Long} score
          * @memberof types.LeaderboardEntry
@@ -6515,6 +6507,14 @@ $root.types = (function() {
         LeaderboardEntry.prototype.endedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
 
         /**
+         * LeaderboardEntry username.
+         * @member {string} username
+         * @memberof types.LeaderboardEntry
+         * @instance
+         */
+        LeaderboardEntry.prototype.username = "";
+
+        /**
          * Creates a new LeaderboardEntry instance using the specified properties.
          * @function create
          * @memberof types.LeaderboardEntry
@@ -6542,16 +6542,16 @@ $root.types = (function() {
                 writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.gameId);
             if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
                 writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.playerAddress);
-            if (message.username != null && Object.hasOwnProperty.call(message, "username"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.username);
             if (message.score != null && Object.hasOwnProperty.call(message, "score"))
-                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.score);
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.score);
             if (message.maxTile != null && Object.hasOwnProperty.call(message, "maxTile"))
-                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.maxTile);
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.maxTile);
             if (message.moveCount != null && Object.hasOwnProperty.call(message, "moveCount"))
-                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.moveCount);
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.moveCount);
             if (message.endedAtUnix != null && Object.hasOwnProperty.call(message, "endedAtUnix"))
-                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.endedAtUnix);
+                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.endedAtUnix);
+            if (message.username != null && Object.hasOwnProperty.call(message, "username"))
+                writer.uint32(/* id 7, wireType 2 =*/58).string(message.username);
             return writer;
         };
 
@@ -6597,23 +6597,23 @@ $root.types = (function() {
                         break;
                     }
                 case 3: {
-                        message.username = reader.string();
-                        break;
-                    }
-                case 4: {
                         message.score = reader.uint64();
                         break;
                     }
-                case 5: {
+                case 4: {
                         message.maxTile = reader.uint64();
                         break;
                     }
-                case 6: {
+                case 5: {
                         message.moveCount = reader.uint64();
                         break;
                     }
-                case 7: {
+                case 6: {
                         message.endedAtUnix = reader.uint64();
+                        break;
+                    }
+                case 7: {
+                        message.username = reader.string();
                         break;
                     }
                 default:
@@ -6657,9 +6657,6 @@ $root.types = (function() {
             if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
                 if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
                     return "playerAddress: buffer expected";
-            if (message.username != null && message.hasOwnProperty("username"))
-                if (!$util.isString(message.username))
-                    return "username: string expected";
             if (message.score != null && message.hasOwnProperty("score"))
                 if (!$util.isInteger(message.score) && !(message.score && $util.isInteger(message.score.low) && $util.isInteger(message.score.high)))
                     return "score: integer|Long expected";
@@ -6672,6 +6669,9 @@ $root.types = (function() {
             if (message.endedAtUnix != null && message.hasOwnProperty("endedAtUnix"))
                 if (!$util.isInteger(message.endedAtUnix) && !(message.endedAtUnix && $util.isInteger(message.endedAtUnix.low) && $util.isInteger(message.endedAtUnix.high)))
                     return "endedAtUnix: integer|Long expected";
+            if (message.username != null && message.hasOwnProperty("username"))
+                if (!$util.isString(message.username))
+                    return "username: string expected";
             return null;
         };
 
@@ -6697,8 +6697,6 @@ $root.types = (function() {
                     $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
                 else if (object.playerAddress.length >= 0)
                     message.playerAddress = object.playerAddress;
-            if (object.username != null)
-                message.username = String(object.username);
             if (object.score != null)
                 if ($util.Long)
                     (message.score = $util.Long.fromValue(object.score)).unsigned = true;
@@ -6735,6 +6733,8 @@ $root.types = (function() {
                     message.endedAtUnix = object.endedAtUnix;
                 else if (typeof object.endedAtUnix === "object")
                     message.endedAtUnix = new $util.LongBits(object.endedAtUnix.low >>> 0, object.endedAtUnix.high >>> 0).toNumber(true);
+            if (object.username != null)
+                message.username = String(object.username);
             return message;
         };
 
@@ -6766,7 +6766,6 @@ $root.types = (function() {
                     if (options.bytes !== Array)
                         object.playerAddress = $util.newBuffer(object.playerAddress);
                 }
-                object.username = "";
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
                     object.score = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
@@ -6787,13 +6786,12 @@ $root.types = (function() {
                     object.endedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                 } else
                     object.endedAtUnix = options.longs === String ? "0" : 0;
+                object.username = "";
             }
             if (message.gameId != null && message.hasOwnProperty("gameId"))
                 object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
             if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
                 object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
-            if (message.username != null && message.hasOwnProperty("username"))
-                object.username = message.username;
             if (message.score != null && message.hasOwnProperty("score"))
                 if (typeof message.score === "number")
                     object.score = options.longs === String ? String(message.score) : message.score;
@@ -6814,6 +6812,8 @@ $root.types = (function() {
                     object.endedAtUnix = options.longs === String ? String(message.endedAtUnix) : message.endedAtUnix;
                 else
                     object.endedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.endedAtUnix) : options.longs === Number ? new $util.LongBits(message.endedAtUnix.low >>> 0, message.endedAtUnix.high >>> 0).toNumber(true) : message.endedAtUnix;
+            if (message.username != null && message.hasOwnProperty("username"))
+                object.username = message.username;
             return object;
         };
 
@@ -9064,6 +9064,387 @@ $root.types = (function() {
         return UsernameRegistration;
     })();
 
+    types.PlayerIdentity = (function() {
+
+        /**
+         * Properties of a PlayerIdentity.
+         * @memberof types
+         * @interface IPlayerIdentity
+         * @property {Uint8Array|null} [playerAddress] PlayerIdentity playerAddress
+         * @property {string|null} [username] PlayerIdentity username
+         * @property {string|null} [avatarUrl] PlayerIdentity avatarUrl
+         * @property {string|null} [title] PlayerIdentity title
+         * @property {string|null} [bio] PlayerIdentity bio
+         * @property {number|Long|null} [registeredAtUnix] PlayerIdentity registeredAtUnix
+         * @property {number|Long|null} [lastUpdatedUnix] PlayerIdentity lastUpdatedUnix
+         */
+
+        /**
+         * Constructs a new PlayerIdentity.
+         * @memberof types
+         * @classdesc Represents a PlayerIdentity.
+         * @implements IPlayerIdentity
+         * @constructor
+         * @param {types.IPlayerIdentity=} [properties] Properties to set
+         */
+        function PlayerIdentity(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * PlayerIdentity playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.PlayerIdentity
+         * @instance
+         */
+        PlayerIdentity.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * PlayerIdentity username.
+         * @member {string} username
+         * @memberof types.PlayerIdentity
+         * @instance
+         */
+        PlayerIdentity.prototype.username = "";
+
+        /**
+         * PlayerIdentity avatarUrl.
+         * @member {string} avatarUrl
+         * @memberof types.PlayerIdentity
+         * @instance
+         */
+        PlayerIdentity.prototype.avatarUrl = "";
+
+        /**
+         * PlayerIdentity title.
+         * @member {string} title
+         * @memberof types.PlayerIdentity
+         * @instance
+         */
+        PlayerIdentity.prototype.title = "";
+
+        /**
+         * PlayerIdentity bio.
+         * @member {string} bio
+         * @memberof types.PlayerIdentity
+         * @instance
+         */
+        PlayerIdentity.prototype.bio = "";
+
+        /**
+         * PlayerIdentity registeredAtUnix.
+         * @member {number|Long} registeredAtUnix
+         * @memberof types.PlayerIdentity
+         * @instance
+         */
+        PlayerIdentity.prototype.registeredAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerIdentity lastUpdatedUnix.
+         * @member {number|Long} lastUpdatedUnix
+         * @memberof types.PlayerIdentity
+         * @instance
+         */
+        PlayerIdentity.prototype.lastUpdatedUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new PlayerIdentity instance using the specified properties.
+         * @function create
+         * @memberof types.PlayerIdentity
+         * @static
+         * @param {types.IPlayerIdentity=} [properties] Properties to set
+         * @returns {types.PlayerIdentity} PlayerIdentity instance
+         */
+        PlayerIdentity.create = function create(properties) {
+            return new PlayerIdentity(properties);
+        };
+
+        /**
+         * Encodes the specified PlayerIdentity message. Does not implicitly {@link types.PlayerIdentity.verify|verify} messages.
+         * @function encode
+         * @memberof types.PlayerIdentity
+         * @static
+         * @param {types.IPlayerIdentity} message PlayerIdentity message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PlayerIdentity.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.username != null && Object.hasOwnProperty.call(message, "username"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.username);
+            if (message.avatarUrl != null && Object.hasOwnProperty.call(message, "avatarUrl"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.avatarUrl);
+            if (message.title != null && Object.hasOwnProperty.call(message, "title"))
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.title);
+            if (message.bio != null && Object.hasOwnProperty.call(message, "bio"))
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.bio);
+            if (message.registeredAtUnix != null && Object.hasOwnProperty.call(message, "registeredAtUnix"))
+                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.registeredAtUnix);
+            if (message.lastUpdatedUnix != null && Object.hasOwnProperty.call(message, "lastUpdatedUnix"))
+                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.lastUpdatedUnix);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified PlayerIdentity message, length delimited. Does not implicitly {@link types.PlayerIdentity.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.PlayerIdentity
+         * @static
+         * @param {types.IPlayerIdentity} message PlayerIdentity message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PlayerIdentity.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a PlayerIdentity message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.PlayerIdentity
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.PlayerIdentity} PlayerIdentity
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PlayerIdentity.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.PlayerIdentity();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.username = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.avatarUrl = reader.string();
+                        break;
+                    }
+                case 4: {
+                        message.title = reader.string();
+                        break;
+                    }
+                case 5: {
+                        message.bio = reader.string();
+                        break;
+                    }
+                case 6: {
+                        message.registeredAtUnix = reader.uint64();
+                        break;
+                    }
+                case 7: {
+                        message.lastUpdatedUnix = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a PlayerIdentity message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.PlayerIdentity
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.PlayerIdentity} PlayerIdentity
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PlayerIdentity.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a PlayerIdentity message.
+         * @function verify
+         * @memberof types.PlayerIdentity
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PlayerIdentity.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.username != null && message.hasOwnProperty("username"))
+                if (!$util.isString(message.username))
+                    return "username: string expected";
+            if (message.avatarUrl != null && message.hasOwnProperty("avatarUrl"))
+                if (!$util.isString(message.avatarUrl))
+                    return "avatarUrl: string expected";
+            if (message.title != null && message.hasOwnProperty("title"))
+                if (!$util.isString(message.title))
+                    return "title: string expected";
+            if (message.bio != null && message.hasOwnProperty("bio"))
+                if (!$util.isString(message.bio))
+                    return "bio: string expected";
+            if (message.registeredAtUnix != null && message.hasOwnProperty("registeredAtUnix"))
+                if (!$util.isInteger(message.registeredAtUnix) && !(message.registeredAtUnix && $util.isInteger(message.registeredAtUnix.low) && $util.isInteger(message.registeredAtUnix.high)))
+                    return "registeredAtUnix: integer|Long expected";
+            if (message.lastUpdatedUnix != null && message.hasOwnProperty("lastUpdatedUnix"))
+                if (!$util.isInteger(message.lastUpdatedUnix) && !(message.lastUpdatedUnix && $util.isInteger(message.lastUpdatedUnix.low) && $util.isInteger(message.lastUpdatedUnix.high)))
+                    return "lastUpdatedUnix: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a PlayerIdentity message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.PlayerIdentity
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.PlayerIdentity} PlayerIdentity
+         */
+        PlayerIdentity.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.PlayerIdentity)
+                return object;
+            var message = new $root.types.PlayerIdentity();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.username != null)
+                message.username = String(object.username);
+            if (object.avatarUrl != null)
+                message.avatarUrl = String(object.avatarUrl);
+            if (object.title != null)
+                message.title = String(object.title);
+            if (object.bio != null)
+                message.bio = String(object.bio);
+            if (object.registeredAtUnix != null)
+                if ($util.Long)
+                    (message.registeredAtUnix = $util.Long.fromValue(object.registeredAtUnix)).unsigned = true;
+                else if (typeof object.registeredAtUnix === "string")
+                    message.registeredAtUnix = parseInt(object.registeredAtUnix, 10);
+                else if (typeof object.registeredAtUnix === "number")
+                    message.registeredAtUnix = object.registeredAtUnix;
+                else if (typeof object.registeredAtUnix === "object")
+                    message.registeredAtUnix = new $util.LongBits(object.registeredAtUnix.low >>> 0, object.registeredAtUnix.high >>> 0).toNumber(true);
+            if (object.lastUpdatedUnix != null)
+                if ($util.Long)
+                    (message.lastUpdatedUnix = $util.Long.fromValue(object.lastUpdatedUnix)).unsigned = true;
+                else if (typeof object.lastUpdatedUnix === "string")
+                    message.lastUpdatedUnix = parseInt(object.lastUpdatedUnix, 10);
+                else if (typeof object.lastUpdatedUnix === "number")
+                    message.lastUpdatedUnix = object.lastUpdatedUnix;
+                else if (typeof object.lastUpdatedUnix === "object")
+                    message.lastUpdatedUnix = new $util.LongBits(object.lastUpdatedUnix.low >>> 0, object.lastUpdatedUnix.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a PlayerIdentity message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.PlayerIdentity
+         * @static
+         * @param {types.PlayerIdentity} message PlayerIdentity
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PlayerIdentity.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                object.username = "";
+                object.avatarUrl = "";
+                object.title = "";
+                object.bio = "";
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.registeredAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.registeredAtUnix = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.lastUpdatedUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.lastUpdatedUnix = options.longs === String ? "0" : 0;
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.username != null && message.hasOwnProperty("username"))
+                object.username = message.username;
+            if (message.avatarUrl != null && message.hasOwnProperty("avatarUrl"))
+                object.avatarUrl = message.avatarUrl;
+            if (message.title != null && message.hasOwnProperty("title"))
+                object.title = message.title;
+            if (message.bio != null && message.hasOwnProperty("bio"))
+                object.bio = message.bio;
+            if (message.registeredAtUnix != null && message.hasOwnProperty("registeredAtUnix"))
+                if (typeof message.registeredAtUnix === "number")
+                    object.registeredAtUnix = options.longs === String ? String(message.registeredAtUnix) : message.registeredAtUnix;
+                else
+                    object.registeredAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.registeredAtUnix) : options.longs === Number ? new $util.LongBits(message.registeredAtUnix.low >>> 0, message.registeredAtUnix.high >>> 0).toNumber(true) : message.registeredAtUnix;
+            if (message.lastUpdatedUnix != null && message.hasOwnProperty("lastUpdatedUnix"))
+                if (typeof message.lastUpdatedUnix === "number")
+                    object.lastUpdatedUnix = options.longs === String ? String(message.lastUpdatedUnix) : message.lastUpdatedUnix;
+                else
+                    object.lastUpdatedUnix = options.longs === String ? $util.Long.prototype.toString.call(message.lastUpdatedUnix) : options.longs === Number ? new $util.LongBits(message.lastUpdatedUnix.low >>> 0, message.lastUpdatedUnix.high >>> 0).toNumber(true) : message.lastUpdatedUnix;
+            return object;
+        };
+
+        /**
+         * Converts this PlayerIdentity to JSON.
+         * @function toJSON
+         * @memberof types.PlayerIdentity
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PlayerIdentity.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for PlayerIdentity
+         * @function getTypeUrl
+         * @memberof types.PlayerIdentity
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        PlayerIdentity.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.PlayerIdentity";
+        };
+
+        return PlayerIdentity;
+    })();
+
     types.PlayerStats = (function() {
 
         /**
@@ -9071,7 +9452,6 @@ $root.types = (function() {
          * @memberof types
          * @interface IPlayerStats
          * @property {Uint8Array|null} [playerAddress] PlayerStats playerAddress
-         * @property {string|null} [username] PlayerStats username
          * @property {number|Long|null} [dailyGamesStarted] PlayerStats dailyGamesStarted
          * @property {number|Long|null} [classicGamesStarted] PlayerStats classicGamesStarted
          * @property {number|Long|null} [gamesCompleted] PlayerStats gamesCompleted
@@ -9110,14 +9490,6 @@ $root.types = (function() {
          * @instance
          */
         PlayerStats.prototype.playerAddress = $util.newBuffer([]);
-
-        /**
-         * PlayerStats username.
-         * @member {string} username
-         * @memberof types.PlayerStats
-         * @instance
-         */
-        PlayerStats.prototype.username = "";
 
         /**
          * PlayerStats dailyGamesStarted.
@@ -9257,36 +9629,34 @@ $root.types = (function() {
                 writer = $Writer.create();
             if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
                 writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
-            if (message.username != null && Object.hasOwnProperty.call(message, "username"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.username);
             if (message.dailyGamesStarted != null && Object.hasOwnProperty.call(message, "dailyGamesStarted"))
-                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.dailyGamesStarted);
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.dailyGamesStarted);
             if (message.classicGamesStarted != null && Object.hasOwnProperty.call(message, "classicGamesStarted"))
-                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.classicGamesStarted);
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.classicGamesStarted);
             if (message.gamesCompleted != null && Object.hasOwnProperty.call(message, "gamesCompleted"))
-                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.gamesCompleted);
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.gamesCompleted);
             if (message.wins != null && Object.hasOwnProperty.call(message, "wins"))
-                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.wins);
+                writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.wins);
             if (message.losses != null && Object.hasOwnProperty.call(message, "losses"))
-                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.losses);
+                writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.losses);
             if (message.bestDailyScore != null && Object.hasOwnProperty.call(message, "bestDailyScore"))
-                writer.uint32(/* id 8, wireType 0 =*/64).uint64(message.bestDailyScore);
+                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.bestDailyScore);
             if (message.bestClassicScore != null && Object.hasOwnProperty.call(message, "bestClassicScore"))
-                writer.uint32(/* id 9, wireType 0 =*/72).uint64(message.bestClassicScore);
+                writer.uint32(/* id 8, wireType 0 =*/64).uint64(message.bestClassicScore);
             if (message.bestTile != null && Object.hasOwnProperty.call(message, "bestTile"))
-                writer.uint32(/* id 10, wireType 0 =*/80).uint64(message.bestTile);
+                writer.uint32(/* id 9, wireType 0 =*/72).uint64(message.bestTile);
             if (message.totalScore != null && Object.hasOwnProperty.call(message, "totalScore"))
-                writer.uint32(/* id 11, wireType 0 =*/88).uint64(message.totalScore);
+                writer.uint32(/* id 10, wireType 0 =*/80).uint64(message.totalScore);
             if (message.classicPointsBalance != null && Object.hasOwnProperty.call(message, "classicPointsBalance"))
-                writer.uint32(/* id 12, wireType 0 =*/96).uint64(message.classicPointsBalance);
+                writer.uint32(/* id 11, wireType 0 =*/88).uint64(message.classicPointsBalance);
             if (message.classicPointsEarned != null && Object.hasOwnProperty.call(message, "classicPointsEarned"))
-                writer.uint32(/* id 13, wireType 0 =*/104).uint64(message.classicPointsEarned);
+                writer.uint32(/* id 12, wireType 0 =*/96).uint64(message.classicPointsEarned);
             if (message.loginStreak != null && Object.hasOwnProperty.call(message, "loginStreak"))
-                writer.uint32(/* id 14, wireType 0 =*/112).uint64(message.loginStreak);
+                writer.uint32(/* id 13, wireType 0 =*/104).uint64(message.loginStreak);
             if (message.lastLoginClaimUtcDate != null && Object.hasOwnProperty.call(message, "lastLoginClaimUtcDate"))
-                writer.uint32(/* id 15, wireType 2 =*/122).string(message.lastLoginClaimUtcDate);
+                writer.uint32(/* id 14, wireType 2 =*/114).string(message.lastLoginClaimUtcDate);
             if (message.classicPointsBonusUtcDate != null && Object.hasOwnProperty.call(message, "classicPointsBonusUtcDate"))
-                writer.uint32(/* id 16, wireType 2 =*/130).string(message.classicPointsBonusUtcDate);
+                writer.uint32(/* id 15, wireType 2 =*/122).string(message.classicPointsBonusUtcDate);
             return writer;
         };
 
@@ -9328,62 +9698,58 @@ $root.types = (function() {
                         break;
                     }
                 case 2: {
-                        message.username = reader.string();
-                        break;
-                    }
-                case 3: {
                         message.dailyGamesStarted = reader.uint64();
                         break;
                     }
-                case 4: {
+                case 3: {
                         message.classicGamesStarted = reader.uint64();
                         break;
                     }
-                case 5: {
+                case 4: {
                         message.gamesCompleted = reader.uint64();
                         break;
                     }
-                case 6: {
+                case 5: {
                         message.wins = reader.uint64();
                         break;
                     }
-                case 7: {
+                case 6: {
                         message.losses = reader.uint64();
                         break;
                     }
-                case 8: {
+                case 7: {
                         message.bestDailyScore = reader.uint64();
                         break;
                     }
-                case 9: {
+                case 8: {
                         message.bestClassicScore = reader.uint64();
                         break;
                     }
-                case 10: {
+                case 9: {
                         message.bestTile = reader.uint64();
                         break;
                     }
-                case 11: {
+                case 10: {
                         message.totalScore = reader.uint64();
                         break;
                     }
-                case 12: {
+                case 11: {
                         message.classicPointsBalance = reader.uint64();
                         break;
                     }
-                case 13: {
+                case 12: {
                         message.classicPointsEarned = reader.uint64();
                         break;
                     }
-                case 14: {
+                case 13: {
                         message.loginStreak = reader.uint64();
                         break;
                     }
-                case 15: {
+                case 14: {
                         message.lastLoginClaimUtcDate = reader.string();
                         break;
                     }
-                case 16: {
+                case 15: {
                         message.classicPointsBonusUtcDate = reader.string();
                         break;
                     }
@@ -9425,9 +9791,6 @@ $root.types = (function() {
             if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
                 if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
                     return "playerAddress: buffer expected";
-            if (message.username != null && message.hasOwnProperty("username"))
-                if (!$util.isString(message.username))
-                    return "username: string expected";
             if (message.dailyGamesStarted != null && message.hasOwnProperty("dailyGamesStarted"))
                 if (!$util.isInteger(message.dailyGamesStarted) && !(message.dailyGamesStarted && $util.isInteger(message.dailyGamesStarted.low) && $util.isInteger(message.dailyGamesStarted.high)))
                     return "dailyGamesStarted: integer|Long expected";
@@ -9490,8 +9853,6 @@ $root.types = (function() {
                     $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
                 else if (object.playerAddress.length >= 0)
                     message.playerAddress = object.playerAddress;
-            if (object.username != null)
-                message.username = String(object.username);
             if (object.dailyGamesStarted != null)
                 if ($util.Long)
                     (message.dailyGamesStarted = $util.Long.fromValue(object.dailyGamesStarted)).unsigned = true;
@@ -9628,7 +9989,6 @@ $root.types = (function() {
                     if (options.bytes !== Array)
                         object.playerAddress = $util.newBuffer(object.playerAddress);
                 }
-                object.username = "";
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
                     object.dailyGamesStarted = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
@@ -9694,8 +10054,6 @@ $root.types = (function() {
             }
             if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
                 object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
-            if (message.username != null && message.hasOwnProperty("username"))
-                object.username = message.username;
             if (message.dailyGamesStarted != null && message.hasOwnProperty("dailyGamesStarted"))
                 if (typeof message.dailyGamesStarted === "number")
                     object.dailyGamesStarted = options.longs === String ? String(message.dailyGamesStarted) : message.dailyGamesStarted;

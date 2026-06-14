@@ -15,6 +15,10 @@ import {
   submitSession as submitMockSession,
   claimDailyReward as claimMockDailyReward,
   claimDailyLoginReward as claimMockDailyLoginReward,
+  getUsernameByAddress as getMockUsernameByAddress,
+  getAddressByUsername as getMockAddressByUsername,
+  setUsername as setMockUsername,
+  validateUsername as validateMockUsername,
   type ChainConfig,
   type ClaimableRewardsSummary,
   type DailyPrizePool,
@@ -24,6 +28,8 @@ import {
   type RedeemPreview,
   type RedemptionHistory,
   type SessionStart,
+  type UsernameResponse,
+  type AddressByUsernameResponse,
 } from './mockChain2048'
 import { createRpcGame2048Client } from './rpcChain2048'
 
@@ -99,6 +105,19 @@ export interface RedeemClassicPointsResult {
   submitted: boolean
 }
 
+export interface SetUsernameArgs {
+  address: string
+  password?: string
+  username: string
+}
+
+export interface SetUsernameResult {
+  txHash?: string
+  txStage?: 'submitted' | 'pending' | 'indexed'
+  txDetail?: string
+  submitted: boolean
+}
+
 export interface Game2048Client {
   status: Game2048ClientStatus
   getConfig(): Promise<ChainConfig>
@@ -109,6 +128,9 @@ export interface Game2048Client {
   getRedeemPreview(address: string, burnPoints: number): Promise<RedeemPreview>
   getRedemptions(address: string): Promise<RedemptionHistory>
   getRecentRuns(address?: string): Promise<RecentRun[]>
+  getUsernameByAddress(address: string): Promise<UsernameResponse>
+  getAddressByUsername(username: string): Promise<AddressByUsernameResponse>
+  setUsername(args: SetUsernameArgs): Promise<SetUsernameResult>
   addFunds(address: string, amount?: number): Promise<FaucetResult>
   startSession(address: string, mode: GameMode, password?: string): Promise<SessionStart>
   submitSession(args: SubmitSessionArgs): Promise<SubmitSessionResult>
@@ -149,6 +171,12 @@ function createMockGame2048Client(): Game2048Client {
     async getRecentRuns(address?: string) {
       return getMockRecentRuns(address)
     },
+    async getUsernameByAddress(address: string) {
+      return getMockUsernameByAddress(address)
+    },
+    async getAddressByUsername(username: string) {
+      return getMockAddressByUsername(username)
+    },
     async addFunds(address: string, amount?: number) {
       return { player: addMockFunds(address, amount) }
     },
@@ -168,6 +196,14 @@ function createMockGame2048Client(): Game2048Client {
     async redeemClassicPoints(args: RedeemClassicPointsArgs) {
       const result = redeemMockClassicPoints(args.address, args.burnPoints)
       return { submitted: result.submitted, payoutAmount: result.payoutAmount }
+    },
+    async setUsername(args: SetUsernameArgs) {
+      const validation = validateMockUsername(args.username)
+      if (!validation.valid) {
+        throw new Error(validation.reason)
+      }
+      const result = setMockUsername(args.address, args.username)
+      return { submitted: result.submitted }
     },
     async reset() {
       resetMockChain()

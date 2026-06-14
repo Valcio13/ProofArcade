@@ -20,7 +20,8 @@ export const GAME2048_TYPE_URLS = {
     submitGameResult: 'type.googleapis.com/types.MessageSubmitGameResult',
     claimDailyReward: 'type.googleapis.com/types.MessageClaimDailyReward',
     redeemClassicPoints: 'type.googleapis.com/types.MessageRedeemClassicPoints',
-    claimDailyLoginReward: 'type.googleapis.com/types.MessageClaimDailyLoginReward'
+    claimDailyLoginReward: 'type.googleapis.com/types.MessageClaimDailyLoginReward',
+    setUsername: 'type.googleapis.com/types.MessageSetUsername'
 } as const;
 
 export type Game2048MessageType =
@@ -29,7 +30,8 @@ export type Game2048MessageType =
     | 'MessageSubmitGameResult'
     | 'MessageClaimDailyReward'
     | 'MessageRedeemClassicPoints'
-    | 'MessageClaimDailyLoginReward';
+    | 'MessageClaimDailyLoginReward'
+    | 'MessageSetUsername';
 
 type Game2048StateType =
     | 'GameConfig'
@@ -44,7 +46,9 @@ type Game2048StateType =
     | 'ClassicPointsDailyLedger'
     | 'ClassicPointRedemption'
     | 'DailyLoginClaim'
-    | 'PlayerStats';
+    | 'PlayerStats'
+    | 'UsernameRegistration'
+    | 'PlayerIdentity';
 
 function lookupType(typeName: Game2048MessageType | Game2048StateType): protobuf.Type {
     const type = game2048Root.lookupType(`types.${typeName}`);
@@ -77,6 +81,9 @@ export function decodeGame2048Any(any: any): [any | null, Game2048MessageType | 
         }
         if (typeUrl.includes('MessageClaimDailyLoginReward')) {
             return [lookupType('MessageClaimDailyLoginReward').decode(any.value), 'MessageClaimDailyLoginReward', null];
+        }
+        if (typeUrl.includes('MessageSetUsername')) {
+            return [lookupType('MessageSetUsername').decode(any.value), 'MessageSetUsername', null];
         }
         return [null, null, ErrInvalidMessageCast()];
     } catch (err) {

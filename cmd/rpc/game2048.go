@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/canopy-network/canopy/fsm"
@@ -29,6 +30,7 @@ const (
 	game2048ClaimDailyMessageName    = "claimDailyReward"
 	game2048RedeemClassicMessageName = "redeemClassicPoints"
 	game2048ClaimLoginMessageName    = "claimDailyLoginReward"
+	game2048SetUsernameMessageName   = "setUsername"
 
 	game2048StartDailyTypeURL    = "type.googleapis.com/types.MessageStartDailyGame"
 	game2048StartClassicTypeURL  = "type.googleapis.com/types.MessageStartClassicGame"
@@ -36,6 +38,7 @@ const (
 	game2048ClaimDailyTypeURL    = "type.googleapis.com/types.MessageClaimDailyReward"
 	game2048RedeemClassicTypeURL = "type.googleapis.com/types.MessageRedeemClassicPoints"
 	game2048ClaimLoginTypeURL    = "type.googleapis.com/types.MessageClaimDailyLoginReward"
+	game2048SetUsernameTypeURL   = "type.googleapis.com/types.MessageSetUsername"
 
 	game2048ModeDaily   = 1
 	game2048ModeClassic = 2
@@ -105,6 +108,7 @@ type game2048ConfigResponse struct {
 
 type game2048PlayerResponse struct {
 	Address                   string `json:"address"`
+	Username                  string `json:"username,omitempty"`
 	Balance                   uint64 `json:"balance"`
 	DailyGamesStarted         uint64 `json:"dailyGamesStarted"`
 	ClassicGamesStarted       uint64 `json:"classicGamesStarted"`
@@ -124,22 +128,23 @@ type game2048PlayerResponse struct {
 }
 
 type game2048DailyLoginStatusResponse struct {
-	Address                  string `json:"address"`
-	UTCDate                  string `json:"utcDate"`
-	CanClaim                 bool   `json:"canClaim"`
-	ClaimedToday             bool   `json:"claimedToday"`
-	CurrentStreak            uint64 `json:"currentStreak"`
-	NextStreak               uint64 `json:"nextStreak"`
-	RewardPoints             uint64 `json:"rewardPoints"`
-	BonusBps                 uint64 `json:"bonusBps"`
-	BonusActiveToday         bool   `json:"bonusActiveToday"`
-	LastLoginClaimUTCDate    string `json:"lastLoginClaimUtcDate"`
+	Address                   string `json:"address"`
+	UTCDate                   string `json:"utcDate"`
+	CanClaim                  bool   `json:"canClaim"`
+	ClaimedToday              bool   `json:"claimedToday"`
+	CurrentStreak             uint64 `json:"currentStreak"`
+	NextStreak                uint64 `json:"nextStreak"`
+	RewardPoints              uint64 `json:"rewardPoints"`
+	BonusBps                  uint64 `json:"bonusBps"`
+	BonusActiveToday          bool   `json:"bonusActiveToday"`
+	LastLoginClaimUTCDate     string `json:"lastLoginClaimUtcDate"`
 	ClassicPointsBonusUTCDate string `json:"classicPointsBonusUtcDate"`
 }
 
 type game2048LeaderboardEntryResponse struct {
 	GameID    string `json:"gameId"`
 	Address   string `json:"address"`
+	Username  string `json:"username,omitempty"`
 	Score     uint64 `json:"score"`
 	MaxTile   uint64 `json:"maxTile"`
 	MoveCount uint64 `json:"moveCount"`
@@ -311,6 +316,31 @@ type game2048RedeemClassicPointsResponse struct {
 	BurnPoints   uint64 `json:"burnPoints"`
 	PayoutAmount uint64 `json:"payoutAmount"`
 	Submitted    bool   `json:"submitted"`
+}
+
+type game2048UsernameResponse struct {
+	Address           string `json:"address"`
+	Username          string `json:"username"`
+	RegisteredAtUnix  uint64 `json:"registeredAtUnix"`
+	LastChangedAtUnix uint64 `json:"lastChangedAtUnix"`
+}
+
+type game2048AddressByUsernameResponse struct {
+	Username string `json:"username"`
+	Address  string `json:"address"`
+}
+
+type game2048SetUsernameRequest struct {
+	addressRequest
+	passwordRequest
+	Username string `json:"username"`
+	Submit   bool   `json:"submit"`
+}
+
+type game2048SetUsernameResponse struct {
+	TxHash    string `json:"txHash"`
+	Username  string `json:"username"`
+	Submitted bool   `json:"submitted"`
 }
 
 func (s *Server) Game2048Config(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
@@ -488,6 +518,44 @@ func (s *Server) Game2048GameHistory(w http.ResponseWriter, r *http.Request, _ h
 	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
 		var gameErr lib.ErrorI
 		response, gameErr = loadGame2048GameHistory(state, req.Address)
+		return gameErr
+	})
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	write(w, response, http.StatusOK)
+}
+
+func (s *Server) Game2048Username(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(addressRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	var response game2048UsernameResponse
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		var gameErr lib.ErrorI
+		response, gameErr = loadGame2048Username(state, req.Address)
+		return gameErr
+	})
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	write(w, response, http.StatusOK)
+}
+
+func (s *Server) Game2048AddressByUsername(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(usernameRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	var response game2048AddressByUsernameResponse
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		var gameErr lib.ErrorI
+		response, gameErr = loadGame2048AddressByUsername(state, req.Username)
 		return gameErr
 	})
 	if err != nil {
@@ -712,6 +780,54 @@ func (s *Server) Game2048RedeemClassicPoints(w http.ResponseWriter, r *http.Requ
 		BurnPoints:   req.BurnPoints,
 		PayoutAmount: payoutAmount,
 		Submitted:    req.Submit,
+	}, http.StatusOK)
+}
+
+func (s *Server) Game2048SetUsername(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(game2048SetUsernameRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	keystore, ok := newKeystore(w, s.config.DataDirPath)
+	if !ok {
+		return
+	}
+
+	privateKey, err := keystore.GetKey(req.Address, req.Password)
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+
+	tx, buildErr := s.buildGame2048SetUsernameTx(privateKey, req)
+	if buildErr != nil {
+		write(w, buildErr, http.StatusBadRequest)
+		return
+	}
+
+	txHash, hashErr := tx.GetHash()
+	if hashErr != nil {
+		write(w, hashErr, http.StatusBadRequest)
+		return
+	}
+
+	if req.Submit {
+		txBytes, marshalErr := lib.Marshal(tx)
+		if marshalErr != nil {
+			write(w, marshalErr, http.StatusBadRequest)
+			return
+		}
+		if sendErr := s.controller.SendTxMsgs([][]byte{txBytes}); sendErr != nil {
+			write(w, sendErr, http.StatusBadRequest)
+			return
+		}
+	}
+
+	write(w, game2048SetUsernameResponse{
+		TxHash:    hex.EncodeToString(txHash),
+		Username:  req.Username,
+		Submitted: req.Submit,
 	}, http.StatusOK)
 }
 
@@ -972,6 +1088,30 @@ func (s *Server) buildGame2048ClaimDailyLoginRewardTx(
 
 	tx := &lib.Transaction{
 		MessageType:   game2048ClaimLoginMessageName,
+		Msg:           msg,
+		CreatedHeight: s.controller.ChainHeight(),
+		Time:          uint64(time.Now().UnixMicro()),
+		Fee:           0,
+		NetworkId:     s.config.NetworkID,
+		ChainId:       s.config.ChainId,
+	}
+	return tx, tx.Sign(privateKey)
+}
+
+func (s *Server) buildGame2048SetUsernameTx(
+	privateKey crypto.PrivateKeyI,
+	req *game2048SetUsernameRequest,
+) (lib.TransactionI, lib.ErrorI) {
+	msg, err := game2048AnyMessage("MessageSetUsername", func(message protoreflect.Message) {
+		setBytesField(message, "player_address", req.Address)
+		setStringField(message, "username", req.Username)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tx := &lib.Transaction{
+		MessageType:   game2048SetUsernameMessageName,
 		Msg:           msg,
 		CreatedHeight: s.controller.ChainHeight(),
 		Time:          uint64(time.Now().UnixMicro()),
@@ -1340,14 +1480,14 @@ func loadGame2048Redemptions(state *fsm.StateMachine, address []byte) (game2048R
 		}
 		redeemedAtUnix := uint64Field(message, "redeemed_at_unix", 0)
 		txHash := stringField(message, "tx_hash", "")
-		
+
 		// DEBUG: Log what we're reading from state
 		fmt.Printf("=== BACKEND READ REDEMPTION ===\n")
 		fmt.Printf("redeemed_at=%d\n", redeemedAtUnix)
 		fmt.Printf("tx_hash=%s\n", txHash)
 		fmt.Printf("tx_hash_len=%d\n", len(txHash))
 		fmt.Printf("tx_hash_type=%T\n", txHash)
-		
+
 		// Check field descriptor
 		field := message.Descriptor().Fields().ByName("tx_hash")
 		if field != nil {
@@ -1357,7 +1497,7 @@ func loadGame2048Redemptions(state *fsm.StateMachine, address []byte) (game2048R
 			fmt.Printf("proto_raw_value_type=%T\n", rawValue.Interface())
 		}
 		fmt.Printf("=== END BACKEND READ ===\n")
-		
+
 		response.Redemptions = append(response.Redemptions, game2048RedemptionHistoryEntry{
 			BurnPoints:     uint64Field(message, "burn_points", 0),
 			PayoutAmount:   uint64Field(message, "payout_amount", 0),
@@ -1416,12 +1556,12 @@ func loadGame2048GameHistory(state *fsm.StateMachine, address []byte) (game2048G
 	for dayOffset := 0; dayOffset < 7; dayOffset++ {
 		dayDate := now.AddDate(0, 0, -dayOffset)
 		utcDate := dayDate.Format("2006-01-02")
-		
+
 		dailyIterator, err := state.Iterator(keyForDailyLeaderboardPrefix(utcDate))
 		if err != nil {
 			continue // Skip this day if there's an error
 		}
-		
+
 		for dailyIterator.Valid() {
 			message, decodeErr := decodeGame2048State("LeaderboardEntry", dailyIterator.Value())
 			if decodeErr != nil {
@@ -1459,6 +1599,73 @@ func loadGame2048GameHistory(state *fsm.StateMachine, address []byte) (game2048G
 	return response, nil
 }
 
+func loadGame2048Username(state *fsm.StateMachine, address []byte) (game2048UsernameResponse, lib.ErrorI) {
+	// Try PlayerIdentity first
+	identityBz, err := state.Get(keyForPlayerIdentity(address))
+	if err == nil && len(identityBz) > 0 {
+		message, decodeErr := decodeGame2048State("PlayerIdentity", identityBz)
+		if decodeErr != nil {
+			return game2048UsernameResponse{}, decodeErr
+		}
+
+		return game2048UsernameResponse{
+			Address:           hex.EncodeToString(address),
+			Username:          stringField(message, "username", ""),
+			RegisteredAtUnix:  uint64Field(message, "registered_at_unix", 0),
+			LastChangedAtUnix: uint64Field(message, "last_updated_unix", 0),
+		}, nil
+	}
+
+	// Fallback to old UsernameRegistration for backward compatibility
+	bz, err := state.Get(keyForUsernameByAddress(address))
+	if err != nil {
+		return game2048UsernameResponse{}, err
+	}
+
+	if len(bz) == 0 {
+		// No username set, return empty response
+		return game2048UsernameResponse{
+			Address: hex.EncodeToString(address),
+		}, nil
+	}
+
+	message, decodeErr := decodeGame2048State("UsernameRegistration", bz)
+	if decodeErr != nil {
+		return game2048UsernameResponse{}, decodeErr
+	}
+
+	return game2048UsernameResponse{
+		Address:           hex.EncodeToString(address),
+		Username:          stringField(message, "username", ""),
+		RegisteredAtUnix:  uint64Field(message, "registered_at_unix", 0),
+		LastChangedAtUnix: uint64Field(message, "last_changed_at_unix", 0),
+	}, nil
+}
+
+func loadGame2048AddressByUsername(state *fsm.StateMachine, username string) (game2048AddressByUsernameResponse, lib.ErrorI) {
+	// Normalize username to lowercase for lookup
+	normalizedUsername := strings.ToLower(username)
+
+	bz, err := state.Get(keyForAddressByUsername(normalizedUsername))
+	if err != nil {
+		return game2048AddressByUsernameResponse{}, err
+	}
+
+	if len(bz) == 0 {
+		// Username not found
+		return game2048AddressByUsernameResponse{
+			Username: username,
+			Address:  "",
+		}, nil
+	}
+
+	// The value is the address bytes directly
+	return game2048AddressByUsernameResponse{
+		Username: username,
+		Address:  hex.EncodeToString(bz),
+	}, nil
+}
+
 func loadGame2048Player(state *fsm.StateMachine, address []byte) (game2048PlayerResponse, lib.ErrorI) {
 	account, err := state.GetAccount(crypto.NewAddress(address))
 	if err != nil {
@@ -1493,23 +1700,45 @@ func loadGame2048Player(state *fsm.StateMachine, address []byte) (game2048Player
 		}
 	}
 
+	// Fetch username from PlayerIdentity (with fallback to UsernameRegistration for backward compatibility)
+	username := ""
+	identityKey := keyForPlayerIdentity(address)
+	identityBytes, identityErr := state.Get(identityKey)
+	if identityErr == nil && identityBytes != nil && len(identityBytes) > 0 {
+		identityMsg, identityDecodeErr := decodeGame2048State("PlayerIdentity", identityBytes)
+		if identityDecodeErr == nil {
+			username = stringField(identityMsg, "username", "")
+		}
+	} else {
+		// Fallback to old UsernameRegistration for backward compatibility
+		usernameKey := keyForUsernameByAddress(address)
+		usernameBytes, usernameErr := state.Get(usernameKey)
+		if usernameErr == nil && usernameBytes != nil && len(usernameBytes) > 0 {
+			usernameMsg, usernameDecodeErr := decodeGame2048State("UsernameRegistration", usernameBytes)
+			if usernameDecodeErr == nil {
+				username = stringField(usernameMsg, "username", "")
+			}
+		}
+	}
+
 	return game2048PlayerResponse{
-		Address:                  hex.EncodeToString(address),
-		Balance:                  account.Amount,
-		DailyGamesStarted:        uint64Field(message, "daily_games_started", 0),
-		ClassicGamesStarted:      uint64Field(message, "classic_games_started", 0),
-		GamesCompleted:           uint64Field(message, "games_completed", 0),
-		Wins:                     uint64Field(message, "wins", 0),
-		Losses:                   uint64Field(message, "losses", 0),
-		BestDailyScore:           uint64Field(message, "best_daily_score", 0),
-		BestClassicScore:         uint64Field(message, "best_classic_score", 0),
-		BestTile:                 uint64Field(message, "best_tile", 0),
-		TotalScore:               uint64Field(message, "total_score", 0),
-		ClassicPointsBalance:     uint64Field(message, "classic_points_balance", 0),
-		ClassicPointsEarned:      uint64Field(message, "classic_points_earned", 0),
-		ClassicPointsEarnedToday: earnedToday,
-		LoginStreak:              uint64Field(message, "login_streak", 0),
-		LastLoginClaimUTCDate:    stringField(message, "last_login_claim_utc_date", ""),
+		Address:                   hex.EncodeToString(address),
+		Username:                  username,
+		Balance:                   account.Amount,
+		DailyGamesStarted:         uint64Field(message, "daily_games_started", 0),
+		ClassicGamesStarted:       uint64Field(message, "classic_games_started", 0),
+		GamesCompleted:            uint64Field(message, "games_completed", 0),
+		Wins:                      uint64Field(message, "wins", 0),
+		Losses:                    uint64Field(message, "losses", 0),
+		BestDailyScore:            uint64Field(message, "best_daily_score", 0),
+		BestClassicScore:          uint64Field(message, "best_classic_score", 0),
+		BestTile:                  uint64Field(message, "best_tile", 0),
+		TotalScore:                uint64Field(message, "total_score", 0),
+		ClassicPointsBalance:      uint64Field(message, "classic_points_balance", 0),
+		ClassicPointsEarned:       uint64Field(message, "classic_points_earned", 0),
+		ClassicPointsEarnedToday:  earnedToday,
+		LoginStreak:               uint64Field(message, "login_streak", 0),
+		LastLoginClaimUTCDate:     stringField(message, "last_login_claim_utc_date", ""),
 		ClassicPointsBonusUTCDate: stringField(message, "classic_points_bonus_utc_date", ""),
 	}, nil
 }
@@ -1544,9 +1773,34 @@ func readLeaderboardPrefix(
 		if decodeErr != nil {
 			return nil, decodeErr
 		}
+		
+		playerAddress := bytesField(message, "player_address")
+		
+		// Look up current username for this address from PlayerIdentity (with fallback to UsernameRegistration)
+		username := ""
+		identityKey := keyForPlayerIdentity(playerAddress)
+		identityBytes, identityErr := state.Get(identityKey)
+		if identityErr == nil && identityBytes != nil && len(identityBytes) > 0 {
+			identityMsg, identityDecodeErr := decodeGame2048State("PlayerIdentity", identityBytes)
+			if identityDecodeErr == nil {
+				username = stringField(identityMsg, "username", "")
+			}
+		} else {
+			// Fallback to old UsernameRegistration for backward compatibility
+			usernameKey := keyForUsernameByAddress(playerAddress)
+			usernameBytes, usernameErr := state.Get(usernameKey)
+			if usernameErr == nil && usernameBytes != nil && len(usernameBytes) > 0 {
+				usernameMsg, usernameDecodeErr := decodeGame2048State("UsernameRegistration", usernameBytes)
+				if usernameDecodeErr == nil {
+					username = stringField(usernameMsg, "username", "")
+				}
+			}
+		}
+		
 		results = append(results, game2048LeaderboardEntryResponse{
 			GameID:    hex.EncodeToString(bytesField(message, "game_id")),
-			Address:   hex.EncodeToString(bytesField(message, "player_address")),
+			Address:   hex.EncodeToString(playerAddress),
+			Username:  username,
 			Score:     uint64Field(message, "score", 0),
 			MaxTile:   uint64Field(message, "max_tile", 0),
 			MoveCount: uint64Field(message, "move_count", 0),
@@ -1659,6 +1913,18 @@ func keyForGameTreasury() []byte {
 
 func keyForPlayerStats(address []byte) []byte {
 	return lib.JoinLenPrefix(game2048Prefix, []byte("player-stats"), address)
+}
+
+func keyForUsernameByAddress(address []byte) []byte {
+	return lib.JoinLenPrefix(game2048Prefix, []byte("username-addr"), address)
+}
+
+func keyForPlayerIdentity(address []byte) []byte {
+	return lib.JoinLenPrefix(game2048Prefix, []byte("player-identity"), address)
+}
+
+func keyForAddressByUsername(normalizedUsername string) []byte {
+	return lib.JoinLenPrefix(game2048Prefix, []byte("username-lookup"), []byte(normalizedUsername))
 }
 
 func keyForClassicPointsDailyLedger(utcDate string, address []byte) []byte {
@@ -1874,6 +2140,10 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 			messageDescriptor("MessageClaimDailyLoginReward", []*descriptorpb.FieldDescriptorProto{
 				bytesFieldDescriptor("player_address", 1),
 			}),
+			messageDescriptor("MessageSetUsername", []*descriptorpb.FieldDescriptorProto{
+				bytesFieldDescriptor("player_address", 1),
+				stringFieldDescriptor("username", 2),
+			}),
 			messageDescriptor("GameConfig", []*descriptorpb.FieldDescriptorProto{
 				uint64FieldDescriptor("classic_start_fee", 1),
 				uint64FieldDescriptor("daily_start_fee", 2),
@@ -1952,6 +2222,7 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				uint64FieldDescriptor("max_tile", 4),
 				uint64FieldDescriptor("move_count", 5),
 				uint64FieldDescriptor("ended_at_unix", 6),
+				stringFieldDescriptor("username", 7),
 			}),
 			messageDescriptor("DailyRewardAllocation", []*descriptorpb.FieldDescriptorProto{
 				stringFieldDescriptor("utc_date", 1),
@@ -1992,6 +2263,21 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				uint64FieldDescriptor("reward_points", 4),
 				uint64FieldDescriptor("bonus_bps", 5),
 				uint64FieldDescriptor("claimed_at_unix", 6),
+			}),
+			messageDescriptor("UsernameRegistration", []*descriptorpb.FieldDescriptorProto{
+				bytesFieldDescriptor("player_address", 1),
+				stringFieldDescriptor("username", 2),
+				uint64FieldDescriptor("registered_at_unix", 3),
+				uint64FieldDescriptor("last_changed_at_unix", 4),
+			}),
+			messageDescriptor("PlayerIdentity", []*descriptorpb.FieldDescriptorProto{
+				bytesFieldDescriptor("player_address", 1),
+				stringFieldDescriptor("username", 2),
+				stringFieldDescriptor("avatar_url", 3),
+				stringFieldDescriptor("title", 4),
+				stringFieldDescriptor("bio", 5),
+				uint64FieldDescriptor("registered_at_unix", 6),
+				uint64FieldDescriptor("last_updated_unix", 7),
 			}),
 			messageDescriptor("PlayerStats", []*descriptorpb.FieldDescriptorProto{
 				bytesFieldDescriptor("player_address", 1),

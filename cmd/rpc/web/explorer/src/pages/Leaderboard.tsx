@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Trophy } from 'lucide-react'
 import { createGame2048Client } from '../lib/chain2048'
@@ -25,10 +25,12 @@ function LeaderboardPage() {
   const [countdown, setCountdown] = useState(() => formatUtcCountdown())
   const [isLoading, setIsLoading] = useState(true)
 
-  // Set document title
+  // Set document title based on active mode
   useEffect(() => {
-    document.title = `Leaderboard - ProofArcade`
-  }, [])
+    document.title = activeMode === 'daily' 
+      ? 'Daily Leaderboard | ProofArcade'
+      : 'Classic Leaderboard | ProofArcade'
+  }, [activeMode])
 
   useEffect(() => {
     let cancelled = false
@@ -133,9 +135,16 @@ function LeaderboardPage() {
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
-                Classic
+                All-Time
               </button>
             </div>
+            
+            {/* Tab Context Description */}
+            <p className="text-sm text-slate-400 max-w-2xl">
+              {activeMode === 'daily' 
+                ? "Today's Daily Challenge rankings. Resets every UTC day."
+                : "Best Classic scores of all time. Does not reset."}
+            </p>
           </div>
 
           {/* Aside: Get Started (logged out) or Share (logged in) */}
@@ -230,7 +239,7 @@ function LeaderboardPage() {
                 <span className="text-xl font-black text-[#53a6ff]">#{userRank + 1}</span>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'All-Time'}</p>
                 <p className="mt-0.5 text-xl font-bold text-white">
                   {activeLeaderboard[userRank]?.score ?? 0} <span className="text-sm font-normal text-slate-400">points</span>
                 </p>
@@ -243,7 +252,7 @@ function LeaderboardPage() {
         ) : storedWallet ? (
           <div className="flex flex-col items-center gap-3 py-2 sm:flex-row sm:justify-between">
             <div className="text-center sm:text-left">
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'All-Time'}</p>
               <p className="mt-1 text-base font-semibold text-slate-400">Not ranked yet</p>
             </div>
             <a
@@ -255,7 +264,7 @@ function LeaderboardPage() {
           </div>
         ) : (
           <div className="py-2 text-center sm:text-left">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'Classic'}</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'All-Time'}</p>
             <p className="mt-1 text-base font-semibold text-slate-400">Sign in to appear on the board</p>
           </div>
         )}
@@ -267,7 +276,7 @@ function LeaderboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                {activeMode === 'daily' ? 'Daily Leaders' : 'Classic Leaders'}
+                {activeMode === 'daily' ? 'Daily Leaders' : 'All-Time Leaders'}
               </p>
               <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
@@ -277,7 +286,7 @@ function LeaderboardPage() {
             <p className="mt-1 text-xs leading-5 text-slate-400">
               {activeMode === 'daily'
                 ? "Top submitted daily scores for today's board."
-                : 'Highest verified classic runs so far.'}
+                : 'Highest verified classic runs of all time.'}
             </p>
           </div>
           <p className="text-xs text-slate-500">{activeLeaderboard.length} {activeLeaderboard.length === 1 ? 'entry' : 'entries'}</p>
@@ -304,12 +313,12 @@ function LeaderboardPage() {
           <div className="mt-4 rounded-lg border border-dashed border-white/10 bg-black/20 px-4 py-8 text-center">
             <Trophy className="mx-auto h-10 w-10 text-slate-600" />
             <p className="mt-3 text-sm font-semibold text-white">
-              {activeMode === 'daily' ? 'No scores yet today' : 'No classic scores yet'}
+              {activeMode === 'daily' ? 'No scores yet today' : 'No all-time scores yet'}
             </p>
             <p className="mt-1 text-xs text-slate-400">
               {activeMode === 'daily'
                 ? 'Be the first to submit a score for today\'s board!'
-                : 'Start a classic run and set the first record!'}
+                : 'Start a classic run and set the first all-time record!'}
             </p>
             <a
               href="/play"
@@ -333,11 +342,11 @@ function LeaderboardPage() {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">About Classic</p>
-          <h3 className="mt-1 text-base font-bold text-white">Classic Mode</h3>
+          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">About All-Time</p>
+          <h3 className="mt-1 text-base font-bold text-white">All-Time Leaderboard</h3>
           <p className="mt-2 text-xs leading-5 text-slate-400">
             Play unlimited runs with random seeds. Earn spendable points for progression and
-            compete for the all-time high scores. Classic leaderboard tracks lifetime best runs.
+            compete for the all-time high scores. All-Time leaderboard tracks lifetime best runs and does not reset.
           </p>
         </div>
       </section>
@@ -384,9 +393,12 @@ function LeaderboardRow({
         {/* Player Info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="truncate text-sm font-semibold text-white">
-              {shortAddress(entry.address)}
-            </p>
+            <Link
+              to={`/player/${entry.address}`}
+              className="truncate text-sm font-semibold text-white transition hover:text-[#53a6ff] hover:underline"
+            >
+              {entry.username || shortAddress(entry.address)}
+            </Link>
             {isCurrentUser ? (
               <span className="shrink-0 rounded-full bg-[#53a6ff] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
                 You
@@ -395,6 +407,7 @@ function LeaderboardRow({
           </div>
           <p className="mt-0.5 text-[11px] text-slate-500">
             {entry.moveCount} moves · Tile {entry.maxTile}
+            {entry.username ? ` · ${shortAddress(entry.address)}` : ''}
           </p>
         </div>
 
