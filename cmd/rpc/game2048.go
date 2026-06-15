@@ -1543,7 +1543,7 @@ func loadGame2048GameHistory(state *fsm.StateMachine, address []byte) (game2048G
 				Score:      uint64Field(message, "score", 0),
 				MaxTile:    uint64Field(message, "max_tile", 0),
 				MoveCount:  uint64Field(message, "move_count", 0),
-				StopReason: "player_stopped",
+				StopReason: stopReasonToString(enumField(message, "stop_reason", 1)),
 				UTCDate:    "",
 				EndedAt:    unixMicrosToISO(uint64Field(message, "ended_at_unix", 0)),
 			})
@@ -1576,7 +1576,7 @@ func loadGame2048GameHistory(state *fsm.StateMachine, address []byte) (game2048G
 					Score:      uint64Field(message, "score", 0),
 					MaxTile:    uint64Field(message, "max_tile", 0),
 					MoveCount:  uint64Field(message, "move_count", 0),
-					StopReason: "player_stopped",
+					StopReason: stopReasonToString(enumField(message, "stop_reason", 1)),
 					UTCDate:    utcDate,
 					EndedAt:    unixMicrosToISO(uint64Field(message, "ended_at_unix", 0)),
 				})
@@ -2223,6 +2223,7 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				uint64FieldDescriptor("move_count", 5),
 				uint64FieldDescriptor("ended_at_unix", 6),
 				stringFieldDescriptor("username", 7),
+				enumFieldDescriptor("stop_reason", 8, ".types.StopReason", false),
 			}),
 			messageDescriptor("DailyRewardAllocation", []*descriptorpb.FieldDescriptorProto{
 				stringFieldDescriptor("utc_date", 1),
@@ -2455,4 +2456,27 @@ func uint64ListField(message protoreflect.Message, fieldName string, fallback []
 		return fallback
 	}
 	return values
+}
+
+// enumField reads an enum field from a protobuf message and returns its numeric value
+func enumField(message protoreflect.Message, fieldName string, fallback int32) int32 {
+	field := message.Descriptor().Fields().ByName(protoreflect.Name(fieldName))
+	if field == nil || !message.Has(field) {
+		return fallback
+	}
+	return int32(message.Get(field).Enum())
+}
+
+// stopReasonToString converts a StopReason enum value to its string representation
+func stopReasonToString(stopReason int32) string {
+	switch stopReason {
+	case 1:
+		return "player_stopped"
+	case 2:
+		return "no_moves"
+	case 3:
+		return "max_moves"
+	default:
+		return "player_stopped" // Default to player_stopped for backward compatibility
+	}
 }

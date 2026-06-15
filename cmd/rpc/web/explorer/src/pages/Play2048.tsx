@@ -17,6 +17,17 @@ import {
   type StopReason,
 } from '../lib/game2048'
 import {
+  clearGameSession,
+  createGameSession,
+  loadGameSession,
+  markCompleted,
+  markSubmitted,
+  saveGameSession,
+  updateGameState,
+  type GameSessionRecord,
+} from '../lib/gameSessionRecovery'
+import { SessionRecoveryPrompt } from '../components/SessionRecoveryPrompt'
+import {
   type ChainConfig,
   type LeaderboardEntry,
   type PlayerStats,
@@ -125,6 +136,8 @@ function Play2048Page() {
   const [lastFaucetTx, setLastFaucetTx] = useState<TxStatusView | null>(null)
   const [lastActionError, setLastActionError] = useState<string | null>(null)
   const [classicPointsEarnedToday, setClassicPointsEarnedToday] = useState(0)
+  const [pendingRecoverySession, setPendingRecoverySession] = useState<GameSessionRecord | null>(null)
+  const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false)
   const sessionRef = useRef<LocalSession | null>(null)
   const movesRef = useRef<MoveDirection[]>([])
   const boardRef = useRef<number[]>(board)
@@ -184,20 +197,19 @@ function Play2048Page() {
         bootstrapAddress = `player-${createSeedFromText('canopy-player').slice(0, 6)}`
         setAddress(bootstrapAddress)
       }
-      const rawRestoredSession = loadStoredSession(bootstrapAddress)
-      const rawRestoredRunState = loadStoredRunState(bootstrapAddress)
-      const restoredMode = rawRestoredRunState?.selectedMode ?? rawRestoredRunState?.selectedBoard
-      const restoredTxHash = (rawRestoredSession as (LocalSession & { txHash?: string }) | null)?.txHash
-      const shouldIgnoreLocalRestore =
-        nextClient.status.mode === 'rpc' &&
-        rpcWalletCount > 0 &&
-        (
-          rawRestoredSession?.mode === 'training' ||
-          (rawRestoredSession != null && !restoredTxHash) ||
-          (rawRestoredSession == null && restoredMode != null)
-        )
-      const restoredSession = shouldIgnoreLocalRestore ? null : rawRestoredSession
-      const restoredRunState = shouldIgnoreLocalRestore ? null : rawRestoredRunState
+
+      // NEW RECOVERY SYSTEM: Check for existing session FIRST
+      const existingSession = loadGameSession(bootstrapAddress)
+      
+      // If we have a valid existing session, show recovery prompt
+      if (existingSession && existingSession.state === 'in-progress') {
+        console.log('[Play2048] Found existing session, showing recovery prompt')
+        setPendingRecoverySession(existingSession)
+        setShowRecoveryPrompt(true)
+        // Set mode to match recovered session
+        setSelectedMode(existingSession.session.mode)
+        setLeaderboardMode(existingSession.session.mode === 'training' ? 'daily' : existingSession.session.mode)
+      }
 
       const [nextPlayer, nextLeaderboards, nextDailyPool] = await Promise.all([
         nextClient.getPlayer(bootstrapAddress),
@@ -211,40 +223,60 @@ function Play2048Page() {
         setPlayer(nextPlayer)
         setLeaderboards(nextLeaderboards)
         setDailyPrizePool(nextDailyPool?.rewardPool ?? 0)
-        setSession(restoredSession)
-        if (restoredRunState) {
-          const restoredMode = restoredRunState.selectedMode ?? restoredRunState.selectedBoard ?? 'training'
-          const nextSelectedMode: PlayMode =
+        
+        // Only restore session if no recovery prompt is shown
+        if (!existingSession || existingSession.state !== 'in-progress') {
+          // Legacy: Try old storage format for backward compatibility
+          const rawRestoredSession = loadStoredSession(bootstrapAddress)
+          const rawRestoredRunState = loadStoredRunState(bootstrapAddress)
+          const restoredMode = rawRestoredRunState?.selectedMode ?? rawRestoredRunState?.selectedBoard
+          const restoredTxHash = (rawRestoredSession as (LocalSession & { txHash?: string }) | null)?.txHash
+          const shouldIgnoreLocalRestore =
             nextClient.status.mode === 'rpc' &&
             rpcWalletCount > 0 &&
-            !restoredSession &&
-            restoredMode === 'training'
-              ? 'classic'
-              : restoredMode
-          const nextLeaderboardMode: GameMode =
-            nextClient.status.mode === 'rpc' &&
-            rpcWalletCount > 0 &&
-            !restoredSession &&
-            restoredMode === 'training'
-              ? 'classic'
-              : restoredRunState.leaderboardMode ?? 'daily'
-          setBoard(restoredRunState.board)
-          setScore(restoredRunState.score)
-          setMaxTile(restoredRunState.maxTile)
-          setMoves(restoredRunState.moves)
-          setSelectedMode(nextSelectedMode)
-          setLeaderboardMode(nextLeaderboardMode)
-          setIsSubmitted(restoredRunState.isSubmitted)
-          setLastOutcome(restoredRunState.lastOutcome)
-        } else if (restoredSession) {
-          const initialBoard = initializeBoard(restoredSession.seed)
-          setBoard(initialBoard)
-          setScore(0)
-          setMaxTile(Math.max(...initialBoard))
-          setMoves([])
-          setSelectedMode(restoredSession.mode)
-          setIsSubmitted(false)
-          setLastOutcome(null)
+            (
+              rawRestoredSession?.mode === 'training' ||
+              (rawRestoredSession != null && !restoredTxHash) ||
+              (rawRestoredSession == null && restoredMode != null)
+            )
+          const restoredSession = shouldIgnoreLocalRestore ? null : rawRestoredSession
+          const restoredRunState = shouldIgnoreLocalRestore ? null : rawRestoredRunState
+
+          setSession(restoredSession)
+          if (restoredRunState) {
+            const restoredMode = restoredRunState.selectedMode ?? restoredRunState.selectedBoard ?? 'training'
+            const nextSelectedMode: PlayMode =
+              nextClient.status.mode === 'rpc' &&
+              rpcWalletCount > 0 &&
+              !restoredSession &&
+              restoredMode === 'training'
+                ? 'classic'
+                : restoredMode
+            const nextLeaderboardMode: GameMode =
+              nextClient.status.mode === 'rpc' &&
+              rpcWalletCount > 0 &&
+              !restoredSession &&
+              restoredMode === 'training'
+                ? 'classic'
+                : restoredRunState.leaderboardMode ?? 'daily'
+            setBoard(restoredRunState.board)
+            setScore(restoredRunState.score)
+            setMaxTile(restoredRunState.maxTile)
+            setMoves(restoredRunState.moves)
+            setSelectedMode(nextSelectedMode)
+            setLeaderboardMode(nextLeaderboardMode)
+            setIsSubmitted(restoredRunState.isSubmitted)
+            setLastOutcome(restoredRunState.lastOutcome)
+          } else if (restoredSession) {
+            const initialBoard = initializeBoard(restoredSession.seed)
+            setBoard(initialBoard)
+            setScore(0)
+            setMaxTile(Math.max(...initialBoard))
+            setMoves([])
+            setSelectedMode(restoredSession.mode)
+            setIsSubmitted(false)
+            setLastOutcome(null)
+          }
         }
       })
       setIsLoadingClient(false)
@@ -412,10 +444,16 @@ function Play2048Page() {
           maxMoves: 0,
         }
         const initialBoard = initializeBoard(nextSession.seed)
+        const initialMaxTile = Math.max(...initialBoard)
+        
+        // Create new session record
+        const sessionRecord = createGameSession(address, nextSession, initialBoard, initialMaxTile)
+        saveGameSession(address, sessionRecord)
+        
         setSession(nextSession)
         setBoard(initialBoard)
         setScore(0)
-        setMaxTile(Math.max(...initialBoard))
+        setMaxTile(initialMaxTile)
         setMoves([])
         setIsSubmitted(false)
         setLastOutcome(null)
@@ -429,10 +467,44 @@ function Play2048Page() {
 
       const nextSession = await client!.startSession(address, mode, password)
       const initialBoard = initializeBoard(nextSession.seed)
+      const initialMaxTile = Math.max(...initialBoard)
+      
+      // Debug logging for Daily Challenge with visual board
+      if (mode === 'daily') {
+        console.log('%c[Daily Challenge Debug]', 'color: #f0cf52; font-weight: bold; font-size: 14px;')
+        console.log('%c  UTC Date: ' + nextSession.utcDate, 'color: #53d7a6; font-weight: bold;')
+        console.log('%c  Seed: ' + nextSession.seed.substring(0, 16) + '...', 'color: #53a6ff;')
+        console.log('%c  Visual Board:', 'color: white; font-weight: bold;')
+        
+        // Create visual board representation
+        const visualBoard = []
+        for (let row = 0; row < 4; row++) {
+          const rowStr = []
+          for (let col = 0; col < 4; col++) {
+            const val = initialBoard[row * 4 + col]
+            rowStr.push(val === 0 ? '·' : val)
+          }
+          visualBoard.push('    ' + rowStr.map(v => String(v).padStart(2, ' ')).join('  '))
+        }
+        console.log('%c' + visualBoard.join('\n'), 'color: #f6df84; font-family: monospace; font-size: 12px; line-height: 1.5;')
+        
+        // Show tile positions
+        const tilePositions = initialBoard
+          .map((val, idx) => val !== 0 ? `pos${idx}(${val})` : null)
+          .filter(Boolean)
+          .join(', ')
+        console.log('%c  Tile Positions: ' + tilePositions, 'color: #9fd0ff;')
+        console.log('%c  Raw Array: ' + JSON.stringify(initialBoard), 'color: #888;')
+      }
+      
+      // Create new session record
+      const sessionRecord = createGameSession(address, nextSession, initialBoard, initialMaxTile)
+      saveGameSession(address, sessionRecord)
+      
       setSession(nextSession)
       setBoard(initialBoard)
       setScore(0)
-      setMaxTile(Math.max(...initialBoard))
+      setMaxTile(initialMaxTile)
       setMoves([])
       setIsSubmitted(false)
       setLastOutcome(null)
@@ -454,6 +526,55 @@ function Play2048Page() {
       setLastActionError(message)
       toast.error(message)
     }
+  }
+
+  function handleResumeSession() {
+    if (!pendingRecoverySession) {
+      return
+    }
+
+    console.log('[Play2048] Resuming session from recovery')
+    
+    // Restore session state
+    setSession(pendingRecoverySession.session)
+    setBoard(pendingRecoverySession.board)
+    setScore(pendingRecoverySession.score)
+    setMaxTile(pendingRecoverySession.maxTile)
+    setMoves(pendingRecoverySession.moves)
+    setSelectedMode(pendingRecoverySession.session.mode)
+    setLeaderboardMode(pendingRecoverySession.session.mode === 'training' ? 'daily' : pendingRecoverySession.session.mode)
+    setIsSubmitted(pendingRecoverySession.state === 'completed' || pendingRecoverySession.state === 'submitted')
+    
+    if (pendingRecoverySession.stopReason) {
+      setLastOutcome({
+        stopReason: pendingRecoverySession.stopReason,
+        score: pendingRecoverySession.score,
+        maxTile: pendingRecoverySession.maxTile,
+      })
+    }
+
+    // Close recovery prompt
+    setShowRecoveryPrompt(false)
+    setPendingRecoverySession(null)
+    
+    toast.success('Session resumed from last saved state')
+  }
+
+  function handleDiscardSession() {
+    if (!pendingRecoverySession) {
+      return
+    }
+
+    console.log('[Play2048] Discarding session from recovery')
+    
+    // Clear the session
+    clearGameSession(address)
+    
+    // Close recovery prompt
+    setShowRecoveryPrompt(false)
+    setPendingRecoverySession(null)
+    
+    toast.success('Previous session discarded')
   }
 
   function playMove(direction: MoveDirection) {
@@ -489,6 +610,18 @@ function Play2048Page() {
     scoreRef.current = nextScore
     maxTileRef.current = nextMaxTile
 
+    // Save session after each move
+    const existingRecord = loadGameSession(address)
+    if (existingRecord && existingRecord.state === 'in-progress') {
+      const updatedRecord = updateGameState(existingRecord, {
+        board: nextBoard,
+        score: nextScore,
+        maxTile: nextMaxTile,
+        moves: nextMoves,
+      })
+      saveGameSession(address, updatedRecord)
+    }
+
     const exceededMoves = nextReplay.endedReason === 'max_moves'
     const stuck = nextReplay.endedReason === 'no_moves' || !canMove(nextBoard)
 
@@ -511,6 +644,14 @@ function Play2048Page() {
     try {
       if (activeSession.mode === 'training') {
         const expected = replaySession(activeSession.seed, finalMoves, activeSession.maxMoves, stopIntent)
+        
+        // Mark session as completed
+        const existingRecord = loadGameSession(address)
+        if (existingRecord && existingRecord.state === 'in-progress') {
+          const completedRecord = markCompleted(existingRecord, expected.endedReason)
+          saveGameSession(address, completedRecord)
+        }
+        
         setIsSubmitted(true)
         setLastOutcome({ stopReason: expected.endedReason, score: expected.score, maxTile: expected.maxTile })
         setBoard(expected.board)
@@ -523,6 +664,10 @@ function Play2048Page() {
         isSubmittedRef.current = true
         setLastSubmitTx(null)
         setLastActionError(null)
+        
+        // Clear session immediately for training mode
+        clearGameSession(address)
+        
         toast.success(`Training run finished at ${expected.score} score.`)
         return
       }
@@ -565,6 +710,23 @@ function Play2048Page() {
       } : null)
       setLastActionError(null)
       
+      // Mark session as submitted
+      const existingRecord = loadGameSession(address)
+      if (existingRecord && result.txHash) {
+        const submittedRecord = markSubmitted(
+          existingRecord,
+          result.txHash,
+          result.txStage ?? 'submitted'
+        )
+        saveGameSession(address, submittedRecord)
+        
+        // Clear session only after indexed
+        if (result.txStage === 'indexed') {
+          clearGameSession(address)
+          console.log('[Play2048] Session cleared after successful indexing')
+        }
+      }
+      
       // Update today's Classic Points earned for Classic Mode submissions
       if (chainSession.mode === 'classic') {
         const basePoints = Math.floor(expected.score / 24)
@@ -598,6 +760,7 @@ function Play2048Page() {
   }
 
   function clearSession() {
+    clearGameSession(address) // Clear new recovery system
     setSession(null)
     setMoves([])
     setScore(0)
@@ -645,6 +808,17 @@ function Play2048Page() {
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="mx-auto min-h-screen max-w-[1460px] px-4 py-6 sm:px-6 xl:px-8 2xl:px-10"
     >
+      {/* Session Recovery Modal */}
+      <AnimatePresence>
+        {showRecoveryPrompt && pendingRecoverySession && (
+          <SessionRecoveryPrompt
+            session={pendingRecoverySession}
+            onResume={handleResumeSession}
+            onDiscard={pendingRecoverySession.session.mode !== 'daily' ? handleDiscardSession : undefined}
+          />
+        )}
+      </AnimatePresence>
+
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <Link

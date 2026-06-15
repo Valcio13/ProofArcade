@@ -173,6 +173,7 @@ message LeaderboardEntry {
   uint64 move_count = 5; // @gotags: json:"moveCount"
   uint64 ended_at_unix = 6; // @gotags: json:"endedAtUnix"
   string username = 7; // @gotags: json:"username"
+  StopReason stop_reason = 8; // @gotags: json:"stopReason"
 }
 
 // DailyRewardAllocation stores the finalized payout record for a winner.
