@@ -87,6 +87,7 @@ const (
 	KeystoreGetRoutePath         = "/v1/admin/keystore-get"
 	WalletVerifyRoutePath        = "/v1/admin/wallet-verify"
 	TxSendRoutePath              = "/v1/admin/tx-send"
+	TxSendVestingRoutePath       = "/v1/admin/tx-send-vesting"
 	TxStakeRoutePath             = "/v1/admin/tx-stake"
 	TxEditStakeRoutePath         = "/v1/admin/tx-edit-stake"
 	TxUnstakeRoutePath           = "/v1/admin/tx-unstake"
