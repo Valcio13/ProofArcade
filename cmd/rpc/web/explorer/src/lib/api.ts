@@ -675,6 +675,32 @@ export function Config() {
     return GET(adminRPCURL, configPath);
 }
 
+// Get recent transactions preview from blocks
+export async function getRecentTransactionsPreview(limit: number = 5, blocks?: any[]): Promise<any[]> {
+    if (!blocks || blocks.length === 0) {
+        return [];
+    }
+    
+    const transactions: any[] = [];
+    
+    // Collect transactions from recent blocks until we reach the limit
+    for (const block of blocks) {
+        if (transactions.length >= limit) break;
+        
+        const blockTxs = block.transactions || block.txs || [];
+        for (const tx of blockTxs) {
+            if (transactions.length >= limit) break;
+            transactions.push({
+                ...tx,
+                height: block.blockHeader?.height || block.height || 0,
+                timestamp: block.blockHeader?.timestamp || block.timestamp,
+            });
+        }
+    }
+    
+    return transactions.slice(0, limit);
+}
+
 // Component Specific API Calls
 export async function getModalData(query: string | number, page: number) {
     const noResult = "no result found";

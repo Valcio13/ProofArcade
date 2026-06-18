@@ -6,6 +6,7 @@ export const useDenom = () => {
   const symbol = chain?.denom?.symbol || 'CNPY';
   const decimals = chain?.denom?.decimals ?? 6;
   const divisor = Math.pow(10, decimals);
+  const factor = divisor; // Alias for compatibility
 
   const formatAmount = (amount: number) => {
     return (amount / divisor).toLocaleString('en-US', {
@@ -18,6 +19,7 @@ export const useDenom = () => {
     symbol,
     decimals,
     divisor,
+    factor,
     formatAmount,
   };
 };

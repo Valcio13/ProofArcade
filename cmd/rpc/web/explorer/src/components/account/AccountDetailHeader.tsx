@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import AnimatedNumber from '../AnimatedNumber'
 import accountDetailTexts from '../../data/accountDetail.json'
+import { toCNPY } from '../../lib/utils'
 
 interface Account {
     address: string
@@ -18,6 +19,11 @@ interface Account {
 
 interface AccountDetailHeaderProps {
     account: Account
+}
+
+const cnpyDetailFormat = {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
 }
 
 const AccountDetailHeader: React.FC<AccountDetailHeaderProps> = ({ account }) => {
@@ -144,9 +150,9 @@ const AccountDetailHeader: React.FC<AccountDetailHeaderProps> = ({ account }) =>
                         </span>
                     </div>
                 </motion.div>
-                </div>
+            </motion.div>
 
-                {hasVesting && (
+            {hasVesting && (
                     <>
                         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                             {[
@@ -191,7 +197,6 @@ const AccountDetailHeader: React.FC<AccountDetailHeaderProps> = ({ account }) =>
                         </div>
                     </>
                 )}
-            </motion.div>
         </motion.div>
     )
 }

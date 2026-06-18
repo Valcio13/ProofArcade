@@ -5,6 +5,7 @@ import {
     Transactions,
     AllTransactions,
     getTransactionsWithRealPagination,
+    getRecentTransactionsPreview,
     Accounts,
     Validators,
     ValidatorsWithFilters,
@@ -237,7 +238,7 @@ export const useRecentTransactionsPreview = (blocks: any[] | undefined, limit: n
         retry: false,
     });
 };
-counts
+
 export const useAccounts = (page: number) => {
     return useQuery({
         queryKey: queryKeys.accounts(page),
