@@ -209,6 +209,8 @@ func (s *Server) DevFaucet(w http.ResponseWriter, r *http.Request, _ httprouter.
 		Recipient: crypto.NewAddress(ptr.Address).String(),
 		Submitted: true,
 	}, http.StatusOK)
+}
+
 // TransactionSendVesting sends an amount to another address with a recipient vesting schedule.
 func (s *Server) TransactionSendVesting(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	s.txHandler(w, r, func(p crypto.PrivateKeyI, ptr *txRequest) (lib.TransactionI, error) {
