@@ -640,9 +640,7 @@ func newTestP2PConfig(t *testing.T) lib.Config {
 	config := lib.DefaultConfig()
 	config.ChainId = lib.CanopyChainId
 	config.ListenAddress = ":0"
-	temp := os.TempDir()
-	tempFP := filepath.Join(temp, time.Now().String())
-	require.NoError(t, os.MkdirAll(tempFP, 0700))
+	tempFP := t.TempDir() // Use t.TempDir() instead of custom path
 	config.DataDirPath = tempFP
 	return config
 }
