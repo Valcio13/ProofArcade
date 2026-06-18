@@ -754,7 +754,7 @@ func (s *Server) Game2048RedeemClassicPoints(w http.ResponseWriter, r *http.Requ
 			return gameErr
 		}
 		if !preview.Valid {
-			return lib.ErrInvalidParams(fmt.Errorf(preview.Reason))
+			return lib.ErrInvalidParams(fmt.Errorf("%s", preview.Reason))
 		}
 		payoutAmount = preview.PayoutAmount
 		return nil
