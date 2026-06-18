@@ -16,6 +16,7 @@ interface AddressData {
     nickname: string;
     totalValue: string;
     status: string;
+    lockedValue?: string;
 }
 
 const AddressRow = React.memo<{ address: AddressData; index: number }>(({ address, index }) => (
@@ -58,14 +59,18 @@ export const AllAddressesCard = React.memo(() => {
 
     const processedAddresses = useMemo((): AddressData[] =>
         accounts.map(account => {
-            const balance = balances.find(b => b.address === account.address)?.amount || 0;
+            const balance = balances.find(b => b.address === account.address);
+            const spendable = balance?.spendableAmount ?? balance?.amount ?? 0;
+            const locked = balance?.lockedAmount ?? 0;
+            const total = balance?.totalAmount ?? spendable + locked;
             return {
-                id: account.address,
-                address: shortAddr(account.address),
-                nickname: account.nickname || 'Unnamed',
-                totalValue: formatBalance(balance),
-                status: getStatus(account.address),
-            };
+                  id: account.address,
+                  address: shortAddr(account.address),
+                  nickname: account.nickname || 'Unnamed',
+                  totalValue: formatBalance(total),
+                  status: getStatus(account.address),
+                  lockedValue: locked > 0 ? formatBalance(locked) : undefined,
+        };
         }),
         [accounts, balances, formatBalance, getStatus]
     );

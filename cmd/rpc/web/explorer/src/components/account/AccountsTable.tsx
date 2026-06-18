@@ -7,6 +7,9 @@ import AnimatedNumber from '../AnimatedNumber'
 interface Account {
     address: string
     amount: number
+    lockedAmount?: number
+    vestedAmount?: number
+    vestingAmount?: number
 }
 
 interface AccountsTableProps {

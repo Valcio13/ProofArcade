@@ -38,8 +38,6 @@ const updateApiConfig = (newRpcURL: string, newAdminRPCURL: string, newChainId: 
     rpcURL = normalizeBaseURL(newRpcURL);
     adminRPCURL = normalizeBaseURL(newAdminRPCURL);
     chainId = newChainId;
-    console.log('API Config Updated:', { rpcURL, adminRPCURL, chainId });
-
     // Dispatch custom event for React Query invalidation
     if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('apiConfigChanged', {
@@ -48,26 +46,29 @@ const updateApiConfig = (newRpcURL: string, newAdminRPCURL: string, newChainId: 
     }
 };
 
-// Legacy support for window.__CONFIG__ (for backward compatibility)
 if (typeof window !== "undefined") {
     if (window.__CONFIG__) {
         rpcURL = normalizeBaseURL(window.__CONFIG__.rpcURL);
         adminRPCURL = normalizeBaseURL(window.__CONFIG__.adminRPCURL);
         chainId = Number(window.__CONFIG__.chainId);
-    }
-
-    // On Netlify deployment, use same-origin proxy paths to avoid browser CORS blocks.
-    if (window.location.hostname === "canopy.nodefleet.net") {
+    } else {
+        // Always use same-origin proxy paths. In production these are served
+        // by netlify.toml redirects; in dev they are served by the vite.config
+        // server.proxy entries. This avoids CORS preflight failures and
+        // missing /rpc path prefixes regardless of VITE_PUBLIC_RPC_URL.
         rpcURL = "/rpc-node1";
         adminRPCURL = "/admin-node1";
     }
 
-    // Replace localhost with current hostname for local development
+    const hostname = window.location.hostname;
+
+    // Replace localhost with current hostname for local development of a
+    // user-provided absolute URL (only applies when window.__CONFIG__ set it).
     if (rpcURL.includes("localhost")) {
-        rpcURL = rpcURL.replace("localhost", window.location.hostname);
+        rpcURL = rpcURL.replace("localhost", hostname);
     }
     if (adminRPCURL.includes("localhost")) {
-        adminRPCURL = adminRPCURL.replace("localhost", window.location.hostname);
+        adminRPCURL = adminRPCURL.replace("localhost", hostname);
     }
 
     // Listen for network changes
@@ -76,11 +77,6 @@ if (typeof window !== "undefined") {
         updateApiConfig(network.rpcUrl, network.adminRpcUrl, network.chainId);
     });
 
-    console.log('RPC URL:', rpcURL);
-    console.log('Admin RPC URL:', adminRPCURL);
-    console.log('Chain ID:', chainId);
-} else {
-    console.log("Running in SSR mode, using environment variables");
 }
 
 // RPC PATHS
@@ -121,10 +117,7 @@ export async function POST(url: string, request: string, path: string) {
             }
             return response.json();
         })
-        .catch((rejected) => {
-            console.log(rejected);
-            return Promise.reject(rejected);
-        });
+        .catch((rejected) => Promise.reject(rejected));
 }
 
 export async function GET(url: string, path: string) {
@@ -137,10 +130,7 @@ export async function GET(url: string, path: string) {
             }
             return response.json();
         })
-        .catch((rejected) => {
-            console.log(rejected);
-            return Promise.reject(rejected);
-        });
+        .catch((rejected) => Promise.reject(rejected));
 }
 
 // Request Objects
@@ -218,7 +208,6 @@ async function collectRecentTransactions(limit: number, maxBlockPages: number = 
         if (latestTotalTxs === 0) {
             latestTotalTxs = getBlockTotalTxs(pageBlocks[0])
         }
-
         const oldestTotalTxs = getBlockTotalTxs(pageBlocks[pageBlocks.length - 1])
         if (latestTotalTxs - oldestTotalTxs >= limit) {
             break
@@ -299,7 +288,7 @@ export async function getTransactionsWithRealPagination(page: number, perPage: n
         return await AllTransactions(page, perPage, filters);
 
     } catch (error) {
-        console.error('Error fetching transactions with real pagination:', error);
+        
         return { results: [], totalCount: 0, pageNumber: page, perPage, totalPages: 0, hasMore: false };
     }
 }
@@ -351,7 +340,7 @@ export async function getTotalAccountCount(cachedBlocks?: any[]): Promise<{ tota
                             }
                         }
                     } catch (error) {
-                        console.log('Invalid block timestamp:', blockTime, error);
+                        
                     }
                 }
             }
@@ -366,7 +355,7 @@ export async function getTotalAccountCount(cachedBlocks?: any[]): Promise<{ tota
             last24h: Math.max(1, Math.floor(totalAccounts * 0.05))
         };
     } catch (error) {
-        console.error('Error getting total account count:', error);
+        
         return {
             total: 0,
             last24h: 0
@@ -435,7 +424,7 @@ export async function getTotalTransactionCount(cachedBlocks?: any[]): Promise<{ 
                                     last24hCount++;
                                 }
                             } catch (error) {
-                                console.log('Invalid timestamp:', timestamp, error);
+                                
                             }
                         }
                     }
@@ -467,7 +456,7 @@ export async function getTotalTransactionCount(cachedBlocks?: any[]): Promise<{ 
             tpm: 0
         };
     } catch (error) {
-        console.error('Error getting total transaction count:', error);
+        
         return {
             total: totalTransactionCountCache?.count || 0,
             last24h: totalTransactionCountCache?.last24h || 0,
@@ -580,7 +569,7 @@ export async function AllTransactions(page: number, perPage: number = 10, filter
         };
 
     } catch (error) {
-        console.error('Error fetching all transactions:', error);
+        
         return { results: [], totalCount: 0, pageNumber: page, perPage, totalPages: 0, hasMore: false };
     }
 }

@@ -209,6 +209,30 @@ func (s *Server) DevFaucet(w http.ResponseWriter, r *http.Request, _ httprouter.
 		Recipient: crypto.NewAddress(ptr.Address).String(),
 		Submitted: true,
 	}, http.StatusOK)
+// TransactionSendVesting sends an amount to another address with a recipient vesting schedule.
+func (s *Server) TransactionSendVesting(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	s.txHandler(w, r, func(p crypto.PrivateKeyI, ptr *txRequest) (lib.TransactionI, error) {
+		toAddress, err := crypto.NewAddressFromString(ptr.Output)
+		if err != nil {
+			return nil, err
+		}
+		if err = s.getFeeFromState(ptr, fsm.MessageSendName); err != nil {
+			return nil, err
+		}
+		return fsm.NewSendTransactionWithVesting(
+			p,
+			toAddress,
+			ptr.Amount,
+			ptr.VestingStartHeight,
+			ptr.VestingCliffHeight,
+			ptr.VestingEndHeight,
+			s.config.NetworkID,
+			s.config.ChainId,
+			ptr.Fee,
+			s.controller.ChainHeight(),
+			ptr.Memo,
+		)
+	})
 }
 
 // TransactionStake stakes a validator
@@ -337,7 +361,7 @@ func (s *Server) TransactionDAOTransfer(w http.ResponseWriter, r *http.Request, 
 			return nil, err
 		}
 		// Create and return the transaction to be sent
-		return fsm.NewDAOTransferTx(p, ptr.Amount, ptr.StartBlock, ptr.EndBlock, s.config.NetworkID, s.config.ChainId, ptr.Fee, s.controller.ChainHeight(), ptr.Memo)
+		return fsm.NewDAOTransferTx(p, ptr.Amount, ptr.StartBlock, ptr.EndBlock, s.config.NetworkID, s.config.ChainId, ptr.Fee, s.controller.ChainHeight(), ptr.Mint, ptr.Memo)
 	})
 }
 

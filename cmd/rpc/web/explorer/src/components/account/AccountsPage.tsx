@@ -13,7 +13,6 @@ const AccountsPage: React.FC = () => {
     const [totalAccounts, setTotalAccounts] = useState(0)
     const [accountsLast24h, setAccountsLast24h] = useState(0)
     const [isLoadingStats, setIsLoadingStats] = useState(true)
-
     const { data: accountsData, isLoading, error } = useAccounts(currentPage)
     const { data: validatorsData } = useAllValidators()
 
@@ -61,7 +60,6 @@ const AccountsPage: React.FC = () => {
     useEffect(() => {
         setCurrentPage(1)
     }, [searchTerm])
-
     const handlePageChange = (page: number) => {
         setCurrentPage(page)
     }

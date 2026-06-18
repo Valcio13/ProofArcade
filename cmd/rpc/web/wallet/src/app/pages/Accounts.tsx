@@ -33,6 +33,8 @@ export const Accounts = () => {
   } = useAccounts();
   const {
     totalBalance,
+    totalLiquid,
+    totalLocked,
     totalStaked,
     balances,
     stakingData,
@@ -82,13 +84,22 @@ export const Accounts = () => {
   };
 
   const getRealTotal = (address: string) => {
-    const liquid = balances.find(b => b.address === address)?.amount ?? 0;
+    const balance = balances.find(b => b.address === address);
+    const liquid = balance?.spendableAmount ?? balance?.amount ?? 0;
+    const locked = balance?.lockedAmount ?? 0;
+    const vested = balance?.vestedAmount ?? 0;
+    const vestingAmount = balance?.vestingAmount ?? 0;
+    const accountTotal = balance?.totalAmount ?? liquid + locked;
     const staked = stakingData.find(s => s.address === address)?.staked ?? 0;
-    return { liquid, staked, total: liquid + staked };
+    return { liquid, locked, vested, vestingAmount, staked, total: accountTotal + staked };
   };
 
   const getStatusInfo = (address: string) => {
+    const locked = balances.find(b => b.address === address)?.lockedAmount ?? 0;
     const staked = stakingData.find(s => s.address === address)?.staked ?? 0;
+    if (locked > 0) {
+      return { label: "Vesting", cls: WALLET_BADGE_TONE };
+    }
     return staked > 0
       ? { label: "Staked",  cls: "bg-primary/15 text-primary border border-primary/20"         }
       : { label: "Liquid",  cls: "bg-muted/40 text-muted-foreground border border-border/60"    };
@@ -236,6 +247,13 @@ export const Accounts = () => {
               <span className="font-mono text-foreground/70">{fmt(totalLiquid)}</span>
               <span className="text-muted-foreground/50">liquid</span>
             </div>
+            {totalLocked > 0 && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400/70 flex-shrink-0" />
+                <span className="text-foreground/70">{fmt(totalLocked)}</span>
+                <span className="text-muted-foreground/50">locked</span>
+              </div>
+            )}
           </div>
         </motion.div>
 

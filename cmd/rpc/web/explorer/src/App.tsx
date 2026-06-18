@@ -4,7 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 import { Toaster } from 'react-hot-toast'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-import { useNetworkChangeHandler } from './hooks/useApi'
+import { useNetworkChangeHandler, useBlockSubscription } from './hooks/useApi'
 const HomePage = lazy(() => import('./pages/Home'))
 const ExplorerHomePage = lazy(() => import('./pages/ExplorerHome'))
 const AuthPage = lazy(() => import('./pages/Auth'))
@@ -91,6 +91,8 @@ function AnimatedRoutes() {
 function App() {
   // Handle network changes and invalidate queries
   useNetworkChangeHandler();
+  // Detect new blocks globally and refresh dashboard queries on chain growth
+  useBlockSubscription();
 
   function AppShell() {
     const location = useLocation()

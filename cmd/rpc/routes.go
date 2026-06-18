@@ -121,6 +121,40 @@ const (
 	LogsRoutePath                = "/v1/admin/log"
 	AddVoteRoutePath             = "/v1/gov/add-vote"
 	DelVoteRoutePath             = "/v1/gov/del-vote"
+	KeystoreRoutePath          = "/v1/admin/keystore"
+	KeystoreNewKeyRoutePath    = "/v1/admin/keystore-new-key"
+	KeystoreImportRoutePath    = "/v1/admin/keystore-import"
+	KeystoreImportRawRoutePath = "/v1/admin/keystore-import-raw"
+	KeystoreDeleteRoutePath    = "/v1/admin/keystore-delete"
+	KeystoreGetRoutePath       = "/v1/admin/keystore-get"
+	TxSendRoutePath            = "/v1/admin/tx-send"
+	TxSendVestingRoutePath     = "/v1/admin/tx-send-vesting"
+	TxStakeRoutePath           = "/v1/admin/tx-stake"
+	TxEditStakeRoutePath       = "/v1/admin/tx-edit-stake"
+	TxUnstakeRoutePath         = "/v1/admin/tx-unstake"
+	TxPauseRoutePath           = "/v1/admin/tx-pause"
+	TxUnpauseRoutePath         = "/v1/admin/tx-unpause"
+	TxChangeParamRoutePath     = "/v1/admin/tx-change-param"
+	TxDAOTransferRoutePath     = "/v1/admin/tx-dao-transfer"
+	TxCreateOrderRoutePath     = "/v1/admin/tx-create-order"
+	TxEditOrderRoutePath       = "/v1/admin/tx-edit-order"
+	TxDeleteOrderRoutePath     = "/v1/admin/tx-delete-order"
+	TxDexLimitOrderPath        = "/v1/admin/tx-dex-limit-order"
+	TxDexLiquidityDepositPath  = "/v1/admin/tx-dex-liquidity-deposit"
+	TxDexLiquidityWithdrawPath = "/v1/admin/tx-dex-liquidity-withdraw"
+	TxLockOrderRoutePath       = "/v1/admin/tx-lock-order"
+	TxCloseOrderRoutePath      = "/v1/admin/tx-close-order"
+	TxSubsidyRoutePath         = "/v1/admin/tx-subsidy"
+	TxStartPollRoutePath       = "/v1/admin/tx-start-poll"
+	TxVotePollRoutePath        = "/v1/admin/tx-vote-poll"
+	ResourceUsageRoutePath     = "/v1/admin/resource-usage"
+	PeerInfoRoutePath          = "/v1/admin/peer-info"
+	ConsensusInfoRoutePath     = "/v1/admin/consensus-info"
+	PeerBookRoutePath          = "/v1/admin/peer-book"
+	ConfigRoutePath            = "/v1/admin/config"
+	LogsRoutePath              = "/v1/admin/log"
+	AddVoteRoutePath           = "/v1/gov/add-vote"
+	DelVoteRoutePath           = "/v1/gov/del-vote"
 )
 
 const (
@@ -206,6 +240,7 @@ const (
 	KeystoreGetRouteName            = "keystore-get"
 	WalletVerifyRouteName           = "wallet-verify"
 	TxSendRouteName                 = "tx-send"
+	TxSendVestingRouteName          = "tx-send-vesting"
 	TxStakeRouteName                = "tx-stake"
 	TxUnstakeRouteName              = "tx-unstake"
 	TxEditStakeRouteName            = "tx-edit-stake"
@@ -328,6 +363,7 @@ var routePaths = routes{
 	KeystoreGetRouteName:            {Method: http.MethodPost, Path: KeystoreGetRoutePath},
 	WalletVerifyRouteName:           {Method: http.MethodPost, Path: WalletVerifyRoutePath},
 	TxSendRouteName:                 {Method: http.MethodPost, Path: TxSendRoutePath},
+	TxSendVestingRouteName:          {Method: http.MethodPost, Path: TxSendVestingRoutePath},
 	TxStakeRouteName:                {Method: http.MethodPost, Path: TxStakeRoutePath},
 	TxEditOrderRouteName:            {Method: http.MethodPost, Path: TxEditOrderRoutePath},
 	TxUnstakeRouteName:              {Method: http.MethodPost, Path: TxUnstakeRoutePath},
@@ -466,6 +502,7 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		KeystoreGetRouteName:            s.KeystoreGetKeyGroup,
 		WalletVerifyRouteName:           s.WalletVerify,
 		TxSendRouteName:                 s.TransactionSend,
+		TxSendVestingRouteName:          s.TransactionSendVesting,
 		TxStakeRouteName:                s.TransactionStake,
 		TxEditStakeRouteName:            s.TransactionEditStake,
 		TxUnstakeRouteName:              s.TransactionUnstake,
