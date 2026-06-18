@@ -1,5 +1,6 @@
 package rpc
 
+// Game 2048 RPC handlers and utilities
 import (
 	"crypto/sha256"
 	"encoding/binary"
