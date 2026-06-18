@@ -7,6 +7,7 @@ import { getUtcDateString } from '../lib/game2048'
 import type { LeaderboardEntry } from '../lib/mockChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
 import { ArrowRight, Zap, Trophy, Target, Shield, Clock, Award } from 'lucide-react'
+import { DailyFaucet } from '../components/DailyFaucet'
 
 function rankColor(rank: number): string {
   if (rank === 1) return '#f0cf52'
@@ -69,6 +70,9 @@ const HomePage = () => {
       {hasLocalSession ? (
         /* AUTHENTICATED USER VIEW */
         <>
+          {/* DAILY FAUCET - Prominent Top Position */}
+          <DailyFaucet />
+
           {/* HERO - Welcome Back */}
           <section className="rounded-3xl border border-white/10 bg-card p-8 sm:p-12 xl:p-16">
             <div>

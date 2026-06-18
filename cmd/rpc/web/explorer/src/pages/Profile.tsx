@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
-import { Trophy, Target, TrendingUp, Award, Wallet, Copy, Settings as SettingsIcon, ArrowRight, Gamepad2 } from 'lucide-react'
+import { Trophy, Target, TrendingUp, Award, Wallet, Copy, Settings as SettingsIcon, ArrowRight, Gamepad2, Coins } from 'lucide-react'
 import { createGame2048Client } from '../lib/chain2048'
 import { shortAddress } from '../lib/address'
 import { formatCNPY } from '../lib/utils'
@@ -455,9 +455,19 @@ function ProfilePage() {
 
               {/* Balance */}
               <div className="rounded-xl border border-white/10 bg-black/30 p-5">
-                <div className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5 text-[#53a6ff]" />
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Balance</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Wallet className="h-5 w-5 text-[#53a6ff]" />
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Balance</p>
+                  </div>
+                  <Link
+                    to="/"
+                    className="flex items-center gap-1.5 rounded-lg bg-[#4ade80]/10 px-3 py-1.5 text-xs font-semibold text-[#4ade80] transition hover:bg-[#4ade80]/20"
+                    title="Get free PROOF tokens daily"
+                  >
+                    <Coins className="h-3.5 w-3.5" />
+                    Daily Faucet
+                  </Link>
                 </div>
                 <p className="mt-3 text-4xl font-bold text-white">
                   {formatCNPY(player?.balance ?? 0)}

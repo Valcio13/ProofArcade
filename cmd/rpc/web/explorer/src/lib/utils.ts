@@ -91,14 +91,14 @@ export function isHex(h: string): boolean {
     if (isNumber(h)) {
         return false;
     }
-    let hexRe = /[0-9A-Fa-f]{6}/g;
+    const hexRe = /[0-9A-Fa-f]{6}/g;
     return hexRe.test(h);
 }
 
 // upperCaseAndRepUnderscore() capitalizes each word in a string and replaces underscores with spaces
 export function upperCaseAndRepUnderscore(str: string): string {
-    let i: number,
-        frags = str.split("_");
+    let i: number;
+    const frags = str.split("_");
     for (i = 0; i < frags.length; i++) {
         frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
     }

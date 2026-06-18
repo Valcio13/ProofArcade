@@ -54,7 +54,6 @@ export const Accounts = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   // ── Derived aggregates ────────────────────────────────────────────────────
-  const totalLiquid  = totalBalance - totalStaked;
   const stakingRate  = totalBalance > 0 ? (totalStaked / totalBalance) * 100 : 0;
   const stakingCount = stakingData.filter(s => (s.staked || 0) > 0).length;
   const liquidCount  = accounts.length - stakingCount;
@@ -98,7 +97,7 @@ export const Accounts = () => {
     const locked = balances.find(b => b.address === address)?.lockedAmount ?? 0;
     const staked = stakingData.find(s => s.address === address)?.staked ?? 0;
     if (locked > 0) {
-      return { label: "Vesting", cls: WALLET_BADGE_TONE };
+      return { label: "Vesting", cls: "bg-amber-500/15 text-amber-500 border border-amber-500/20" };
     }
     return staked > 0
       ? { label: "Staked",  cls: "bg-primary/15 text-primary border border-primary/20"         }
