@@ -20,6 +20,32 @@ function CheckInPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isClaiming, setIsClaiming] = useState(false)
   const [lastClaimTimestamp, setLastClaimTimestamp] = useState(0)
+  const [timeUntilMidnight, setTimeUntilMidnight] = useState('')
+
+  // Countdown to next UTC midnight
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date()
+      const tomorrow = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + 1,
+        0, 0, 0, 0
+      ))
+      const diff = tomorrow.getTime() - now.getTime()
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+      
+      setTimeUntilMidnight(`${hours}h ${minutes}m ${seconds}s`)
+    }
+    
+    updateCountdown()
+    const interval = setInterval(updateCountdown, 1000)
+    
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     // 🔧 COOLDOWN: Skip fetch for 2s after claim to preserve optimistic update
@@ -78,41 +104,70 @@ function CheckInPage() {
     const claimedToday = player?.lastLoginClaimUtcDate === utcDate
     const currentStreak = player?.loginStreak ?? 0
     
-    // Calculate next streak: if already claimed today, use current; otherwise calculate expected next
-    const nextStreak = claimedToday 
-      ? currentStreak
-      : player?.lastLoginClaimUtcDate === previousUtcDate(utcDate)
-        ? Math.min(currentStreak + 1, rewardSchedule.length)
-        : 1
+    // Check if user missed a day (last claim was not yesterday)
+    const yesterday = previousUtcDate(utcDate)
+    const missedDay = player?.lastLoginClaimUtcDate && 
+                      player.lastLoginClaimUtcDate !== utcDate && 
+                      player.lastLoginClaimUtcDate !== yesterday
     
-    const rewardPoints = rewardSchedule[Math.max(0, nextStreak - 1)] ?? rewardSchedule[rewardSchedule.length - 1] ?? 0
-    const daySevenUnlocked = nextStreak >= rewardSchedule.length
+    console.log('[CheckIn Debug]', {
+      utcDate,
+      lastLoginClaimUtcDate: player?.lastLoginClaimUtcDate,
+      yesterday,
+      currentStreak,
+      claimedToday,
+      missedDay,
+    })
     
-    // Weekly cycle calculation (wraps 1-7, not resetting streak)
-    const completedCheckIns = currentStreak === 0 
-      ? 0 
-      : (currentStreak % 7 === 0 ? 7 : currentStreak % 7)
+    // Reset to day 1 if missed a day, otherwise continue streak
+    let nextDay: number
+    if (claimedToday) {
+      // Already claimed today, show current position in cycle
+      nextDay = currentStreak === 0 ? 1 : ((currentStreak - 1) % 7) + 1
+    } else if (missedDay) {
+      // Missed a day, reset to day 1
+      nextDay = 1
+    } else if (currentStreak === 0) {
+      // Never claimed before
+      nextDay = 1
+    } else {
+      // Continue from last position - next day to claim
+      const lastDay = ((currentStreak - 1) % 7) + 1
+      nextDay = lastDay === 7 ? 1 : lastDay + 1
+    }
     
-    // Calculate next reward (tomorrow)
-    const tomorrowStreak = claimedToday 
-      ? Math.min(currentStreak + 1, rewardSchedule.length)
-      : nextStreak
-    const nextRewardPoints = rewardSchedule[Math.max(0, tomorrowStreak - 1)] ?? rewardSchedule[rewardSchedule.length - 1] ?? 0
+    console.log('[CheckIn Debug] Calculated nextDay:', nextDay, 'from currentStreak:', currentStreak)
     
-    // Calculate days until Day 7 bonus
-    const daysUntilBonus = claimedToday 
-      ? (7 - completedCheckIns)
-      : (7 - completedCheckIns) + (completedCheckIns === 0 ? 0 : 0)
+    // Completed check-ins in current 7-day cycle
+    const completedCheckIns = claimedToday 
+      ? ((currentStreak - 1) % 7) + 1
+      : missedDay 
+        ? 0 
+        : (currentStreak % 7)
+    
+    // Reward for today (or next claim)
+    const rewardPoints = rewardSchedule[nextDay - 1] ?? rewardSchedule[rewardSchedule.length - 1] ?? 0
+    
+    // Tomorrow's reward
+    const tomorrowDay = nextDay === 7 ? 1 : nextDay + 1
+    const nextRewardPoints = rewardSchedule[tomorrowDay - 1] ?? rewardSchedule[rewardSchedule.length - 1] ?? 0
+    
+    // Day 7 unlocked (can use bonus today)
+    const daySevenUnlocked = nextDay === 7 && !claimedToday
+    
+    // Days until next Day 7
+    const daysUntilBonus = nextDay <= 7 ? (7 - nextDay + 1) : 1
 
     return {
       utcDate,
       currentStreak,
-      nextStreak,
-      completedCheckIns,
+      nextDay, // Current day in 1-7 cycle
+      completedCheckIns, // How many days completed in current cycle
       rewardPoints,
       nextRewardPoints,
       bonusBps,
       claimedToday,
+      missedDay,
       daySevenUnlocked,
       bonusActiveToday: player?.classicPointsBonusUtcDate === utcDate,
       canClaim: !!storedSessionAddress && !claimedToday,
@@ -379,14 +434,7 @@ function CheckInPage() {
               </div>
             </div>
 
-            {/* Inline Claimed Message */}
-            {loginRewardStatus.claimedToday && (
-              <div className="mt-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5 text-center">
-                <p className="text-sm font-semibold text-green-400">
-                  ✓ Checked In Today · +{loginRewardStatus.rewardPoints} Classic Points Earned
-                </p>
-              </div>
-            )}
+            {/* Inline Claimed Message - REMOVED */}
           </section>
 
           {/* 7-Day Reward Track - Hero Element */}
@@ -421,135 +469,108 @@ function CheckInPage() {
 
             {/* Reward Track Grid */}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
-          {loginRewardStatus.schedule.map((points, index) => {
-            const day = index + 1
-            const completedCheckIns = loginRewardStatus.completedCheckIns
-            const nextStreak = loginRewardStatus.nextStreak
-            const claimedToday = loginRewardStatus.claimedToday
-            
-            const isCurrent = nextStreak === day && !claimedToday
-            const isCompleted = day <= completedCheckIns
-            const isMissed = !isCompleted && !isCurrent && day < nextStreak
-            const isBonusDay = day === 7
-            const isClaimable = isCurrent && storedSessionAddress && loginRewardStatus.canClaim
+              {loginRewardStatus.schedule.map((points, index) => {
+                const day = index + 1
+                const nextDay = loginRewardStatus.nextDay
+                const claimedToday = loginRewardStatus.claimedToday
+                
+                // Current day is the one to claim (unless already claimed)
+                const isCurrent = day === nextDay && !claimedToday
+                
+                // Completed: days before current
+                const isCompleted = claimedToday ? day <= nextDay : day < nextDay
+                
+                const isBonusDay = day === 7
 
-            return (
-              <motion.div
-                key={day}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={`relative rounded-xl p-4 transition-all ${
-                  isCurrent
-                    ? 'border-2 border-[#53a6ff] bg-[#53a6ff]/10'
-                    : isCompleted
-                      ? 'border border-green-500/40 bg-green-500/5'
-                      : isMissed
-                        ? 'border border-red-500/40 bg-red-500/5 opacity-75'
-                        : isBonusDay
-                          ? 'border-2 border-[#f6df84]/40 bg-[#f6df84]/5'
-                          : 'border border-white/10 bg-slate-950/40'
-                }`}
-              >
-                {/* Status Indicator */}
-                {isCompleted && (
-                  <div className="absolute -right-1.5 -top-1.5">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500">
-                      <Check className="h-4 w-4 text-white" strokeWidth={2.5} />
-                    </div>
-                  </div>
-                )}
-                {isMissed && (
-                  <div className="absolute -right-1.5 -top-1.5">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500">
-                      <span className="text-sm font-bold text-white">✕</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <p className={`text-xs font-semibold uppercase tracking-wide ${
-                    isMissed ? 'text-red-400/70' : 'text-slate-500'
-                  }`}>
-                    Day {day}
-                  </p>
-                  {isCurrent && (
-                    <span className="rounded-full bg-[#53a6ff] px-2 py-0.5 text-[10px] font-bold text-white">
-                      NOW
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-3">
-                  <p className={`text-3xl font-bold ${
-                    isCompleted || isCurrent 
-                      ? 'text-white' 
-                      : isMissed 
-                        ? 'text-red-400/50 line-through' 
-                        : 'text-slate-600'
-                  }`}>
-                    {points}
-                  </p>
-                  <p className={`mt-0.5 text-[11px] font-medium uppercase tracking-wide ${
-                    isCompleted || isCurrent 
-                      ? 'text-slate-400' 
-                      : isMissed 
-                        ? 'text-red-400/50' 
-                        : 'text-slate-600'
-                  }`}>
-                    Classic Points
-                  </p>
-                </div>
-
-                {/* Integrated Claim Button for Current Day */}
-                {isCurrent && (
-                  <div className="mt-4">
-                    {storedSessionAddress ? (
-                      <button
-                        onClick={handleClaimLoginReward}
-                        disabled={!loginRewardStatus.canClaim || isClaiming}
-                        className="w-full rounded-lg bg-[#53a6ff] py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {isClaiming ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                            <span className="text-xs">Claiming...</span>
-                          </span>
-                        ) : (
-                          'Claim Now'
-                        )}
-                      </button>
-                    ) : (
-                      <Link
-                        to="/auth"
-                        className="block w-full rounded-lg border border-white/20 bg-white/5 py-2.5 text-center text-xs font-semibold text-slate-300 transition hover:border-white/30 hover:bg-white/10"
-                      >
-                        Log In
-                      </Link>
+                return (
+                  <motion.div
+                    key={day}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`relative rounded-xl border-2 p-4 transition-all ${
+                      isCurrent
+                        ? 'border-[#4ade80] bg-[#4ade80]/10'
+                        : isCompleted
+                          ? 'border-green-500/40 bg-green-500/5'
+                          : 'border-white/10 bg-slate-950/40 opacity-60'
+                    }`}
+                  >
+                    {/* Checkmark for completed days */}
+                    {isCompleted && !isCurrent && (
+                      <div className="absolute -right-1.5 -top-1.5">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 shadow-lg">
+                          <Check className="h-4 w-4 text-white" strokeWidth={2.5} />
+                        </div>
+                      </div>
                     )}
-                  </div>
-                )}
 
-                {isBonusDay && (
-                  <div className={`mt-3 flex items-center gap-1.5 rounded-lg px-2 py-1.5 ${
-                    isCompleted || isCurrent
-                      ? 'border border-[#f6df84]/30 bg-[#f6df84]/10'
-                      : 'border border-[#f6df84]/20 bg-[#f6df84]/5 opacity-50'
-                  }`}>
-                    <Trophy className={`h-3.5 w-3.5 ${
-                      isCompleted || isCurrent ? 'text-[#f6df84]' : 'text-[#f6df84]/50'
-                    }`} />
-                    <p className={`text-[10px] font-bold uppercase tracking-wide ${
-                      isCompleted || isCurrent ? 'text-[#f6df84]' : 'text-[#f6df84]/50'
-                    }`}>
-                      +20% Bonus
+                    {/* Points Display */}
+                    <div className="text-center">
+                      <p className={`text-4xl font-bold ${
+                        isCompleted || isCurrent ? 'text-white' : 'text-slate-600'
+                      }`}>
+                        +{points}
+                      </p>
+                      <p className={`mt-2 text-xs font-medium uppercase tracking-wide ${
+                        isCurrent
+                          ? 'text-[#4ade80]'
+                          : isCompleted
+                            ? 'text-slate-400'
+                            : 'text-slate-600'
+                      }`}>
+                        {isCurrent ? 'Today' : `Day ${day}`}
+                      </p>
+                    </div>
+
+                    {/* Bonus Badge for Day 7 */}
+                    {isBonusDay && (isCurrent || isCompleted) && (
+                      <div className="mt-3 flex items-center justify-center gap-1.5 rounded-lg border border-[#f6df84]/30 bg-[#f6df84]/10 px-2 py-1">
+                        <Trophy className="h-3 w-3 text-[#f6df84]" />
+                        <p className="text-[9px] font-bold uppercase tracking-wide text-[#f6df84]">
+                          +20% Bonus
+                        </p>
+                      </div>
+                    )}
+                  </motion.div>
+                )
+              })}
+            </div>
+
+            {/* Claim Button Below Day Cards */}
+            <div className="mt-6">
+              {storedSessionAddress ? (
+                loginRewardStatus.canClaim ? (
+                  <button
+                    onClick={handleClaimLoginReward}
+                    disabled={isClaiming}
+                    className="w-full rounded-2xl bg-[#4ade80] px-8 py-5 text-lg font-bold text-white shadow-xl transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isClaiming ? (
+                      <span className="flex items-center justify-center gap-3">
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        Claiming...
+                      </span>
+                    ) : (
+                      <>Collect {loginRewardStatus.rewardPoints} Points</>
+                    )}
+                  </button>
+                ) : (
+                  <div className="w-full rounded-2xl border border-slate-600 bg-slate-800/50 px-8 py-5 text-center">
+                    <p className="text-sm font-semibold text-slate-400">
+                      Next claim in <span className="font-mono text-[#53a6ff]">{timeUntilMidnight}</span>
                     </p>
                   </div>
-                )}
-              </motion.div>
-            )
-          })}
-        </div>
+                )
+              ) : (
+                <Link
+                  to="/auth"
+                  className="block w-full rounded-2xl bg-[#53a6ff] px-8 py-5 text-center text-lg font-bold text-white transition hover:brightness-110"
+                >
+                  Log In to Collect Rewards
+                </Link>
+              )}
+            </div>
 
         {/* Day 7 Bonus Explanation */}
         {loginRewardStatus.daySevenUnlocked ? (

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { createGame2048Client } from '../lib/chain2048'
@@ -25,6 +25,7 @@ const HomePage = () => {
   const hasLocalSession = !!storedWallet?.address
   const [topPlayers, setTopPlayers] = useState<LeaderboardEntry[]>([])
   const [playerStats, setPlayerStats] = useState<any>(null)
+  const [unclaimedRewardsCount, setUnclaimedRewardsCount] = useState<number>(0)
 
   useEffect(() => {
     let cancelled = false
@@ -40,9 +41,13 @@ const HomePage = () => {
       // Load player stats if authenticated
       if (hasLocalSession && storedWallet?.address) {
         try {
-          const stats = await client.getPlayer(storedWallet.address)
+          const [stats, rewards] = await Promise.all([
+            client.getPlayer(storedWallet.address),
+            client.getClaimableRewards(storedWallet.address)
+          ])
           if (!cancelled) {
             setPlayerStats(stats)
+            setUnclaimedRewardsCount(rewards.unclaimedCount)
           }
         } catch (error) {
           console.error('Failed to load player stats:', error)
@@ -65,43 +70,65 @@ const HomePage = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="mx-auto flex max-w-[1200px] flex-col gap-12 px-4 py-2 sm:px-6 lg:px-8"
+      className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-2 sm:px-6 lg:px-8"
     >
       {hasLocalSession ? (
         /* AUTHENTICATED USER VIEW */
         <>
           {/* DAILY FAUCET - Prominent Top Position */}
-          <DailyFaucet />
+          <AnimatePresence mode="wait">
+            <DailyFaucet />
+          </AnimatePresence>
 
           {/* HERO - Welcome Back */}
-          <section className="rounded-3xl border border-white/10 bg-card p-8 sm:p-12 xl:p-16">
+          <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">
                 Welcome Back
               </p>
 
-              <h1 className="mt-4 text-5xl font-bold leading-tight text-white sm:text-6xl xl:text-7xl">
-                {storedWallet?.nickname || 'Player'}
-              </h1>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl">
+                  {storedWallet?.nickname || 'Player'}
+                </h1>
+                {!storedWallet?.nickname && (
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-1.5 rounded-full border border-[#f0cf52]/30 bg-[#f0cf52]/10 px-3 py-1 text-xs font-semibold text-[#f6df84] transition hover:bg-[#f0cf52]/20"
+                  >
+                    <span>Set Username</span>
+                    <span className="text-[10px]">→</span>
+                  </Link>
+                )}
+                {unclaimedRewardsCount > 0 && (
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-1.5 rounded-full border border-[#4ade80]/30 bg-[#4ade80]/10 px-3 py-1 text-xs font-semibold text-[#4ade80] transition hover:bg-[#4ade80]/20"
+                  >
+                    <span>{unclaimedRewardsCount} Reward{unclaimedRewardsCount > 1 ? 's' : ''} to Claim</span>
+                    <span className="text-[10px]">→</span>
+                  </Link>
+                )}
+              </div>
 
-              <p className="mt-6 text-lg leading-8 text-slate-300">
+              <p className="mt-4 text-base leading-7 text-slate-300">
                 Ready to play? Start a daily challenge or continue your classic run.
               </p>
 
-              <div className="mt-10 flex flex-wrap gap-4">
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   to="/play?mode=daily"
-                  className="flex items-center gap-3 rounded-xl bg-[#f0cf52] px-8 py-4 text-base font-bold text-[#2e2510] transition hover:brightness-105 sm:text-lg"
+                  className="flex items-center gap-2 rounded-xl bg-[#f0cf52] px-6 py-3 text-sm font-bold text-[#2e2510] transition hover:brightness-105 sm:text-base"
                 >
-                  <Clock className="h-5 w-5" />
+                  <Clock className="h-4 w-4" />
                   Daily Challenge
                 </Link>
 
                 <Link
                   to="/play?mode=classic"
-                  className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-slate-200 transition hover:bg-white/10 sm:text-lg"
+                  className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10 sm:text-base"
                 >
-                  <Award className="h-5 w-5" />
+                  <Award className="h-4 w-4" />
                   Classic Mode
                 </Link>
               </div>
@@ -111,31 +138,31 @@ const HomePage = () => {
           {/* PLAYER STATS */}
           {playerStats && (
             <section>
-              <div className="mb-6">
+              <div className="mb-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Stats</p>
-                <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Performance</h2>
+                <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Performance</h2>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                   label="Best Score"
                   value={Math.max(playerStats.bestDailyScore || 0, playerStats.bestClassicScore || 0).toString()}
-                  icon={<Trophy className="h-6 w-6" />}
+                  icon={<Trophy className="h-5 w-5" />}
                 />
                 <StatCard
                   label="Best Tile"
                   value={playerStats.bestTile?.toString() || '0'}
-                  icon={<Target className="h-6 w-6" />}
+                  icon={<Target className="h-5 w-5" />}
                 />
                 <StatCard
                   label="Games Played"
                   value={(playerStats.dailyGamesStarted + playerStats.classicGamesStarted).toString()}
-                  icon={<Zap className="h-6 w-6" />}
+                  icon={<Zap className="h-5 w-5" />}
                 />
                 <StatCard
                   label="Login Streak"
                   value={playerStats.loginStreak?.toString() || '0'}
-                  icon={<Award className="h-6 w-6" />}
+                  icon={<Award className="h-5 w-5" />}
                 />
               </div>
 
@@ -146,33 +173,33 @@ const HomePage = () => {
 
           {/* QUICK ACTIONS */}
           <section>
-            <div className="mb-6">
+            <div className="mb-4">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Quick Access</p>
-              <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Actions</h2>
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Actions</h2>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <QuickActionCard
                 to="/play?mode=daily"
-                icon={<Clock className="h-8 w-8" />}
+                icon={<Clock className="h-6 w-6" />}
                 title="Daily Challenge"
                 description="Compete for rewards"
               />
               <QuickActionCard
                 to="/play?mode=classic"
-                icon={<Award className="h-8 w-8" />}
+                icon={<Award className="h-6 w-6" />}
                 title="Classic Mode"
                 description="Unlimited progression"
               />
               <QuickActionCard
                 to="/leaderboard"
-                icon={<Trophy className="h-8 w-8" />}
+                icon={<Trophy className="h-6 w-6" />}
                 title="Leaderboard"
                 description="See your rank"
               />
               <QuickActionCard
                 to="/profile"
-                icon={<Shield className="h-8 w-8" />}
+                icon={<Shield className="h-6 w-6" />}
                 title="Profile"
                 description="View achievements"
               />
@@ -186,33 +213,33 @@ const HomePage = () => {
         /* UNAUTHENTICATED USER VIEW - Onboarding */
         <>
           {/* SECTION 1 - HERO */}
-          <section className="rounded-3xl p-8 sm:p-12 xl:p-16">
+          <section className="rounded-3xl p-6 sm:p-8">
             <div className="mx-auto max-w-4xl text-center">
               <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">
                 ProofArcade 2048
               </p>
 
-              <h1 className="mt-6 text-5xl font-bold leading-tight text-white sm:text-6xl xl:text-7xl">
+              <h1 className="mt-4 text-3xl font-bold leading-tight text-white sm:text-4xl">
                 Play 2048. Prove your score onchain.
               </h1>
 
-              <p className="mt-6 text-lg leading-8 text-slate-300 sm:text-xl">
+              <p className="mt-4 text-base leading-7 text-slate-300">
                 Start for free with no wallet required. Create a wallet when you're ready to compete for rewards and leaderboard rankings.
               </p>
 
-              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
                   to="/playtest"
-                  className="group flex items-center gap-3 rounded-xl bg-[#f0cf52] px-8 py-4 text-base font-bold text-[#2e2510] transition hover:brightness-105 sm:text-lg"
+                  className="group flex items-center gap-2 rounded-xl bg-[#f0cf52] px-6 py-3 text-sm font-bold text-[#2e2510] transition hover:brightness-105 sm:text-base"
                 >
-                  <Zap className="h-5 w-5" />
+                  <Zap className="h-4 w-4" />
                   Play Free
-                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
 
                 <Link
                   to="/auth"
-                  className="flex items-center gap-2 rounded-xl bg-[#4ade80] px-8 py-4 text-base font-bold text-[#0f1a14] transition hover:brightness-105 sm:text-lg"
+                  className="flex items-center gap-2 rounded-xl bg-[#4ade80] px-6 py-3 text-sm font-bold text-[#0f1a14] transition hover:brightness-105 sm:text-base"
                 >
                   Create Wallet
                 </Link>
@@ -222,11 +249,11 @@ const HomePage = () => {
 
           {/* SECTION 2 - HOW IT WORKS */}
           <section>
-            <div className="mb-8 text-center">
-              <h2 className="text-3xl font-bold text-white sm:text-4xl">Three Simple Steps</h2>
+            <div className="mb-5 text-center">
+              <h2 className="text-2xl font-bold text-white sm:text-3xl">Three Simple Steps</h2>
             </div>
 
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-3">
               <StepCard
                 step="1"
                 title="Play Free"
@@ -247,13 +274,13 @@ const HomePage = () => {
 
           {/* SECTION 3 - GAME MODES */}
           <section>
-            <div className="mb-8 text-center">
-              <h2 className="text-3xl font-bold text-white sm:text-4xl">Choose Your Path</h2>
+            <div className="mb-5 text-center">
+              <h2 className="text-2xl font-bold text-white sm:text-3xl">Choose Your Path</h2>
             </div>
 
-            <div className="grid gap-5 md:grid-cols-3 md:auto-rows-fr items-stretch">
+            <div className="grid gap-3 md:grid-cols-3 md:auto-rows-fr items-stretch">
               <GameModeCard
-                icon={<Target className="h-10 w-10" />}
+                icon={<Target className="h-8 w-8" />}
                 title="Playtest"
                 features={[
                   'No wallet required',
@@ -265,7 +292,7 @@ const HomePage = () => {
                 highlighted={!hasLocalSession}
               />
               <GameModeCard
-                icon={<Clock className="h-10 w-10" />}
+                icon={<Clock className="h-8 w-8" />}
                 title="Daily Challenge"
                 features={[
                   'One competitive run per day',
@@ -277,7 +304,7 @@ const HomePage = () => {
                 requiresWallet
               />
               <GameModeCard
-                icon={<Award className="h-10 w-10" />}
+                icon={<Award className="h-8 w-8" />}
                 title="Classic Mode"
                 features={[
                   'Unlimited progression',
@@ -316,19 +343,19 @@ function LeaderboardPreview({ topPlayers }: { topPlayers: LeaderboardEntry[] }) 
   
   return (
     <section>
-      <div className="mb-6">
+      <div className="mb-4">
         <div className="flex items-baseline gap-3">
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">Daily Challenge Leaders</h2>
-          <span className="rounded-full border border-[#f0cf52]/30 bg-[#f0cf52]/10 px-3 py-1 text-xs font-semibold text-[#f6df84]">
+          <h2 className="text-2xl font-bold text-white sm:text-3xl">Daily Challenge Leaders</h2>
+          <span className="rounded-full border border-[#f0cf52]/30 bg-[#f0cf52]/10 px-2.5 py-0.5 text-xs font-semibold text-[#f6df84]">
             Today
           </span>
         </div>
-        <p className="mt-2 text-sm text-slate-400">
+        <p className="mt-1.5 text-sm text-slate-400">
           Top scores for today's challenge • Resets in {hours}h {minutes}m
         </p>
       </div>
       
-      <div className="mb-6 flex items-end justify-between">
+      <div className="mb-4 flex items-end justify-between">
         <Link
           to="/leaderboard"
           className="flex items-center gap-2 text-sm font-semibold text-[#f6df84] transition hover:text-[#f0cf52]"
@@ -339,7 +366,7 @@ function LeaderboardPreview({ topPlayers }: { topPlayers: LeaderboardEntry[] }) 
       </div>
 
       {topPlayers.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-3">
           {topPlayers.map((player, index) => (
             <TopPlayerCard
               key={player.gameId}
@@ -353,9 +380,9 @@ function LeaderboardPreview({ topPlayers }: { topPlayers: LeaderboardEntry[] }) 
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-white/10 bg-black/20 px-8 py-12 text-center">
-          <Trophy className="mx-auto h-12 w-12 text-slate-600" />
-          <p className="mt-4 text-slate-400">No players yet. Be the first to compete!</p>
+        <div className="rounded-2xl border border-dashed border-white/10 bg-black/20 px-6 py-8 text-center">
+          <Trophy className="mx-auto h-10 w-10 text-slate-600" />
+          <p className="mt-3 text-slate-400">No players yet. Be the first to compete!</p>
         </div>
       )}
     </section>
@@ -366,12 +393,12 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V']
 
 function StepCard({ step, title, description }: { step: string; title: string; description: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-card p-6 transition-colors hover:border-white/20">
-      <div className="flex items-center gap-4">
-        <span className="font-mono text-4xl font-bold leading-none text-[#f0cf52] opacity-60">
+    <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+      <div className="flex items-center gap-3">
+        <span className="font-mono text-3xl font-bold leading-none text-[#f0cf52] opacity-60">
           {ROMAN[parseInt(step) - 1]}
         </span>
-        <h3 className="text-xl font-bold text-white">{title}</h3>
+        <h3 className="text-lg font-bold text-white">{title}</h3>
       </div>
       <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
     </div>
@@ -401,7 +428,7 @@ function GameModeCard({
 
   return (
     <div
-      className={`flex flex-col h-full rounded-2xl border bg-card p-6 transition-colors ${
+      className={`flex flex-col h-full rounded-2xl border bg-card p-4 transition-colors ${
         highlighted
           ? 'border-[#f0cf52]/30 hover:border-[#f0cf52]/50'
           : 'border-white/10 hover:border-white/20'
@@ -409,15 +436,15 @@ function GameModeCard({
     >
       {/* Card Content - Grows to fill space */}
       <div className="flex-1">
-        <div className={`rounded-xl p-3 inline-block ${
+        <div className={`rounded-xl p-2.5 inline-block ${
           highlighted ? 'bg-[#f0cf52]/15 text-[#f6df84]' : 'bg-white/5 text-slate-300'
         }`}>
           {icon}
         </div>
 
-        <h3 className="mt-4 text-2xl font-bold text-white">{title}</h3>
+        <h3 className="mt-3 text-xl font-bold text-white">{title}</h3>
 
-        <ul className="mt-4 space-y-2">
+        <ul className="mt-3 space-y-1.5">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start gap-2 text-sm text-slate-400">
               <span className="mt-1 text-[#53a6ff]">•</span>
@@ -428,15 +455,15 @@ function GameModeCard({
       </div>
 
       {/* CTA - Pinned to bottom */}
-      <div className="mt-6">
+      <div className="mt-4">
         {isDisabled ? (
-          <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-center text-sm text-slate-500">
+          <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-center text-sm text-slate-500">
             Requires wallet
           </div>
         ) : (
           <Link
             to={ctaLink}
-            className={`block rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
+            className={`block rounded-xl px-3 py-2 text-center text-sm font-semibold transition ${
               highlighted
                 ? 'bg-[#f0cf52] text-[#2e2510] hover:brightness-105'
                 : 'border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10'
@@ -460,13 +487,13 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-card p-6 transition-colors hover:border-white/20">
+    <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{label}</p>
-          <p className="mt-3 text-3xl font-black text-[#f6df84]">{value}</p>
+          <p className="mt-2 text-2xl font-black text-[#f6df84]">{value}</p>
         </div>
-        <div className="rounded-xl bg-[#f0cf52]/10 p-3 text-[#f6df84]">
+        <div className="rounded-xl bg-[#f0cf52]/10 p-2.5 text-[#f6df84]">
           {icon}
         </div>
       </div>
@@ -488,13 +515,13 @@ function QuickActionCard({
   return (
     <Link
       to={to}
-      className="block rounded-2xl border border-white/10 bg-card p-6 transition-colors hover:border-white/20"
+      className="block rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20"
     >
-      <div className="rounded-xl bg-[#53a6ff]/10 p-3 inline-block text-[#9fd0ff]">
+      <div className="rounded-xl bg-[#53a6ff]/10 p-2.5 inline-block text-[#9fd0ff]">
         {icon}
       </div>
-      <h3 className="mt-4 text-xl font-bold text-white">{title}</h3>
-      <p className="mt-2 text-sm text-slate-400">{description}</p>
+      <h3 className="mt-3 text-lg font-bold text-white">{title}</h3>
+      <p className="mt-1.5 text-sm text-slate-400">{description}</p>
     </Link>
   )
 }
@@ -516,7 +543,7 @@ function TopPlayerCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border bg-card p-6 transition-colors ${
+      className={`rounded-2xl border bg-card p-4 transition-colors ${
         rank === 1
           ? 'border-[#f0cf52]/30 hover:border-[#f0cf52]/50'
           : 'border-white/10 hover:border-white/20'
@@ -524,20 +551,20 @@ function TopPlayerCard({
     >
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-2xl font-black" style={{ color: rankColor(rank) }}>#{rank}</div>
+          <div className="text-xl font-black" style={{ color: rankColor(rank) }}>#{rank}</div>
           <Link
             to={`/player/${address}`}
-            className="mt-2 inline-block text-sm font-semibold text-white transition hover:text-[#53a6ff] hover:underline"
+            className="mt-1.5 inline-block text-sm font-semibold text-white transition hover:text-[#53a6ff] hover:underline"
           >
             {username || shortAddress(address)}
           </Link>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-black text-[#f6df84]">{score}</p>
-          <p className="mt-1 text-xs text-slate-500">points</p>
+          <p className="text-xl font-black text-[#f6df84]">{score}</p>
+          <p className="mt-0.5 text-xs text-slate-500">points</p>
         </div>
       </div>
-      <div className="mt-4 flex items-center gap-4 text-xs text-slate-400">
+      <div className="mt-3 flex items-center gap-4 text-xs text-slate-400">
         <span>{moveCount} moves</span>
         <span>•</span>
         <span>tile {maxTile}</span>
@@ -554,20 +581,20 @@ function DailyCapProgressCard({ playerStats }: { playerStats: any }) {
 
   return (
     <div
-      className={`mt-6 rounded-2xl border p-6 sm:p-8 ${
+      className={`mt-4 rounded-2xl border p-5 ${
         hasDaySevenBonus
           ? 'border-[#f6df84]/30 bg-[#f6df84]/10'
           : 'border-white/10 bg-card'
       }`}
     >
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         {/* Left: Progress Info */}
         <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <div className={`rounded-xl p-3 ${
+          <div className="flex items-center gap-2.5">
+            <div className={`rounded-xl p-2.5 ${
               hasDaySevenBonus ? 'bg-[#f6df84]/15 text-[#f6df84]' : 'bg-[#53a6ff]/10 text-[#9fd0ff]'
             }`}>
-              <Target className="h-7 w-7" />
+              <Target className="h-6 w-6" />
             </div>
             <div>
               <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${
@@ -576,13 +603,13 @@ function DailyCapProgressCard({ playerStats }: { playerStats: any }) {
                 Daily Cap Progress
               </p>
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-3xl font-black text-white">{earnedToday}</span>
-                <span className="text-xl font-medium text-slate-400">/ {dailyCap}</span>
+                <span className="text-2xl font-black text-white">{earnedToday}</span>
+                <span className="text-lg font-medium text-slate-400">/ {dailyCap}</span>
               </div>
             </div>
           </div>
 
-          <p className={`mt-4 text-sm ${
+          <p className={`mt-3 text-sm ${
             hasDaySevenBonus ? 'text-[#f6df84]/80' : 'text-slate-500'
           }`}>
             {hasDaySevenBonus
@@ -591,7 +618,7 @@ function DailyCapProgressCard({ playerStats }: { playerStats: any }) {
           </p>
 
           {/* Progress Bar */}
-          <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-slate-900/50">
+          <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-900/50">
             <motion.div
               initial={{ width: 0 }}
               animate={{
@@ -603,7 +630,7 @@ function DailyCapProgressCard({ playerStats }: { playerStats: any }) {
           </div>
 
           {hasDaySevenBonus && (
-            <p className="mt-3 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-slate-500">
               With your Day 7 bonus, you can earn up to {Math.floor(dailyCap * 1.2)} points total today
             </p>
           )}
@@ -611,13 +638,13 @@ function DailyCapProgressCard({ playerStats }: { playerStats: any }) {
 
         {/* Right: Day 7 Bonus Badge (if active) */}
         {hasDaySevenBonus && (
-          <div className="rounded-xl border border-[#f6df84]/30 bg-[#f6df84]/10 px-6 py-4">
+          <div className="rounded-xl border border-[#f6df84]/30 bg-[#f6df84]/10 px-5 py-3">
             <div className="text-center">
-              <Award className="mx-auto h-8 w-8 text-[#f6df84]" />
+              <Award className="mx-auto h-7 w-7 text-[#f6df84]" />
               <p className="mt-2 text-sm font-bold uppercase tracking-wider text-[#f6df84]">
                 +20% Bonus Active
               </p>
-              <p className="mt-1 text-xs text-[#f6df84]/70">Day 7 Reward</p>
+              <p className="mt-0.5 text-xs text-[#f6df84]/70">Day 7 Reward</p>
             </div>
           </div>
         )}

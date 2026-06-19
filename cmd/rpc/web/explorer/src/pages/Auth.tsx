@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
@@ -25,6 +25,73 @@ import {
   persistStoredWalletAuth,
   clearStoredWalletAuth,
 } from '../lib/walletAuth'
+
+// Separate modal component to prevent parent re-renders from affecting it
+const FaucetClaimModal = memo(({ 
+  account, 
+  onClaim, 
+  onSkip, 
+  isClaiming 
+}: { 
+  account: RpcKeystoreAccount
+  onClaim: () => void
+  onSkip: () => void
+  isClaiming: boolean
+}) => {
+  console.log('[FaucetModal] Rendering with account:', account.address, 'isClaiming:', isClaiming)
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
+      onClick={(e) => e.stopPropagation()}
+      style={{ pointerEvents: 'auto' }}
+    >
+      <motion.div
+        initial={{ scale: 0.95, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, y: 20 }}
+        className="w-full max-w-md rounded-2xl border border-[#53a6ff]/30 bg-card p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-xs uppercase tracking-[0.18em] text-[#9fd0ff]">Wallet Created</p>
+        <h2 className="mt-2 text-2xl font-bold text-white">Claim test PROOF to start</h2>
+        <p className="mt-3 text-sm leading-6 text-slate-400">
+          {account.nickname} is signed in on this device. Claim some test PROOF and we'll
+          register your username on-chain so you can compete on the leaderboards.
+        </p>
+
+        <div className="mt-4 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Address</p>
+          <p className="mt-1 break-all font-mono text-xs text-slate-300">{account.address}</p>
+        </div>
+
+        <button
+          onClick={onClaim}
+          disabled={isClaiming}
+          className="mt-5 w-full rounded-xl bg-[#53a6ff] px-5 py-3 text-sm font-semibold text-[#0a0e1a] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isClaiming ? (
+            <span className="flex items-center justify-center gap-2">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="h-4 w-4 rounded-full border-2 border-[#0a0e1a]/30 border-t-[#0a0e1a]"
+              />
+              Claiming...
+            </span>
+          ) : (
+            'Claim PROOF & Set Username'
+          )}
+        </button>
+      </motion.div>
+    </motion.div>
+  )
+})
+
+FaucetClaimModal.displayName = 'FaucetClaimModal'
 
 function AuthPage() {
   useEffect(() => {
@@ -54,8 +121,42 @@ function AuthPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [walletMenuOpen, setWalletMenuOpen] = useState<string | null>(null)
   const [isManageWalletsExpanded, setIsManageWalletsExpanded] = useState(false)
-  const [justCreated, setJustCreated] = useState<RpcKeystoreAccount | null>(null)
+  const [justCreated, setJustCreated] = useState<RpcKeystoreAccount | null>(() => {
+    // Restore from sessionStorage on mount
+    const stored = sessionStorage.getItem('pending-faucet-claim')
+    if (stored) {
+      try {
+        return JSON.parse(stored)
+      } catch {
+        return null
+      }
+    }
+    return null
+  })
   const [isFauceting, setIsFauceting] = useState(false)
+
+  // Persist justCreated to sessionStorage when it changes
+  useEffect(() => {
+    if (justCreated) {
+      sessionStorage.setItem('pending-faucet-claim', JSON.stringify(justCreated))
+    } else {
+      sessionStorage.removeItem('pending-faucet-claim')
+    }
+  }, [justCreated])
+
+  // Prevent component re-renders from closing the modal
+  // Keep modal open by checking sessionStorage on every render
+  useEffect(() => {
+    const stored = sessionStorage.getItem('pending-faucet-claim')
+    if (stored && !justCreated) {
+      try {
+        setJustCreated(JSON.parse(stored))
+      } catch {
+        // Invalid data, clear it
+        sessionStorage.removeItem('pending-faucet-claim')
+      }
+    }
+  }, [justCreated])
 
   useEffect(() => {
     let cancelled = false
@@ -159,12 +260,12 @@ function AuthPage() {
         password,
       })
       await refreshWallets(created.address)
-      syncSession(created, password)
+      syncSession(created, password) // This sets loginPassword
       setNickname('')
       setPassword('')
       setConfirmPassword('')
       toast.success(`${created.nickname} is ready and signed in on this device.`)
-      setJustCreated(created)
+      setJustCreated(created) // This triggers the faucet modal
     } catch (error) {
       console.error(error)
       toast.error(error instanceof Error ? error.message : 'Unable to create a wallet.')
@@ -177,31 +278,40 @@ function AuthPage() {
     if (!justCreated) {
       return
     }
+    
+    console.log('[Faucet] Starting claim process for:', justCreated.address)
+    console.log('[Faucet] Password available:', !!loginPassword)
+    
     try {
       setIsFauceting(true)
       const client = await createGame2048Client()
       
+      console.log('[Faucet] Client created, adding funds...')
       // Add test funds
       await client.addFunds(justCreated.address, 500)
+      console.log('[Faucet] Funds added successfully')
       
       // Set on-chain username using the nickname
       try {
+        console.log('[Faucet] Setting username on-chain:', justCreated.nickname)
         await client.setUsername({
           address: justCreated.address,
           password: loginPassword,
           username: justCreated.nickname
         })
+        console.log('[Faucet] Username set successfully')
         toast.success('Username registered on-chain!')
       } catch (usernameError) {
-        console.error('Failed to set username:', usernameError)
+        console.error('[Faucet] Failed to set username:', usernameError)
         // Don't fail the whole flow if username fails
         toast('Username registration will be available in Settings', { icon: 'ℹ️' })
       }
       
       toast.success('Test PROOF added to your wallet.')
-      navigate('/play')
+      setJustCreated(null) // Close the modal
+      navigate('/')
     } catch (error) {
-      console.error(error)
+      console.error('[Faucet] Error:', error)
       toast.error(error instanceof Error ? error.message : 'Faucet request failed.')
     } finally {
       setIsFauceting(false)
@@ -648,63 +758,17 @@ function AuthPage() {
       </PageShell>
 
       {/* Wallet Created — Faucet Step */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {justCreated && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="w-full max-w-md rounded-2xl border border-[#53a6ff]/30 bg-card p-8"
-            >
-              <p className="text-xs uppercase tracking-[0.18em] text-[#9fd0ff]">Wallet Created</p>
-              <h2 className="mt-2 text-2xl font-bold text-white">Claim test PROOF to start</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-400">
-                {justCreated.nickname} is signed in on this device. Claim some test PROOF and we'll
-                register your username on-chain so you can compete on the leaderboards.
-              </p>
-
-              <div className="mt-4 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Address</p>
-                <p className="mt-1 break-all font-mono text-xs text-slate-300">{justCreated.address}</p>
-              </div>
-
-              <button
-                onClick={handleClaimFaucet}
-                disabled={isFauceting}
-                className="mt-5 w-full rounded-xl bg-[#53a6ff] px-5 py-3 text-sm font-semibold text-[#0a0e1a] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isFauceting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="h-4 w-4 rounded-full border-2 border-[#0a0e1a]/30 border-t-[#0a0e1a]"
-                    />
-                    Claiming...
-                  </span>
-                ) : (
-                  'Claim PROOF & Set Username'
-                )}
-              </button>
-
-              <button
-                onClick={() => {
-                  setJustCreated(null)
-                  navigate('/')
-                }}
-                disabled={isFauceting}
-                className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Skip for now
-              </button>
-            </motion.div>
-          </motion.div>
+          <FaucetClaimModal
+            account={justCreated}
+            onClaim={handleClaimFaucet}
+            onSkip={() => {
+              setJustCreated(null)
+              navigate('/')
+            }}
+            isClaiming={isFauceting}
+          />
         )}
       </AnimatePresence>
 

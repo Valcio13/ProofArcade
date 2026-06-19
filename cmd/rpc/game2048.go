@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -858,6 +859,10 @@ func (s *Server) game2048Start(w http.ResponseWriter, r *http.Request, mode uint
 		}
 
 		utcDate := currentUTCDate()
+		
+		// Enhanced debug logging for daily seed generation
+		log.Printf("[DAILY_SEED_DEBUG] Current UTC Date: %s", utcDate)
+		log.Printf("[DAILY_SEED_DEBUG] Server Time: %s", time.Now().UTC().Format(time.RFC3339))
 
 		if mode == game2048ModeDaily {
 			attemptKey := keyForDailyAttempt(utcDate, req.Address)
@@ -2003,7 +2008,9 @@ func deriveGameID(address []byte, tx *lib.Transaction, mode uint64) []byte {
 }
 
 func deriveDailySeed(chainID uint64, utcDate string) []byte {
-	return sha256Bytes([]byte("daily-seed"), []byte(strconv.FormatUint(chainID, 10)), []byte(utcDate))
+	seed := sha256Bytes([]byte("daily-seed"), []byte(strconv.FormatUint(chainID, 10)), []byte(utcDate))
+	log.Printf("[DAILY_SEED_DEBUG] Generated seed for chainID=%d, utcDate=%s, seed(hex)=%s", chainID, utcDate, hex.EncodeToString(seed)[:32])
+	return seed
 }
 
 func deriveClassicSeed(address []byte, tx *lib.Transaction) []byte {

@@ -1010,7 +1010,7 @@ function Play2048Page() {
                       <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_140px] xl:grid-cols-1">
                         <motion.button
                           onClick={() => start(selectedMode)}
-                          disabled={!canStart || isLoadingClient || !canUseLiveWallet || (selectedMode === 'daily' && hasCompletedDailyToday)}
+                          disabled={!canStart || isLoadingClient || !canUseLiveWallet || (selectedMode === 'daily' && (hasCompletedDailyToday || session?.mode === 'daily'))}
                           className={`rounded-xl px-3 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
                             selectedMode === 'daily' 
                               ? 'bg-[#c95f38] hover:bg-[#d36c49]' 
@@ -1019,7 +1019,7 @@ function Play2048Page() {
                                 : 'bg-[#53d7a6] hover:bg-[#67ddb3]'
                           }`}
                         >
-                          {selectedMode === 'daily' && hasCompletedDailyToday ? 'Daily Completed' : selectedMode === 'daily' ? 'Start Daily' : selectedMode === 'classic' ? 'Start Classic' : 'Start Training'}
+                          {selectedMode === 'daily' && hasCompletedDailyToday ? 'Daily Completed' : selectedMode === 'daily' && session?.mode === 'daily' ? 'Daily Active' : selectedMode === 'daily' ? 'Start Daily' : selectedMode === 'classic' ? 'Start Classic' : 'Start Training'}
                         </motion.button>
                         <motion.button
                           onClick={() => finishRun('player_stopped')}
