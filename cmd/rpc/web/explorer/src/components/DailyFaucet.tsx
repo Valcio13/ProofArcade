@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Coins, Clock, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
+import { adminRPCURL } from '../lib/api'
 
-const FAUCET_AMOUNT = 500 // 500 PROOF tokens
+const FAUCET_AMOUNT = 100 // 100 PROOF tokens per day
 const FAUCET_COOLDOWN_HOURS = 24
 
 interface FaucetState {
@@ -17,6 +18,15 @@ interface FaucetState {
 
 export function DailyFaucet() {
   const wallet = loadStoredWalletAuth()
+  
+  // Check if faucet was hidden after claim
+  const getInitialVisibility = () => {
+    if (!wallet?.address) return true
+    const hiddenKey = `faucet_hidden_${wallet.address}`
+    return !localStorage.getItem(hiddenKey)
+  }
+  
+  const [isVisible, setIsVisible] = useState(getInitialVisibility)
   const [faucetState, setFaucetState] = useState<FaucetState>({
     canClaim: true,
     lastClaimTime: null,
@@ -31,6 +41,7 @@ export function DailyFaucet() {
     if (!wallet?.address) return
 
     const storageKey = `faucet_last_claim_${wallet.address}`
+    const hiddenKey = `faucet_hidden_${wallet.address}`
     const lastClaimStr = localStorage.getItem(storageKey)
     
     if (lastClaimStr) {
@@ -45,6 +56,10 @@ export function DailyFaucet() {
           canClaim: false,
           lastClaimTime,
         }))
+      } else {
+        // Cooldown expired, show the faucet again
+        localStorage.removeItem(hiddenKey)
+        setIsVisible(true)
       }
     }
   }, [wallet?.address])
@@ -96,8 +111,10 @@ export function DailyFaucet() {
     }))
 
     try {
-      const adminRpcUrl = import.meta.env.VITE_ADMIN_RPC_URL || 'http://localhost:50003'
-      const response = await fetch(`${adminRpcUrl}/v1/admin/dev-faucet`, {
+      console.log('[DailyFaucet] Claiming tokens for:', wallet.address)
+      console.log('[DailyFaucet] Using admin RPC URL:', adminRPCURL)
+      
+      const response = await fetch(`${adminRPCURL}/v1/admin/dev-faucet`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,18 +125,23 @@ export function DailyFaucet() {
         }),
       })
 
+      console.log('[DailyFaucet] Response status:', response.status)
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('[DailyFaucet] Error response:', errorData)
         throw new Error(errorData.error || `HTTP ${response.status}`)
       }
 
       const data = await response.json()
-      console.log('Faucet claim successful:', data)
+      console.log('[DailyFaucet] Success:', data)
 
       // Store claim time in local storage
       const now = Date.now()
       const storageKey = `faucet_last_claim_${wallet.address}`
+      const hiddenKey = `faucet_hidden_${wallet.address}`
       localStorage.setItem(storageKey, now.toString())
+      localStorage.setItem(hiddenKey, 'true')
 
       setFaucetState(prev => ({
         ...prev,
@@ -129,13 +151,10 @@ export function DailyFaucet() {
         lastClaimTime: now,
       }))
 
-      // Clear success message after 5 seconds
+      // Hide the card after 3 seconds with a fade out
       setTimeout(() => {
-        setFaucetState(prev => ({
-          ...prev,
-          claimSuccess: false,
-        }))
-      }, 5000)
+        setIsVisible(false)
+      }, 3000)
 
     } catch (error) {
       console.error('Faucet claim failed:', error)
@@ -147,14 +166,15 @@ export function DailyFaucet() {
     }
   }
 
-  if (!wallet?.address) {
-    return null // Don't show faucet if no wallet
+  if (!wallet?.address || !isVisible) {
+    return null // Don't show faucet if no wallet or hidden after claim
   }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3 }}
       className="rounded-2xl border border-[#4ade80]/30 bg-gradient-to-br from-[#4ade80]/10 to-[#22c55e]/5 p-6 shadow-lg shadow-[#4ade80]/5"
     >

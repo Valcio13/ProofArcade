@@ -226,50 +226,6 @@ function LeaderboardPage() {
         </section>
       ) : null}
 
-      {/* User Position Card */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mt-4 rounded-2xl border border-white/10 bg-card p-3"
-      >
-        {storedWallet && userRank !== -1 ? (
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#53a6ff]/15 border border-[#53a6ff]/30">
-                <span className="text-xl font-black text-[#53a6ff]">#{userRank + 1}</span>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'All-Time'}</p>
-                <p className="mt-0.5 text-xl font-bold text-white">
-                  {activeLeaderboard[userRank]?.score ?? 0} <span className="text-sm font-normal text-slate-400">points</span>
-                </p>
-              </div>
-            </div>
-            <div className="rounded-full border border-[#53a6ff]/30 bg-[#53a6ff]/15 px-3 py-1.5 text-sm font-semibold text-[#9fd0ff]">
-              {storedWallet.nickname}
-            </div>
-          </div>
-        ) : storedWallet ? (
-          <div className="flex flex-col items-center gap-3 py-2 sm:flex-row sm:justify-between">
-            <div className="text-center sm:text-left">
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'All-Time'}</p>
-              <p className="mt-1 text-base font-semibold text-slate-400">Not ranked yet</p>
-            </div>
-            <a
-              href={`/play?mode=${activeMode}`}
-              className="rounded-xl border border-[#f0cf52]/30 bg-[#f0cf52]/10 px-4 py-2 text-sm font-semibold text-[#f6df84] transition hover:bg-[#f0cf52]/15"
-            >
-              Start Playing
-            </a>
-          </div>
-        ) : (
-          <div className="py-2 text-center sm:text-left">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Your Position · {activeMode === 'daily' ? 'Daily' : 'All-Time'}</p>
-            <p className="mt-1 text-base font-semibold text-slate-400">Sign in to appear on the board</p>
-          </div>
-        )}
-      </motion.div>
-
       {/* Leaderboard Table */}
       <section className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

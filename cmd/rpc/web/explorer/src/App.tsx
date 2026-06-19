@@ -92,7 +92,9 @@ function App() {
   // Handle network changes and invalidate queries
   useNetworkChangeHandler();
   // Detect new blocks globally and refresh dashboard queries on chain growth
-  useBlockSubscription();
+  // DISABLED: Causes re-renders that close modals on auth page
+  // Individual queries already have their own refetchInterval
+  // useBlockSubscription();
 
   function AppShell() {
     const location = useLocation()

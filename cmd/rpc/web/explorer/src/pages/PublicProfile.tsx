@@ -211,16 +211,6 @@ function PublicProfile() {
                 <p className="mt-1 text-xs text-slate-500">Completed</p>
               </div>
 
-              {/* Classic Points */}
-              <div className="rounded-xl border border-white/10 bg-black/30 p-5">
-                <div className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-[#7e69ff]" />
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Classic Points</p>
-                </div>
-                <p className="mt-3 text-4xl font-bold text-white">{player?.classicPointsBalance ?? 0}</p>
-                <p className="mt-1 text-xs text-slate-500">Available</p>
-              </div>
-
               {/* All-Time Rank */}
               <div className="rounded-xl border border-white/10 bg-black/30 p-5">
                 <div className="flex items-center gap-2">
@@ -237,6 +227,16 @@ function PublicProfile() {
                     </Link>
                   )}
                 </p>
+              </div>
+
+              {/* Login Streak */}
+              <div className="rounded-xl border border-white/10 bg-black/30 p-5">
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-[#f6df84]" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Check-In Streak</p>
+                </div>
+                <p className="mt-3 text-4xl font-bold text-white">{player?.loginStreak ?? 0}</p>
+                <p className="mt-1 text-xs text-slate-500">Consecutive days</p>
               </div>
             </div>
           </section>

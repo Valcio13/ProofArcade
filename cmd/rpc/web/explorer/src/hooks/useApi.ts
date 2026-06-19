@@ -143,8 +143,14 @@ export const useBlockSubscription = () => {
     const queryClient = useQueryClient();
     const { data } = useLatestBlock();
     const lastHeightRef = React.useRef<number>(0);
+    const location = window.location;
 
     React.useEffect(() => {
+        // Skip block subscription on auth page to prevent modal disruptions
+        if (location.pathname === '/auth') {
+            return;
+        }
+
         const height = extractLatestBlockHeight(data);
         if (height <= 0) return;
         if (lastHeightRef.current === height) return;
@@ -159,7 +165,7 @@ export const useBlockSubscription = () => {
         BLOCK_DEPENDENT_QUERY_KEYS.forEach((key) => {
             queryClient.invalidateQueries({ queryKey: key });
         });
-    }, [data, queryClient]);
+    }, [data, queryClient, location.pathname]);
 };
 // Hooks for Blocks
 export const useBlocks = (page: number, perPage: number = 10, filter: string = 'all') => {
