@@ -27,6 +27,7 @@ import type {
   UsernameResponse,
   AddressByUsernameResponse,
 } from './mockChain2048'
+import { getWalletPassword } from './walletAuth'
 
 const queryConfigPath = '/v1/query/2048/config'
 const queryPlayerPath = '/v1/query/2048/player'
@@ -467,13 +468,12 @@ export function createRpcGame2048Client(): {
     },
     async startSession(address: string, mode: GameMode, password?: string) {
       const liveAddress = assertHexAddress(address)
-      if (!password) {
-        throw new Error('Live mode needs the wallet password to sign the game transaction.')
-      }
+      const pwd = password || getWalletPassword(liveAddress)
+      
       const path = mode === 'daily' ? txStartDailyPath : txStartClassicPath
       const session = await postJson<SessionStart>(adminRPCURL, path, {
         address: liveAddress,
-        password,
+        password: pwd,
         submit: true,
       })
       if (session.txHash) {
@@ -485,12 +485,11 @@ export function createRpcGame2048Client(): {
     },
     async submitSession(args: SubmitSessionArgs) {
       const liveAddress = assertHexAddress(args.address)
-      if (!args.password) {
-        throw new Error('Live mode needs the wallet password to sign the score submission.')
-      }
+      const pwd = args.password || getWalletPassword(liveAddress)
+      
       const result = await postJson<SubmitSessionResult>(adminRPCURL, txSubmitPath, {
         address: liveAddress,
-        password: args.password,
+        password: pwd,
         gameId: args.session.gameId,
         declaredScore: args.declaredScore,
         declaredMaxTile: args.declaredMaxTile,
@@ -507,12 +506,11 @@ export function createRpcGame2048Client(): {
     },
     async claimDailyReward(args: ClaimDailyRewardArgs): Promise<ClaimDailyRewardResult> {
       const liveAddress = assertHexAddress(args.address)
-      if (!args.password) {
-        throw new Error('Live mode needs the wallet password to sign the reward claim.')
-      }
+      const pwd = args.password || getWalletPassword(liveAddress)
+      
       const result = await postJson<ClaimDailyRewardResult>(adminRPCURL, txClaimDailyRewardPath, {
         address: liveAddress,
-        password: args.password,
+        password: pwd,
         utcDate: args.utcDate,
         submit: true,
       })
@@ -525,12 +523,11 @@ export function createRpcGame2048Client(): {
     },
     async claimDailyLoginReward(args: ClaimDailyLoginRewardArgs): Promise<ClaimDailyLoginRewardResult> {
       const liveAddress = assertHexAddress(args.address)
-      if (!args.password) {
-        throw new Error('Live mode needs the wallet password to sign the daily check-in reward claim.')
-      }
+      const pwd = args.password || getWalletPassword(liveAddress)
+      
       const result = await postJson<ClaimDailyLoginRewardResult>(adminRPCURL, txClaimDailyLoginRewardPath, {
         address: liveAddress,
-        password: args.password,
+        password: pwd,
         submit: true,
       })
       if (result.txHash) {
@@ -542,12 +539,11 @@ export function createRpcGame2048Client(): {
     },
     async redeemClassicPoints(args: RedeemClassicPointsArgs): Promise<RedeemClassicPointsResult> {
       const liveAddress = assertHexAddress(args.address)
-      if (!args.password) {
-        throw new Error('Live mode needs the wallet password to sign the redemption.')
-      }
+      const pwd = args.password || getWalletPassword(liveAddress)
+      
       const result = await postJson<RedeemClassicPointsResult>(adminRPCURL, txRedeemClassicPointsPath, {
         address: liveAddress,
-        password: args.password,
+        password: pwd,
         burnPoints: args.burnPoints,
         submit: true,
       })
@@ -560,12 +556,11 @@ export function createRpcGame2048Client(): {
     },
     async setUsername(args: SetUsernameArgs): Promise<SetUsernameResult> {
       const liveAddress = assertHexAddress(args.address)
-      if (!args.password) {
-        throw new Error('Live mode needs the wallet password to sign the username change.')
-      }
+      const pwd = args.password || getWalletPassword(liveAddress)
+      
       const result = await postJson<SetUsernameResult>(adminRPCURL, txSetUsernamePath, {
         address: liveAddress,
-        password: args.password,
+        password: pwd,
         username: args.username,
         submit: true,
       })

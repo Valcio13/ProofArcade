@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, type ChangeEvent, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
-import { MoreVertical, Download, Trash2, X, ChevronDown } from 'lucide-react'
 
 import { adminRPCURL } from '../lib/api'
 import FieldCard from '../components/app/FieldCard'
@@ -12,19 +11,104 @@ import BetaWalletNotice from '../components/app/BetaWalletNotice'
 import { shortAddress } from '../lib/address'
 import { createGame2048Client, type Game2048ClientStatus } from '../lib/chain2048'
 import {
-  createRpcKeystoreAccount,
-  fetchRpcKeystoreAccounts,
-  importRpcKeystoreWallet,
-  exportRpcKeystoreWallet,
-  deleteRpcKeystoreWallet,
-  type RpcKeystoreAccount,
-  type RpcWalletBackup,
-} from '../lib/rpcChain2048'
-import {
   loadStoredWalletAuth,
   persistStoredWalletAuth,
+  getLastUsedWalletAddress,
   clearStoredWalletAuth,
 } from '../lib/walletAuth'
+
+// Simple type for wallet references stored in localStorage
+interface EncryptedWallet {
+  address: string
+  nickname: string
+  publicKey: string
+  encryptedPrivateKey: string
+  salt: string
+  iv: string
+  version: number
+}
+
+interface WalletBackup {
+  address: string
+  nickname: string
+  publicKey: string
+  encryptedPrivateKey: string
+  salt: string
+  iv: string
+  version: number
+  exportedAt: string
+}
+
+// LocalStorage helpers for wallet references
+const STORAGE_KEY_PREFIX = 'proofarcade_wallet_'
+const WALLET_LIST_KEY = 'proofarcade_wallet_list'
+
+function listWallets(): EncryptedWallet[] {
+  const walletList = localStorage.getItem(WALLET_LIST_KEY)
+  if (!walletList) {
+    return []
+  }
+
+  const addresses = JSON.parse(walletList) as string[]
+  const wallets: EncryptedWallet[] = []
+
+  for (const address of addresses) {
+    const stored = localStorage.getItem(STORAGE_KEY_PREFIX + address)
+    if (stored) {
+      wallets.push(JSON.parse(stored) as EncryptedWallet)
+    }
+  }
+
+  return wallets
+}
+
+function importWallet(backup: WalletBackup, nickname?: string): EncryptedWallet {
+  if (!backup.address) {
+    throw new Error('Invalid wallet backup format')
+  }
+
+  const wallet: EncryptedWallet = {
+    address: backup.address,
+    nickname: nickname || backup.nickname,
+    publicKey: backup.publicKey,
+    encryptedPrivateKey: backup.encryptedPrivateKey,
+    salt: backup.salt,
+    iv: backup.iv,
+    version: backup.version || 1,
+  }
+
+  // Check if wallet already exists
+  const existing = localStorage.getItem(STORAGE_KEY_PREFIX + wallet.address)
+  if (existing) {
+    throw new Error('Wallet already exists on this device')
+  }
+
+  // Save wallet
+  localStorage.setItem(STORAGE_KEY_PREFIX + wallet.address, JSON.stringify(wallet))
+
+  // Update wallet list
+  const walletList = localStorage.getItem(WALLET_LIST_KEY)
+  const addresses = walletList ? (JSON.parse(walletList) as string[]) : []
+  if (!addresses.includes(wallet.address)) {
+    addresses.push(wallet.address)
+    localStorage.setItem(WALLET_LIST_KEY, JSON.stringify(addresses))
+  }
+
+  return wallet
+}
+
+function deleteWalletFromLocalStorage(address: string): void {
+  // Remove from individual storage
+  localStorage.removeItem(STORAGE_KEY_PREFIX + address)
+  
+  // Remove from wallet list
+  const walletList = localStorage.getItem(WALLET_LIST_KEY)
+  if (walletList) {
+    const addresses = JSON.parse(walletList) as string[]
+    const filtered = addresses.filter(addr => addr !== address)
+    localStorage.setItem(WALLET_LIST_KEY, JSON.stringify(filtered))
+  }
+}
 
 // Separate modal component to prevent parent re-renders from affecting it
 const FaucetClaimModal = memo(({ 
@@ -33,7 +117,7 @@ const FaucetClaimModal = memo(({
   onSkip, 
   isClaiming 
 }: { 
-  account: RpcKeystoreAccount
+  account: EncryptedWallet
   onClaim: () => void
   onSkip: () => void
   isClaiming: boolean
@@ -105,7 +189,7 @@ function AuthPage() {
     label: 'Checking backend',
     detail: 'Looking for live wallet support.',
   })
-  const [wallets, setWallets] = useState<RpcKeystoreAccount[]>([])
+  const [wallets, setWallets] = useState<EncryptedWallet[]>([])
   const [selectedAddress, setSelectedAddress] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
   const [nickname, setNickname] = useState('')
@@ -116,12 +200,11 @@ function AuthPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
-  const [deleteModalWallet, setDeleteModalWallet] = useState<RpcKeystoreAccount | null>(null)
+  const [isManageWalletsExpanded, setIsManageWalletsExpanded] = useState(false)
+  const [walletToDelete, setWalletToDelete] = useState<EncryptedWallet | null>(null)
   const [deletePassword, setDeletePassword] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
-  const [walletMenuOpen, setWalletMenuOpen] = useState<string | null>(null)
-  const [isManageWalletsExpanded, setIsManageWalletsExpanded] = useState(false)
-  const [justCreated, setJustCreated] = useState<RpcKeystoreAccount | null>(() => {
+  const [justCreated, setJustCreated] = useState<EncryptedWallet | null>(() => {
     // Restore from sessionStorage on mount
     const stored = sessionStorage.getItem('pending-faucet-claim')
     if (stored) {
@@ -169,24 +252,33 @@ function AuthPage() {
 
       setStatus(client.status)
 
-      if (client.status.mode === 'rpc') {
-        const nextWallets = await fetchRpcKeystoreAccounts()
-        if (cancelled) {
-          return
-        }
+      // Load client-side wallets from localStorage
+      const storedAuth = loadStoredWalletAuth()
+      setStoredSessionAddress(storedAuth?.address ?? '')
+      
+      const nextWallets = listWallets()
+      setWallets(nextWallets)
 
-        const storedAuth = loadStoredWalletAuth()
-        setWallets(nextWallets)
-        setStoredSessionAddress(storedAuth?.address ?? '')
-
-        const defaultAddress = storedAuth?.address && nextWallets.some((wallet) => wallet.address === storedAuth.address)
-          ? storedAuth.address
-          : nextWallets[0]?.address ?? ''
-        setSelectedAddress(defaultAddress)
-        if (storedAuth?.address === defaultAddress) {
-          setLoginPassword(storedAuth.password)
+      // Determine which wallet to select
+      let defaultAddress = ''
+      
+      // Priority 1: If user has active session, select that wallet and pre-fill password
+      if (storedAuth?.address && nextWallets.some((wallet) => wallet.address === storedAuth.address)) {
+        defaultAddress = storedAuth.address
+        setLoginPassword(storedAuth.password)
+      } 
+      // Priority 2: If no session but user logged out recently, select last used wallet (no password)
+      else {
+        const lastUsedAddress = getLastUsedWalletAddress()
+        if (lastUsedAddress && nextWallets.some((wallet) => wallet.address === lastUsedAddress)) {
+          defaultAddress = lastUsedAddress
+        } else {
+          // Priority 3: Default to first wallet
+          defaultAddress = nextWallets[0]?.address ?? ''
         }
       }
+      
+      setSelectedAddress(defaultAddress)
 
       setIsLoading(false)
     }
@@ -202,17 +294,12 @@ function AuthPage() {
     }
   }, [])
 
-  const storedWallet = useMemo(
-    () => wallets.find((wallet) => wallet.address === storedSessionAddress) ?? null,
-    [storedSessionAddress, wallets],
-  )
-
   const selectedWallet = useMemo(
     () => wallets.find((wallet) => wallet.address === selectedAddress) ?? null,
     [selectedAddress, wallets],
   )
 
-  function syncSession(wallet: RpcKeystoreAccount, nextPassword: string) {
+  function syncSession(wallet: EncryptedWallet, nextPassword: string) {
     persistStoredWalletAuth({
       address: wallet.address,
       nickname: wallet.nickname,
@@ -225,7 +312,7 @@ function AuthPage() {
   }
 
   async function refreshWallets(preferredAddress?: string) {
-    const nextWallets = await fetchRpcKeystoreAccounts()
+    const nextWallets = listWallets()
     setWallets(nextWallets)
     if (preferredAddress && nextWallets.some((wallet) => wallet.address === preferredAddress)) {
       setSelectedAddress(preferredAddress)
@@ -236,10 +323,6 @@ function AuthPage() {
   }
 
   async function handleRegister() {
-    if (status.mode !== 'rpc') {
-      toast.error('Wallet creation is only available with the live backend.')
-      return
-    }
     if (!nickname.trim()) {
       toast.error('Choose a nickname first.')
       return
@@ -255,19 +338,55 @@ function AuthPage() {
 
     try {
       setIsCreating(true)
-      const created = await createRpcKeystoreAccount({
-        nickname,
-        password,
+      console.log('[Register] Creating wallet on backend...')
+      
+      // Create wallet on backend (it has the correct BLS library)
+      const createResponse = await fetch(`${adminRPCURL}/v1/admin/keystore-new-key`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nickname: nickname.trim(),
+          password: password
+        })
       })
-      await refreshWallets(created.address)
-      syncSession(created, password) // This sets loginPassword
+      
+      if (!createResponse.ok) {
+        const errorText = await createResponse.text()
+        throw new Error(`Failed to create wallet: ${errorText}`)
+      }
+      
+      const address = (await createResponse.text()).replace(/"/g, '')
+      console.log('[Register] Wallet created:', address)
+      
+      // Create localStorage reference (for UI only, not actual wallet)
+      const walletRef: EncryptedWallet = {
+        address: address,
+        nickname: nickname.trim(),
+        publicKey: '', // We don't store actual crypto here anymore
+        encryptedPrivateKey: '', // Backend has the real wallet
+        salt: '',
+        iv: '',
+        version: 1
+      }
+      
+      // Save reference to localStorage
+      localStorage.setItem(`proofarcade_wallet_${address}`, JSON.stringify(walletRef))
+      const walletList = localStorage.getItem('proofarcade_wallet_list')
+      const addresses = walletList ? JSON.parse(walletList) : []
+      if (!addresses.includes(address)) {
+        addresses.push(address)
+        localStorage.setItem('proofarcade_wallet_list', JSON.stringify(addresses))
+      }
+      
+      await refreshWallets(address)
+      syncSession(walletRef, password)
       setNickname('')
       setPassword('')
       setConfirmPassword('')
-      toast.success(`${created.nickname} is ready and signed in on this device.`)
-      setJustCreated(created) // This triggers the faucet modal
+      toast.success(`${walletRef.nickname} is ready and signed in on this device.`)
+      setJustCreated(walletRef)
     } catch (error) {
-      console.error(error)
+      console.error('[Register] Error:', error)
       toast.error(error instanceof Error ? error.message : 'Unable to create a wallet.')
     } finally {
       setIsCreating(false)
@@ -326,51 +445,28 @@ function AuthPage() {
       return
     }
     if (!loginPassword) {
-      toast.error('Enter the wallet password first.')
+      toast.error('Enter the wallet password.')
       return
     }
 
-    // Verify the password before storing it
     try {
       setIsLoggingIn(true)
-      const client = await createGame2048Client()
-      
-      if (client.status.mode === 'rpc') {
-        // Verify the password with the backend
-        const verifyResponse = await fetch(`${adminRPCURL}/v1/admin/wallet-verify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            address: selectedWallet.address,
-            password: loginPassword,
-          }),
-        })
-        
-        if (!verifyResponse.ok) {
-          const errorData = await verifyResponse.json().catch(() => ({}))
-          console.error('Password verification failed:', errorData)
-          throw new Error('Incorrect password')
-        }
-      }
-      
+      // Just save session - password will be verified on first transaction
       syncSession(selectedWallet, loginPassword)
       toast.success(`${selectedWallet.nickname} is now signed in on this device.`)
+      
+      // Small delay to ensure localStorage write completes before navigation
+      await new Promise(resolve => setTimeout(resolve, 100))
       navigate('/')
     } catch (error) {
       console.error(error)
-      toast.error('Incorrect password. Please try again.')
+      toast.error('Unable to log in. Please try again.')
     } finally {
       setIsLoggingIn(false)
     }
   }
 
   async function handleImportWallet(event: ChangeEvent<HTMLInputElement>) {
-    if (status.mode !== 'rpc') {
-      toast.error('Wallet import is only available with the live backend.')
-      event.target.value = ''
-      return
-    }
-
     const file = event.target.files?.[0]
     if (!file) {
       return
@@ -379,67 +475,83 @@ function AuthPage() {
     try {
       setIsImporting(true)
       const raw = await file.text()
-      const parsed = JSON.parse(raw) as RpcWalletBackup
-      const imported = await importRpcKeystoreWallet({
-        backup: parsed,
-        nickname: importNickname.trim() || undefined,
-      })
+      const parsed = JSON.parse(raw) as WalletBackup
+      
+      // Validate backup structure
+      if (!parsed.address || !parsed.encryptedPrivateKey) {
+        throw new Error('Invalid wallet backup file')
+      }
+      
+      // Import wallet client-side
+      const imported = await importWallet(parsed, importNickname.trim() || undefined)
       await refreshWallets(imported.address)
       setImportNickname('')
       toast.success(`Imported ${imported.nickname}. Use the original wallet password to log in.`)
     } catch (error) {
       console.error(error)
       toast.error(error instanceof Error ? error.message : 'Unable to import this wallet backup.')
-    } finally{
+    } finally {
       setIsImporting(false)
       event.target.value = ''
     }
   }
 
-  async function handleExportWallet(wallet: RpcKeystoreAccount) {
-    try {
-      const backup = await exportRpcKeystoreWallet(wallet.address)
-      const json = JSON.stringify(backup, null, 2)
-      const blob = new Blob([json], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `${wallet.nickname}-${shortAddress(wallet.address)}-backup.json`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-      toast.success(`Backup exported for ${wallet.nickname}`)
-      setWalletMenuOpen(null)
-    } catch (error) {
-      console.error(error)
-      toast.error('Failed to export wallet backup.')
-    }
-  }
-
   async function handleDeleteWallet() {
-    if (!deleteModalWallet || !deletePassword) {
+    if (!walletToDelete) {
+      return
+    }
+
+    if (!deletePassword) {
+      toast.error('Enter the wallet password to confirm deletion.')
       return
     }
 
     try {
       setIsDeleting(true)
-      await deleteRpcKeystoreWallet(deleteModalWallet.address, deletePassword)
       
-      // Clear session if deleting the current wallet
-      if (storedSessionAddress === deleteModalWallet.address) {
-        clearStoredWalletAuth()
-        setStoredSessionAddress('')
+      // Try to delete from backend keystore (optional - may fail if not in keystore)
+      try {
+        const response = await fetch(`${adminRPCURL}/v1/admin/keystore-delete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            address: walletToDelete.address,
+            password: deletePassword
+          })
+        })
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          // If it's just not in keystore, that's OK - continue with localStorage removal
+          if (!errorText.includes('not found') && !errorText.includes('does not exist')) {
+            throw new Error(`Backend deletion failed: ${errorText}`)
+          }
+        }
+      } catch (backendError) {
+        console.warn('Backend deletion failed (continuing with local removal):', backendError)
+        // Continue anyway - wallet might only exist locally
       }
       
+      // Always remove from localStorage
+      deleteWalletFromLocalStorage(walletToDelete.address)
+      
+      // Clear session if this was the active wallet
+      const storedAuth = loadStoredWalletAuth()
+      if (storedAuth?.address === walletToDelete.address) {
+        clearStoredWalletAuth()
+        setStoredSessionAddress('')
+        setLoginPassword('')
+      }
+      
+      // Refresh wallet list
       await refreshWallets()
-      toast.success('Wallet removed from this device.')
-      setDeleteModalWallet(null)
+      
+      toast.success(`${walletToDelete.nickname} has been removed from this device.`)
+      setWalletToDelete(null)
       setDeletePassword('')
-      setWalletMenuOpen(null)
     } catch (error) {
       console.error(error)
-      toast.error(error instanceof Error ? error.message : 'Failed to delete wallet.')
+      toast.error(error instanceof Error ? error.message : 'Unable to delete wallet.')
     } finally {
       setIsDeleting(false)
     }
@@ -465,7 +577,7 @@ function AuthPage() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           {/* Login Section */}
-          <section className="rounded-2xl border border-white/15 p-6">
+          <section className="rounded-2xl border border-white/15 p-6 flex flex-col">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Returning Player</p>
@@ -477,15 +589,24 @@ function AuthPage() {
                 </div>
               ) : null}
             </div>
-            <div className="mt-5 space-y-4">
+            <div className="mt-5 space-y-4 flex-1">
               {wallets.length > 0 ? (
                 <>
                   {/* Selected Wallet Display */}
                   {selectedWallet && (
                     <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
                       <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Selected Wallet</p>
-                      <p className="mt-2 text-base font-semibold text-white">{selectedWallet.nickname}</p>
-                      <p className="mt-1 break-all font-mono text-xs text-slate-400">{shortAddress(selectedWallet.address)}</p>
+                      <div className="mt-2 flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <p className="text-base font-semibold text-white">{selectedWallet.nickname}</p>
+                          <p className="mt-1 break-all font-mono text-xs text-slate-400">{shortAddress(selectedWallet.address)}</p>
+                        </div>
+                        {storedSessionAddress === selectedWallet.address && (
+                          <div className="rounded-full border border-green-500/30 bg-green-500/10 px-2 py-1 text-[10px] font-semibold text-green-400">
+                            Active
+                          </div>
+                        )}
+                      </div>
                       
                       <button
                         onClick={() => setIsManageWalletsExpanded(!isManageWalletsExpanded)}
@@ -497,106 +618,93 @@ function AuthPage() {
                   )}
 
                   {/* Manage Wallets Collapsible Section */}
-                  <div className="rounded-xl border border-white/10 bg-black/20">
-                    <button
-                      onClick={() => setIsManageWalletsExpanded(!isManageWalletsExpanded)}
-                      className="flex w-full items-center justify-between p-4 text-left transition hover:bg-white/5"
-                    >
-                      <div>
-                        <p className="text-sm font-semibold text-white">Manage Wallets</p>
-                        <p className="mt-1 text-xs text-slate-400">{wallets.length} wallet{wallets.length !== 1 ? 's' : ''} on this device</p>
-                      </div>
+                  <AnimatePresence>
+                    {isManageWalletsExpanded && (
                       <motion.div
-                        animate={{ rotate: isManageWalletsExpanded ? 180 : 0 }}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
                       >
-                        <ChevronDown className="h-5 w-5 text-slate-400" />
-                      </motion.div>
-                    </button>
-
-                    <AnimatePresence>
-                      {isManageWalletsExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="border-t border-white/10 p-4 space-y-3">
-                            {wallets.map((wallet) => (
-                              <div
-                                key={wallet.address}
-                                className={`relative rounded-lg border p-3 transition ${
-                                  selectedAddress === wallet.address
-                                    ? 'border-[#53a6ff]/40 bg-[#53a6ff]/10'
-                                    : 'border-white/10 bg-slate-950/50 hover:border-white/20'
-                                }`}
-                              >
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-white">{wallet.nickname}</p>
-                                    <p className="mt-1 break-all font-mono text-xs text-slate-400">{shortAddress(wallet.address)}</p>
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-2">
-                                    {selectedAddress !== wallet.address && (
-                                      <button
-                                        onClick={() => {
-                                          setSelectedAddress(wallet.address)
-                                          setIsManageWalletsExpanded(false)
-                                        }}
-                                        className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/10"
-                                      >
-                                        Select
-                                      </button>
-                                    )}
-                                    
-                                    {/* Wallet Actions Menu */}
-                                    <div className="relative">
-                                      <button
-                                        onClick={() => setWalletMenuOpen(walletMenuOpen === wallet.address ? null : wallet.address)}
-                                        className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-slate-300 transition hover:bg-white/10"
-                                      >
-                                        <MoreVertical className="h-4 w-4" />
-                                      </button>
+                        <div className="rounded-xl border border-white/10 bg-black/20 p-4 space-y-3">
+                          {wallets.map((wallet) => (
+                            <div
+                              key={wallet.address}
+                              className={`relative rounded-lg border p-3 transition ${
+                                selectedAddress === wallet.address
+                                  ? 'border-[#53a6ff]/40 bg-[#53a6ff]/10'
+                                  : 'border-white/10 bg-slate-950/50'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div 
+                                  className="flex-1 min-w-0 cursor-pointer"
+                                  onClick={() => {
+                                    if (selectedAddress !== wallet.address) {
+                                      setSelectedAddress(wallet.address)
+                                      setIsManageWalletsExpanded(false)
                                       
-                                      {walletMenuOpen === wallet.address && (
-                                        <motion.div
-                                          initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                                          exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                          className="absolute right-0 z-10 mt-2 w-48 rounded-xl border border-white/10 bg-slate-900 p-2 shadow-xl"
-                                        >
-                                          <button
-                                            onClick={() => handleExportWallet(wallet)}
-                                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
-                                          >
-                                            <Download className="h-4 w-4" />
-                                            Export Backup
-                                          </button>
-                                          <button
-                                            onClick={() => {
-                                              setDeleteModalWallet(wallet)
-                                              setWalletMenuOpen(null)
-                                            }}
-                                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
-                                          >
-                                            <Trash2 className="h-4 w-4" />
-                                            Delete Wallet
-                                          </button>
-                                        </motion.div>
-                                      )}
+                                      // Keep password if this is the stored session wallet, otherwise clear it
+                                      const storedAuth = loadStoredWalletAuth()
+                                      if (storedAuth?.address === wallet.address && storedAuth.password) {
+                                        setLoginPassword(storedAuth.password)
+                                      } else {
+                                        setLoginPassword('')
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <p className="text-sm font-semibold text-white">{wallet.nickname}</p>
+                                  <p className="mt-1 break-all font-mono text-xs text-slate-400">{shortAddress(wallet.address)}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {selectedAddress === wallet.address && (
+                                    <div className="rounded-full bg-[#53a6ff] px-2 py-1 text-[10px] font-semibold text-white">
+                                      Selected
                                     </div>
-                                  </div>
+                                  )}
+                                  {storedSessionAddress === wallet.address && (
+                                    <div className="rounded-full border border-green-500/30 bg-green-500/10 px-2 py-1 text-[10px] font-semibold text-green-400">
+                                      Active
+                                    </div>
+                                  )}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setWalletToDelete(wallet)
+                                    }}
+                                    className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-400 transition hover:bg-red-500/20"
+                                    title="Delete wallet"
+                                  >
+                                    Delete
+                                  </button>
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Password Field */}
+                  <FieldCard label="Wallet password">
+                    <input
+                      type="password"
+                      value={loginPassword}
+                      onChange={(event) => setLoginPassword(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' && selectedAddress && loginPassword && !isLoggingIn) {
+                          event.preventDefault()
+                          handleLogIn()
+                        }
+                      }}
+                      placeholder="Enter password"
+                      disabled={!selectedAddress}
+                      className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff] disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+                  </FieldCard>
                 </>
               ) : (
                 <div className="rounded-xl border border-dashed border-white/10 bg-slate-950/30 px-6 py-8 text-center">
@@ -604,88 +712,78 @@ function AuthPage() {
                   <p className="mt-2 text-xs text-slate-500">Create a wallet or import a backup to get started</p>
                 </div>
               )}
-
-              <form onSubmit={(e) => { e.preventDefault(); handleLogIn(); }}>
-                <FieldCard label="Wallet password">
-                  <input
-                    type="password"
-                    value={loginPassword}
-                    onChange={(event) => setLoginPassword(event.target.value)}
-                    placeholder="Enter password"
-                    disabled={!selectedAddress}
-                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff] disabled:cursor-not-allowed disabled:opacity-60"
-                  />
-                </FieldCard>
-
-                <button
-                  type="submit"
-                  disabled={status.mode !== 'rpc' || !selectedAddress || !loginPassword || isLoggingIn}
-                  className="mt-4 w-full rounded-2xl bg-[#53a6ff] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#64b0ff] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isLoggingIn ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
-                      />
-                      Unlocking...
-                    </span>
-                  ) : (
-                    'Log In'
-                  )}
-                </button>
-              </form>
             </div>
+
+            {wallets.length > 0 && (
+              <button
+                onClick={handleLogIn}
+                disabled={!selectedAddress || !loginPassword || isLoggingIn}
+                className="mt-4 w-full rounded-2xl bg-[#53a6ff] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#64b0ff] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isLoggingIn ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
+                    />
+                    Unlocking...
+                  </span>
+                ) : (
+                  'Log In'
+                )}
+              </button>
+            )}
           </section>
 
           {/* Register Section */}
-          <section className="rounded-2xl border border-white/15 p-6">
+          <section className="rounded-2xl border border-white/15 p-6 flex flex-col">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">New Player</p>
               <h2 className="mt-2 text-2xl font-bold text-white">Create new wallet</h2>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleRegister(); }} className="mt-5 space-y-4">
-              <FieldCard label="Nickname">
-                <input
-                  value={nickname}
-                  onChange={(event) => setNickname(event.target.value)}
-                  placeholder="Choose a nickname"
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]"
-                />
-              </FieldCard>
+            <form onSubmit={(e) => { e.preventDefault(); handleRegister(); }} className="mt-5 space-y-4 flex-1 flex flex-col">
+              <div className="space-y-4 flex-1">
+                <FieldCard label="Nickname">
+                  <input
+                    value={nickname}
+                    onChange={(event) => setNickname(event.target.value)}
+                    placeholder="Choose a nickname"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]"
+                  />
+                </FieldCard>
 
-              <FieldCard label="Password">
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Create password"
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]"
-                />
-              </FieldCard>
+                <FieldCard label="Password">
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Create password"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]"
+                  />
+                </FieldCard>
 
-              <FieldCard label="Confirm password">
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  placeholder="Confirm password"
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]"
-                />
-              </FieldCard>
+                <FieldCard label="Confirm password">
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    placeholder="Confirm password"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]"
+                  />
+                </FieldCard>
 
-              {password && confirmPassword && password !== confirmPassword ? (
-                <div className="rounded-xl border border-[#f6df84]/30 bg-[#f6df84]/8 px-4 py-3 text-sm text-[#f8e8a5]">
-                  Passwords do not match
-                </div>
-              ) : null}
+                {password && confirmPassword && password !== confirmPassword ? (
+                  <div className="rounded-xl border border-[#f6df84]/30 bg-[#f6df84]/8 px-4 py-3 text-sm text-[#f8e8a5]">
+                    Passwords do not match
+                  </div>
+                ) : null}
+              </div>
 
               <button
                 type="submit"
                 disabled={
-                  status.mode !== 'rpc' ||
                   isCreating ||
                   !nickname.trim() ||
                   !password ||
@@ -773,93 +871,81 @@ function AuthPage() {
       </AnimatePresence>
 
       {/* Delete Wallet Confirmation Modal */}
-      <AnimatePresence>
-        {deleteModalWallet && (
+      <AnimatePresence mode="wait">
+        {walletToDelete && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-            onClick={() => !isDeleting && setDeleteModalWallet(null)}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
+            onClick={() => {
+              if (!isDeleting) {
+                setWalletToDelete(null)
+                setDeletePassword('')
+              }
+            }}
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
               className="w-full max-w-md rounded-2xl border border-red-500/30 bg-card p-8"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-red-500/20 p-3">
-                      <Trash2 className="h-6 w-6 text-red-400" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-white">Delete Wallet?</h2>
-                    </div>
-                  </div>
-                </div>
-                {!isDeleting && (
-                  <button
-                    onClick={() => setDeleteModalWallet(null)}
-                    className="rounded-lg p-1 text-slate-400 transition hover:bg-white/10 hover:text-white"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                )}
+              <p className="text-xs uppercase tracking-[0.18em] text-red-400">Delete Wallet</p>
+              <h2 className="mt-2 text-2xl font-bold text-white">Are you sure?</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                This will remove <span className="font-semibold text-white">{walletToDelete.nickname}</span> from 
+                this device and attempt to delete it from the backend keystore. This action cannot be undone.
+              </p>
+
+              <div className="mt-4 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Address</p>
+                <p className="mt-1 break-all font-mono text-xs text-slate-300">{walletToDelete.address}</p>
               </div>
 
-              <div className="mt-6 space-y-4">
-                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Wallet to Delete</p>
-                  <p className="mt-2 font-semibold text-white">{deleteModalWallet.nickname}</p>
-                  <p className="mt-1 break-all font-mono text-xs text-slate-400">{shortAddress(deleteModalWallet.address)}</p>
-                </div>
-
-                <div className="rounded-xl border border-amber-500/30 bg-amber-950/30 p-4">
-                  <p className="text-sm leading-6 text-amber-200">
-                    This will remove the wallet from this device.
-                  </p>
-                  <p className="mt-3 text-sm leading-6 text-amber-200">
-                    Make sure you have exported a backup first.
-                  </p>
-                  <p className="mt-3 text-sm font-semibold leading-6 text-amber-300">
-                    If you lose both your password and backup, your wallet cannot be recovered.
-                  </p>
-                </div>
-
-                <FieldCard label="Enter wallet password to confirm">
+              <form onSubmit={(e) => { e.preventDefault(); handleDeleteWallet(); }} className="mt-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    Enter wallet password to confirm
+                  </label>
                   <input
                     type="password"
                     value={deletePassword}
                     onChange={(e) => setDeletePassword(e.target.value)}
-                    placeholder="Password required"
+                    placeholder="Wallet password"
                     disabled={isDeleting}
-                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-red-500 disabled:cursor-not-allowed disabled:opacity-60"
                     autoFocus
                   />
-                </FieldCard>
+                </div>
 
                 <div className="flex gap-3">
                   <button
+                    type="button"
                     onClick={() => {
-                      setDeleteModalWallet(null)
-                      setDeletePassword('')
+                      if (!isDeleting) {
+                        setWalletToDelete(null)
+                        setDeletePassword('')
+                      }
                     }}
                     disabled={isDeleting}
-                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-300 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={handleDeleteWallet}
+                    type="submit"
                     disabled={isDeleting || !deletePassword}
-                    className="flex-1 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex-1 rounded-xl bg-red-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isDeleting ? (
                       <span className="flex items-center justify-center gap-2">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                          className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
+                        />
                         Deleting...
                       </span>
                     ) : (
@@ -867,7 +953,7 @@ function AuthPage() {
                     )}
                   </button>
                 </div>
-              </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

@@ -999,3 +999,4 @@ func (s *Server) WalletVerify(w http.ResponseWriter, r *http.Request, _ httprout
 	// Password is valid
 	write(w, map[string]bool{"valid": true}, http.StatusOK)
 }
+
