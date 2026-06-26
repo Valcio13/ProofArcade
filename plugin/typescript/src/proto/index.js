@@ -10165,6 +10165,7 @@ $root.types = (function() {
          * @property {types.IPluginEndRequest|null} [end] FSMToPlugin end
          * @property {types.IPluginStateReadResponse|null} [stateRead] FSMToPlugin stateRead
          * @property {types.IPluginStateWriteResponse|null} [stateWrite] FSMToPlugin stateWrite
+         * @property {types.IPluginQueryResponse|null} [query] FSMToPlugin query
          * @property {types.IPluginError|null} [error] FSMToPlugin error
          */
 
@@ -10256,6 +10257,14 @@ $root.types = (function() {
         FSMToPlugin.prototype.stateWrite = null;
 
         /**
+         * FSMToPlugin query.
+         * @member {types.IPluginQueryResponse|null|undefined} query
+         * @memberof types.FSMToPlugin
+         * @instance
+         */
+        FSMToPlugin.prototype.query = null;
+
+        /**
          * FSMToPlugin error.
          * @member {types.IPluginError|null|undefined} error
          * @memberof types.FSMToPlugin
@@ -10268,12 +10277,12 @@ $root.types = (function() {
 
         /**
          * FSMToPlugin payload.
-         * @member {"config"|"genesis"|"begin"|"check"|"deliver"|"end"|"stateRead"|"stateWrite"|"error"|undefined} payload
+         * @member {"config"|"genesis"|"begin"|"check"|"deliver"|"end"|"stateRead"|"stateWrite"|"query"|"error"|undefined} payload
          * @memberof types.FSMToPlugin
          * @instance
          */
         Object.defineProperty(FSMToPlugin.prototype, "payload", {
-            get: $util.oneOfGetter($oneOfFields = ["config", "genesis", "begin", "check", "deliver", "end", "stateRead", "stateWrite", "error"]),
+            get: $util.oneOfGetter($oneOfFields = ["config", "genesis", "begin", "check", "deliver", "end", "stateRead", "stateWrite", "query", "error"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -10319,6 +10328,8 @@ $root.types = (function() {
                 $root.types.PluginStateReadResponse.encode(message.stateRead, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
             if (message.stateWrite != null && Object.hasOwnProperty.call(message, "stateWrite"))
                 $root.types.PluginStateWriteResponse.encode(message.stateWrite, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
+            if (message.query != null && Object.hasOwnProperty.call(message, "query"))
+                $root.types.PluginQueryResponse.encode(message.query, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
             if (message.error != null && Object.hasOwnProperty.call(message, "error"))
                 $root.types.PluginError.encode(message.error, writer.uint32(/* id 99, wireType 2 =*/794).fork()).ldelim();
             return writer;
@@ -10391,6 +10402,10 @@ $root.types = (function() {
                     }
                 case 9: {
                         message.stateWrite = $root.types.PluginStateWriteResponse.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 10: {
+                        message.query = $root.types.PluginQueryResponse.decode(reader, reader.uint32());
                         break;
                     }
                 case 99: {
@@ -10514,6 +10529,16 @@ $root.types = (function() {
                         return "stateWrite." + error;
                 }
             }
+            if (message.query != null && message.hasOwnProperty("query")) {
+                if (properties.payload === 1)
+                    return "payload: multiple values";
+                properties.payload = 1;
+                {
+                    var error = $root.types.PluginQueryResponse.verify(message.query);
+                    if (error)
+                        return "query." + error;
+                }
+            }
             if (message.error != null && message.hasOwnProperty("error")) {
                 if (properties.payload === 1)
                     return "payload: multiple values";
@@ -10588,6 +10613,11 @@ $root.types = (function() {
                     throw TypeError(".types.FSMToPlugin.stateWrite: object expected");
                 message.stateWrite = $root.types.PluginStateWriteResponse.fromObject(object.stateWrite);
             }
+            if (object.query != null) {
+                if (typeof object.query !== "object")
+                    throw TypeError(".types.FSMToPlugin.query: object expected");
+                message.query = $root.types.PluginQueryResponse.fromObject(object.query);
+            }
             if (object.error != null) {
                 if (typeof object.error !== "object")
                     throw TypeError(".types.FSMToPlugin.error: object expected");
@@ -10660,6 +10690,11 @@ $root.types = (function() {
                 if (options.oneofs)
                     object.payload = "stateWrite";
             }
+            if (message.query != null && message.hasOwnProperty("query")) {
+                object.query = $root.types.PluginQueryResponse.toObject(message.query, options);
+                if (options.oneofs)
+                    object.payload = "query";
+            }
             if (message.error != null && message.hasOwnProperty("error")) {
                 object.error = $root.types.PluginError.toObject(message.error, options);
                 if (options.oneofs)
@@ -10712,6 +10747,7 @@ $root.types = (function() {
          * @property {types.IPluginEndResponse|null} [end] PluginToFSM end
          * @property {types.IPluginStateReadRequest|null} [stateRead] PluginToFSM stateRead
          * @property {types.IPluginStateWriteRequest|null} [stateWrite] PluginToFSM stateWrite
+         * @property {types.IPluginQueryRequest|null} [query] PluginToFSM query
          */
 
         /**
@@ -10801,17 +10837,25 @@ $root.types = (function() {
          */
         PluginToFSM.prototype.stateWrite = null;
 
+        /**
+         * PluginToFSM query.
+         * @member {types.IPluginQueryRequest|null|undefined} query
+         * @memberof types.PluginToFSM
+         * @instance
+         */
+        PluginToFSM.prototype.query = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
         /**
          * PluginToFSM payload.
-         * @member {"config"|"genesis"|"begin"|"check"|"deliver"|"end"|"stateRead"|"stateWrite"|undefined} payload
+         * @member {"config"|"genesis"|"begin"|"check"|"deliver"|"end"|"stateRead"|"stateWrite"|"query"|undefined} payload
          * @memberof types.PluginToFSM
          * @instance
          */
         Object.defineProperty(PluginToFSM.prototype, "payload", {
-            get: $util.oneOfGetter($oneOfFields = ["config", "genesis", "begin", "check", "deliver", "end", "stateRead", "stateWrite"]),
+            get: $util.oneOfGetter($oneOfFields = ["config", "genesis", "begin", "check", "deliver", "end", "stateRead", "stateWrite", "query"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -10857,6 +10901,8 @@ $root.types = (function() {
                 $root.types.PluginStateReadRequest.encode(message.stateRead, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
             if (message.stateWrite != null && Object.hasOwnProperty.call(message, "stateWrite"))
                 $root.types.PluginStateWriteRequest.encode(message.stateWrite, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
+            if (message.query != null && Object.hasOwnProperty.call(message, "query"))
+                $root.types.PluginQueryRequest.encode(message.query, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
             return writer;
         };
 
@@ -10927,6 +10973,10 @@ $root.types = (function() {
                     }
                 case 9: {
                         message.stateWrite = $root.types.PluginStateWriteRequest.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 10: {
+                        message.query = $root.types.PluginQueryRequest.decode(reader, reader.uint32());
                         break;
                     }
                 default:
@@ -11046,6 +11096,16 @@ $root.types = (function() {
                         return "stateWrite." + error;
                 }
             }
+            if (message.query != null && message.hasOwnProperty("query")) {
+                if (properties.payload === 1)
+                    return "payload: multiple values";
+                properties.payload = 1;
+                {
+                    var error = $root.types.PluginQueryRequest.verify(message.query);
+                    if (error)
+                        return "query." + error;
+                }
+            }
             return null;
         };
 
@@ -11109,6 +11169,11 @@ $root.types = (function() {
                 if (typeof object.stateWrite !== "object")
                     throw TypeError(".types.PluginToFSM.stateWrite: object expected");
                 message.stateWrite = $root.types.PluginStateWriteRequest.fromObject(object.stateWrite);
+            }
+            if (object.query != null) {
+                if (typeof object.query !== "object")
+                    throw TypeError(".types.PluginToFSM.query: object expected");
+                message.query = $root.types.PluginQueryRequest.fromObject(object.query);
             }
             return message;
         };
@@ -11177,6 +11242,11 @@ $root.types = (function() {
                 if (options.oneofs)
                     object.payload = "stateWrite";
             }
+            if (message.query != null && message.hasOwnProperty("query")) {
+                object.query = $root.types.PluginQueryRequest.toObject(message.query, options);
+                if (options.oneofs)
+                    object.payload = "query";
+            }
             return object;
         };
 
@@ -11222,6 +11292,7 @@ $root.types = (function() {
          * @property {Array.<Uint8Array>|null} [fileDescriptorProtos] PluginConfig fileDescriptorProtos
          * @property {Array.<string>|null} [transactionTypeUrls] PluginConfig transactionTypeUrls
          * @property {Array.<string>|null} [eventTypeUrls] PluginConfig eventTypeUrls
+         * @property {Array.<Uint8Array>|null} [customStatePrefixes] PluginConfig customStatePrefixes
          */
 
         /**
@@ -11237,6 +11308,7 @@ $root.types = (function() {
             this.fileDescriptorProtos = [];
             this.transactionTypeUrls = [];
             this.eventTypeUrls = [];
+            this.customStatePrefixes = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -11300,6 +11372,14 @@ $root.types = (function() {
         PluginConfig.prototype.eventTypeUrls = $util.emptyArray;
 
         /**
+         * PluginConfig customStatePrefixes.
+         * @member {Array.<Uint8Array>} customStatePrefixes
+         * @memberof types.PluginConfig
+         * @instance
+         */
+        PluginConfig.prototype.customStatePrefixes = $util.emptyArray;
+
+        /**
          * Creates a new PluginConfig instance using the specified properties.
          * @function create
          * @memberof types.PluginConfig
@@ -11341,6 +11421,9 @@ $root.types = (function() {
             if (message.eventTypeUrls != null && message.eventTypeUrls.length)
                 for (var i = 0; i < message.eventTypeUrls.length; ++i)
                     writer.uint32(/* id 7, wireType 2 =*/58).string(message.eventTypeUrls[i]);
+            if (message.customStatePrefixes != null && message.customStatePrefixes.length)
+                for (var i = 0; i < message.customStatePrefixes.length; ++i)
+                    writer.uint32(/* id 8, wireType 2 =*/66).bytes(message.customStatePrefixes[i]);
             return writer;
         };
 
@@ -11411,6 +11494,12 @@ $root.types = (function() {
                         if (!(message.eventTypeUrls && message.eventTypeUrls.length))
                             message.eventTypeUrls = [];
                         message.eventTypeUrls.push(reader.string());
+                        break;
+                    }
+                case 8: {
+                        if (!(message.customStatePrefixes && message.customStatePrefixes.length))
+                            message.customStatePrefixes = [];
+                        message.customStatePrefixes.push(reader.bytes());
                         break;
                     }
                 default:
@@ -11485,6 +11574,13 @@ $root.types = (function() {
                     if (!$util.isString(message.eventTypeUrls[i]))
                         return "eventTypeUrls: string[] expected";
             }
+            if (message.customStatePrefixes != null && message.hasOwnProperty("customStatePrefixes")) {
+                if (!Array.isArray(message.customStatePrefixes))
+                    return "customStatePrefixes: array expected";
+                for (var i = 0; i < message.customStatePrefixes.length; ++i)
+                    if (!(message.customStatePrefixes[i] && typeof message.customStatePrefixes[i].length === "number" || $util.isString(message.customStatePrefixes[i])))
+                        return "customStatePrefixes: buffer[] expected";
+            }
             return null;
         };
 
@@ -11551,6 +11647,16 @@ $root.types = (function() {
                 for (var i = 0; i < object.eventTypeUrls.length; ++i)
                     message.eventTypeUrls[i] = String(object.eventTypeUrls[i]);
             }
+            if (object.customStatePrefixes) {
+                if (!Array.isArray(object.customStatePrefixes))
+                    throw TypeError(".types.PluginConfig.customStatePrefixes: array expected");
+                message.customStatePrefixes = [];
+                for (var i = 0; i < object.customStatePrefixes.length; ++i)
+                    if (typeof object.customStatePrefixes[i] === "string")
+                        $util.base64.decode(object.customStatePrefixes[i], message.customStatePrefixes[i] = $util.newBuffer($util.base64.length(object.customStatePrefixes[i])), 0);
+                    else if (object.customStatePrefixes[i].length >= 0)
+                        message.customStatePrefixes[i] = object.customStatePrefixes[i];
+            }
             return message;
         };
 
@@ -11572,6 +11678,7 @@ $root.types = (function() {
                 object.fileDescriptorProtos = [];
                 object.transactionTypeUrls = [];
                 object.eventTypeUrls = [];
+                object.customStatePrefixes = [];
             }
             if (options.defaults) {
                 object.name = "";
@@ -11617,6 +11724,11 @@ $root.types = (function() {
                 object.eventTypeUrls = [];
                 for (var j = 0; j < message.eventTypeUrls.length; ++j)
                     object.eventTypeUrls[j] = message.eventTypeUrls[j];
+            }
+            if (message.customStatePrefixes && message.customStatePrefixes.length) {
+                object.customStatePrefixes = [];
+                for (var j = 0; j < message.customStatePrefixes.length; ++j)
+                    object.customStatePrefixes[j] = options.bytes === String ? $util.base64.encode(message.customStatePrefixes[j], 0, message.customStatePrefixes[j].length) : options.bytes === Array ? Array.prototype.slice.call(message.customStatePrefixes[j]) : message.customStatePrefixes[j];
             }
             return object;
         };
@@ -14490,6 +14602,493 @@ $root.types = (function() {
         };
 
         return PluginError;
+    })();
+
+    types.PluginQueryRequest = (function() {
+
+        /**
+         * Properties of a PluginQueryRequest.
+         * @memberof types
+         * @interface IPluginQueryRequest
+         * @property {number|Long|null} [height] PluginQueryRequest height
+         * @property {types.IPluginStateReadRequest|null} [read] PluginQueryRequest read
+         */
+
+        /**
+         * Constructs a new PluginQueryRequest.
+         * @memberof types
+         * @classdesc Represents a PluginQueryRequest.
+         * @implements IPluginQueryRequest
+         * @constructor
+         * @param {types.IPluginQueryRequest=} [properties] Properties to set
+         */
+        function PluginQueryRequest(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * PluginQueryRequest height.
+         * @member {number|Long} height
+         * @memberof types.PluginQueryRequest
+         * @instance
+         */
+        PluginQueryRequest.prototype.height = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PluginQueryRequest read.
+         * @member {types.IPluginStateReadRequest|null|undefined} read
+         * @memberof types.PluginQueryRequest
+         * @instance
+         */
+        PluginQueryRequest.prototype.read = null;
+
+        /**
+         * Creates a new PluginQueryRequest instance using the specified properties.
+         * @function create
+         * @memberof types.PluginQueryRequest
+         * @static
+         * @param {types.IPluginQueryRequest=} [properties] Properties to set
+         * @returns {types.PluginQueryRequest} PluginQueryRequest instance
+         */
+        PluginQueryRequest.create = function create(properties) {
+            return new PluginQueryRequest(properties);
+        };
+
+        /**
+         * Encodes the specified PluginQueryRequest message. Does not implicitly {@link types.PluginQueryRequest.verify|verify} messages.
+         * @function encode
+         * @memberof types.PluginQueryRequest
+         * @static
+         * @param {types.IPluginQueryRequest} message PluginQueryRequest message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PluginQueryRequest.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.height != null && Object.hasOwnProperty.call(message, "height"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.height);
+            if (message.read != null && Object.hasOwnProperty.call(message, "read"))
+                $root.types.PluginStateReadRequest.encode(message.read, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Encodes the specified PluginQueryRequest message, length delimited. Does not implicitly {@link types.PluginQueryRequest.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.PluginQueryRequest
+         * @static
+         * @param {types.IPluginQueryRequest} message PluginQueryRequest message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PluginQueryRequest.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a PluginQueryRequest message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.PluginQueryRequest
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.PluginQueryRequest} PluginQueryRequest
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PluginQueryRequest.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.PluginQueryRequest();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.height = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.read = $root.types.PluginStateReadRequest.decode(reader, reader.uint32());
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a PluginQueryRequest message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.PluginQueryRequest
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.PluginQueryRequest} PluginQueryRequest
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PluginQueryRequest.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a PluginQueryRequest message.
+         * @function verify
+         * @memberof types.PluginQueryRequest
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PluginQueryRequest.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.height != null && message.hasOwnProperty("height"))
+                if (!$util.isInteger(message.height) && !(message.height && $util.isInteger(message.height.low) && $util.isInteger(message.height.high)))
+                    return "height: integer|Long expected";
+            if (message.read != null && message.hasOwnProperty("read")) {
+                var error = $root.types.PluginStateReadRequest.verify(message.read);
+                if (error)
+                    return "read." + error;
+            }
+            return null;
+        };
+
+        /**
+         * Creates a PluginQueryRequest message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.PluginQueryRequest
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.PluginQueryRequest} PluginQueryRequest
+         */
+        PluginQueryRequest.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.PluginQueryRequest)
+                return object;
+            var message = new $root.types.PluginQueryRequest();
+            if (object.height != null)
+                if ($util.Long)
+                    (message.height = $util.Long.fromValue(object.height)).unsigned = true;
+                else if (typeof object.height === "string")
+                    message.height = parseInt(object.height, 10);
+                else if (typeof object.height === "number")
+                    message.height = object.height;
+                else if (typeof object.height === "object")
+                    message.height = new $util.LongBits(object.height.low >>> 0, object.height.high >>> 0).toNumber(true);
+            if (object.read != null) {
+                if (typeof object.read !== "object")
+                    throw TypeError(".types.PluginQueryRequest.read: object expected");
+                message.read = $root.types.PluginStateReadRequest.fromObject(object.read);
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a PluginQueryRequest message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.PluginQueryRequest
+         * @static
+         * @param {types.PluginQueryRequest} message PluginQueryRequest
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PluginQueryRequest.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.height = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.height = options.longs === String ? "0" : 0;
+                object.read = null;
+            }
+            if (message.height != null && message.hasOwnProperty("height"))
+                if (typeof message.height === "number")
+                    object.height = options.longs === String ? String(message.height) : message.height;
+                else
+                    object.height = options.longs === String ? $util.Long.prototype.toString.call(message.height) : options.longs === Number ? new $util.LongBits(message.height.low >>> 0, message.height.high >>> 0).toNumber(true) : message.height;
+            if (message.read != null && message.hasOwnProperty("read"))
+                object.read = $root.types.PluginStateReadRequest.toObject(message.read, options);
+            return object;
+        };
+
+        /**
+         * Converts this PluginQueryRequest to JSON.
+         * @function toJSON
+         * @memberof types.PluginQueryRequest
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PluginQueryRequest.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for PluginQueryRequest
+         * @function getTypeUrl
+         * @memberof types.PluginQueryRequest
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        PluginQueryRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.PluginQueryRequest";
+        };
+
+        return PluginQueryRequest;
+    })();
+
+    types.PluginQueryResponse = (function() {
+
+        /**
+         * Properties of a PluginQueryResponse.
+         * @memberof types
+         * @interface IPluginQueryResponse
+         * @property {types.IPluginStateReadResponse|null} [read] PluginQueryResponse read
+         * @property {types.IPluginError|null} [error] PluginQueryResponse error
+         */
+
+        /**
+         * Constructs a new PluginQueryResponse.
+         * @memberof types
+         * @classdesc Represents a PluginQueryResponse.
+         * @implements IPluginQueryResponse
+         * @constructor
+         * @param {types.IPluginQueryResponse=} [properties] Properties to set
+         */
+        function PluginQueryResponse(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * PluginQueryResponse read.
+         * @member {types.IPluginStateReadResponse|null|undefined} read
+         * @memberof types.PluginQueryResponse
+         * @instance
+         */
+        PluginQueryResponse.prototype.read = null;
+
+        /**
+         * PluginQueryResponse error.
+         * @member {types.IPluginError|null|undefined} error
+         * @memberof types.PluginQueryResponse
+         * @instance
+         */
+        PluginQueryResponse.prototype.error = null;
+
+        /**
+         * Creates a new PluginQueryResponse instance using the specified properties.
+         * @function create
+         * @memberof types.PluginQueryResponse
+         * @static
+         * @param {types.IPluginQueryResponse=} [properties] Properties to set
+         * @returns {types.PluginQueryResponse} PluginQueryResponse instance
+         */
+        PluginQueryResponse.create = function create(properties) {
+            return new PluginQueryResponse(properties);
+        };
+
+        /**
+         * Encodes the specified PluginQueryResponse message. Does not implicitly {@link types.PluginQueryResponse.verify|verify} messages.
+         * @function encode
+         * @memberof types.PluginQueryResponse
+         * @static
+         * @param {types.IPluginQueryResponse} message PluginQueryResponse message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PluginQueryResponse.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.read != null && Object.hasOwnProperty.call(message, "read"))
+                $root.types.PluginStateReadResponse.encode(message.read, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+            if (message.error != null && Object.hasOwnProperty.call(message, "error"))
+                $root.types.PluginError.encode(message.error, writer.uint32(/* id 99, wireType 2 =*/794).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Encodes the specified PluginQueryResponse message, length delimited. Does not implicitly {@link types.PluginQueryResponse.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.PluginQueryResponse
+         * @static
+         * @param {types.IPluginQueryResponse} message PluginQueryResponse message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PluginQueryResponse.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a PluginQueryResponse message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.PluginQueryResponse
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.PluginQueryResponse} PluginQueryResponse
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PluginQueryResponse.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.PluginQueryResponse();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.read = $root.types.PluginStateReadResponse.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 99: {
+                        message.error = $root.types.PluginError.decode(reader, reader.uint32());
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a PluginQueryResponse message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.PluginQueryResponse
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.PluginQueryResponse} PluginQueryResponse
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PluginQueryResponse.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a PluginQueryResponse message.
+         * @function verify
+         * @memberof types.PluginQueryResponse
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PluginQueryResponse.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.read != null && message.hasOwnProperty("read")) {
+                var error = $root.types.PluginStateReadResponse.verify(message.read);
+                if (error)
+                    return "read." + error;
+            }
+            if (message.error != null && message.hasOwnProperty("error")) {
+                var error = $root.types.PluginError.verify(message.error);
+                if (error)
+                    return "error." + error;
+            }
+            return null;
+        };
+
+        /**
+         * Creates a PluginQueryResponse message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.PluginQueryResponse
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.PluginQueryResponse} PluginQueryResponse
+         */
+        PluginQueryResponse.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.PluginQueryResponse)
+                return object;
+            var message = new $root.types.PluginQueryResponse();
+            if (object.read != null) {
+                if (typeof object.read !== "object")
+                    throw TypeError(".types.PluginQueryResponse.read: object expected");
+                message.read = $root.types.PluginStateReadResponse.fromObject(object.read);
+            }
+            if (object.error != null) {
+                if (typeof object.error !== "object")
+                    throw TypeError(".types.PluginQueryResponse.error: object expected");
+                message.error = $root.types.PluginError.fromObject(object.error);
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a PluginQueryResponse message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.PluginQueryResponse
+         * @static
+         * @param {types.PluginQueryResponse} message PluginQueryResponse
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PluginQueryResponse.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.read = null;
+                object.error = null;
+            }
+            if (message.read != null && message.hasOwnProperty("read"))
+                object.read = $root.types.PluginStateReadResponse.toObject(message.read, options);
+            if (message.error != null && message.hasOwnProperty("error"))
+                object.error = $root.types.PluginError.toObject(message.error, options);
+            return object;
+        };
+
+        /**
+         * Converts this PluginQueryResponse to JSON.
+         * @function toJSON
+         * @memberof types.PluginQueryResponse
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PluginQueryResponse.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for PluginQueryResponse
+         * @function getTypeUrl
+         * @memberof types.PluginQueryResponse
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        PluginQueryResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.PluginQueryResponse";
+        };
+
+        return PluginQueryResponse;
     })();
 
     types.PluginStateReadRequest = (function() {

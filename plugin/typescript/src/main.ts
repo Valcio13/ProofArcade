@@ -1,5 +1,6 @@
 import { StartPlugin, LoadConfig, initializeContract } from './contract/plugin.js';
 import { Contract, ContractConfig, ContractAsync } from './contract/contract.js';
+import { StartRPCServer } from './contract/rpc.js';
 
 // Initialize the contract references to avoid circular dependencies
 initializeContract(Contract, ContractConfig, ContractAsync);
@@ -8,7 +9,10 @@ initializeContract(Contract, ContractConfig, ContractAsync);
 async function main() {
     const config = await LoadConfig();
     console.log(`Starting plugin with ChainId: ${config.ChainId}`);
-    StartPlugin(config);
+    const plugin = StartPlugin(config);
+    
+    // start the plugin's own HTTP server exposing custom, chain-specific RPC endpoints
+    StartRPCServer(plugin);
 }
 
 main().catch((err) => {
