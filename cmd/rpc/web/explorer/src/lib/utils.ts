@@ -1,19 +1,32 @@
-// cnpyConversionRate sets the conversion rate between PROOF and uCNPY
+export const rowNavigationIgnoreSelector =
+    'a, button, input, select, textarea, summary, [role="button"], [data-row-click-ignore="true"]'
+
+export function shouldIgnoreRowNavigation(target: EventTarget | null): boolean {
+    return target instanceof Element && Boolean(target.closest(rowNavigationIgnoreSelector))
+}
+
+export function isRowNavigationKey(key: string): boolean {
+    return key === 'Enter' || key === ' '
+}
+
+// cnpyConversionRate sets the conversion rate between CNPY and uCNPY
 export const cnpyConversionRate = 1_000_000;
 
-// toCNPY converts a uCNPY amount to PROOF
+// toCNPY converts a uCNPY amount to CNPY
 export function toCNPY(uCNPY: number): number {
     return uCNPY / cnpyConversionRate;
 }
 
-// toUCNPY converts a PROOF amount to uCNPY
+// toUCNPY converts a CNPY amount to uCNPY
 export function toUCNPY(cnpy: number): number {
     return cnpy * cnpyConversionRate;
 }
 
-// convertNumberWCommas() formats a number with commas
+// convertNumberWCommas() formats a number with commas (integer part only)
 export function convertNumberWCommas(x: number): string {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const parts = x.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join('.');
 }
 
 // convertNumber() formats a number with commas or in compact notation
@@ -91,14 +104,14 @@ export function isHex(h: string): boolean {
     if (isNumber(h)) {
         return false;
     }
-    const hexRe = /[0-9A-Fa-f]{6}/g;
+    let hexRe = /[0-9A-Fa-f]{6}/g;
     return hexRe.test(h);
 }
 
 // upperCaseAndRepUnderscore() capitalizes each word in a string and replaces underscores with spaces
 export function upperCaseAndRepUnderscore(str: string): string {
-    let i: number;
-    const frags = str.split("_");
+    let i: number,
+        frags = str.split("_");
     for (i = 0; i < frags.length; i++) {
         frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
     }
@@ -171,15 +184,80 @@ export const formatLocaleNumber = (num: number, minFractionDigits: number = 0, m
     });
 };
 
-// formatCNPY formats amounts with decimals
-// Backend stores in display units, so just format with decimals
-export function formatCNPY(amount: number, maxDecimals: number = 2, minDecimals: number = 0): string {
-    if (isNaN(amount) || amount === null || amount === undefined) {
-        return "0";
+export const cnpyDetailFormat: Intl.NumberFormatOptions = {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
+}
+
+const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉']
+
+export const formatCNPY = (cnpy: number): string =>
+    formatLocaleNumber(cnpy, cnpyDetailFormat.minimumFractionDigits, cnpyDetailFormat.maximumFractionDigits)
+
+export const formatMicroCNPY = (uCNPY: number): string => {
+    if (!uCNPY) return '0 CNPY'
+    return `${formatCNPY(toCNPY(uCNPY))} CNPY`
+}
+
+export const formatDecimalWithSubscript = (
+    value: number,
+    minFractionDigits: number = 2,
+    maxFractionDigits: number = 6,
+    significantDigits: number = 3,
+): string => {
+    if (!Number.isFinite(value) || value === 0) {
+        return formatLocaleNumber(0, minFractionDigits, maxFractionDigits)
     }
-    
-    return amount.toLocaleString("en-US", {
-        minimumFractionDigits: minDecimals,
-        maximumFractionDigits: maxDecimals,
-    });
+
+    const sign = value < 0 ? '-' : ''
+    const absolute = Math.abs(value)
+    const fixed = absolute.toFixed(Math.max(12, maxFractionDigits + significantDigits + 4))
+    const [, decimal = ''] = fixed.split('.')
+
+    let leadingZeros = 0
+    for (const digit of decimal) {
+        if (digit === '0') leadingZeros++
+        else break
+    }
+
+    if (leadingZeros < Math.max(0, maxFractionDigits - 2)) {
+        return `${sign}${formatLocaleNumber(absolute, minFractionDigits, maxFractionDigits)}`
+    }
+
+    const significant = decimal.slice(leadingZeros, leadingZeros + significantDigits).padEnd(significantDigits, '0')
+    const subscript = String(leadingZeros)
+        .split('')
+        .map((digit) => subscriptDigits[Number(digit)] ?? digit)
+        .join('')
+
+    return `${sign}0.0${subscript}${significant}`
+}
+
+// extractAmountMicro extracts the uCNPY amount from a transaction object,
+// checking both top-level fields and the nested transaction.msg structure.
+export function extractAmountMicro(tx: Record<string, unknown>): number {
+    if (typeof tx.amount === 'number' && tx.amount > 0) return tx.amount
+    if (typeof tx.value === 'number' && tx.value > 0) return tx.value
+
+    const txObj = tx.transaction as Record<string, unknown> | undefined
+    const msg = txObj?.msg as Record<string, unknown> | undefined
+    if (msg) {
+        for (const key of ['messageSend', 'messageStake', 'messageEditStake', 'messageDAOTransfer', 'messageSubsidy']) {
+            const inner = msg[key] as Record<string, unknown> | undefined
+            if (inner?.amount !== undefined) return Number(inner.amount)
+        }
+        for (const key of ['messageCreateOrder', 'messageEditOrder']) {
+            const inner = msg[key] as Record<string, unknown> | undefined
+            if (inner?.amountForSale !== undefined) return Number(inner.amountForSale)
+        }
+        if (msg.amount !== undefined) return Number(msg.amount)
+    }
+
+    return 0
+}
+
+export function formatPaginationRange(start: number, end: number): string {
+    if (start <= 0 || end <= 0) return '0'
+    if (start === end) return `${start}`
+    return `${start} to ${end}`
 }

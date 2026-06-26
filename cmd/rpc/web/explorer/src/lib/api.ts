@@ -14,9 +14,12 @@ const buildURL = (baseURL: string, endpointPath: string): string => {
     return `${normalizedBase}/${normalizedPath}`;
 };
 
+// Merkle root used by the blockchain when a block contains no transactions (32 bytes of 0x46 / ASCII 'F')
+const EMPTY_TRANSACTION_ROOT = "4646464646464646464646464646464646464646464646464646464646464646";
+
 // Default values
 let rpcURL = getEnvVar('VITE_RPC_URL', "http://localhost:50002");
-let adminRPCURL = getEnvVar('VITE_ADMIN_RPC_URL', "http://localhost:50003");
+export let adminRPCURL = getEnvVar('VITE_ADMIN_RPC_URL', "http://localhost:50003");
 let chainId = parseInt(getEnvVar('VITE_CHAIN_ID', "1"));
 
 // Check if we're in production mode and use public URLs
@@ -102,6 +105,10 @@ const dexBatchPath = "/v1/query/dex-batch";
 const nextDexBatchPath = "/v1/query/next-dex-batch";
 const configPath = "/v1/admin/config";
 
+// Pool IDs
+// 2 * MaxUint16 + 1, placed above the max chainId + EscrowPoolAddend range to avoid collisions
+const DAO_POOL_ID = 131071;
+
 // HTTP Methods
 export async function POST(url: string, request: string, path: string) {
     return fetch(buildURL(url, path), {
@@ -146,8 +153,8 @@ function hashRequest(hash: string) {
     return JSON.stringify({ hash: hash });
 }
 
-function pageAddrReq(page: number, addr: string) {
-    return JSON.stringify({ pageNumber: page, perPage: 10, address: addr });
+function pageAddrReq(page: number, addr: string, perPage: number = 10) {
+    return JSON.stringify({ pageNumber: page, perPage: perPage > 0 ? perPage : 10, address: addr });
 }
 
 function heightAndAddrRequest(height: number, address: string) {
@@ -158,8 +165,8 @@ function heightAndIDRequest(height: number, id: number) {
     return JSON.stringify({ height: height, id: id });
 }
 
-function pageHeightReq(page: number, height: number) {
-    return JSON.stringify({ pageNumber: page, perPage: 10, height: height });
+function pageHeightReq(page: number, height: number, perPage: number = 10) {
+    return JSON.stringify({ pageNumber: page, perPage: perPage, height: height });
 }
 
 function validatorsReq(page: number, height: number, committee: number) {
@@ -171,84 +178,137 @@ export function Blocks(page: number, perPage: number = 10) {
     return POST(rpcURL, JSON.stringify({ pageNumber: page, perPage: perPage }), blocksPath);
 }
 
-export function Transactions(page: number, height: number) {
-    return POST(rpcURL, pageHeightReq(page, height), txsByHeightPath);
+export function Transactions(page: number, height: number, perPage: number = 10) {
+    return POST(rpcURL, pageHeightReq(page, height, perPage), txsByHeightPath);
 }
 
-const getBlockHeight = (block: any): number =>
-    Number(block?.blockHeader?.height ?? block?.height ?? 0)
+function getBlockHeightValue(block: any): number {
+    return Number(block?.blockHeader?.height || block?.height || 0);
+}
 
-const getBlockTotalTxs = (block: any): number =>
-    Number(block?.blockHeader?.totalTxs ?? block?.totalTxs ?? 0)
+function getBlockHashValue(block: any): string | undefined {
+    return block?.blockHeader?.hash || block?.hash;
+}
 
-const getComparableTimestamp = (value: any): number => {
-    if (!value) return 0
+function getBlockTimeValue(block: any): number | string | undefined {
+    return block?.blockHeader?.time || block?.time || block?.timestamp;
+}
+
+function getBlockTransactionCount(block: any): number {
+    return Number(
+        block?.blockHeader?.numTxs ??
+        block?.txCount ??
+        block?.numTxs ??
+        (Array.isArray(block?.transactions) ? block.transactions.length : 0) ??
+        0
+    );
+}
+
+function getTransactionTimestampMs(tx: any): number {
+    const value = tx?.blockTime ?? tx?.time ?? tx?.timestamp;
     if (typeof value === 'number') {
-        if (value > 1e15) return Math.floor(value / 1000)
-        if (value > 1e12) return value
-        return value * 1000
+        if (value > 1e15) return Math.floor(value / 1_000_000);
+        if (value > 1e12) return Math.floor(value);
+        return Math.floor(value * 1_000);
     }
-    const parsed = Date.parse(String(value))
-    return Number.isFinite(parsed) ? parsed : 0
+    if (typeof value === 'string') {
+        if (/^\d+$/.test(value)) {
+            return getTransactionTimestampMs({ time: Number(value) });
+        }
+        const parsed = Date.parse(value);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
 }
 
-async function collectRecentTransactions(limit: number, maxBlockPages: number = 50): Promise<any[]> {
-    const perPage = 10
-    const blocks: any[] = []
-    let latestTotalTxs = 0
+function attachBlockMetadataToTransactions(transactions: any[], block: any): any[] {
+    const blockHeight = getBlockHeightValue(block);
+    const blockHash = getBlockHashValue(block);
+    const blockTime = getBlockTimeValue(block);
 
-    for (let page = 1; page <= maxBlockPages; page++) {
-        const blocksResponse = await Blocks(page, perPage)
-        const pageBlocks = blocksResponse?.results || blocksResponse?.blocks || blocksResponse?.list || []
-        if (!Array.isArray(pageBlocks) || pageBlocks.length === 0) {
-            break
-        }
+    return transactions.map((tx: any) => ({
+        ...tx,
+        blockHeight: tx.blockHeight || tx.height || blockHeight,
+        blockHash: tx.blockHash || blockHash,
+        blockTime: tx.blockTime || tx.time || tx.timestamp || blockTime,
+        blockNumber: tx.blockNumber || tx.height || blockHeight,
+    }));
+}
 
-        blocks.push(...pageBlocks)
-        if (latestTotalTxs === 0) {
-            latestTotalTxs = getBlockTotalTxs(pageBlocks[0])
-        }
-        const oldestTotalTxs = getBlockTotalTxs(pageBlocks[pageBlocks.length - 1])
-        if (latestTotalTxs - oldestTotalTxs >= limit) {
-            break
-        }
+async function fetchTransactionsForBlock(block: any): Promise<any[]> {
+    if (block?.transactions && Array.isArray(block.transactions)) {
+        return attachBlockMetadataToTransactions(block.transactions, block);
     }
 
-    const candidateBlocks: any[] = []
-    for (let i = 0; i < blocks.length - 1; i++) {
-        const current = blocks[i]
-        const older = blocks[i + 1]
-        if (getBlockTotalTxs(current) > getBlockTotalTxs(older)) {
-            candidateBlocks.push(current)
-        }
+    const blockHeight = getBlockHeightValue(block);
+    const txCount = getBlockTransactionCount(block);
+
+    if (!blockHeight || txCount <= 0) return [];
+
+    try {
+        const response = await Transactions(1, blockHeight, txCount);
+        const transactions =
+            response?.results ||
+            response?.transactions ||
+            response?.txs ||
+            response?.data ||
+            [];
+
+        return Array.isArray(transactions)
+            ? attachBlockMetadataToTransactions(transactions, block)
+            : [];
+    } catch (error) {
+        
+        return [];
     }
+}
 
-    const recentTransactions: any[] = []
-    for (const block of candidateBlocks) {
-        const height = getBlockHeight(block)
-        if (!height) continue
+export async function getRecentTransactionsPreview(limit: number = 5, cachedBlocks?: any[]): Promise<any[]> {
+    try {
+        const fallbackBlocksResponse = Array.isArray(cachedBlocks) && cachedBlocks.length > 0
+            ? null
+            : await Blocks(1, 25);
+        const blocks = (
+            Array.isArray(cachedBlocks) && cachedBlocks.length > 0
+                ? cachedBlocks
+                : (
+                    fallbackBlocksResponse?.results ||
+                    fallbackBlocksResponse?.blocks ||
+                    fallbackBlocksResponse?.list ||
+                    []
+                )
+        ).filter((block: any) => getBlockTransactionCount(block) > 0);
 
-        const txResponse = await Transactions(1, height)
-        const txs = txResponse?.results || txResponse?.transactions || []
-        if (!Array.isArray(txs) || txs.length === 0) continue
+        if (!Array.isArray(blocks) || blocks.length === 0) return [];
 
-        const blockTransactions = txs.map((tx: any) => ({
-            ...tx,
-            blockHeight: height,
-            blockHash: block?.blockHeader?.hash || block?.hash,
-            blockTime: block?.blockHeader?.time || block?.time,
-            blockNumber: height
-        }))
-        recentTransactions.push(...blockTransactions)
+        const recentTransactions: any[] = [];
 
-        if (recentTransactions.length >= limit) {
-            break
+        for (const block of blocks) {
+            const blockTransactions = await fetchTransactionsForBlock(block);
+            if (blockTransactions.length > 0) {
+                recentTransactions.push(...blockTransactions);
+            }
+            if (recentTransactions.length >= limit) break;
         }
-    }
 
-    return recentTransactions
-        .sort((a, b) => getComparableTimestamp(b.blockTime || b.time || b.timestamp) - getComparableTimestamp(a.blockTime || a.time || a.timestamp))
-        .slice(0, limit)
+        recentTransactions.sort((a, b) => {
+            const heightDelta = Number(b?.blockHeight ?? b?.height ?? 0) - Number(a?.blockHeight ?? a?.height ?? 0);
+            if (heightDelta !== 0) return heightDelta;
+
+            const indexDelta = Number(b?.index ?? b?.txIndex ?? b?.transactionIndex ?? -1) - Number(a?.index ?? a?.txIndex ?? a?.transactionIndex ?? -1);
+            if (indexDelta !== 0) return indexDelta;
+
+            const timeDelta = getTransactionTimestampMs(b) - getTransactionTimestampMs(a);
+            if (timeDelta !== 0) return timeDelta;
+
+            return String(b?.hash ?? b?.txHash ?? '').localeCompare(String(a?.hash ?? a?.txHash ?? ''));
+        });
+
+        return recentTransactions.slice(0, limit);
+    } catch (error) {
+        
+        return [];
+    }
 }
 
 // Optimized function to get transactions with real pagination
@@ -256,31 +316,66 @@ export async function getTransactionsWithRealPagination(page: number, perPage: n
     type?: string;
     fromDate?: string;
     toDate?: string;
+    fromBlock?: string;
+    toBlock?: string;
     status?: string;
     address?: string;
     minAmount?: number;
     maxAmount?: number;
 }) {
     try {
-        // Get the total number of transactions
-        const totalTransactionCount = await getTotalTransactionCount();
-
-        // If there are no filters, use a more direct approach
+        // The blocks endpoint on dev returns block headers and tx roots, but
+        // does not consistently embed block.transactions. Use block heights as
+        // the index and fetch tx bodies per-height.
         if (!filters || Object.values(filters).every(v => !v)) {
             const startIndex = (page - 1) * perPage;
             const endIndex = startIndex + perPage;
-            const allTransactions = await collectRecentTransactions(endIndex);
 
-            // Apply pagination
+            let allTransactions: any[] = [];
+            let currentBlockPage = 1;
+            const maxPages = 50; // Limit to avoid too many requests
+            let totalCount = 0;
+
+            while (allTransactions.length < endIndex && currentBlockPage <= maxPages) {
+                const blocksResponse = await Blocks(currentBlockPage, 25);
+                const blocks =
+                    blocksResponse?.results ||
+                    blocksResponse?.blocks ||
+                    blocksResponse?.list ||
+                    [];
+
+                if (!Array.isArray(blocks) || blocks.length === 0) break;
+
+                if (totalCount === 0) {
+                    totalCount = Number(blocks[0]?.blockHeader?.totalTxs || 0);
+                }
+
+                const pageTransactions = await Promise.all(
+                    blocks
+                        .filter((block: any) => getBlockTransactionCount(block) > 0)
+                        .map((block: any) => fetchTransactionsForBlock(block))
+                );
+
+                allTransactions = allTransactions.concat(pageTransactions.flat());
+                currentBlockPage++;
+            }
+
+            allTransactions.sort((a, b) => {
+                const heightDelta = Number(b.blockHeight || b.height || 0) - Number(a.blockHeight || a.height || 0);
+                if (heightDelta !== 0) return heightDelta;
+                return String(b.hash || b.txHash || '').localeCompare(String(a.hash || a.txHash || ''));
+            });
+
             const paginatedTransactions = allTransactions.slice(startIndex, endIndex);
+            const resolvedTotalCount = totalCount || allTransactions.length;
 
             return {
                 results: paginatedTransactions,
-                totalCount: totalTransactionCount.total,
+                totalCount: resolvedTotalCount,
                 pageNumber: page,
                 perPage: perPage,
-                totalPages: Math.ceil(totalTransactionCount.total / perPage),
-                hasMore: endIndex < totalTransactionCount.total
+                totalPages: Math.ceil(resolvedTotalCount / perPage),
+                hasMore: endIndex < resolvedTotalCount
             };
         }
 
@@ -352,7 +447,7 @@ export async function getTotalAccountCount(cachedBlocks?: any[]): Promise<{ tota
 
         return {
             total: totalAccounts,
-            last24h: Math.max(1, Math.floor(totalAccounts * 0.05))
+            last24h: 0
         };
     } catch (error) {
         
@@ -379,25 +474,11 @@ export async function getTotalTransactionCount(cachedBlocks?: any[]): Promise<{ 
         let last24hCount = 0;
         const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
 
-        let blocksToInspect = cachedBlocks;
-        if (!blocksToInspect || !Array.isArray(blocksToInspect) || blocksToInspect.length === 0) {
-            const latestBlocks = await Blocks(1, 10);
-            blocksToInspect = latestBlocks?.results || latestBlocks?.blocks || latestBlocks?.list || [];
-        }
-
-        // If blocks are available, use them
-        if (blocksToInspect && Array.isArray(blocksToInspect) && blocksToInspect.length > 0) {
-            const latestBlock = blocksToInspect[0];
-            const totalFromLatestBlock = Number(latestBlock?.blockHeader?.totalTxs ?? latestBlock?.totalTxs ?? 0);
-            if (Number.isFinite(totalFromLatestBlock) && totalFromLatestBlock > 0) {
-                totalCount = totalFromLatestBlock;
-            }
-
-            for (const block of blocksToInspect) {
+        // If cached blocks are available, use them
+        if (cachedBlocks && Array.isArray(cachedBlocks) && cachedBlocks.length > 0) {
+            for (const block of cachedBlocks) {
                 if (block.transactions && Array.isArray(block.transactions)) {
-                    if (totalCount === 0) {
-                        totalCount += block.transactions.length;
-                    }
+                    totalCount += block.transactions.length;
 
                     // Count transactions from last 24h
                     for (const tx of block.transactions) {
@@ -450,10 +531,28 @@ export async function getTotalTransactionCount(cachedBlocks?: any[]): Promise<{ 
             };
         }
 
+        const latestBlocksResponse = await Blocks(1, 1);
+        const latestBlocks =
+            latestBlocksResponse?.results ||
+            latestBlocksResponse?.blocks ||
+            latestBlocksResponse?.list ||
+            [];
+        const latestBlock = Array.isArray(latestBlocks) && latestBlocks.length > 0 ? latestBlocks[0] : null;
+        const total = Number(latestBlock?.blockHeader?.totalTxs || 0);
+
+        if (total > 0) {
+            totalTransactionCountCache = {
+                count: total,
+                last24h: totalTransactionCountCache?.last24h || 0,
+                tpm: totalTransactionCountCache?.tpm || 0,
+                timestamp: Date.now()
+            };
+        }
+
         return {
-            total: 0,
-            last24h: 0,
-            tpm: 0
+            total,
+            last24h: totalTransactionCountCache?.last24h || 0,
+            tpm: totalTransactionCountCache?.tpm || 0
         };
     } catch (error) {
         
@@ -465,8 +564,21 @@ export async function getTotalTransactionCount(cachedBlocks?: any[]): Promise<{ 
     }
 }
 
-// new function to get transactions from multiple blocks
-export async function AllTransactions(page: number, perPage: number = 10, filters?: {
+// Extract transactions from a list of blocks, attaching block metadata to each tx
+function extractTransactionsFromBlocks(blocks: any[]): any[] {
+    const txs: any[] = [];
+    for (const block of blocks) {
+        if (block.transactions && Array.isArray(block.transactions)) {
+            txs.push(...attachBlockMetadataToTransactions(block.transactions, block));
+        }
+    }
+    return txs;
+}
+
+import { extractAmountMicro } from './utils';
+
+// Apply non-block-range filters to a list of transactions
+function applyTxFilters(txs: any[], filters: {
     type?: string;
     fromDate?: string;
     toDate?: string;
@@ -474,112 +586,196 @@ export async function AllTransactions(page: number, perPage: number = 10, filter
     address?: string;
     minAmount?: number;
     maxAmount?: number;
-}) {
-    try {
-        const totalTransactionCount = await getTotalTransactionCount();
-        let allTransactions = await collectRecentTransactions(page * perPage);
-
-        // apply filters if provided
-        if (filters) {
-            allTransactions = allTransactions.filter(tx => {
-                // Filter by type
-                if (filters.type && filters.type !== 'All Types') {
-                    const txType = tx.messageType || tx.type || 'send';
-                    if (txType.toLowerCase() !== filters.type.toLowerCase()) {
-                        return false;
-                    }
+}): any[] {
+    return txs.filter(tx => {
+        if (filters.type && filters.type !== 'All Types') {
+            const txType = tx.messageType || tx.type || 'send';
+            if (txType.toLowerCase() !== filters.type.toLowerCase()) return false;
+        }
+        if (filters.address) {
+            const addr = filters.address.toLowerCase();
+            const sender = (tx.sender || tx.from || '').toLowerCase();
+            const recipient = (tx.recipient || tx.to || '').toLowerCase();
+            const hash = (tx.txHash || tx.hash || '').toLowerCase();
+            if (!sender.includes(addr) && !recipient.includes(addr) && !hash.includes(addr)) return false;
+        }
+        if (filters.fromDate || filters.toDate) {
+            const txTime = tx.blockTime || tx.time || tx.timestamp;
+            if (txTime) {
+                const txDate = new Date(txTime > 1e12 ? txTime / 1000 : txTime);
+                if (filters.fromDate && txDate < new Date(filters.fromDate)) return false;
+                if (filters.toDate) {
+                    const toDate = new Date(filters.toDate);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (txDate > toDate) return false;
                 }
+            }
+        }
+        if (filters.minAmount !== undefined || filters.maxAmount !== undefined) {
+            const amount = extractAmountMicro(tx as Record<string, unknown>);
+            if (filters.minAmount !== undefined && amount < filters.minAmount) return false;
+            if (filters.maxAmount !== undefined && amount > filters.maxAmount) return false;
+        }
+        if (filters.status && filters.status !== 'all') {
+            if ((tx.status || 'success') !== filters.status) return false;
+        }
+        return true;
+    });
+}
 
-                // filter by address (sender or recipient)
-                if (filters.address) {
-                    const address = filters.address.toLowerCase();
-                    const sender = (tx.sender || tx.from || '').toLowerCase();
-                    const recipient = (tx.recipient || tx.to || '').toLowerCase();
-                    const hash = (tx.txHash || tx.hash || '').toLowerCase();
+// Fetch transactions from blocks within a specific height range by
+// querying each block height directly via the BlockByHeight RPC endpoint.
+async function fetchTransactionsForBlockRange(
+    fromHeight: number,
+    toHeight: number,
+    filters: { type?: string; fromDate?: string; toDate?: string; status?: string; address?: string; minAmount?: number; maxAmount?: number },
+): Promise<{ transactions: any[]; totalFiltered: number }> {
+    const metaResponse = await Blocks(1, 0);
+    const latestHeight: number = metaResponse?.totalCount || 0;
 
-                    if (!sender.includes(address) && !recipient.includes(address) && !hash.includes(address)) {
-                        return false;
-                    }
-                }
+    const effectiveFrom = Math.max(fromHeight || 1, 1);
+    const effectiveTo = latestHeight > 0
+        ? Math.min(toHeight || latestHeight, latestHeight)
+        : (toHeight || effectiveFrom);
 
-                // filter by date range
-                if (filters.fromDate || filters.toDate) {
-                    const txTime = tx.blockTime || tx.time || tx.timestamp;
-                    if (txTime) {
-                        const txDate = new Date(txTime > 1e12 ? txTime / 1000 : txTime);
+    if (effectiveFrom > effectiveTo) return { transactions: [], totalFiltered: 0 };
 
-                        if (filters.fromDate) {
-                            const fromDate = new Date(filters.fromDate);
-                            if (txDate < fromDate) return false;
-                        }
+    // Cap the number of heights to query (newest first within the range)
+    const maxHeights = 500;
+    const rangeSize = effectiveTo - effectiveFrom + 1;
+    const cappedFrom = rangeSize > maxHeights ? effectiveTo - maxHeights + 1 : effectiveFrom;
 
-                        if (filters.toDate) {
-                            const toDate = new Date(filters.toDate);
-                            toDate.setHours(23, 59, 59, 999); // Include the whole day
-                            if (txDate > toDate) return false;
-                        }
-                    }
-                }
+    let allTransactions: any[] = [];
+    const batchSize = 10;
 
-                // filter by amount range
-                if (filters.minAmount !== undefined || filters.maxAmount !== undefined) {
-                    const amount = tx.amount || tx.value || 0;
+    // Fetch blocks by height in parallel batches, newest first
+    for (let batchTop = effectiveTo; batchTop >= cappedFrom; batchTop -= batchSize) {
+        const batchBottom = Math.max(batchTop - batchSize + 1, cappedFrom);
+        const promises: Promise<any>[] = [];
 
-                    if (filters.minAmount !== undefined && amount < filters.minAmount) {
-                        return false;
-                    }
-
-                    if (filters.maxAmount !== undefined && amount > filters.maxAmount) {
-                        return false;
-                    }
-                }
-
-                // filter by status
-                if (filters.status && filters.status !== 'all') {
-                    const txStatus = tx.status || 'success';
-                    if (txStatus !== filters.status) {
-                        return false;
-                    }
-                }
-
-                return true;
-            });
+        for (let h = batchTop; h >= batchBottom; h--) {
+            promises.push(
+                BlockByHeight(h).catch(() => null)
+            );
         }
 
-        // Sort by time (most recent first)
-        allTransactions.sort((a, b) => {
-            return getComparableTimestamp(b.blockTime || b.time || b.timestamp) - getComparableTimestamp(a.blockTime || a.time || a.timestamp);
+        const results = await Promise.all(promises);
+
+        const batchTransactions = await Promise.all(
+            results
+                .filter((block) => !!block && getBlockTransactionCount(block) > 0)
+                .map((block) => fetchTransactionsForBlock(block))
+        );
+
+        allTransactions = allTransactions.concat(batchTransactions.flat());
+    }
+
+    const filtered = applyTxFilters(allTransactions, filters);
+    return { transactions: filtered, totalFiltered: filtered.length };
+}
+
+// Fetch transactions from recent blocks (no block-range constraint)
+async function fetchRecentTransactions(
+    targetCount: number,
+    filters: { type?: string; fromDate?: string; toDate?: string; status?: string; address?: string; minAmount?: number; maxAmount?: number },
+    hasFilters: boolean,
+): Promise<{ transactions: any[]; totalFiltered: number; totalRaw: number }> {
+    let allTransactions: any[] = [];
+    let currentBlockPage = 1;
+    const maxBlockPages = 50;
+    const collectAll = hasFilters;
+
+    while (currentBlockPage <= maxBlockPages && (collectAll || allTransactions.length < targetCount)) {
+        const blocksResponse = await Blocks(currentBlockPage, 25);
+        const blocks = blocksResponse?.results || blocksResponse?.blocks || blocksResponse?.list || [];
+        if (!Array.isArray(blocks) || blocks.length === 0) break;
+        const blockTransactions = await Promise.all(
+            blocks
+                .filter((block: any) => getBlockTransactionCount(block) > 0)
+                .map((block: any) => fetchTransactionsForBlock(block))
+        );
+        allTransactions = allTransactions.concat(blockTransactions.flat());
+        currentBlockPage++;
+    }
+
+    const totalRaw = allTransactions.length;
+    const filtered = hasFilters ? applyTxFilters(allTransactions, filters) : allTransactions;
+    return { transactions: filtered, totalFiltered: filtered.length, totalRaw };
+}
+
+// Main entry point: get transactions from multiple blocks with filters and pagination
+export async function AllTransactions(page: number, perPage: number = 10, filters?: {
+    type?: string;
+    fromDate?: string;
+    toDate?: string;
+    fromBlock?: string;
+    toBlock?: string;
+    status?: string;
+    address?: string;
+    minAmount?: number;
+    maxAmount?: number;
+}) {
+    try {
+        const fromHeight = filters?.fromBlock ? Number(filters.fromBlock) : 0;
+        const toHeight = filters?.toBlock ? Number(filters.toBlock) : 0;
+        const hasBlockRange = (fromHeight > 0 || toHeight > 0);
+
+        const nonBlockFilters = {
+            type: filters?.type,
+            fromDate: filters?.fromDate,
+            toDate: filters?.toDate,
+            status: filters?.status,
+            address: filters?.address,
+            minAmount: filters?.minAmount,
+            maxAmount: filters?.maxAmount,
+        };
+        const hasNonBlockFilters = Object.values(nonBlockFilters).some(v => v !== undefined && v !== '');
+
+        let allFiltered: any[];
+        let totalCount: number;
+
+        if (hasBlockRange) {
+            const result = await fetchTransactionsForBlockRange(fromHeight, toHeight, nonBlockFilters);
+            allFiltered = result.transactions;
+            totalCount = result.totalFiltered;
+        } else {
+            const totalTransactionCount = await getTotalTransactionCount();
+            const result = await fetchRecentTransactions(page * perPage, nonBlockFilters, hasNonBlockFilters);
+            allFiltered = result.transactions;
+            totalCount = hasNonBlockFilters ? result.totalFiltered : totalTransactionCount.total;
+        }
+
+        // Sort by block height descending (most recent first)
+        allFiltered.sort((a, b) => {
+            const hA = a.blockHeight || a.height || 0;
+            const hB = b.blockHeight || b.height || 0;
+            return hB - hA;
         });
 
-        // Apply pagination
         const startIndex = (page - 1) * perPage;
         const endIndex = startIndex + perPage;
-        const paginatedTransactions = allTransactions.slice(startIndex, endIndex);
-
-        // Use real total count when there are no filters, otherwise use filtered count
-        const finalTotalCount = filters ? allTransactions.length : totalTransactionCount.total;
+        const paginatedTransactions = allFiltered.slice(startIndex, endIndex);
 
         return {
             results: paginatedTransactions,
-            totalCount: finalTotalCount,
+            totalCount: totalCount,
             pageNumber: page,
             perPage: perPage,
-            totalPages: Math.ceil(finalTotalCount / perPage),
-            hasMore: endIndex < finalTotalCount
+            totalPages: Math.ceil(totalCount / perPage),
+            hasMore: endIndex < totalCount,
         };
-
     } catch (error) {
         
         return { results: [], totalCount: 0, pageNumber: page, perPage, totalPages: 0, hasMore: false };
     }
 }
 
-export function Accounts(page: number, _: number) {
-    return POST(rpcURL, pageHeightReq(page, 0), accountsPath);
+export function Accounts(page: number, _: number, perPage: number = 10) {
+    return POST(rpcURL, pageHeightReq(page, 0, perPage), accountsPath);
 }
 
-export function Validators(page: number, _: number) {
-    return POST(rpcURL, pageHeightReq(page, 0), validatorsPath);
+export function Validators(page: number, _: number, perPage: number = 10) {
+    return POST(rpcURL, pageHeightReq(page, 0, perPage), validatorsPath);
 }
 
 export function ValidatorsWithFilters(page: number, unstaking: number = 0, paused: number = 0, delegate: number = 0, committee: number = 0, perPage: number = 1000) {
@@ -600,18 +796,18 @@ export function Committee(page: number, chain_id: number) {
 }
 
 export function DAO(height: number, _: number) {
-    return POST(rpcURL, heightAndIDRequest(height, 131071), poolPath);
+    return POST(rpcURL, heightAndIDRequest(height, DAO_POOL_ID), poolPath);
 }
 
 export function Account(height: number, address: string) {
     return POST(rpcURL, heightAndAddrRequest(height, address), accountPath);
 }
 
-export async function AccountWithTxs(height: number, address: string, page: number) {
+export async function AccountWithTxs(height: number, address: string, page: number, perPage: number = 10) {
     const result: any = {};
     result.account = await Account(height, address);
-    result.sent_transactions = await TransactionsBySender(page, address);
-    result.rec_transactions = await TransactionsByRec(page, address);
+    result.sent_transactions = await TransactionsBySender(page, address, perPage);
+    result.rec_transactions = await TransactionsByRec(page, address, perPage);
     return result;
 }
 
@@ -639,28 +835,60 @@ export function TxByHash(hash: string) {
     return POST(rpcURL, hashRequest(hash), txByHashPath);
 }
 
-export function TransactionsBySender(page: number, sender: string) {
-    return POST(rpcURL, pageAddrReq(page, sender), txsBySender);
+export function TransactionsBySender(page: number, sender: string, perPage: number = 10) {
+    return POST(rpcURL, pageAddrReq(page, sender, perPage), txsBySender);
 }
 
-export function TransactionsByRec(page: number, rec: string) {
-    return POST(rpcURL, pageAddrReq(page, rec), txsByRec);
+export function TransactionsByRec(page: number, rec: string, perPage: number = 10) {
+    return POST(rpcURL, pageAddrReq(page, rec, perPage), txsByRec);
 }
 
-export function Pending(page: number, _: number) {
-    return POST(rpcURL, pageAddrReq(page, ""), pendingPath);
+export function Pending(page: number, perPage: number = 10) {
+    return POST(rpcURL, pageAddrReq(page, "", perPage), pendingPath);
 }
 
 export function EcoParams(chain_id: number) {
     return POST(rpcURL, chainRequest(chain_id), ecoParamsPath);
 }
 
-export function Orders(chain_id: number) {
-    return POST(rpcURL, heightAndIDRequest(0, chain_id), ordersPath);
+export function Orders(page: number = 1, perPage: number = 10, committee: number = 0, height: number = 0) {
+    return POST(rpcURL, JSON.stringify({
+        committee,
+        height,
+        pageNumber: page,
+        perPage,
+    }), ordersPath);
 }
 
-export function Order(chain_id: number, order_id: string, height: number = 0) {
-    return POST(rpcURL, JSON.stringify({ chainId: chain_id, orderId: order_id, height: height }), orderPath);
+export async function AllOrders(perPage: number = 5000) {
+    const firstPage = await Orders(1, perPage);
+    const firstPageResults = Array.isArray(firstPage?.results)
+        ? firstPage.results
+        : Array.isArray(firstPage?.orders)
+            ? firstPage.orders
+            : [];
+    const totalPages = Math.max(Number(firstPage?.totalPages || 1), 1);
+
+    if (totalPages === 1) {
+        return firstPageResults;
+    }
+
+    const remainingPages = await Promise.all(
+        Array.from({ length: totalPages - 1 }, (_, index) => Orders(index + 2, perPage))
+    );
+
+    return remainingPages.reduce<any[]>((allOrders, page) => {
+        const pageResults = Array.isArray(page?.results)
+            ? page.results
+            : Array.isArray(page?.orders)
+                ? page.orders
+                : [];
+        return allOrders.concat(pageResults);
+    }, [...firstPageResults]);
+}
+
+export function Order(committee: number, order_id: string, height: number = 0) {
+    return POST(rpcURL, JSON.stringify({ committee: committee, orderId: order_id, height: height }), orderPath);
 }
 
 export function DexBatch(height: number, chainId: number, points: boolean = false) {
@@ -673,32 +901,6 @@ export function NextDexBatch(height: number, chainId: number, points: boolean = 
 
 export function Config() {
     return GET(adminRPCURL, configPath);
-}
-
-// Get recent transactions preview from blocks
-export async function getRecentTransactionsPreview(limit: number = 5, blocks?: any[]): Promise<any[]> {
-    if (!blocks || blocks.length === 0) {
-        return [];
-    }
-    
-    const transactions: any[] = [];
-    
-    // Collect transactions from recent blocks until we reach the limit
-    for (const block of blocks) {
-        if (transactions.length >= limit) break;
-        
-        const blockTxs = block.transactions || block.txs || [];
-        for (const tx of blockTxs) {
-            if (transactions.length >= limit) break;
-            transactions.push({
-                ...tx,
-                height: block.blockHeader?.height || block.height || 0,
-                timestamp: block.blockHeader?.timestamp || block.timestamp,
-            });
-        }
-    }
-    
-    return transactions.slice(0, limit);
 }
 
 // Component Specific API Calls
@@ -735,34 +937,47 @@ export async function getModalData(query: string | number, page: number) {
     return block?.blockHeader?.hash ? { block } : noResult;
 }
 
-export async function getCardData() {
-    const cardData: any = {};
+export async function getCardData(previousCardData?: any) {
+    const fallbackCardData = {
+        blocks: previousCardData?.blocks ?? { results: [], totalCount: 0 },
+        canopyCommittee: previousCardData?.canopyCommittee ?? null,
+        supply: previousCardData?.supply ?? null,
+        pool: previousCardData?.pool ?? null,
+        params: previousCardData?.params ?? null,
+        ecoParams: previousCardData?.ecoParams ?? null,
+        hasRealTransactions: previousCardData?.hasRealTransactions ?? false,
+    };
 
-    try {
-        cardData.blocks = await Blocks(1, 0);
-        cardData.canopyCommittee = await Committee(1, chainId);
-        cardData.supply = await Supply(0, 0);
-        cardData.pool = await DAO(0, 0);
-        cardData.params = await Params(0, 0);
-        cardData.ecoParams = await EcoParams(0);
+    const requests = {
+        blocks: () => Blocks(1, 0),
+        canopyCommittee: () => Committee(1, chainId),
+        supply: () => Supply(0, 0),
+        pool: () => DAO(0, 0),
+        params: () => Params(0, 0),
+        ecoParams: () => EcoParams(0),
+    };
 
-        // Check if this network has real transactions
-        const hasRealTransactions = cardData.blocks?.results?.some((block: any) => {
+    const entries = await Promise.allSettled(
+        Object.entries(requests).map(async ([key, loader]) => [key, await loader()] as const)
+    );
+
+    const cardData: any = { ...fallbackCardData };
+
+    for (const result of entries) {
+        if (result.status === 'fulfilled') {
+            const [key, value] = result.value;
+            cardData[key] = value;
+            continue;
+        }
+
+    }
+
+    const blocks = cardData.blocks?.results || cardData.blocks?.blocks || [];
+    if (Array.isArray(blocks) && blocks.length > 0) {
+        cardData.hasRealTransactions = blocks.some((block: any) => {
             const txRoot = block.blockHeader?.transactionRoot;
-            return txRoot && txRoot !== "4646464646464646464646464646464646464646464646464646464646464646";
+            return txRoot && txRoot !== EMPTY_TRANSACTION_ROOT;
         });
-
-        cardData.hasRealTransactions = hasRealTransactions;
-    } catch (error) {
-        console.error('❌ Error in getCardData:', error);
-        // Return empty data structure on error
-        cardData.blocks = { results: [], totalCount: 0 };
-        cardData.canopyCommittee = null;
-        cardData.supply = null;
-        cardData.pool = null;
-        cardData.params = null;
-        cardData.ecoParams = null;
-        cardData.hasRealTransactions = false;
     }
 
     return cardData;
@@ -783,7 +998,7 @@ export async function getTableData(page: number, category: number, committee?: n
         case 5:
             return await Params(page, 0);
         case 6:
-            return await Orders(committee || 1);
+            return await Orders();
         case 7:
             return await Supply(0, 0);
         default:
@@ -791,5 +1006,5 @@ export async function getTableData(page: number, category: number, committee?: n
     }
 }
 
-// Export URLs for use in hooks and custom clients
-export { adminRPCURL, rpcURL };
+// Export rpcURL for use in hooks
+export { rpcURL };
