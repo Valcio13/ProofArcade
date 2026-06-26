@@ -115,7 +115,7 @@ test('startDailyGame rejects a second daily attempt for the same address and dat
     const playerAddress = addressOf(0xaa);
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -148,7 +148,7 @@ test('claimDailyLoginReward grants day-1 points without the bonus and blocks dup
     const playerAddress = addressOf(0xa1);
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -199,7 +199,7 @@ test('claimDailyLoginReward increments the streak on consecutive UTC days withou
     const playerAddress = addressOf(0xa2);
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -265,7 +265,7 @@ test('classic submit applies same-day login bonus only after a day-7 claim and b
 
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -343,7 +343,7 @@ test('claimDailyLoginReward unlocks the same-day bonus on day 7', async () => {
     const playerAddress = addressOf(0xa4);
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -395,7 +395,7 @@ test('claimDailyLoginReward resets streak from 7 to 1 on day 8 (cycle reset)', a
     const playerAddress = addressOf(0xa5);
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -457,7 +457,7 @@ test('startClassicGame deducts fee, creates session, and increments classic star
     const gameId = Uint8Array.from([1, 2, 3, 4, 5, 6]);
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -536,7 +536,7 @@ test('CheckTx accepts rebalanced fees when chain config still stores the legacy 
     const playerAddress = addressOf(0xae);
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -572,7 +572,7 @@ test('startDailyGame routes fees into daily reward pool and treasury buckets', a
     const playerAddress = addressOf(0xad);
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -636,7 +636,7 @@ test('submitGameResult finalizes an active session and writes a leaderboard entr
 
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -750,7 +750,7 @@ test('submitGameResult updates daily leaderboard and bestDailyScore for daily ru
 
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -859,7 +859,7 @@ test('submitGameResult respects the daily classic-points cap without rejecting t
 
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -946,7 +946,7 @@ test('redeemClassicPoints burns point balance and pays the player from treasury'
     const playerAddress = addressOf(0xbe);
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -1032,7 +1032,7 @@ test('submitGameResult rejects mismatched replay claims', async () => {
 
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -1083,7 +1083,7 @@ test('submitGameResult rejects invalid move directions before replay', async () 
 
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -1139,7 +1139,7 @@ test('claimDailyReward finalizes a finished day and transfers the winner reward'
 
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -1228,7 +1228,7 @@ test('claimDailyReward succeeds even when finalization writes are not immediatel
 
     const plugin = new DelayedVisibilityPlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -1312,7 +1312,7 @@ test('claimDailyReward renormalizes payouts when fewer than 10 players are ranke
 
     const plugin = new FakePlugin();
     const contract = new Contract(
-        { ChainId: 1, DataDirPath: '/tmp/plugin/' },
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
         {},
         plugin as never,
         Long.ZERO
@@ -1447,3 +1447,4 @@ function addressOf(fill: number): Uint8Array {
 }
 
 void types;
+

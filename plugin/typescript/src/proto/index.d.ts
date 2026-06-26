@@ -2148,6 +2148,9 @@ export namespace types {
 
         /** LeaderboardEntry username */
         username?: (string|null);
+
+        /** LeaderboardEntry stopReason */
+        stopReason?: (types.StopReason|null);
     }
 
     /** Represents a LeaderboardEntry. */
@@ -2179,6 +2182,9 @@ export namespace types {
 
         /** LeaderboardEntry username. */
         public username: string;
+
+        /** LeaderboardEntry stopReason. */
+        public stopReason: types.StopReason;
 
         /**
          * Creates a new LeaderboardEntry instance using the specified properties.

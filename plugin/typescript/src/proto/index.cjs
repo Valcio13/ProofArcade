@@ -6441,6 +6441,7 @@ $root.types = (function() {
          * @property {number|Long|null} [moveCount] LeaderboardEntry moveCount
          * @property {number|Long|null} [endedAtUnix] LeaderboardEntry endedAtUnix
          * @property {string|null} [username] LeaderboardEntry username
+         * @property {types.StopReason|null} [stopReason] LeaderboardEntry stopReason
          */
 
         /**
@@ -6515,6 +6516,14 @@ $root.types = (function() {
         LeaderboardEntry.prototype.username = "";
 
         /**
+         * LeaderboardEntry stopReason.
+         * @member {types.StopReason} stopReason
+         * @memberof types.LeaderboardEntry
+         * @instance
+         */
+        LeaderboardEntry.prototype.stopReason = 0;
+
+        /**
          * Creates a new LeaderboardEntry instance using the specified properties.
          * @function create
          * @memberof types.LeaderboardEntry
@@ -6552,6 +6561,8 @@ $root.types = (function() {
                 writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.endedAtUnix);
             if (message.username != null && Object.hasOwnProperty.call(message, "username"))
                 writer.uint32(/* id 7, wireType 2 =*/58).string(message.username);
+            if (message.stopReason != null && Object.hasOwnProperty.call(message, "stopReason"))
+                writer.uint32(/* id 8, wireType 0 =*/64).int32(message.stopReason);
             return writer;
         };
 
@@ -6616,6 +6627,10 @@ $root.types = (function() {
                         message.username = reader.string();
                         break;
                     }
+                case 8: {
+                        message.stopReason = reader.int32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -6672,6 +6687,16 @@ $root.types = (function() {
             if (message.username != null && message.hasOwnProperty("username"))
                 if (!$util.isString(message.username))
                     return "username: string expected";
+            if (message.stopReason != null && message.hasOwnProperty("stopReason"))
+                switch (message.stopReason) {
+                default:
+                    return "stopReason: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    break;
+                }
             return null;
         };
 
@@ -6735,6 +6760,30 @@ $root.types = (function() {
                     message.endedAtUnix = new $util.LongBits(object.endedAtUnix.low >>> 0, object.endedAtUnix.high >>> 0).toNumber(true);
             if (object.username != null)
                 message.username = String(object.username);
+            switch (object.stopReason) {
+            default:
+                if (typeof object.stopReason === "number") {
+                    message.stopReason = object.stopReason;
+                    break;
+                }
+                break;
+            case "STOP_REASON_UNSPECIFIED":
+            case 0:
+                message.stopReason = 0;
+                break;
+            case "STOP_REASON_PLAYER_STOPPED":
+            case 1:
+                message.stopReason = 1;
+                break;
+            case "STOP_REASON_NO_MOVES":
+            case 2:
+                message.stopReason = 2;
+                break;
+            case "STOP_REASON_MAX_MOVES":
+            case 3:
+                message.stopReason = 3;
+                break;
+            }
             return message;
         };
 
@@ -6787,6 +6836,7 @@ $root.types = (function() {
                 } else
                     object.endedAtUnix = options.longs === String ? "0" : 0;
                 object.username = "";
+                object.stopReason = options.enums === String ? "STOP_REASON_UNSPECIFIED" : 0;
             }
             if (message.gameId != null && message.hasOwnProperty("gameId"))
                 object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
@@ -6814,6 +6864,8 @@ $root.types = (function() {
                     object.endedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.endedAtUnix) : options.longs === Number ? new $util.LongBits(message.endedAtUnix.low >>> 0, message.endedAtUnix.high >>> 0).toNumber(true) : message.endedAtUnix;
             if (message.username != null && message.hasOwnProperty("username"))
                 object.username = message.username;
+            if (message.stopReason != null && message.hasOwnProperty("stopReason"))
+                object.stopReason = options.enums === String ? $root.types.StopReason[message.stopReason] === undefined ? message.stopReason : $root.types.StopReason[message.stopReason] : message.stopReason;
             return object;
         };
 

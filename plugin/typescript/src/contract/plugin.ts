@@ -469,18 +469,12 @@ export class Plugin {
     }
 }
 
-<<<<<<< HEAD
-// StartPlugin() creates and starts a plugin
-export function StartPlugin(c: Config): void {
-    const address = pluginAddress(c);
-=======
 // StartPlugin() creates and starts a plugin, returning the running Plugin so builders can
 // access detached capabilities (e.g. queryState) to back their own custom RPC endpoints.
 export function StartPlugin(c: Config): Plugin {
     // log the build marker so the running version is obvious in the plugin log
     console.log(`==== STARTING ${PLUGIN_BUILD} ====`);
-    const sockPath = path.join(c.DataDirPath, socketPath);
->>>>>>> upstream/main
+    const address = pluginAddress(c);
 
     // construct the plugin up front so callers get the running instance immediately; the
     // underlying socket is (re)assigned each time we successfully (re)connect below.
@@ -495,17 +489,10 @@ export function StartPlugin(c: Config): Plugin {
             : net.createConnection(address);
 
         conn.on('connect', () => {
-<<<<<<< HEAD
             console.log(`Connected to plugin transport: ${pluginNetwork()} ${address}`);
-            const p = new Plugin(c, conn, ContractConfigValue);
-            p.ListenForInbound();
-            p.Handshake().then((err) => {
-=======
-            console.log('Connected to plugin socket');
             plugin.conn = conn;
             plugin.ListenForInbound();
             plugin.Handshake().then((err) => {
->>>>>>> upstream/main
                 if (err) {
                     console.error(err.msg);
                     process.exit(1);
