@@ -364,8 +364,13 @@ func (p *pluginQueryProvider) QueryState(height uint64, request *lib.PluginState
 
 // resolvePluginCtlPath() locates the plugin control script from common startup locations
 func resolvePluginCtlPath(plugin string) (string, error) {
+	// determine the script extension based on the platform
+	scriptName := "pluginctl.sh"
+	if runtime.GOOS == "windows" {
+		scriptName = "pluginctl.cmd"
+	}
 	// construct the relative path for the plugin control script
-	relPath := filepath.Join("plugin", plugin, "pluginctl.sh")
+	relPath := filepath.Join("plugin", plugin, scriptName)
 	// try the current working directory first
 	candidates := []string{
 		relPath,
