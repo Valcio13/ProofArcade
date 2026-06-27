@@ -83,10 +83,15 @@ func New(fsm *fsm.StateMachine, c lib.Config, valKey crypto.PrivateKeyI, metrics
 	controller.loadCheckpointsFile()
 	// setup plugin if enabled
 	if c.Plugin != "" {
+		l.Infof("Plugin config found: %s, executing plugin", c.Plugin)
 		if err = controller.PluginExecute(c.Plugin); err != nil {
+			l.Errorf("PluginExecute failed: %v", err)
 			return nil, err
 		}
+		l.Infof("PluginExecute succeeded, calling PluginConnectSync")
 		controller.PluginConnectSync()
+	} else {
+		l.Infof("No plugin configured (c.Plugin is empty)")
 	}
 	// initialize the consensus in the controller, passing a reference to itself
 	controller.Consensus, err = bft.New(c, valKey, fsm.Height(), fsm.Height()-1, controller, c.RunVDF, metrics, l)
@@ -273,8 +278,17 @@ func (c *Controller) runPluginCtl(plugin, action string) ([]byte, lib.ErrorI) {
 	}
 	// create the command using the requested action
 	cmd := exec.Command(cmdPath, action)
+	// set the plugin data directory environment variable so the plugin knows where to find the socket
+	// on Windows, use TCP instead of unix sockets for better compatibility
+	cmd.Env = append(os.Environ(),
+		fmt.Sprintf("CANOPY_PLUGIN_DATA_DIR=%s", socketDir),
+		"CANOPY_PLUGIN_NETWORK=tcp",
+	)
+	c.log.Infof("Starting plugin %s with env: CANOPY_PLUGIN_DATA_DIR=%s, CANOPY_PLUGIN_NETWORK=tcp", plugin, socketDir)
+	c.log.Infof("About to call cmd.CombinedOutput() for plugin %s", plugin)
 	// execute the command and capture output
 	output, err := cmd.CombinedOutput()
+	c.log.Infof("After cmd.CombinedOutput() for plugin %s (err=%v, output length=%d)", plugin, err, len(output))
 	if err != nil {
 		return nil, lib.NewError(lib.NoCode, lib.MainModule, fmt.Sprintf("failed to execute plugin %s (%s): %v, output: %s", plugin, action, err, string(output)))
 	}
@@ -301,25 +315,44 @@ func (c *Controller) PluginStop(plugin string) lib.ErrorI {
 	return nil
 }
 
-// PluginConnectSync() blocking: enables a unix socket file where plugins can interact with the Canopy FSM
+// PluginConnectSync() blocking: enables a socket where plugins can interact with the Canopy FSM
 func (c *Controller) PluginConnectSync() {
-	sockPath := filepath.Join(socketDir, socketFile)
-	// make the path
-	if err := os.MkdirAll(socketDir, 0777); err != nil {
-		c.log.Fatalf("Failed to make the plugin socket path %s: %v", sockPath, err)
-	}
-	// clean old socket
-	if err := os.RemoveAll(sockPath); err != nil {
-		c.log.Fatalf("Failed to remove plugin socket %s: %v", sockPath, err)
-	}
-	// create a unix listener
-	l, err := net.Listen("unix", sockPath)
-	if err != nil {
-		c.log.Fatalf("Failed to listen on socket: %v", err)
+	var l net.Listener
+	var err error
+	var listenAddr string
+	
+	c.log.Infof("PluginConnectSync: Starting plugin connection setup, runtime.GOOS=%s", runtime.GOOS)
+	
+	// On Windows, use TCP for better compatibility; on Unix use unix sockets
+	if runtime.GOOS == "windows" {
+		// TCP mode for Windows
+		listenAddr = "127.0.0.1:50004"
+		c.log.Infof("PluginConnectSync: Attempting TCP listen on %s", listenAddr)
+		l, err = net.Listen("tcp", listenAddr)
+		if err != nil {
+			c.log.Fatalf("Failed to listen on TCP: %v", err)
+		}
+	} else {
+		// Unix socket mode for Linux/Mac
+		sockPath := filepath.Join(socketDir, socketFile)
+		// make the path
+		if err := os.MkdirAll(socketDir, 0777); err != nil {
+			c.log.Fatalf("Failed to make the plugin socket path %s: %v", sockPath, err)
+		}
+		// clean old socket
+		if err := os.RemoveAll(sockPath); err != nil {
+			c.log.Fatalf("Failed to remove plugin socket %s: %v", sockPath, err)
+		}
+		// create a unix listener
+		l, err = net.Listen("unix", sockPath)
+		if err != nil {
+			c.log.Fatalf("Failed to listen on socket: %v", err)
+		}
+		listenAddr = sockPath
 	}
 	defer l.Close()
 	// log the listener
-	c.log.Infof("Plugin service listening on socket: %s", sockPath)
+	c.log.Infof("Plugin service listening on: %s", listenAddr)
 	// wait for a connection
 	conn, e := l.Accept()
 	if e != nil {

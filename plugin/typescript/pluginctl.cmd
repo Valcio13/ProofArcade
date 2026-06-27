@@ -2,7 +2,9 @@
 setlocal EnableExtensions
 
 set "SCRIPT_DIR=%~dp0"
-set "NODE_SCRIPT=%SCRIPT_DIR%dist\main.js"
+REM Remove trailing backslash for PowerShell compatibility
+if "%SCRIPT_DIR:~-1%"=="\" set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
+set "NODE_SCRIPT=%SCRIPT_DIR%\dist\main.js"
 set "PLUGIN_DIR=%CANOPY_PLUGIN_DATA_DIR%"
 if "%PLUGIN_DIR%"=="" set "PLUGIN_DIR=%TEMP%\canopy-plugin"
 set "PID_FILE=%PLUGIN_DIR%\typescript-plugin.pid"
@@ -40,17 +42,14 @@ if exist "%PID_FILE%" (
   del /f /q "%PID_FILE%" >nul 2>nul
 )
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$env:CANOPY_PLUGIN_DATA_DIR='%PLUGIN_DIR%'; $p = Start-Process -FilePath node -ArgumentList @('%NODE_SCRIPT%') -WorkingDirectory '%SCRIPT_DIR%' -RedirectStandardOutput '%LOG_FILE%' -RedirectStandardError '%ERR_FILE%' -WindowStyle Hidden -PassThru; Set-Content -Path '%PID_FILE%' -Value $p.Id"
-if not exist "%PID_FILE%" (
-  echo Error: TypeScript plugin failed to start
-  exit /b 1
-)
-set /p PID=<"%PID_FILE%"
+REM Start Node.js using the PowerShell helper script
+for /f "usebackq" %%p in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\start-plugin.ps1" -NodeScript "%NODE_SCRIPT%" -WorkDir "%SCRIPT_DIR%" -LogFile "%LOG_FILE%" -ErrFile "%ERR_FILE%" -PidFile "%PID_FILE%" -PluginDataDir "%PLUGIN_DIR%" -PluginNetwork "%CANOPY_PLUGIN_NETWORK%"`) do set "PID=%%p"
+
 if "%PID%"=="" (
   echo Error: TypeScript plugin failed to start
-  del /f /q "%PID_FILE%" >nul 2>nul
   exit /b 1
 )
+
 echo TypeScript plugin started successfully ^(PID: %PID%^)
 echo Log files: %LOG_FILE% and %ERR_FILE%
 exit /b 0

@@ -7,6 +7,21 @@ initializeContract(Contract, ContractConfig, ContractAsync);
 
 // start the plugin with automatic config loading
 async function main() {
+    // DIAGNOSTIC: Log all CANOPY_PLUGIN_* environment variables
+    console.log('=== PLUGIN STARTUP DIAGNOSTICS ===');
+    console.log('All CANOPY_PLUGIN_* environment variables:');
+    Object.keys(process.env)
+        .filter(key => key.startsWith('CANOPY_PLUGIN_'))
+        .forEach(key => {
+            console.log(`  ${key} = ${process.env[key]}`);
+        });
+    console.log('Specific checks:');
+    console.log(`  CANOPY_PLUGIN_NETWORK = ${process.env.CANOPY_PLUGIN_NETWORK}`);
+    console.log(`  CANOPY_PLUGIN_DATA_DIR = ${process.env.CANOPY_PLUGIN_DATA_DIR}`);
+    console.log(`  CANOPY_PLUGIN_ADDRESS = ${process.env.CANOPY_PLUGIN_ADDRESS}`);
+    console.log(`  CANOPY_PLUGIN_CONFIG_PATH = ${process.env.CANOPY_PLUGIN_CONFIG_PATH}`);
+    console.log('===================================');
+    
     const config = await LoadConfig();
     console.log(`Starting plugin with ChainId: ${config.ChainId}`);
     const plugin = StartPlugin(config);
