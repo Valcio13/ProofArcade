@@ -7,7 +7,7 @@
     "types": "dist/main.d.ts",
     "scripts": {
         "build": "npm run build:proto && npm run build:descriptors && tsc -p tsconfig.json && npm run copy:proto",
-        "copy:proto": "node -e \"const fs=require('fs'); fs.mkdirSync('dist/proto',{recursive:true}); for (const file of ['index.js','index.cjs','index.d.ts','descriptors.ts']) { const src = `src/proto/${file}`; const dest = `dist/proto/${file.replace(/\\.ts$/, '.js')}`; if (fs.existsSync(src)) fs.copyFileSync(src, dest); }\"",
+        "copy:proto": "node scripts/copy-proto.cjs",
         "start": "node dist/main.js",
         "dev": "nodemon --exec 'node --loader ts-node/esm src/main.ts'",
         "test": "npm run build && node --test dist/contract/game2048-replay.test.js dist/contract/game2048-contract.test.js",
