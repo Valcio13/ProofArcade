@@ -1797,10 +1797,12 @@ const gamePlatformPoolId = daoPoolId + 1;
 const gameReservePoolId = daoPoolId + 2;
 const gameShopPoolId = daoPoolId + 3;
 const gameDailyRewardPoolId = daoPoolId + 4;
-const defaultClassicStartFee = 2;
-const defaultDailyStartFee = 25;
-const legacyClassicStartFee = 90;
-const legacyDailyStartFee = 240;
+// Currency: 1 PROOF = 1,000,000 microPROOF (canonical unit)
+const MICRO_PER_PROOF = 1_000_000;
+const defaultClassicStartFee = 2 * MICRO_PER_PROOF;  // 2 PROOF = 2,000,000 microPROOF
+const defaultDailyStartFee = 25 * MICRO_PER_PROOF;   // 25 PROOF = 25,000,000 microPROOF
+const legacyClassicStartFee = 90 * MICRO_PER_PROOF;  // 90 PROOF = 90,000,000 microPROOF
+const legacyDailyStartFee = 240 * MICRO_PER_PROOF;   // 240 PROOF = 240,000,000 microPROOF
 const defaultDailyMaxMoves = 80;
 const defaultDailyPlatformFeeBps = 500;
 const defaultDailyRewardFeeBps = 8000;
