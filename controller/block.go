@@ -128,57 +128,67 @@ func (c *Controller) SelfSendBlock(qc *lib.QuorumCertificate, timestamp uint64) 
 
 // ProduceProposal() create a proposal in the form of a `block` and `certificate result` for the bft process
 func (c *Controller) ProduceProposal(evidence *bft.ByzantineEvidence, vdf *crypto.VDF) (rcBuildHeight uint64, blockBytes []byte, results *lib.CertificateResult, err lib.ErrorI) {
+	var clean bool
 	c.log.Debugf("Producing proposal as leader")
 	// once done proposing, 'reset' the proposal mode back to default to 'accept all'
 	defer c.FSM.Reset()
-	// load the previous quorum height quorum certificate from the indexer
-	lastCertificate, err := c.FSM.LoadCertificateHashesOnly(c.FSM.Height() - 1)
-	if err != nil {
-		return
-	}
-	// validate the verifiable delay function from the bft module
-	if vdf != nil {
-		// if the verifiable delay function is NOT valid for using the last block hash
-		if !crypto.VerifyVDF(lastCertificate.BlockHash, vdf.Output, vdf.Proof, int(vdf.Iterations)) {
-			// nullify the bad VDF
-			vdf = nil
-			// log the issue but still continue with the proposal
-			c.log.Error(lib.ErrInvalidVDF().Error())
+	// loop until we get a clean pass to prevent mid-proposal races
+	for {
+		if clean, err = func() (bool, lib.ErrorI) {
+			c.Mempool.L.Lock()
+			defer c.Mempool.L.Unlock()
+			p, dirtyVersion, e := c.loadProposalBlockLocked()
+			if e != nil {
+				return false, e
+			}
+			// load the previous quorum height quorum certificate from the indexer
+			lastCertificate, e := c.FSM.LoadCertificateHashesOnly(c.FSM.Height() - 1)
+			if e != nil {
+				return false, e
+			}
+			// validate the verifiable delay function from the bft module
+			if vdf != nil {
+				// if the verifiable delay function is NOT valid for using the last block hash
+				if !crypto.VerifyVDF(lastCertificate.BlockHash, vdf.Output, vdf.Proof, int(vdf.Iterations)) {
+					// nullify the bad VDF
+					vdf = nil
+					// log the issue but still continue with the proposal
+					c.log.Error(lib.ErrInvalidVDF().Error())
+				}
+			}
+			// load the last block from the indexer
+			lastBlock, e := c.FSM.LoadBlock(c.FSM.Height() - 1)
+			if e != nil {
+				return false, e
+			}
+			// replace the VDF and last certificate in the header
+			p.Block.BlockHeader.LastQuorumCertificate, p.Block.BlockHeader.Vdf = lastCertificate, vdf
+			p.Block.BlockHeader.TotalVdfIterations = vdf.GetIterations() + lastBlock.BlockHeader.TotalVdfIterations
+			// set the certificate results variable and rcBuildHeight
+			results, rcBuildHeight = p.CertResults, p.rcBuildHeight
+			// execute the hash
+			if _, err = p.Block.BlockHeader.SetHash(); err != nil {
+				return false, err
+			}
+			// convert the block reference to bytes
+			blockBytes, err = lib.Marshal(p.Block)
+			if err != nil {
+				return false, err
+			}
+			// update the 'block results' with the newly created header
+			p.BlockResult.BlockHeader = p.Block.BlockHeader
+			// IMPORTANT: none of the calls below should rely on the latest FSM because
+			// the mempool FSM was discarded during 'check mempool'
+			// set slash recipients (this is necessary because values changed)
+			c.CalculateSlashRecipients(results, evidence)
+			// set checkpoint (this is necessary because values changed)
+			c.CalculateCheckpoint(p.BlockResult, results)
+			return c.Mempool.dirtyVersion.Load() == dirtyVersion &&
+				p.proposalVoteConfig == c.currentProposalVoteConfig(), nil
+		}(); err != nil || clean {
+			return
 		}
 	}
-	// get the proposal cached in the mempool
-	p := c.GetProposalBlockFromMempool()
-	// load the last block from the indexer
-	lastBlock, err := c.FSM.LoadBlock(c.FSM.Height() - 1)
-	if err != nil {
-		return
-	}
-	// replace the VDF and last certificate in the header
-	p.Block.BlockHeader.LastQuorumCertificate, p.Block.BlockHeader.Vdf = lastCertificate, vdf
-	p.Block.BlockHeader.TotalVdfIterations = vdf.GetIterations() + lastBlock.BlockHeader.TotalVdfIterations
-	// set the certificate results variable and rcBuildHeight
-	results, rcBuildHeight = p.CertResults, p.rcBuildHeight
-	// execute the hash
-	if _, err = p.Block.BlockHeader.SetHash(); err != nil {
-		// exit with error
-		return
-	}
-	// convert the block reference to bytes
-	blockBytes, err = lib.Marshal(p.Block)
-	if err != nil {
-		// exit with error
-		return
-	}
-	// update the 'block results' with the newly created header
-	p.BlockResult.BlockHeader = p.Block.BlockHeader
-	// IMPORTANT: none of the calls below should rely on the latest FSM because
-	// the mempool FSM was discarded during 'check mempool'
-	// set slash recipients (this is necessary because values changed)
-	c.CalculateSlashRecipients(results, evidence)
-	// set checkpoint (this is necessary because values changed)
-	c.CalculateCheckpoint(p.BlockResult, results)
-	// exit
-	return
 }
 
 // ValidateProposal() fully validates a proposal in the form of a quorum certificate and resets back to begin block state
@@ -306,15 +316,20 @@ func (c *Controller) CommitCertificate(qc *lib.QuorumCertificate, block *lib.Blo
 		return err
 	}
 	if !syncing {
-		// reset the current mempool store to prepare for the next height
+		// refresh the mempool FSM from the newly committed height before rebuilding
 		c.Mempool.FSM.Discard()
-		// set up the mempool with the actual new FSM for the next height
 		if c.Mempool.FSM, err = c.FSM.Copy(); err != nil {
-			// exit with error
 			return err
 		}
 		// check the mempool to cache a proposal block and validate the mempool itself
-		c.Mempool.CheckMempool()
+		c.Mempool.dirtyVersion.Add(1)
+		resetProposalConfig := c.SetFSMInConsensusModeForProposals()
+		if e := c.Mempool.CheckMempool(); e != nil {
+			resetProposalConfig()
+			c.log.Warnf("Post-commit mempool rebuild failed: %s", e.Error())
+		} else {
+			resetProposalConfig()
+		}
 		// reset mempool FSM
 		c.Mempool.FSM.Reset()
 	}
@@ -436,12 +451,25 @@ func (c *Controller) CommitCertificateParallel(qc *lib.QuorumCertificate, block 
 	})
 	eg.Go(func() error {
 		// set up the mempool for the next height with the temporary FSM
-		if c.Mempool.FSM, err = fsm.New(c.Config, memPoolStore, c.Plugin, c.Metrics, c.log); err != nil {
+		mempoolFSM, err := fsm.New(c.Config, memPoolStore, c.Plugin, c.Metrics, c.log)
+		if err != nil {
 			// exit with error
 			return err
 		}
+		c.Mempool.FSM = mempoolFSM
 		// check the mempool to cache a proposal block and validate the mempool itself
-		c.Mempool.CheckMempool()
+		c.Mempool.dirtyVersion.Add(1)
+		switch c.currentProposalVoteConfig() {
+		case fsm.GovProposalVoteConfig_APPROVE_LIST:
+			c.Mempool.FSM.SetProposalVoteConfig(fsm.GovProposalVoteConfig_APPROVE_LIST)
+		default:
+			c.Mempool.FSM.SetProposalVoteConfig(fsm.GovProposalVoteConfig_REJECT_ALL)
+		}
+		e := c.Mempool.CheckMempool()
+		c.Mempool.FSM.SetProposalVoteConfig(fsm.AcceptAllProposals)
+		if e != nil {
+			c.log.Warnf("Post-commit mempool rebuild failed: %s", e.Error())
+		}
 		// discard the temporary store after checking the mempool
 		memPoolStore.Discard()
 		// exit
@@ -516,10 +544,11 @@ func (c *Controller) ApplyAndValidateBlock(block *lib.Block, commit bool) (b *li
 		c.debugDumpHeaderDiff(candidate, compare)
 		return nil, lib.ErrUnequalBlockHash()
 	}
-	// validate VDF if committing randomly since this randomness is pseudo-non-deterministic (among nodes)
-	if commit && compare.Height > 1 && candidate.Vdf != nil {
-		// this design has similar security guarantees but lowers the computational requirements at a per-node basis
-		if rand.Intn(100) == 0 {
+	// Replicas must always validate proposer-supplied VDFs during normal consensus.
+	// During fast sync, VDFs are treated like advisory historical metadata and are
+	// sampled probabilistically to preserve throughput.
+	if compare.Height > 1 && candidate.Vdf != nil {
+		if !c.Syncing().Load() || (commit && rand.Intn(100) == 0) {
 			// validate the VDF included in the block
 			if !crypto.VerifyVDF(candidate.LastBlockHash, candidate.Vdf.Output, candidate.Vdf.Proof, int(candidate.Vdf.Iterations)) {
 				// exit with vdf error
@@ -546,6 +575,10 @@ func (c *Controller) HandlePeerBlock(msg *lib.BlockMessage, syncing bool) (*lib.
 	}
 	// if syncing the blockchain
 	if syncing {
+		// Fast sync intentionally trades per-block historical QC verification for throughput.
+		// The security model relies on checkpoint heights as the long-range-attack anchor,
+		// so intermediate blocks may be replayed for state continuity and only checkpoint
+		// heights are required to re-establish historical consistency during catch-up.
 		// use checkpoints to protect against long-range attacks
 		if qc.Header.Height%CheckpointFrequency == 0 {
 			// attempt to load the checkpoint from the file
@@ -565,7 +598,8 @@ func (c *Controller) HandlePeerBlock(msg *lib.BlockMessage, syncing bool) (*lib.
 				return nil, fsm.ErrInvalidCheckpoint()
 			}
 		}
-	} else {
+	}
+	if !syncing || qc.Header.Height%CheckpointFrequency == 0 {
 		// load the committee from the root chain using the root height embedded in the certificate message
 		v, err := c.Consensus.LoadCommittee(c.LoadRootChainId(qc.Header.Height), qc.Header.RootHeight)
 		if err != nil {
@@ -583,8 +617,10 @@ func (c *Controller) HandlePeerBlock(msg *lib.BlockMessage, syncing bool) (*lib.
 			// exit with error
 			return nil, lib.ErrNoMaj23()
 		}
-		// update the non signer percent for the validators
-		c.Metrics.UpdateNonSignerPercent(qc.Signature, v)
+		if !syncing {
+			// update the non signer percent for the validators
+			c.Metrics.UpdateNonSignerPercent(qc.Signature, v)
+		}
 	}
 	// ensure the proposal inside the quorum certificate is valid at a stateless level
 	block, err := qc.CheckProposalBasic(c.FSM.Height(), c.Config.NetworkID, c.Config.ChainId)
@@ -664,13 +700,12 @@ func (c *Controller) CheckAndSetLastCertificate(candidate *lib.BlockHeader) lib.
 
 // SetFSMInConsensusModeForProposals() is how the Validator is configured for `base chain` specific parameter upgrades
 func (c *Controller) SetFSMInConsensusModeForProposals() (reset func()) {
-	elapsed := time.Since(c.Consensus.BFTStartTime).Milliseconds()
-	// if consensus is below round 3 AND it hasn't been more than 3 minutes since the last block
-	if c.Consensus.GetRound() < 3 && elapsed < int64(c.Config.BlockTimeMS()*3) {
+	switch c.currentProposalVoteConfig() {
+	case fsm.GovProposalVoteConfig_APPROVE_LIST:
 		// if the node is not having 'consensus issues' refer to the approve list
 		c.FSM.SetProposalVoteConfig(fsm.GovProposalVoteConfig_APPROVE_LIST)
 		c.Mempool.FSM.SetProposalVoteConfig(fsm.GovProposalVoteConfig_APPROVE_LIST)
-	} else {
+	default:
 		// if the node is exhibiting 'chain halt' like behavior, reject all proposals
 		c.FSM.SetProposalVoteConfig(fsm.GovProposalVoteConfig_REJECT_ALL)
 		c.Mempool.FSM.SetProposalVoteConfig(fsm.GovProposalVoteConfig_REJECT_ALL)
@@ -682,6 +717,41 @@ func (c *Controller) SetFSMInConsensusModeForProposals() (reset func()) {
 		c.Mempool.FSM.SetProposalVoteConfig(fsm.AcceptAllProposals)
 	}
 	return
+}
+
+// currentProposalVoteConfig() returns the proposal vote mode required by the current consensus state
+func (c *Controller) currentProposalVoteConfig() fsm.GovProposalVoteConfig {
+	if c.Consensus == nil {
+		return fsm.GovProposalVoteConfig_APPROVE_LIST
+	}
+	// if consensus is below round 3 AND it hasn't been more than 3 block times since the last block
+	if c.Consensus.CurrentRound() < 3 {
+		deadline := c.Consensus.ProposalVoteDeadlineUnixMilli()
+		if deadline != 0 && time.Now().UnixMilli() < deadline {
+			return fsm.GovProposalVoteConfig_APPROVE_LIST
+		}
+	}
+	return fsm.GovProposalVoteConfig_REJECT_ALL
+}
+
+// loadProposalBlockLocked() returns a cached proposal current with the latest mempool invalidation state
+func (c *Controller) loadProposalBlockLocked() (p *CachedProposal, dirtyVersion uint64, err lib.ErrorI) {
+	for {
+		dirtyVersion = c.Mempool.dirtyVersion.Load()
+		proposalVoteConfig := c.currentProposalVoteConfig()
+		var ok bool
+		p, ok = c.GetProposalBlockFromMempool()
+		if ok && p.dirtyVersion == dirtyVersion && p.proposalVoteConfig == proposalVoteConfig {
+			return
+		}
+		resetProposalConfig := c.SetFSMInConsensusModeForProposals()
+		c.Mempool.FSM.Reset()
+		e := c.Mempool.CheckMempool()
+		resetProposalConfig()
+		if e != nil {
+			return nil, 0, e
+		}
+	}
 }
 
 // UpdateTelemetry() updates the prometheus metrics after 'committing' a block
