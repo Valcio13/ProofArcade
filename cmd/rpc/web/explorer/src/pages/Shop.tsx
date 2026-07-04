@@ -136,8 +136,8 @@ function ShopPage() {
   const canRedeem = !!storedSessionAddress && !!effectivePassword && !!preview?.valid && !isRedeeming
 
   // Progress calculations
-  const minRedeemPoints = config?.shopMinRedeemPoints ?? 300
-  const stepPoints = config?.shopRedeemStepPoints ?? 300
+  const minRedeemPoints = config?.shopMinRedeemPoints ?? 500
+  const stepPoints = config?.shopRedeemStepPoints ?? 500
   const currentPoints = player?.classicPointsBalance ?? 0
   const pointsToNextRedemption = currentPoints < minRedeemPoints 
     ? minRedeemPoints - currentPoints
@@ -414,7 +414,7 @@ function ShopPage() {
           <div>
             <h2 className="text-sm font-bold text-white">Redeem Points</h2>
             <p className="mt-0.5 text-xs text-slate-400">
-              {config?.shopRedemptionRatePoints ?? 300} points = {config?.shopRedemptionRateCnpy ?? 1} PROOF • Redeem in {config?.shopRedeemStepPoints ?? 300}-point increments
+              {config?.shopRedemptionRatePoints ?? 500} points = {config?.shopRedemptionRateCnpy ?? 1} PROOF • Redeem in {config?.shopRedeemStepPoints ?? 500}-point increments
             </p>
           </div>
 
@@ -441,7 +441,7 @@ function ShopPage() {
                     value={burnPoints}
                     onChange={(event) => setBurnPoints(event.target.value.replace(/[^\d]/g, ''))}
                     inputMode="numeric"
-                    placeholder={`Minimum ${config?.shopMinRedeemPoints ?? 300}`}
+                    placeholder={`Minimum ${config?.shopMinRedeemPoints ?? 500}`}
                     className="mt-1.5 w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-2.5 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#53a6ff]"
                   />
                 </div>

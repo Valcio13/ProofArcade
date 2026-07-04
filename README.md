@@ -164,7 +164,7 @@ Core gameplay/economy systems:
 The current beta economy and chain timing are configured as:
 - `Classic` entry fee: `2 PROOF`
 - `Daily Challenge` entry fee: `25 PROOF`
-- shop redemption: `300 classic points = 1 PROOF`
+- shop redemption: `500 classic points = 1 PROOF`
 - classic daily earn cap: `2000` points per wallet per UTC day
 - target block time: `5 seconds`
 

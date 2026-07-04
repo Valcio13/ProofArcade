@@ -197,10 +197,10 @@ const defaultConfig: ChainConfig = {
   classicShopFeeBps: 5000,
   dailyPayoutBps: [3000, 2000, 1200, 900, 700, 600, 500, 400, 400, 300],
   classicDailyPointsCap: 2000,
-  shopRedemptionRatePoints: 300,
+  shopRedemptionRatePoints: 500,
   shopRedemptionRateCnpy: 1,
-  shopMinRedeemPoints: 300,
-  shopRedeemStepPoints: 300,
+  shopMinRedeemPoints: 500,
+  shopRedeemStepPoints: 500,
   dailyLoginRewardPoints: [20, 25, 30, 35, 40, 45, 50],
   dailyLoginBonusBps: 2000,
 }
@@ -454,9 +454,9 @@ export function claimDailyLoginReward(address: string): { submitted: boolean; ut
 export function getRedeemPreview(address: string, burnPoints: number): RedeemPreview {
   const state = loadState()
   const player = state.players[address] ?? createPlayer(address)
-  const minRedeemPoints = state.config.shopMinRedeemPoints ?? 300
-  const redeemStepPoints = state.config.shopRedeemStepPoints ?? 300
-  const ratePoints = state.config.shopRedemptionRatePoints ?? 300
+  const minRedeemPoints = state.config.shopMinRedeemPoints ?? 500
+  const redeemStepPoints = state.config.shopRedeemStepPoints ?? 500
+  const ratePoints = state.config.shopRedemptionRatePoints ?? 500
   const rateCnpy = state.config.shopRedemptionRateCnpy ?? 1
   const payoutAmount = ratePoints > 0 ? Math.floor((burnPoints * rateCnpy) / ratePoints) : 0
 

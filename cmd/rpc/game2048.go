@@ -62,10 +62,10 @@ const (
 	game2048DefaultClassicReserveFeeBps     = 4500
 	game2048DefaultClassicShopFeeBps        = 5000
 	game2048DefaultClassicDailyPointsCap    = 2000
-	game2048DefaultShopRedemptionRatePoints = 300
+	game2048DefaultShopRedemptionRatePoints = 500
 	game2048DefaultShopRedemptionRateCnpy   = 1000000 // 1 PROOF in uproof (micro-denomination)
-	game2048DefaultShopMinRedeemPoints      = 300
-	game2048DefaultShopRedeemStepPoints     = 300
+	game2048DefaultShopMinRedeemPoints      = 500
+	game2048DefaultShopRedeemStepPoints     = 500
 	game2048DefaultDailyLoginBonusBps       = 2000
 
 	game2048LeaderboardLimit = 20

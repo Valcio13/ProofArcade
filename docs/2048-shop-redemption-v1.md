@@ -91,13 +91,19 @@ This is simpler than listing many fixed “packages”.
 
 Start with a conservative fixed rate:
 
-- `300 classic points => 1 CNPY`
+- `500 classic points => 1 CNPY`
 
 Equivalent:
 
-- `1 point = 0.00333 CNPY`
+- `1 point = 0.002 CNPY`
 
 Why this is a good starting point:
+
+- easy to understand
+- avoids overpaying before the economy is observed
+- works cleanly with the current point earning rate
+- gives us room to tune later
+- encourages more accumulation before redemption
 
 - easy to understand
 - avoids overpaying before the economy is observed
@@ -108,7 +114,7 @@ Why this is a good starting point:
 
 ### Minimum redemption
 
-- minimum burn: `300` points
+- minimum burn: `500` points
 
 Reason:
 
@@ -118,13 +124,13 @@ Reason:
 
 ### Increment size
 
-- redemption must be in multiples of `300` points
+- redemption must be in multiples of `500` points
 
 Examples:
 
-- `300` points => `1 CNPY`
-- `600` points => `2 CNPY`
-- `1200` points => `4 CNPY`
+- `500` points => `1 CNPY`
+- `1000` points => `2 CNPY`
+- `1500` points => `3 CNPY`
 
 ### Daily redemption cap
 
@@ -182,10 +188,10 @@ Add:
 
 Suggested defaults:
 
-- `shop_redemption_rate_points = 300`
+- `shop_redemption_rate_points = 500`
 - `shop_redemption_rate_cnpy = 1`
-- `shop_min_redeem_points = 300`
-- `shop_redeem_step_points = 300`
+- `shop_min_redeem_points = 500`
+- `shop_redeem_step_points = 500`
 
 Note:
 
@@ -387,19 +393,20 @@ Contract should reject clearly when:
 Recommended user-facing messages:
 
 - `Not enough classic points.`
-- `Minimum redemption is 300 points.`
-- `Redemption must be in 300-point steps.`
+- `Minimum redemption is 500 points.`
+- `Redemption must be in 500-point steps.`
 - `Treasury is temporarily out of funds.`
 
 ## Economic Notes
 
 V1 is intentionally conservative.
 
-Why start with `300 points => 1 CNPY`:
+Why start with `500 points => 1 CNPY`:
 
 - classic points are earned steadily now
 - daily rewards already provide direct token upside
 - this rate avoids making classic farming too dominant too early
+- encourages more accumulation and commitment to Classic mode
 
 If later the grind feels too slow, we can adjust:
 
@@ -436,11 +443,11 @@ Do not include yet:
 - classic daily earn cap:
   - `2000`
 - shop redemption rate:
-  - `300 points => 1 CNPY`
+  - `500 points => 1 CNPY`
 - minimum redemption:
-  - `300 points`
+  - `500 points`
 - step size:
-  - `300 points`
+  - `500 points`
 
 This gives a very understandable first economy:
 
