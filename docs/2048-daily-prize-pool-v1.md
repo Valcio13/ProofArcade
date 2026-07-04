@@ -386,10 +386,16 @@ If missing, contract should reject daily starts until configured, to prevent fee
 **Daily Prize Pool pays**:
 - Claimed daily rewards to winners
 
+**Monthly Prize Pool receives**:
+- 30% of each Classic entry fee (the monthly reward portion)
+
+**Monthly Prize Pool pays** (V2):
+- Claimed monthly rewards to winners (not implemented in V1)
+
 **Other Treasury Pools** (see `2048-treasury-v1.md`):
-- Platform pool: receives 5% of daily fees
-- Reserve pool: receives 10% of daily fees
-- Shop pool: receives 5% of daily fees + pays classic redemptions
+- Platform pool: receives 5% of daily fees + 5% of Classic fees
+- Reserve pool: receives 10% of daily fees + 20% of Classic fees
+- Shop pool: receives 5% of daily fees + 45% of Classic fees + pays classic redemptions
 
 V1 uses the daily pool's accumulated balance as the payout source for winner claims.
 

@@ -100,6 +100,21 @@ All notable changes to ProofArcade will be documented in this file.
 
 ### Added
 
+- **Monthly Competition System**: Complete monthly competitive prize pool for Classic mode
+  - Monthly prize pool: 30% of all Classic entry fees (600K uproof per game)
+  - Cumulative scoring: Players accumulate scores throughout the month
+  - Single entry per player: Automatic deletion of previous entries when new game submitted
+  - Monthly leaderboard: Top 50 players displayed with current month focus
+  - User ranking display: Shows player's rank if positioned 11th or lower
+  - New RPC endpoints: `getMonthlyPool`, `getMonthlyLeaderboard`
+  - Migration support: Handles both old (4-byte) and new (36-byte) entry formats
+  
+- **Uproof Denomination**: Added micro-PROOF denomination support
+  - Backend storage in uproof (1 PROOF = 1,000,000 uproof)
+  - Frontend conversion utilities: `toCNPY()` and `formatCNPY()`
+  - Chain configuration updated across wallet and explorer
+  - Denomination hooks for consistent formatting
+  
 - Dev testing faucet: "Get Test PROOF" button in Settings (RPC mode only)
 - Optimistic UI updates for instant feedback on Check-In claims
 - Optimistic UI updates for instant feedback on Shop redemptions
@@ -119,7 +134,78 @@ All notable changes to ProofArcade will be documented in this file.
 - Session info card on Play page showing wallet and mode details
 - URL parameter support for mode selection (`?mode=daily` and `?mode=classic`)
 
-### Improved
+### Changed
+
+- **Leaderboard UI Simplification**: Streamlined monthly leaderboard experience
+  - Removed: Month selector dropdown (always shows current month)
+  - Removed: All-time leaderboard tab (focus on daily and monthly competitions)
+  - Enhanced: Top 10 display with "Show More/Less" toggle
+  - Enhanced: Info section simplified from 3-column to 2-column grid
+  - Improved: Current month highlighted in tab display
+
+### Technical
+
+- **Backend (Go)**:
+  - Monthly pool query handler: `Game2048MonthlyPool()`
+  - Monthly leaderboard loader: `loadGame2048MonthlyLeaderboard()`
+  - Length-prefixed value parsing for monthly entries
+  - Big-endian uint64 extraction for score/tile/moves/timestamp
+  - Username enrichment for monthly leaderboard entries
+  
+- **Plugin (TypeScript)**:
+  - Monthly pool allocation in `StartClassicGame` (30% of 2M uproof fee)
+  - Cumulative scoring logic in `SubmitGameResult` for Classic mode
+  - Previous entry deletion before adding new cumulative entry
+  - Key generation: `KeyForMonthlyLeaderboard()`, `KeyForMonthlyPlayerEntry()`
+  - Value encoding: Length-prefixed components with big-endian numeric values
+  - Score inversion for descending leaderboard sort
+  - Migration support: 4-byte (score only) and 36-byte (score + gameId) formats
+  
+- **Frontend (React/TypeScript)**:
+  - New monthly leaderboard tab component
+  - API client methods: `getMonthlyPool()`, `getMonthlyLeaderboard()`
+  - Type definitions for monthly responses
+  - Current month calculation utility
+  - Show More/Less pagination for leaderboard
+
+### Fixed
+
+- **7 Critical Monthly Competition Bugs**:
+  1. StateRead response handling: Changed to queryId-based lookup with `getQueryValue()`
+  2. Key encoding: Fixed monthly keys to use `JoinLenPrefix` for proper length prefixes
+  3. Value format mismatch: Rewrote to use length-prefixed components with big-endian encoding
+  4. GameId size: Fixed assumption from 8 bytes to correct 32 bytes (SHA256 hash)
+  5. StateRead pattern: Updated `StartClassicGame` to use consistent queryId pattern
+  6. Parameter name: Fixed `dels` to `deletes` in StateWrite interface
+  7. Delete structure: Fixed from raw `Uint8Array` to `{ key: Uint8Array }` objects
+
+### Documentation
+
+- Added: `docs/2048-monthly-competition-v1.md` - Complete monthly competition specification
+- Updated: `docs/2048-treasury-v1.md` - Classic fee split with 30% monthly allocation
+- Updated: `docs/2048-daily-prize-pool-v1.md` - Treasury flow with monthly pool reference
+- All docs updated with uproof denomination details
+
+### Performance
+
+- Monthly leaderboard queries capped at top 50 entries
+- Efficient iterator-based loading with early exit
+- Single-entry per player prevents database bloat
+- Length-prefixed encoding ensures safe parsing
+
+### Breaking Changes
+
+**None** - Classic fee split updated but maintains:
+- Same total fee (2,000,000 uproof / 2 PROOF)
+- Compatible pool accounting system
+- Backward compatible entry format migration
+- Existing daily competition unchanged
+
+---
+
+## [0.2.0] - 2026-06-14
+
+### Added
 
 - **Transaction hash display**: Fixed critical bug where TX hashes disappeared after page refresh
   - Fixed plugin field name mismatch (txHash vs tx_hash)

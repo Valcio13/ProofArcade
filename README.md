@@ -4,7 +4,7 @@ ProofArcade is an onchain 2048 game experience built on the Canopy stack.
 
 Players can:
 - play free in `Playtest`
-- run paid `Classic` games to earn spendable points
+- run paid `Classic` games to earn spendable points and compete in monthly rankings
 - enter `Daily Challenge` for leaderboard rewards
 - claim daily `Check-In` streak rewards
 - redeem points in the shop
@@ -32,14 +32,16 @@ ProofArcade is built around a simple idea:
 - attach a real reward loop to verified runs
 
 Instead of trusting a client-reported score directly, ProofArcade records a seeded game session and validates the submitted move list with deterministic replay. That lets the product support:
-- leaderboard-backed daily competition
+- monthly Classic competition leaderboard with cumulative scoring
+- daily Challenge competition with verified results
 - classic progression and points
 - claimable daily rewards
 - shop redemption
 
 The product is intentionally split into two lanes:
 - `Playtest` for frictionless free local practice
-- onchain `Classic` and `Daily Challenge` for verified runs and rewards
+- onchain `Classic` for verified runs, points, and monthly competition
+- onchain `Daily Challenge` for verified daily competition and rewards
 
 ## How ProofArcade Uses The Blockchain
 
@@ -47,16 +49,17 @@ ProofArcade does not use the chain just as a payment rail. The blockchain is par
 
 ### Classic mode
 
-For `Classic`, the chain is used to create a fresh deterministic session for each paid run.
+For `Classic`, the chain is used to create a fresh deterministic session for each paid run and track monthly competition progress.
 
 That means:
 - the player starts an onchain session
 - the game uses a blockchain-derived random seed for that session
 - the board can later be replayed from the same seed
 - the final move list can be verified instead of blindly trusting the submitted score
+- scores accumulate throughout the month on the monthly leaderboard
 
 So `Classic` is not just "pay, play, and hope the backend believes you."  
-It is "pay, get a seeded run, and let the contract verify what happened."
+It is "pay, get a seeded run, let the contract verify what happened, and compete for monthly rewards."
 
 ### Daily Challenge
 

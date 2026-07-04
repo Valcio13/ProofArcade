@@ -43,16 +43,18 @@ function handleDailyEntryFee(fee: number) {
 For every successful `classic` entry fee:
 
 - `5%` -> `platform`
-- `45%` -> `reserve`
-- `50%` -> `shop`
+- `30%` -> `monthly` (competitive monthly prize pool)
+- `20%` -> `reserve`
+- `45%` -> `shop`
 
 Conceptually:
 
 ```ts
 function handleClassicEntryFee(fee: number) {
   treasury.platform += fee * 0.05;
-  treasury.reserve += fee * 0.45;
-  treasury.shop += fee * 0.50;
+  treasury.monthly += fee * 0.30;
+  treasury.reserve += fee * 0.20;
+  treasury.shop += fee * 0.45;
 }
 ```
 
@@ -82,6 +84,19 @@ Properties:
 - day-scoped
 - only receives funds from `daily` entries
 - only used for daily winner claims
+
+### 2b. `monthly`
+
+Purpose:
+
+- prize-pool funding for monthly Classic competition winners
+
+Properties:
+
+- month-scoped (V2 will add month-based segregation)
+- only receives funds from `classic` entries
+- accumulates throughout the month
+- V1: accumulation only, V2 will add winner payouts
 
 ### 3. `reserve`
 
@@ -113,13 +128,15 @@ Properties:
 
 This treasury model intentionally makes the two game modes fund different systems:
 
-- `Daily` funds competitive rewards first
-- `Classic` funds progression redemption first
+- `Daily` funds daily competitive rewards (80% of fees)
+- `Classic` funds both:
+  - Monthly competitive rewards (30% of fees)
+  - Progression redemption via shop (45% of fees)
 
 That means:
 
-- daily is the high-stakes competition lane
-- classic is the farming / progression lane
+- daily is the high-stakes daily competition lane
+- classic is both the monthly competition lane and progression/farming lane
 
 This is the intended economy shape for V1.
 
@@ -174,6 +191,8 @@ Purpose:
   - `reserve`
   - `shop`
 
+Note: Monthly reward pool is tracked separately via Pool ID system (see `2048-monthly-competition-v1.md`).
+
 ### 2. `DailyTreasuryBucket`
 
 Per-UTC-day reward accounting:
@@ -214,19 +233,21 @@ uint64 daily_reward_fee_bps = 21;
 uint64 daily_reserve_fee_bps = 22;
 uint64 daily_shop_fee_bps = 23;
 uint64 classic_platform_fee_bps = 24;
-uint64 classic_reserve_fee_bps = 25;
-uint64 classic_shop_fee_bps = 26;
+uint64 classic_monthly_fee_bps = 25;
+uint64 classic_reserve_fee_bps = 26;
+uint64 classic_shop_fee_bps = 27;
 ```
 
 Suggested defaults:
 
-- `daily_platform_fee_bps = 500`
-- `daily_reward_fee_bps = 8000`
-- `daily_reserve_fee_bps = 1000`
-- `daily_shop_fee_bps = 500`
-- `classic_platform_fee_bps = 500`
-- `classic_reserve_fee_bps = 4500`
-- `classic_shop_fee_bps = 5000`
+- `daily_platform_fee_bps = 500` (5%)
+- `daily_reward_fee_bps = 8000` (80%)
+- `daily_reserve_fee_bps = 1000` (10%)
+- `daily_shop_fee_bps = 500` (5%)
+- `classic_platform_fee_bps = 500` (5%)
+- `classic_monthly_fee_bps = 3000` (30%)
+- `classic_reserve_fee_bps = 2000` (20%)
+- `classic_shop_fee_bps = 4500` (45%)
 
 ## Accounting Rules
 
@@ -251,17 +272,21 @@ When `startDailyGame` succeeds:
 
 When `startClassicGame` succeeds:
 
-1. subtract full fee from player balance
+1. subtract full fee from player balance (2,000,000 uproof / 2 PROOF)
 2. split fee into:
-   - platform
-   - reserve
-   - shop
+   - platform (5% = 100,000 uproof)
+   - monthly (30% = 600,000 uproof)
+   - reserve (20% = 400,000 uproof)
+   - shop (45% = 900,000 uproof)
 3. increase:
    - `GameTreasury.platform_balance`
+   - `MonthlyRewardPool.balance` (Pool ID: 131076)
    - `GameTreasury.reserve_balance`
    - `GameTreasury.shop_balance`
 
 Classic start does not touch `DailyTreasuryBucket`.
+
+Note: Monthly pool is stored separately using the Pool system. See `2048-monthly-competition-v1.md` for details.
 
 ### Daily reward claim
 
@@ -329,9 +354,10 @@ Recommended implementation:
 
 - calculate:
   - platform
+  - monthly
   - reserve
 - shop gets:
-  - `fee - platform - reserve`
+  - `fee - platform - monthly - reserve`
 
 Reason:
 
@@ -465,12 +491,15 @@ Recommended user-facing messages:
 ### Classic
 
 - `platform = 5%`
-- `reserve = 45%`
-- `shop = 50%`
+- `monthly = 30%`
+- `reserve = 20%`
+- `shop = 45%`
 
 This gives the intended economy:
 
-- daily entries fund competition first
-- classic entries fund redemption first
-- reserve grows steadily
-- platform share stays explicit
+- daily entries fund daily competition (80%) with small cuts to other buckets
+- classic entries fund both monthly competition (30%) and redemption (45%)
+- reserve grows steadily from both modes
+- platform share stays explicit at 5% across all modes
+
+**Monthly Competition**: The 30% monthly allocation creates a sustained competitive incentive for Classic mode, complementing the daily competition system while maintaining strong shop funding for progression players.
