@@ -3,7 +3,7 @@ import { useConfig } from '@/app/providers/ConfigProvider';
 export const useDenom = () => {
   const { chain } = useConfig();
   
-  const symbol = chain?.denom?.symbol || 'CNPY';
+  const symbol = chain?.denom?.symbol || 'PROOF';
   const decimals = chain?.denom?.decimals ?? 6;
   const divisor = Math.pow(10, decimals);
   const factor = divisor; // Alias for compatibility

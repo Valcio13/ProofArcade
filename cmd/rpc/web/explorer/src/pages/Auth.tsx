@@ -407,7 +407,7 @@ function AuthPage() {
       
       console.log('[Faucet] Client created, adding funds...')
       // Add test funds
-      await client.addFunds(justCreated.address, 500)
+      await client.addFunds(justCreated.address, 100)
       console.log('[Faucet] Funds added successfully')
       
       // Set on-chain username using the nickname

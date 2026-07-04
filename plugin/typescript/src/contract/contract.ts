@@ -822,6 +822,24 @@ export class ContractAsync {
         const platformPoolAmount = Long.isLong(platformPool?.amount)
             ? platformPool.amount
             : Long.fromNumber((platformPool?.amount as number) || 0);
+        
+        const monthlyPoolQueryId = randomQueryId();
+        const [monthlyPoolResp, monthlyPoolReadErr] = await contract.plugin.StateRead(contract, {
+            keys: [{ queryId: monthlyPoolQueryId, key: KeyForGameMonthlyRewardPool() }]
+        });
+        if (monthlyPoolReadErr) {
+            return { error: monthlyPoolReadErr };
+        }
+        const monthlyPoolBytes = getQueryValue(monthlyPoolResp, monthlyPoolQueryId);
+        const [monthlyRewardPoolRaw, monthlyPoolUnmarshalErr] = Unmarshal(monthlyPoolBytes || new Uint8Array(), types.Pool);
+        if (monthlyPoolUnmarshalErr) {
+            return { error: monthlyPoolUnmarshalErr };
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const monthlyRewardPool = monthlyRewardPoolRaw as any;
+        const monthlyRewardPoolAmount = Long.isLong(monthlyRewardPool?.amount)
+            ? monthlyRewardPool.amount
+            : Long.fromNumber((monthlyRewardPool?.amount as number) || 0);
         const reservePoolAmount = Long.isLong(reservePool?.amount)
             ? reservePool.amount
             : Long.fromNumber((reservePool?.amount as number) || 0);
@@ -831,6 +849,10 @@ export class ContractAsync {
         const updatedPlatformPool = types.Pool.create({
             id: Long.fromNumber(gamePlatformPoolId),
             amount: platformPoolAmount.add(split.platform)
+        });
+        const updatedMonthlyRewardPool = types.Pool.create({
+            id: Long.fromNumber(gameMonthlyRewardPoolId),
+            amount: monthlyRewardPoolAmount.add(split.monthly)
         });
         const updatedReservePool = types.Pool.create({
             id: Long.fromNumber(gameReservePoolId),
@@ -882,6 +904,7 @@ export class ContractAsync {
             sets: [
                 { key: playerKey, value: types.Account.encode(newPlayer).finish() },
                 { key: platformPoolKey, value: types.Pool.encode(updatedPlatformPool).finish() },
+                { key: KeyForGameMonthlyRewardPool(), value: types.Pool.encode(updatedMonthlyRewardPool).finish() },
                 { key: reservePoolKey, value: types.Pool.encode(updatedReservePool).finish() },
                 { key: shopPoolKey, value: types.Pool.encode(updatedShopPool).finish() },
                 { key: gameTreasuryKey, value: updatedTreasury },
@@ -1062,6 +1085,8 @@ export class ContractAsync {
             { key: KeyForGameSession(gameId), value: updatedSession },
             { key: KeyForPlayerStats(playerAddress), value: updatedStats }
         ];
+        
+        const deletes: Array<{ key: Uint8Array }> = [];
 
         if (isDaily) {
             sets.push({
@@ -1088,6 +1113,7 @@ export class ContractAsync {
                 })
             });
         } else {
+            // Classic mode: Add to all-time leaderboard
             sets.push({
                 key: KeyForClassicLeaderboard(Long.fromNumber(replay.score), gameId),
                 value: leaderboardEntry
@@ -1101,9 +1127,105 @@ export class ContractAsync {
                     earnedPoints: alreadyEarnedToday + cappedBasePoints
                 })
             });
+            
+            // Update monthly leaderboard for Classic games (cumulative scoring)
+            const monthId = utcMonthFromMicros(toUint64(tx?.time as Long | number | undefined));
+            const playerEntryKey = KeyForMonthlyPlayerEntry(monthId, playerAddress);
+            const monthlyQueryId = randomQueryId();
+            
+            // Get player's existing cumulative score for this month
+            const [existingEntryResp, existingEntryErr] = await contract.plugin.StateRead(contract, {
+                keys: [{ queryId: monthlyQueryId, key: playerEntryKey }]
+            });
+            if (existingEntryErr) {
+                return { error: existingEntryErr };
+            }
+            
+            const existingScoreBytes = getQueryValue(existingEntryResp, monthlyQueryId);
+            let previousScore = 0;
+            let previousGameId: Uint8Array | null = null;
+            let cumulativeScore = replay.score; // Start with current game score
+            
+            if (existingScoreBytes) {
+                if (existingScoreBytes.length >= 36) {
+                    // New format: [score:4][gameId:32]
+                    previousScore = Buffer.from(existingScoreBytes).readUInt32LE(0);
+                    previousGameId = existingScoreBytes.slice(4, 36);
+                    cumulativeScore = previousScore + replay.score; // Add to cumulative total
+                } else if (existingScoreBytes.length >= 4) {
+                    // Old format (migration): [score:4] only
+                    previousScore = Buffer.from(existingScoreBytes).readUInt32LE(0);
+                    // No previousGameId means we can't delete old entry, but we can still do cumulative
+                    cumulativeScore = previousScore + replay.score;
+                }
+            }
+            
+            // Store player's cumulative score and latest gameId for this month
+            const scoreBuffer = Buffer.alloc(36); // 4 bytes score + 32 bytes gameId
+            scoreBuffer.writeUInt32LE(cumulativeScore, 0);
+            Buffer.from(gameId).copy(scoreBuffer, 4);
+            sets.push({
+                key: playerEntryKey,
+                value: scoreBuffer
+            });
+            
+            // Delete old leaderboard entry if it exists
+            if (previousGameId) {
+                deletes.push({ key: KeyForMonthlyLeaderboard(monthId, Long.fromNumber(previousScore), previousGameId) });
+            }
+            
+            // Add to monthly leaderboard with cumulative score
+            // Format: [monthIDLen:1][monthID:n][gameIDLen:1][gameID:n][addressLen:1][address:n][score:8][maxTile:8][moveCount:8][timestamp:8]
+            const monthIdBytes = Buffer.from(monthId, 'utf8');
+            const monthlyLeaderboardEntry = Buffer.alloc(
+                1 + monthIdBytes.length +  // monthIDLen + monthID
+                1 + gameId.length +          // gameIDLen + gameID
+                1 + playerAddress.length +   // addressLen + address
+                8 + 8 + 8 + 8                // score + maxTile + moveCount + timestamp
+            );
+            
+            let offset = 0;
+            
+            // Write monthID with length prefix
+            monthlyLeaderboardEntry.writeUInt8(monthIdBytes.length, offset);
+            offset += 1;
+            monthIdBytes.copy(monthlyLeaderboardEntry, offset);
+            offset += monthIdBytes.length;
+            
+            // Write gameID with length prefix
+            monthlyLeaderboardEntry.writeUInt8(gameId.length, offset);
+            offset += 1;
+            Buffer.from(gameId).copy(monthlyLeaderboardEntry, offset);
+            offset += gameId.length;
+            
+            // Write address with length prefix
+            monthlyLeaderboardEntry.writeUInt8(playerAddress.length, offset);
+            offset += 1;
+            Buffer.from(playerAddress).copy(monthlyLeaderboardEntry, offset);
+            offset += playerAddress.length;
+            
+            // Write score (8 bytes, big endian)
+            monthlyLeaderboardEntry.writeBigUInt64BE(BigInt(cumulativeScore), offset);
+            offset += 8;
+            
+            // Write maxTile (8 bytes, big endian)
+            monthlyLeaderboardEntry.writeBigUInt64BE(BigInt(replay.maxTile), offset);
+            offset += 8;
+            
+            // Write moveCount (8 bytes, big endian)
+            monthlyLeaderboardEntry.writeBigUInt64BE(BigInt(replay.moveCount), offset);
+            offset += 8;
+            
+            // Write timestamp (8 bytes, big endian)
+            monthlyLeaderboardEntry.writeBigUInt64BE(BigInt(endedAtUnix), offset);
+            
+            sets.push({
+                key: KeyForMonthlyLeaderboard(monthId, Long.fromNumber(cumulativeScore), gameId),
+                value: monthlyLeaderboardEntry
+            });
         }
 
-        const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, { sets });
+        const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, { sets, deletes });
         if (writeErr) {
             return { error: writeErr };
         }
@@ -1797,8 +1919,9 @@ const gamePlatformPoolId = daoPoolId + 1;
 const gameReservePoolId = daoPoolId + 2;
 const gameShopPoolId = daoPoolId + 3;
 const gameDailyRewardPoolId = daoPoolId + 4;
-const defaultClassicStartFee = 2;
-const defaultDailyStartFee = 25;
+const gameMonthlyRewardPoolId = daoPoolId + 5; // Monthly competition pool
+const defaultClassicStartFee = 2000000;    // 2 PROOF in uproof (micro-denomination)
+const defaultDailyStartFee = 25000000;     // 25 PROOF in uproof (micro-denomination)
 const legacyClassicStartFee = 90;
 const legacyDailyStartFee = 240;
 const defaultDailyMaxMoves = 80;
@@ -1812,7 +1935,7 @@ const defaultClassicShopFeeBps = 5000;
 const defaultDailyPayoutBps = [3000, 2000, 1200, 900, 700, 600, 500, 400, 400, 300];
 const defaultClassicDailyPointsCap = 2000;
 const defaultShopRedemptionRatePoints = 300;
-const defaultShopRedemptionRateCnpy = 1;
+const defaultShopRedemptionRateCnpy = 1000000;  // 1 PROOF in uproof (micro-denomination)
 const defaultShopMinRedeemPoints = 300;
 const defaultShopRedeemStepPoints = 300;
 const defaultDailyLoginRewardPoints = [20, 25, 30, 35, 40, 45, 50];
@@ -1849,6 +1972,10 @@ export function KeyForGameDailyRewardPool(): Uint8Array {
     return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(gameDailyRewardPoolId)));
 }
 
+export function KeyForGameMonthlyRewardPool(): Uint8Array {
+    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(gameMonthlyRewardPoolId)));
+}
+
 function KeyForDaoPool(): Uint8Array {
     return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(daoPoolId)));
 }
@@ -1859,6 +1986,26 @@ export function KeyForGameConfig(): Uint8Array {
 
 export function KeyForGameTreasury(): Uint8Array {
     return JoinLenPrefix(gamePrefix, Buffer.from('treasury'));
+}
+
+export function KeyForMonthlyLeaderboard(monthId: string, score: Long, gameId: Uint8Array): Uint8Array {
+    const invertedScore = invertUint64(score);
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('monthly-leaderboard'),
+        Buffer.from(monthId, 'utf8'),
+        invertedScore,
+        gameId
+    );
+}
+
+export function KeyForMonthlyPlayerEntry(monthId: string, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('monthly-player'),
+        Buffer.from(monthId, 'utf8'),
+        playerAddress
+    );
 }
 
 export function KeyForGameSession(gameId: Uint8Array): Uint8Array {
@@ -2147,11 +2294,14 @@ function getConfiguredClassicPlatformFeeBps(cfg: any): number {
     return value > 0 ? value : defaultClassicPlatformFeeBps;
 }
 
+// These functions are kept for future config flexibility but currently unused
+// @ts-ignore: Unused but kept for future use
 function getConfiguredClassicReserveFeeBps(cfg: any): number {
     const value = toUint64(cfg?.classicReserveFeeBps as Long | number | undefined);
     return value > 0 ? value : defaultClassicReserveFeeBps;
 }
 
+// @ts-ignore: Unused but kept for future use
 function getConfiguredClassicShopFeeBps(cfg: any): number {
     const value = toUint64(cfg?.classicShopFeeBps as Long | number | undefined);
     return value > 0 ? value : defaultClassicShopFeeBps;
@@ -2238,16 +2388,20 @@ function splitDailyFee(amount: Long, cfg: any): { platform: Long; daily: Long; r
     return { platform, daily, reserve, shop };
 }
 
-function splitClassicFee(amount: Long, cfg: any): { platform: Long; reserve: Long; shop: Long } {
-    const platformBps = getConfiguredClassicPlatformFeeBps(cfg);
-    const reserveBps = getConfiguredClassicReserveFeeBps(cfg);
-    const shopBps = getConfiguredClassicShopFeeBps(cfg);
+function splitClassicFee(amount: Long, cfg: any): { platform: Long; monthly: Long; reserve: Long; shop: Long } {
+    const platformBps = getConfiguredClassicPlatformFeeBps(cfg);  // 5%
+    const monthlyBps = 3000;  // 30% for monthly pool
+    const reserveBps = 2000;  // 20% (reduced from 45%)
+    const shopBps = 4500;     // 45% (reduced from 50%)
+    
     const platform = calculateBpsAmount(amount, platformBps);
+    const monthly = calculateBpsAmount(amount, monthlyBps);
     const reserve = calculateBpsAmount(amount, reserveBps);
-    const shop = platformBps + reserveBps + shopBps === 10000
+    const shop = platformBps + monthlyBps + reserveBps + shopBps === 10000
         ? calculateBpsAmount(amount, shopBps)
-        : amount.subtract(platform).subtract(reserve);
-    return { platform, reserve, shop };
+        : amount.subtract(platform).subtract(monthly).subtract(reserve);
+    
+    return { platform, monthly, reserve, shop };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2273,6 +2427,19 @@ function utcDateFromMicros(nowMicros: number): string {
         return new Date().toISOString().slice(0, 10);
     }
     return new Date(Math.floor(nowMicros / 1000)).toISOString().slice(0, 10);
+}
+
+function utcMonthFromMicros(nowMicros: number): string {
+    if (nowMicros <= 0) {
+        const now = new Date();
+        const year = now.getUTCFullYear();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        return `${year}-${month}`;
+    }
+    const date = new Date(Math.floor(nowMicros / 1000));
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
 }
 
 function previousUtcDate(utcDate: string): string {

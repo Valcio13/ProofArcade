@@ -68,6 +68,8 @@ const (
 	Game2048LeaderboardsRoutePath      = "/v1/query/2048/leaderboards"
 	Game2048DailyPoolRoutePath         = "/v1/query/2048/daily-pool"
 	Game2048TreasuryRoutePath          = "/v1/query/2048/treasury"
+	Game2048MonthlyLeaderboardRoutePath = "/v1/query/2048/monthly-leaderboard/:monthId"
+	Game2048MonthlyPoolRoutePath       = "/v1/query/2048/monthly-pool"
 	Game2048ClaimableRewardsPath       = "/v1/query/2048/claimable-rewards"
 	Game2048ShopConfigRoutePath        = "/v1/query/2048/shop-config"
 	Game2048RedeemPreviewRoutePath     = "/v1/query/2048/redeem-preview"
@@ -184,6 +186,8 @@ const (
 	Game2048LeaderboardsRouteName      = "2048-leaderboards"
 	Game2048DailyPoolRouteName         = "2048-daily-pool"
 	Game2048TreasuryRouteName          = "2048-treasury"
+	Game2048MonthlyLeaderboardRouteName = "2048-monthly-leaderboard"
+	Game2048MonthlyPoolRouteName       = "2048-monthly-pool"
 	Game2048ClaimableRewardsName       = "2048-claimable-rewards"
 	Game2048ShopConfigRouteName        = "2048-shop-config"
 	Game2048RedeemPreviewRouteName     = "2048-redeem-preview"
@@ -312,6 +316,8 @@ var routePaths = routes{
 	Game2048LeaderboardsRouteName:      {Method: http.MethodGet, Path: Game2048LeaderboardsRoutePath},
 	Game2048DailyPoolRouteName:         {Method: http.MethodGet, Path: Game2048DailyPoolRoutePath},
 	Game2048TreasuryRouteName:          {Method: http.MethodGet, Path: Game2048TreasuryRoutePath},
+	Game2048MonthlyLeaderboardRouteName: {Method: http.MethodGet, Path: Game2048MonthlyLeaderboardRoutePath},
+	Game2048MonthlyPoolRouteName:       {Method: http.MethodGet, Path: Game2048MonthlyPoolRoutePath},
 	Game2048ClaimableRewardsName:       {Method: http.MethodPost, Path: Game2048ClaimableRewardsPath},
 	Game2048ShopConfigRouteName:        {Method: http.MethodGet, Path: Game2048ShopConfigRoutePath},
 	Game2048RedeemPreviewRouteName:     {Method: http.MethodPost, Path: Game2048RedeemPreviewRoutePath},
@@ -433,6 +439,8 @@ func createRouter(s *Server) *httprouter.Router {
 		Game2048LeaderboardsRouteName:      s.Game2048Leaderboards,
 		Game2048DailyPoolRouteName:         s.Game2048DailyPool,
 		Game2048TreasuryRouteName:          s.Game2048Treasury,
+		Game2048MonthlyLeaderboardRouteName: s.Game2048MonthlyLeaderboard,
+		Game2048MonthlyPoolRouteName:       s.Game2048MonthlyPool,
 		Game2048ClaimableRewardsName:       s.Game2048ClaimableRewards,
 		Game2048ShopConfigRouteName:        s.Game2048ShopConfig,
 		Game2048RedeemPreviewRouteName:     s.Game2048RedeemPreview,

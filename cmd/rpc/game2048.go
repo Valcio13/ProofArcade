@@ -49,8 +49,8 @@ const (
 
 	game2048StopPlayerStopped = 1
 
-	game2048DefaultClassicFee               = 2
-	game2048DefaultDailyFee                 = 25
+	game2048DefaultClassicFee               = 2000000  // 2 PROOF in uproof (micro-denomination)
+	game2048DefaultDailyFee                 = 25000000 // 25 PROOF in uproof (micro-denomination)
 	game2048LegacyClassicFee                = 90
 	game2048LegacyDailyFee                  = 240
 	game2048DefaultDailyMoves               = 80
@@ -63,7 +63,7 @@ const (
 	game2048DefaultClassicShopFeeBps        = 5000
 	game2048DefaultClassicDailyPointsCap    = 2000
 	game2048DefaultShopRedemptionRatePoints = 300
-	game2048DefaultShopRedemptionRateCnpy   = 1
+	game2048DefaultShopRedemptionRateCnpy   = 1000000 // 1 PROOF in uproof (micro-denomination)
 	game2048DefaultShopMinRedeemPoints      = 300
 	game2048DefaultShopRedeemStepPoints     = 300
 	game2048DefaultDailyLoginBonusBps       = 2000
@@ -73,6 +73,7 @@ const (
 	game2048ReservePoolID    = lib.DAOPoolID + 2
 	game2048ShopPoolID       = lib.DAOPoolID + 3
 	game2048DailyPoolID      = lib.DAOPoolID + 4
+	game2048MonthlyPoolID    = lib.DAOPoolID + 5
 )
 
 var (
@@ -345,6 +346,27 @@ type game2048SetUsernameResponse struct {
 	Submitted bool   `json:"submitted"`
 }
 
+// Monthly competition types
+type game2048MonthlyLeaderboardEntry struct {
+	GameID    string `json:"gameId"`
+	Address   string `json:"address"`
+	Username  string `json:"username,omitempty"`
+	Score     uint64 `json:"score"`
+	MaxTile   uint64 `json:"maxTile"`
+	MoveCount uint64 `json:"moveCount"`
+	EndedAt   string `json:"endedAt"`
+}
+
+type game2048MonthlyLeaderboardResponse struct {
+	MonthID string                            `json:"monthId"`
+	Entries []game2048MonthlyLeaderboardEntry `json:"entries"`
+}
+
+type game2048MonthlyPoolResponse struct {
+	MonthID string `json:"monthId"`
+	Balance uint64 `json:"balance"`
+}
+
 func (s *Server) Game2048Config(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 	var response game2048ConfigResponse
 	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
@@ -423,6 +445,50 @@ func (s *Server) Game2048Treasury(w http.ResponseWriter, _ *http.Request, _ http
 		var gameErr lib.ErrorI
 		response, gameErr = loadGame2048Treasury(state)
 		return gameErr
+	})
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	write(w, response, http.StatusOK)
+}
+
+func (s *Server) Game2048MonthlyLeaderboard(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	monthID := ps.ByName("monthId")
+	if monthID == "" {
+		monthID = currentUTCMonth()
+	}
+
+	var response game2048MonthlyLeaderboardResponse
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		var gameErr lib.ErrorI
+		response, gameErr = loadGame2048MonthlyLeaderboard(state, monthID)
+		return gameErr
+	})
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	write(w, response, http.StatusOK)
+}
+
+func (s *Server) Game2048MonthlyPool(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	monthID := r.URL.Query().Get("monthId")
+	if monthID == "" {
+		monthID = currentUTCMonth()
+	}
+
+	var response game2048MonthlyPoolResponse
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		poolBalance, poolErr := state.GetPoolBalance(game2048MonthlyPoolID)
+		if poolErr != nil {
+			return poolErr
+		}
+		response = game2048MonthlyPoolResponse{
+			MonthID: monthID,
+			Balance: poolBalance,
+		}
+		return nil
 	})
 	if err != nil {
 		write(w, err, http.StatusBadRequest)
@@ -1209,6 +1275,141 @@ func loadGame2048DailyPool(state *fsm.StateMachine, utcDate string) (game2048Dai
 	}, nil
 }
 
+func loadGame2048MonthlyLeaderboard(state *fsm.StateMachine, monthID string) (game2048MonthlyLeaderboardResponse, lib.ErrorI) {
+	prefix := keyForMonthlyLeaderboardPrefix(monthID)
+	
+	iterator, err := state.Iterator(prefix)
+	if err != nil {
+		return game2048MonthlyLeaderboardResponse{}, err
+	}
+	defer iterator.Close()
+
+	entries := make([]game2048MonthlyLeaderboardEntry, 0, 50)
+	for iterator.Valid() && len(entries) < 50 {
+		value := iterator.Value()
+		
+		// Skip if value is too small
+		if len(value) < 64 {
+			iterator.Next()
+			continue
+		}
+		
+		// Parse binary structure created by contract
+		// Format: [monthIDLen][monthID][gameIDLen][gameID][addressLen][address][score:8][maxTile:8][moveCount:8][timestamp:8]
+		offset := 0
+		
+		// Extract monthID
+		if offset >= len(value) {
+			iterator.Next()
+			continue
+		}
+		monthIDLen := int(value[offset])
+		offset++
+		if offset+monthIDLen > len(value) {
+			iterator.Next()
+			continue
+		}
+		offset += monthIDLen
+		
+		// Extract gameID
+		if offset >= len(value) {
+			iterator.Next()
+			continue
+		}
+		gameIDLen := int(value[offset])
+		offset++
+		if offset+gameIDLen > len(value) {
+			iterator.Next()
+			continue
+		}
+		gameID := value[offset : offset+gameIDLen]
+		offset += gameIDLen
+		
+		// Extract address
+		if offset >= len(value) {
+			iterator.Next()
+			continue
+		}
+		addressLen := int(value[offset])
+		offset++
+		if offset+addressLen > len(value) {
+			iterator.Next()
+			continue
+		}
+		playerAddress := value[offset : offset+addressLen]
+		offset += addressLen
+		
+		// Extract score (8 bytes)
+		if offset+8 > len(value) {
+			iterator.Next()
+			continue
+		}
+		score := binary.BigEndian.Uint64(value[offset : offset+8])
+		offset += 8
+		
+		// Extract maxTile (8 bytes)
+		if offset+8 > len(value) {
+			iterator.Next()
+			continue
+		}
+		maxTile := binary.BigEndian.Uint64(value[offset : offset+8])
+		offset += 8
+		
+		// Extract moveCount (8 bytes)
+		if offset+8 > len(value) {
+			iterator.Next()
+			continue
+		}
+		moveCount := binary.BigEndian.Uint64(value[offset : offset+8])
+		offset += 8
+		
+		// Extract timestamp (8 bytes)
+		if offset+8 > len(value) {
+			iterator.Next()
+			continue
+		}
+		timestamp := binary.BigEndian.Uint64(value[offset : offset+8])
+		
+		// Look up current username for this address
+		username := ""
+		identityKey := keyForPlayerIdentity(playerAddress)
+		identityBytes, identityErr := state.Get(identityKey)
+		if identityErr == nil && identityBytes != nil && len(identityBytes) > 0 {
+			identityMsg, identityDecodeErr := decodeGame2048State("PlayerIdentity", identityBytes)
+			if identityDecodeErr == nil {
+				username = stringField(identityMsg, "username", "")
+			}
+		} else {
+			// Fallback to old UsernameRegistration for backward compatibility
+			usernameKey := keyForUsernameByAddress(playerAddress)
+			usernameBytes, usernameErr := state.Get(usernameKey)
+			if usernameErr == nil && usernameBytes != nil && len(usernameBytes) > 0 {
+				usernameMsg, usernameDecodeErr := decodeGame2048State("UsernameRegistration", usernameBytes)
+				if usernameDecodeErr == nil {
+					username = stringField(usernameMsg, "username", "")
+				}
+			}
+		}
+		
+		entries = append(entries, game2048MonthlyLeaderboardEntry{
+			GameID:    hex.EncodeToString(gameID),
+			Address:   hex.EncodeToString(playerAddress),
+			Username:  username,
+			Score:     score,
+			MaxTile:   maxTile,
+			MoveCount: moveCount,
+			EndedAt:   unixMicrosToISO(timestamp),
+		})
+		
+		iterator.Next()
+	}
+	
+	return game2048MonthlyLeaderboardResponse{
+		MonthID: monthID,
+		Entries: entries,
+	}, nil
+}
+
 func loadGame2048ClaimableRewards(state *fsm.StateMachine, address []byte) (game2048ClaimableRewardsSummary, lib.ErrorI) {
 	summary := game2048ClaimableRewardsSummary{
 		Address: hex.EncodeToString(address),
@@ -1909,6 +2110,10 @@ func currentUTCDate() string {
 	return time.Now().UTC().Format("2006-01-02")
 }
 
+func currentUTCMonth() string {
+	return time.Now().UTC().Format("2006-01")
+}
+
 func keyForGameConfig() []byte {
 	return lib.JoinLenPrefix(game2048Prefix, []byte("config"))
 }
@@ -1927,6 +2132,10 @@ func keyForUsernameByAddress(address []byte) []byte {
 
 func keyForPlayerIdentity(address []byte) []byte {
 	return lib.JoinLenPrefix(game2048Prefix, []byte("player-identity"), address)
+}
+
+func keyForMonthlyLeaderboardPrefix(monthID string) []byte {
+	return lib.JoinLenPrefix(game2048Prefix, []byte("monthly-leaderboard"), []byte(monthID))
 }
 
 func keyForAddressByUsername(normalizedUsername string) []byte {

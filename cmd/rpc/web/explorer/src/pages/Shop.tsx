@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 
 import { shortAddress } from '../lib/address'
-import { formatCNPY } from '../lib/utils'
+import { formatCNPY, toCNPY } from '../lib/utils'
 import { createGame2048Client, type Game2048ClientStatus } from '../lib/chain2048'
 import type { ChainConfig, PlayerStats, RedeemPreview, RedemptionHistory, RedemptionHistoryEntry } from '../lib/mockChain2048'
 import { fetchRpcKeystoreAccounts, type RpcKeystoreAccount } from '../lib/rpcChain2048'
@@ -244,7 +244,7 @@ function ShopPage() {
           setPreview(nextPreview)
         }
         
-        toast.success(`Redeemed ${formatCNPY(result.payoutAmount)} PROOF successfully!`)
+        toast.success(`Redeemed ${formatCNPY(toCNPY(result.payoutAmount))} PROOF successfully!`)
       } else {
         console.log('⚠️ Transaction not indexed, falling back to polling...')
         
@@ -301,7 +301,7 @@ function ShopPage() {
         setConfig(nextConfig)
         
         if (confirmedOnChain) {
-          toast.success(`Redeemed ${formatCNPY(result.payoutAmount)} PROOF successfully!`)
+          toast.success(`Redeemed ${formatCNPY(toCNPY(result.payoutAmount))} PROOF successfully!`)
         } else {
           // Hash returned but redemption never took effect on-chain
           // (not indexed, balances/history never changed). Surface as failure
@@ -363,7 +363,7 @@ function ShopPage() {
         <div className="mt-3 grid gap-2.5 md:grid-cols-3">
           <StatCard label="Spendable Points" value={`${player?.classicPointsBalance ?? 0}`} />
           <StatCard label="Lifetime Earned" value={`${player?.classicPointsEarned ?? 0}`} />
-          <StatCard label="Balance" value={`${formatCNPY(player?.balance ?? 0)} PROOF`} />
+          <StatCard label="Balance" value={`${formatCNPY(toCNPY(player?.balance ?? 0))} PROOF`} />
         </div>
       </section>
 
@@ -454,7 +454,7 @@ function ShopPage() {
                   <>
                     <div className="mt-2.5 text-center">
                       <div className="inline-flex items-baseline gap-1.5">
-                        <p className="text-3xl font-bold text-[#f6df84]">{formatCNPY(preview?.payoutAmount ?? 0)}</p>
+                        <p className="text-3xl font-bold text-[#f6df84]">{formatCNPY(toCNPY(preview?.payoutAmount ?? 0))}</p>
                         <span className="text-sm font-semibold uppercase tracking-wide text-[#f6df84]/70">PROOF</span>
                       </div>
                     </div>
@@ -612,7 +612,7 @@ function RedemptionRow({ entry }: { entry: RedemptionHistoryEntry }) {
         </div>
         <div className="flex items-center gap-2">
           <div className="rounded-full border border-[#53d7a6]/30 bg-[#53d7a6]/10 px-2.5 py-0.5">
-            <p className="text-xs font-bold text-[#53d7a6]">+{formatCNPY(entry.payoutAmount)} PROOF</p>
+            <p className="text-xs font-bold text-[#53d7a6]">+{formatCNPY(toCNPY(entry.payoutAmount))} PROOF</p>
           </div>
           <ArrowRight className="h-4 w-4 text-slate-500 transition group-hover:text-[#53a6ff]" />
         </div>
@@ -627,7 +627,7 @@ function RedemptionRow({ entry }: { entry: RedemptionHistoryEntry }) {
         <p className="mt-0.5 text-xs text-slate-500">{entry.redeemedAt}</p>
       </div>
       <div className="rounded-full border border-[#53d7a6]/30 bg-[#53d7a6]/10 px-2.5 py-0.5">
-        <p className="text-xs font-bold text-[#53d7a6]">+{formatCNPY(entry.payoutAmount)} PROOF</p>
+        <p className="text-xs font-bold text-[#53d7a6]">+{formatCNPY(toCNPY(entry.payoutAmount))} PROOF</p>
       </div>
     </div>
   )

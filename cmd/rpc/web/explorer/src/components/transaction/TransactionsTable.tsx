@@ -41,11 +41,11 @@ const truncateMiddle = (value: string, leading = 10, trailing = 6) => {
 }
 
 const formatAmount = (amount: number) => {
-    if (!amount) return '0 CNPY'
+    if (!amount) return '0 PROOF'
     return `${toCNPY(amount).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 6,
-    })} CNPY`
+    })} PROOF`
 }
 
 const formatAge = (timestamp?: string, status?: Transaction['status']) => {

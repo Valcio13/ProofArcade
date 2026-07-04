@@ -19,6 +19,8 @@ import type {
   ClaimableRewardsSummary,
   DailyPrizePool,
   LeaderboardEntry,
+  MonthlyLeaderboard,
+  MonthlyPool,
   PlayerStats,
   RecentRun,
   RedeemPreview,
@@ -33,6 +35,8 @@ const queryConfigPath = '/v1/query/2048/config'
 const queryPlayerPath = '/v1/query/2048/player'
 const queryLeaderboardsPath = '/v1/query/2048/leaderboards'
 const queryDailyPoolPath = '/v1/query/2048/daily-pool'
+const queryMonthlyLeaderboardPath = '/v1/query/2048/monthly-leaderboard'
+const queryMonthlyPoolPath = '/v1/query/2048/monthly-pool'
 const queryClaimableRewardsPath = '/v1/query/2048/claimable-rewards'
 const queryShopConfigPath = '/v1/query/2048/shop-config'
 const queryRedeemPreviewPath = '/v1/query/2048/redeem-preview'
@@ -370,6 +374,10 @@ function assertHexAddress(address: string): string {
   return normalized
 }
 
+function getCurrentMonth(): string {
+  return new Date().toISOString().slice(0, 7) // "YYYY-MM"
+}
+
 export function createRpcGame2048Client(): {
   isAvailable: () => Promise<boolean>
   client: Game2048Client
@@ -424,6 +432,15 @@ export function createRpcGame2048Client(): {
       const suffix = utcDate ? `?utcDate=${encodeURIComponent(utcDate)}` : ''
       return getJson<DailyPrizePool>(`${queryDailyPoolPath}${suffix}`)
     },
+    async getMonthlyLeaderboard(monthId?: string) {
+      const month = monthId || getCurrentMonth()
+      return getJson<MonthlyLeaderboard>(`${queryMonthlyLeaderboardPath}/${encodeURIComponent(month)}`)
+    },
+    async getMonthlyPool(monthId?: string) {
+      const month = monthId || getCurrentMonth()
+      const suffix = `?monthId=${encodeURIComponent(month)}`
+      return getJson<MonthlyPool>(`${queryMonthlyPoolPath}${suffix}`)
+    },
     async getClaimableRewards(address: string) {
       const liveAddress = assertHexAddress(address)
       return postJson<ClaimableRewardsSummary>(rpcURL, queryClaimableRewardsPath, { address: liveAddress })
@@ -452,11 +469,13 @@ export function createRpcGame2048Client(): {
       const response = await postJson<{ address: string; games: RecentRun[] }>(rpcURL, queryGameHistoryPath, { address: liveAddress })
       return response.games || []
     },
-    async addFunds(address: string, amount = 500): Promise<FaucetResult> {
+    async addFunds(address: string, amount = 100): Promise<FaucetResult> {
       const liveAddress = assertHexAddress(address)
+      // Convert to micro-denomination (uproof): amount * 1,000,000
+      const amountInMicro = amount * 1000000
       const faucet = await postJson<RpcFaucetResponse>(adminRPCURL, devFaucetPath, {
         address: liveAddress,
-        amount,
+        amount: amountInMicro,
       })
       const tracking = await trackRpcTx(faucet.txHash)
       return {

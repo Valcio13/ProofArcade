@@ -4,6 +4,8 @@ import {
   getConfig as getMockConfig,
   getLeaderboards as getMockLeaderboards,
   getDailyPrizePool as getMockDailyPrizePool,
+  getMonthlyLeaderboard as getMockMonthlyLeaderboard,
+  getMonthlyPool as getMockMonthlyPool,
   getClaimableRewards as getMockClaimableRewards,
   getRedeemPreview as getMockRedeemPreview,
   getRedemptions as getMockRedemptions,
@@ -23,6 +25,8 @@ import {
   type ClaimableRewardsSummary,
   type DailyPrizePool,
   type LeaderboardEntry,
+  type MonthlyLeaderboard,
+  type MonthlyPool,
   type PlayerStats,
   type RecentRun,
   type RedeemPreview,
@@ -124,6 +128,8 @@ export interface Game2048Client {
   getPlayer(address: string): Promise<PlayerStats>
   getLeaderboards(): Promise<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>
   getDailyPrizePool(utcDate?: string): Promise<DailyPrizePool>
+  getMonthlyLeaderboard(monthId?: string): Promise<MonthlyLeaderboard>
+  getMonthlyPool(monthId?: string): Promise<MonthlyPool>
   getClaimableRewards(address: string): Promise<ClaimableRewardsSummary>
   getRedeemPreview(address: string, burnPoints: number): Promise<RedeemPreview>
   getRedemptions(address: string): Promise<RedemptionHistory>
@@ -158,6 +164,12 @@ function createMockGame2048Client(): Game2048Client {
     },
     async getDailyPrizePool(utcDate?: string) {
       return getMockDailyPrizePool(utcDate)
+    },
+    async getMonthlyLeaderboard(monthId?: string) {
+      return getMockMonthlyLeaderboard(monthId)
+    },
+    async getMonthlyPool(monthId?: string) {
+      return getMockMonthlyPool(monthId)
     },
     async getClaimableRewards(address: string) {
       return getMockClaimableRewards(address)

@@ -44,6 +44,7 @@ import {
   persistStoredWalletAuth,
 } from '../lib/walletAuth'
 import { shortAddress } from '../lib/address'
+import { formatCNPY, toCNPY } from '../lib/utils'
 
 const tileStyles: Record<number, string> = {
   0: 'bg-white/8 text-white/20',
@@ -853,7 +854,7 @@ function Play2048Page() {
                 {clientStatus.mode === 'rpc' && wallets.length > 0 && player ? (
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <span className="rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 font-semibold text-white">
-                      {player.balance} PROOF
+                      {formatCNPY(toCNPY(player.balance))} PROOF
                     </span>
                     <span className="text-slate-600">|</span>
                     <span className="rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 font-semibold text-white">
@@ -880,11 +881,11 @@ function Play2048Page() {
                   icon="🏆"
                   title="Daily Challenge"
                   specs={[
-                    `${config.dailyFee} PROOF entry`,
+                    `${formatCNPY(toCNPY(config.dailyFee))} PROOF entry`,
                     `${config.dailyMaxMoves} move limit`,
                   ]}
                   infoBadges={[
-                    `💰 Prize: ${dailyPrizePool} PROOF`,
+                    `💰 Prize: ${formatCNPY(toCNPY(dailyPrizePool))} PROOF`,
                     `⏱ Resets ${getTimeUntilReset().hours}h ${getTimeUntilReset().minutes}m`,
                     '✓ One attempt per day',
                   ]}
@@ -904,7 +905,7 @@ function Play2048Page() {
                   icon="⭐"
                   title="Classic Mode"
                   specs={[
-                    `${config.classicFee} PROOF entry`,
+                    `${formatCNPY(toCNPY(config.classicFee))} PROOF entry`,
                     'Unlimited moves',
                   ]}
                   infoBadges={[

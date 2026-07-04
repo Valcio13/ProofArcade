@@ -3,8 +3,8 @@
   "chainId": "1",
   "displayName": "Canopy",
   "denom": {
-    "base": "ucnpy",
-    "symbol": "CNPY",
+    "base": "uproof",
+    "symbol": "PROOF",
     "decimals": 6
   },
   "rpc": {

@@ -89,6 +89,26 @@ export interface DailyPrizePool {
   treasuryLeftover: number
 }
 
+export interface MonthlyLeaderboardEntry {
+  gameId: string
+  address: string
+  username?: string
+  score: number
+  maxTile: number
+  moveCount: number
+  endedAt: string
+}
+
+export interface MonthlyLeaderboard {
+  monthId: string
+  entries: MonthlyLeaderboardEntry[]
+}
+
+export interface MonthlyPool {
+  monthId: string
+  balance: number
+}
+
 export interface ClaimableReward {
   utcDate: string
   gameId: string
@@ -373,6 +393,22 @@ export function getDailyPrizePool(utcDate = getUtcDateString()): DailyPrizePool 
     finalizedAtUnix: 0,
     distributedRewards: 0,
     treasuryLeftover: 0,
+  }
+}
+
+export function getMonthlyLeaderboard(monthId?: string): MonthlyLeaderboard {
+  const currentMonth = monthId || new Date().toISOString().slice(0, 7) // YYYY-MM format
+  return {
+    monthId: currentMonth,
+    entries: [], // Mock: no entries in mock mode
+  }
+}
+
+export function getMonthlyPool(monthId?: string): MonthlyPool {
+  const currentMonth = monthId || new Date().toISOString().slice(0, 7) // YYYY-MM format
+  return {
+    monthId: currentMonth,
+    balance: 0, // Mock: no balance in mock mode
   }
 }
 

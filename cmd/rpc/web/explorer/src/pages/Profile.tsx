@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { Trophy, Target, TrendingUp, Award, Wallet, Copy, Settings as SettingsIcon, ArrowRight, Gamepad2, Coins } from 'lucide-react'
 import { createGame2048Client } from '../lib/chain2048'
 import { shortAddress } from '../lib/address'
-import { formatCNPY } from '../lib/utils'
+import { formatCNPY, toCNPY } from '../lib/utils'
 import type { ClaimableRewardsSummary, LeaderboardEntry, PlayerStats, RecentRun } from '../lib/mockChain2048'
 import { fetchRpcKeystoreAccounts, type RpcKeystoreAccount } from '../lib/rpcChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
@@ -470,7 +470,7 @@ function ProfilePage() {
                   </Link>
                 </div>
                 <p className="mt-3 text-4xl font-bold text-white">
-                  {formatCNPY(player?.balance ?? 0)}
+                  {formatCNPY(toCNPY(player?.balance ?? 0))}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">PROOF tokens</p>
               </div>
@@ -503,7 +503,7 @@ function ProfilePage() {
                 <div className="flex-1">
                   <h2 className="text-lg font-bold text-white">Rewards Ready to Claim</h2>
                   <p className="text-sm text-slate-300">
-                    You earned {claimableRewards.unclaimedCount} reward{claimableRewards.unclaimedCount === 1 ? '' : 's'} • {formatCNPY(claimableRewards.totalClaimable)} PROOF total
+                    You earned {claimableRewards.unclaimedCount} reward{claimableRewards.unclaimedCount === 1 ? '' : 's'} • {formatCNPY(toCNPY(claimableRewards.totalClaimable))} PROOF total
                   </p>
                 </div>
               </div>
@@ -525,7 +525,7 @@ function ProfilePage() {
                         <div className="flex-1">
                           <div className="flex items-baseline gap-2">
                             <p className="text-3xl font-bold text-[#f6df84]">
-                              {formatCNPY(reward.rewardAmount)}
+                              {formatCNPY(toCNPY(reward.rewardAmount))}
                             </p>
                             <span className="text-sm font-semibold uppercase tracking-wide text-[#f6df84]/70">
                               PROOF
@@ -598,7 +598,7 @@ function ProfilePage() {
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
                   <span className="text-sm text-slate-400">Lifetime PROOF Earned</span>
                   <span className="text-lg font-bold text-white">
-                    {formatCNPY((player?.balance ?? 0) + (claimableRewards?.totalClaimable ?? 0))}
+                    {formatCNPY(toCNPY((player?.balance ?? 0) + (claimableRewards?.totalClaimable ?? 0)))}
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3">
@@ -633,7 +633,7 @@ function ProfilePage() {
                         <div>
                           <p className="text-sm font-semibold text-white group-hover:text-[#9fd0ff]">{reward.utcDate} • Rank #{reward.rank}</p>
                           <p className="text-xs text-slate-500">
-                            Score {reward.score.toLocaleString()} • {formatCNPY(reward.rewardAmount)} PROOF
+                            Score {reward.score.toLocaleString()} • {formatCNPY(toCNPY(reward.rewardAmount))} PROOF
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -651,7 +651,7 @@ function ProfilePage() {
                         <div>
                           <p className="text-sm font-semibold text-white">{reward.utcDate} • Rank #{reward.rank}</p>
                           <p className="text-xs text-slate-500">
-                            Score {reward.score.toLocaleString()} • {formatCNPY(reward.rewardAmount)} PROOF
+                            Score {reward.score.toLocaleString()} • {formatCNPY(toCNPY(reward.rewardAmount))} PROOF
                           </p>
                         </div>
                         <span className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">

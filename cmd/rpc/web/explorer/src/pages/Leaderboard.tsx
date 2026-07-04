@@ -6,15 +6,18 @@ import { Trophy } from 'lucide-react'
 import { createGame2048Client } from '../lib/chain2048'
 import { shortAddress } from '../lib/address'
 import { getUtcDateString } from '../lib/game2048'
-import type { DailyPrizePool, LeaderboardEntry } from '../lib/mockChain2048'
+import type { DailyPrizePool, LeaderboardEntry, MonthlyLeaderboard, MonthlyPool } from '../lib/mockChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
+import { formatCNPY, toCNPY } from '../lib/utils'
 
-type LeaderboardMode = 'daily' | 'classic'
+type LeaderboardMode = 'daily' | 'monthly'
 
 function LeaderboardPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const modeParam = searchParams.get('mode')
-  const activeMode: LeaderboardMode = modeParam === 'classic' ? 'classic' : 'daily'
+  const activeMode: LeaderboardMode = 
+    modeParam === 'monthly' ? 'monthly' : 
+    'daily'
 
   const storedWallet = loadStoredWalletAuth()
   const [leaderboards, setLeaderboards] = useState<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>({
@@ -22,14 +25,17 @@ function LeaderboardPage() {
     classic: [],
   })
   const [dailyPool, setDailyPool] = useState<DailyPrizePool | null>(null)
+  const [monthlyLeaderboard, setMonthlyLeaderboard] = useState<MonthlyLeaderboard | null>(null)
+  const [monthlyPool, setMonthlyPool] = useState<MonthlyPool | null>(null)
   const [countdown, setCountdown] = useState(() => formatUtcCountdown())
   const [isLoading, setIsLoading] = useState(true)
+  const [showAllEntries, setShowAllEntries] = useState(false)
 
   // Set document title based on active mode
   useEffect(() => {
-    document.title = activeMode === 'daily' 
-      ? 'Daily Leaderboard | ProofArcade'
-      : 'Classic Leaderboard | ProofArcade'
+    document.title = 
+      activeMode === 'daily' ? 'Daily Leaderboard | ProofArcade' :
+      'Monthly Leaderboard | ProofArcade'
   }, [activeMode])
 
   useEffect(() => {
@@ -39,13 +45,28 @@ function LeaderboardPage() {
       setIsLoading(true)
       try {
         const client = await createGame2048Client()
-        const [nextLeaderboards, nextDailyPool] = await Promise.all([
-          client.getLeaderboards(),
-          client.getDailyPrizePool(getUtcDateString()),
-        ])
-        if (!cancelled) {
-          setLeaderboards(nextLeaderboards)
-          setDailyPool(nextDailyPool)
+        
+        if (activeMode === 'monthly') {
+          // Load monthly data for current month
+          const currentMonth = getCurrentMonth()
+          const [nextMonthlyLeaderboard, nextMonthlyPool] = await Promise.all([
+            client.getMonthlyLeaderboard(currentMonth),
+            client.getMonthlyPool(currentMonth),
+          ])
+          if (!cancelled) {
+            setMonthlyLeaderboard(nextMonthlyLeaderboard)
+            setMonthlyPool(nextMonthlyPool)
+          }
+        } else {
+          // Load daily/classic data
+          const [nextLeaderboards, nextDailyPool] = await Promise.all([
+            client.getLeaderboards(),
+            client.getDailyPrizePool(getUtcDateString()),
+          ])
+          if (!cancelled) {
+            setLeaderboards(nextLeaderboards)
+            setDailyPool(nextDailyPool)
+          }
         }
       } catch (error) {
         console.error(error)
@@ -62,7 +83,7 @@ function LeaderboardPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [activeMode])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -90,7 +111,9 @@ function LeaderboardPage() {
       })
   }
 
-  const activeLeaderboard = activeMode === 'daily' ? leaderboards.daily : leaderboards.classic
+  const activeLeaderboard = 
+    activeMode === 'monthly' ? (monthlyLeaderboard?.entries ?? []) :
+    leaderboards.daily
   const userRank = activeLeaderboard.findIndex((entry) => entry.address === storedWallet?.address)
 
   return (
@@ -128,14 +151,14 @@ function LeaderboardPage() {
                 Daily Challenge
               </button>
               <button
-                onClick={() => switchMode('classic')}
+                onClick={() => switchMode('monthly')}
                 className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
-                  activeMode === 'classic'
-                    ? 'bg-[#53a6ff] text-white'
+                  activeMode === 'monthly'
+                    ? 'bg-[#a78bfa] text-white'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
-                All-Time
+                Monthly
               </button>
             </div>
             
@@ -210,7 +233,7 @@ function LeaderboardPage() {
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">Today's Prize Pool</p>
               <h2 className="mt-1 text-2xl font-bold text-white">
-                {dailyPool?.rewardPool ?? 0} PROOF
+                {formatCNPY(toCNPY(dailyPool?.rewardPool ?? 0))} PROOF
               </h2>
               <p className="mt-1 max-w-xl text-xs leading-5 text-slate-300">
                 Live pool for {dailyPool?.utcDate ?? getUtcDateString()}. Each entry adds to this reward pot.
@@ -219,8 +242,29 @@ function LeaderboardPage() {
 
             <div className="grid gap-2 sm:grid-cols-3">
               <PoolStat label="Entries" value={`${dailyPool?.entryCount ?? 0}`} />
-              <PoolStat label="Gross Fees" value={`${dailyPool?.grossFees ?? 0} PROOF`} />
+              <PoolStat label="Gross Fees" value={`${formatCNPY(toCNPY(dailyPool?.grossFees ?? 0))} PROOF`} />
               <PoolStat label="Resets In" value={countdown} />
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Monthly Prize Pool - Only show for monthly mode */}
+      {activeMode === 'monthly' ? (
+        <section className="mt-4 rounded-2xl border border-[#a78bfa]/20 bg-card p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[#c4b5fd]">Monthly Prize Pool</p>
+              <h2 className="mt-1 text-2xl font-bold text-white">
+                {formatCNPY(toCNPY(monthlyPool?.balance ?? 0))} PROOF
+              </h2>
+              <p className="mt-1 max-w-xl text-xs leading-5 text-slate-300">
+                Accumulated pool for {formatMonthDisplay(getCurrentMonth())}. 30% of Classic game fees contribute to this reward.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-white/10 bg-black/20 px-4 py-3">
+              <PoolStat label="Cumulative Scoring" value="Top 50" />
             </div>
           </div>
         </section>
@@ -232,7 +276,7 @@ function LeaderboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                {activeMode === 'daily' ? 'Daily Leaders' : 'All-Time Leaders'}
+                {activeMode === 'daily' ? 'Daily Leaders' : 'Monthly Leaders'}
               </p>
               <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
@@ -242,7 +286,7 @@ function LeaderboardPage() {
             <p className="mt-1 text-xs leading-5 text-slate-400">
               {activeMode === 'daily'
                 ? "Top submitted daily scores for today's board."
-                : 'Highest verified classic runs of all time.'}
+                : "Top cumulative Classic scores for the selected month."}
             </p>
           </div>
           <p className="text-xs text-slate-500">{activeLeaderboard.length} {activeLeaderboard.length === 1 ? 'entry' : 'entries'}</p>
@@ -254,27 +298,70 @@ function LeaderboardPage() {
             <p className="mt-2 text-xs text-slate-400">Loading leaderboard...</p>
           </div>
         ) : activeLeaderboard.length > 0 ? (
-          <div className="mt-3 space-y-1.5">
-            {activeLeaderboard.map((entry, index) => (
-              <LeaderboardRow
-                key={`${entry.gameId}-${entry.address}`}
-                entry={entry}
-                rank={index + 1}
-                isCurrentUser={entry.address === storedWallet?.address}
-                showDate={activeMode === 'daily'}
-              />
-            ))}
-          </div>
+          <>
+            <div className="mt-3 space-y-1.5">
+              {(showAllEntries ? activeLeaderboard : activeLeaderboard.slice(0, 10)).map((entry, index) => (
+                <LeaderboardRow
+                  key={`${entry.gameId}-${entry.address}`}
+                  entry={entry}
+                  rank={index + 1}
+                  isCurrentUser={entry.address === storedWallet?.address}
+                  showDate={activeMode === 'daily'}
+                  mode={activeMode}
+                />
+              ))}
+            </div>
+
+            {/* User's Ranking (if not in top 10) */}
+            {!showAllEntries && userRank >= 10 && userRank !== -1 && (
+              <div className="mt-3">
+                <div className="rounded-lg border border-dashed border-white/10 bg-black/10 px-3 py-2 text-center">
+                  <p className="text-xs text-slate-500">Your Ranking</p>
+                </div>
+                <div className="mt-1.5">
+                  <LeaderboardRow
+                    entry={activeLeaderboard[userRank]}
+                    rank={userRank + 1}
+                    isCurrentUser={true}
+                    showDate={activeMode === 'daily'}
+                    mode={activeMode}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Show More/Less Button */}
+            {activeLeaderboard.length > 10 && (
+              <div className="mt-3">
+                <button
+                  onClick={() => setShowAllEntries(!showAllEntries)}
+                  className="w-full rounded-lg border border-white/10 bg-black/20 px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white"
+                >
+                  {showAllEntries ? (
+                    <>
+                      <i className="bi bi-chevron-up mr-2"></i>
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-chevron-down mr-2"></i>
+                      Show More ({activeLeaderboard.length - 10} more)
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="mt-4 rounded-lg border border-dashed border-white/10 bg-black/20 px-4 py-8 text-center">
             <Trophy className="mx-auto h-10 w-10 text-slate-600" />
             <p className="mt-3 text-sm font-semibold text-white">
-              {activeMode === 'daily' ? 'No scores yet today' : 'No all-time scores yet'}
+              {activeMode === 'daily' ? 'No scores yet today' : 'No scores yet this month'}
             </p>
             <p className="mt-1 text-xs text-slate-400">
               {activeMode === 'daily'
                 ? 'Be the first to submit a score for today\'s board!'
-                : 'Start a classic run and set the first all-time record!'}
+                : 'Play Classic games to build your cumulative monthly score!'}
             </p>
             <a
               href="/play"
@@ -298,11 +385,11 @@ function LeaderboardPage() {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">About All-Time</p>
-          <h3 className="mt-1 text-base font-bold text-white">All-Time Leaderboard</h3>
+          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">About Monthly</p>
+          <h3 className="mt-1 text-base font-bold text-white">Monthly Competition</h3>
           <p className="mt-2 text-xs leading-5 text-slate-400">
-            Play unlimited runs with random seeds. Earn spendable points for progression and
-            compete for the all-time high scores. All-Time leaderboard tracks lifetime best runs and does not reset.
+            Play unlimited Classic games throughout the month. All your Classic scores add up to a cumulative total. 
+            Top 50 players compete for the monthly prize pool. Resets at the start of each month.
           </p>
         </div>
       </section>
@@ -315,11 +402,13 @@ function LeaderboardRow({
   rank,
   isCurrentUser,
   showDate,
+  mode,
 }: {
-  entry: LeaderboardEntry
+  entry: LeaderboardEntry | { gameId: string; address: string; username?: string; score: number; maxTile: number; moveCount: number; endedAt: string }
   rank: number
   isCurrentUser: boolean
   showDate: boolean
+  mode: LeaderboardMode
 }) {
   const getRankColor = (position: number) => {
     if (position === 1) return 'text-[#f0cf52]'
@@ -372,7 +461,11 @@ function LeaderboardRow({
           <p className="text-lg font-black leading-none text-white">{entry.score.toLocaleString()}</p>
           {showDate ? (
             <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-500">
-              {entry.utcDate}
+              {'utcDate' in entry ? entry.utcDate : ''}
+            </p>
+          ) : mode === 'monthly' ? (
+            <p className="mt-1 text-[10px] uppercase tracking-wider text-[#a78bfa]">
+              Cumulative
             </p>
           ) : (
             <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-500">
@@ -415,6 +508,17 @@ function formatUtcCountdown(): string {
 
 function pad2(value: number): string {
   return value.toString().padStart(2, '0')
+}
+
+function getCurrentMonth(): string {
+  return new Date().toISOString().slice(0, 7) // "YYYY-MM"
+}
+
+function formatMonthDisplay(monthId: string): string {
+  const [year, month] = monthId.split('-')
+  const date = new Date(parseInt(year), parseInt(month) - 1, 1)
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+  // e.g., "July 2026"
 }
 
 export default LeaderboardPage

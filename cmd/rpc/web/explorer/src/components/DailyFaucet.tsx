@@ -5,6 +5,7 @@ import { loadStoredWalletAuth } from '../lib/walletAuth'
 import { adminRPCURL } from '../lib/api'
 
 const FAUCET_AMOUNT = 100 // 100 PROOF tokens per day
+const FAUCET_AMOUNT_MICRO = FAUCET_AMOUNT * 1000000 // Convert to uproof (micro-denomination)
 const FAUCET_COOLDOWN_HOURS = 24
 
 interface FaucetState {
@@ -121,7 +122,7 @@ export function DailyFaucet() {
         },
         body: JSON.stringify({
           address: wallet.address,
-          amount: FAUCET_AMOUNT,
+          amount: FAUCET_AMOUNT_MICRO, // Send micro-denomination (uproof)
         }),
       })
 

@@ -24,7 +24,7 @@ import (
 	"github.com/shirou/gopsutil/process"
 )
 
-const defaultDevFaucetAmount uint64 = 500
+const defaultDevFaucetAmount uint64 = 100000000 // 100 PROOF in uproof (micro-denomination)
 
 type devFaucetResponse struct {
 	TxHash    string `json:"txHash"`
