@@ -451,8 +451,16 @@ function LeaderboardRow({
             ) : null}
           </div>
           <p className="mt-0.5 text-[11px] text-slate-500">
-            {entry.moveCount} moves · Tile {entry.maxTile}
-            {entry.username ? ` · ${shortAddress(entry.address)}` : ''}
+            {mode === 'monthly' ? (
+              // For monthly: just show address, no per-game stats
+              entry.username ? `${entry.username} · ${shortAddress(entry.address)}` : shortAddress(entry.address)
+            ) : (
+              // For daily: show game details
+              <>
+                {entry.moveCount} moves · Tile {entry.maxTile}
+                {entry.username ? ` · ${shortAddress(entry.address)}` : ''}
+              </>
+            )}
           </p>
         </div>
 

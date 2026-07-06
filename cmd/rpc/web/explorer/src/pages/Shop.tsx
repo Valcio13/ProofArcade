@@ -24,7 +24,7 @@ function ShopPage() {
   const [config, setConfig] = useState<ChainConfig | null>(null)
   const [preview, setPreview] = useState<RedeemPreview | null>(null)
   const [history, setHistory] = useState<RedemptionHistory | null>(null)
-  const [burnPoints, setBurnPoints] = useState('300')
+  const [burnPoints, setBurnPoints] = useState('500')
   const [isLoading, setIsLoading] = useState(true)
   const [isRedeeming, setIsRedeeming] = useState(false)
 
@@ -402,7 +402,7 @@ function ShopPage() {
 
                 <div className="mt-2.5 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
                   <p className="text-xs text-slate-400">
-                    💡 Play Classic Mode to earn points • Redeem at {minRedeemPoints} points for {config?.shopRedemptionRateCnpy ?? 1} PROOF
+                    💡 Play Classic Mode to earn points • Redeem at {minRedeemPoints} points for {formatCNPY(toCNPY(config?.shopRedemptionRateCnpy ?? 1000000))} PROOF
                   </p>
                 </div>
               </div>
@@ -414,7 +414,7 @@ function ShopPage() {
           <div>
             <h2 className="text-sm font-bold text-white">Redeem Points</h2>
             <p className="mt-0.5 text-xs text-slate-400">
-              {config?.shopRedemptionRatePoints ?? 500} points = {config?.shopRedemptionRateCnpy ?? 1} PROOF • Redeem in {config?.shopRedeemStepPoints ?? 500}-point increments
+              {config?.shopRedemptionRatePoints ?? 500} points = {formatCNPY(toCNPY(config?.shopRedemptionRateCnpy ?? 1000000))} PROOF • Redeem in {config?.shopRedeemStepPoints ?? 500}-point increments
             </p>
           </div>
 
@@ -591,14 +591,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
 }
 
 function RedemptionRow({ entry }: { entry: RedemptionHistoryEntry }) {
-  // DEBUG: Log what we're rendering
-  console.log('🎨 RedemptionRow rendering:', {
-    burnPoints: entry.burnPoints,
-    txHash: entry.txHash,
-    txHashType: typeof entry.txHash,
-    txHashLength: entry.txHash?.length,
-    hasTxHash: !!(entry.txHash && entry.txHash.length > 0)
-  })
+  const proofAmount = formatCNPY(toCNPY(entry.payoutAmount))
   
   if (entry.txHash && entry.txHash.length > 0) {
     return (
@@ -607,12 +600,16 @@ function RedemptionRow({ entry }: { entry: RedemptionHistoryEntry }) {
         className="group flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950/50 px-3.5 py-2 transition hover:border-[#53a6ff]/40 hover:bg-[#53a6ff]/5"
       >
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white group-hover:text-[#9fd0ff]">{entry.burnPoints.toLocaleString()} points redeemed</p>
-          <p className="mt-0.5 text-xs text-slate-500">{entry.redeemedAt}</p>
+          <p className="text-sm font-semibold text-white group-hover:text-[#9fd0ff]">
+            Redeemed {proofAmount} PROOF
+          </p>
+          <p className="mt-0.5 text-xs text-slate-500">
+            {entry.burnPoints.toLocaleString()} points • {entry.redeemedAt}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="rounded-full border border-[#53d7a6]/30 bg-[#53d7a6]/10 px-2.5 py-0.5">
-            <p className="text-xs font-bold text-[#53d7a6]">+{formatCNPY(toCNPY(entry.payoutAmount))} PROOF</p>
+            <p className="text-xs font-bold text-[#53d7a6]">View TX</p>
           </div>
           <ArrowRight className="h-4 w-4 text-slate-500 transition group-hover:text-[#53a6ff]" />
         </div>
@@ -623,11 +620,15 @@ function RedemptionRow({ entry }: { entry: RedemptionHistoryEntry }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950/50 px-3.5 py-2">
       <div className="flex-1">
-        <p className="text-sm font-semibold text-white">{entry.burnPoints.toLocaleString()} points redeemed</p>
-        <p className="mt-0.5 text-xs text-slate-500">{entry.redeemedAt}</p>
+        <p className="text-sm font-semibold text-white">
+          Redeemed {proofAmount} PROOF
+        </p>
+        <p className="mt-0.5 text-xs text-slate-500">
+          {entry.burnPoints.toLocaleString()} points • {entry.redeemedAt}
+        </p>
       </div>
-      <div className="rounded-full border border-[#53d7a6]/30 bg-[#53d7a6]/10 px-2.5 py-0.5">
-        <p className="text-xs font-bold text-[#53d7a6]">+{formatCNPY(toCNPY(entry.payoutAmount))} PROOF</p>
+      <div className="rounded-full border border-slate-600/30 bg-slate-600/10 px-2.5 py-0.5">
+        <p className="text-xs font-bold text-slate-400">Pending</p>
       </div>
     </div>
   )

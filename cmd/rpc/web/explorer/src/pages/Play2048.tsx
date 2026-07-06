@@ -1071,18 +1071,30 @@ function Play2048Page() {
                       {/* Game Board - Much Larger */}
                       <div className="mx-auto w-full max-w-[980px] rounded-2xl border border-white/10 bg-[#171d28] p-5 sm:p-7 lg:p-8">
                         <div className="grid grid-cols-4 gap-4 sm:gap-6 lg:gap-7">
-                          {board.map((value, index) => (
-                            <motion.div
-                              key={`${index}-${value}`}
-                              layout
-                              initial={{ scale: 0.92, opacity: 0.78 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              transition={{ type: 'spring', stiffness: 220, damping: 16 }}
-                              className={`flex aspect-square items-center justify-center rounded-xl border border-black/10 text-[2rem] font-black sm:text-[3rem] lg:text-[3.5rem] ${tileStyles[value] ?? 'bg-[#111827] text-white'}`}
-                            >
-                              {value || ''}
-                            </motion.div>
-                          ))}
+                          {board.map((value, index) => {
+                            // Calculate font size based on number of digits
+                            const digits = value ? value.toString().length : 0
+                            let fontSizeClass = 'text-[2rem] sm:text-[3rem] lg:text-[3.5rem]' // 1-3 digits
+                            if (digits >= 4) {
+                              fontSizeClass = 'text-[1.5rem] sm:text-[2.25rem] lg:text-[2.75rem]' // 4+ digits (1024, 2048, etc)
+                            }
+                            if (digits >= 5) {
+                              fontSizeClass = 'text-[1.25rem] sm:text-[1.875rem] lg:text-[2.25rem]' // 5+ digits (16384, 32768, etc)
+                            }
+                            
+                            return (
+                              <motion.div
+                                key={`${index}-${value}`}
+                                layout
+                                initial={{ scale: 0.92, opacity: 0.78 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: 'spring', stiffness: 220, damping: 16 }}
+                                className={`flex aspect-square items-center justify-center rounded-xl border border-black/10 font-black ${fontSizeClass} ${tileStyles[value] ?? 'bg-[#111827] text-white'}`}
+                              >
+                                {value || ''}
+                              </motion.div>
+                            )
+                          })}
                         </div>
                       </div>
                     </div>

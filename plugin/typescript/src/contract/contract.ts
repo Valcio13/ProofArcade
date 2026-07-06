@@ -13,8 +13,6 @@ import {
     ErrDailyRewardNotFound,
     ErrInsufficientClassicPoints,
     ErrInsufficientFunds,
-    ErrInvalidAddress,
-    ErrInvalidAmount,
     ErrInvalidMoveDirection,
     ErrInvalidMessageCast,
     ErrMoveCapExceeded,
@@ -32,7 +30,7 @@ import {
 } from './error.js';
 
 import type { Plugin, Config } from './plugin.js';
-import { JoinLenPrefix, FromAny, Unmarshal } from './plugin.js';
+import { FromAny, Unmarshal } from './plugin.js';
 import { fileDescriptorProtos } from '../proto/descriptors.js';
 import {
     decodeGame2048State,
@@ -42,6 +40,129 @@ import {
     toUint64
 } from './game2048.js';
 import { replayGame } from './game2048-replay.js';
+import {
+    KeyForAccount,
+    KeyForFeeParams,
+    KeyForFeePool,
+    KeyForGamePlatformPool,
+    KeyForGameReservePool,
+    KeyForGameShopPool,
+    KeyForGameDailyRewardPool,
+    KeyForGameMonthlyRewardPool,
+    KeyForDaoPool,
+    KeyForGameConfig,
+    KeyForGameTreasury,
+    KeyForGameSession,
+    KeyForDailyAttempt,
+    KeyForDailySubmission,
+    KeyForDailyPrizePool,
+    KeyForDailyLeaderboard,
+    KeyForDailyRewardAllocation,
+    KeyForDailyRewardByPlayer,
+    KeyForDailyRewardClaim,
+    KeyForDailyLoginClaim,
+    KeyForClassicLeaderboard,
+    KeyForClassicPointsDailyLedger,
+    KeyForClassicPointRedemption,
+    KeyForMonthlyLeaderboard,
+    KeyForMonthlyPlayerEntry,
+    KeyForPlayerStats,
+    KeyForUsernameByAddress,
+    KeyForAddressByUsername,
+    KeyForPlayerIdentity,
+    PoolIDs
+} from './utils/state.js';
+import {
+    utcDateFromMicros,
+    utcMonthFromMicros,
+    hasUtcDayEnded
+} from './utils/time.js';
+import {
+    randomQueryId,
+    buffersEqual,
+    getQueryValue,
+    normalizeBytes,
+    normalizeMoves,
+    areMovesValid,
+    normalizeGameTreasury
+} from './utils/helpers.js';
+import {
+    checkMessageSend,
+    checkMessageStartDailyGame,
+    checkMessageStartClassicGame,
+    checkMessageSubmitGameResult,
+    checkMessageClaimDailyReward,
+    checkMessageRedeemClassicPoints,
+    checkMessageClaimDailyLoginReward,
+    checkMessageSetUsername
+} from './validation/index.js';
+import {
+    decodePlayerStats,
+    encodePlayerStats,
+    incrementStatsField,
+    addToStatsField,
+    updateBestScore,
+    updateBestTile,
+    decodePlayerIdentity,
+    decodeUsernameRegistration,
+    encodePlayerIdentity,
+    encodeUsernameRegistration,
+    getUsernameFromState,
+    getRegistrationTime,
+    isUsernameValid,
+    normalizeUsernameForLookup
+} from './profile/index.js';
+import { calculateClassicPoints, calculateBonusPoints } from './profile/points.js';
+import {
+    createDailySession,
+    createClassicSession,
+    decodeSession,
+    completeSession,
+    isSessionActive,
+    isSessionDaily,
+    getSessionMaxMoves,
+    getSessionSeed,
+    createDailyAttempt,
+    createDailySubmission,
+    createLeaderboardEntry,
+    decodeDailyPrizePool,
+    encodeDailyPrizePool,
+    addDailyPoolEntry
+} from './competition/index.js';
+import {
+    finalizeDailyRewardPoolIfNeeded,
+    type DailyRewardFinalizationSummary,
+    loadDailyRewardFinalizationSummary
+} from './competition/rewards.js';
+import {
+    defaultClassicStartFee,
+    defaultDailyStartFee,
+    getConfiguredClassicStartFee,
+    getConfiguredDailyStartFee,
+    getConfiguredDailyMaxMoves,
+    getConfiguredDailyPayoutBps,
+    getConfiguredClassicDailyPointsCap
+} from './config/index.js';
+import { splitDailyFee, splitClassicFee } from './economy/fee-distribution.js';
+import {
+    calculateNextStreak,
+    calculateLoginReward,
+    createDailyLoginClaim,
+    getConfiguredDailyLoginRewardPoints,
+    getConfiguredDailyLoginBonusBps
+} from './checkin/index.js';
+import {
+    validateRedemption,
+    calculateRedeemPayout,
+    selectPayoutPool,
+    hasSufficientPoolFunds,
+    hasShopBalance,
+    createRedemptionRecord,
+    getConfiguredShopRedemptionRatePoints,
+    getConfiguredShopRedemptionRateCnpy,
+    getConfiguredShopMinRedeemPoints,
+    getConfiguredShopRedeemStepPoints
+} from './shop/index.js';
 
 // ContractConfig: the configuration of the contract
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,129 +222,42 @@ export class Contract {
     // CheckMessageSend() statelessly validates a 'send' message
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageSend(msg: any): any {
-        // check sender address
-        if (!msg.fromAddress || msg.fromAddress.length !== 20) {
-            return { error: ErrInvalidAddress() };
-        }
-        // check recipient address
-        if (!msg.toAddress || msg.toAddress.length !== 20) {
-            return { error: ErrInvalidAddress() };
-        }
-        // check amount
-        const amount = msg.amount as Long | number | undefined;
-        if (!amount || (Long.isLong(amount) ? amount.isZero() : amount === 0)) {
-            return { error: ErrInvalidAmount() };
-        }
-        // return the authorized signers
-        return {
-            recipient: msg.toAddress,
-            authorizedSigners: [msg.fromAddress]
-        };
+        return checkMessageSend(msg);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageStartDailyGame(msg: any): any {
-        const playerAddress = normalizeBytes(msg?.playerAddress);
-        const gameId = normalizeBytes(msg?.gameId);
-        if (playerAddress.length !== 20) {
-            return { error: ErrInvalidAddress() };
-        }
-        if (!msg.utcDate || typeof msg.utcDate !== 'string') {
-            return { error: ErrInvalidMessageCast() };
-        }
-        if (gameId.length === 0) {
-            return { error: ErrInvalidMessageCast() };
-        }
-        return {
-            recipient: playerAddress,
-            authorizedSigners: [playerAddress]
-        };
+        return checkMessageStartDailyGame(msg);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageStartClassicGame(msg: any): any {
-        const playerAddress = normalizeBytes(msg?.playerAddress);
-        const gameId = normalizeBytes(msg?.gameId);
-        if (playerAddress.length !== 20) {
-            return { error: ErrInvalidAddress() };
-        }
-        if (gameId.length === 0) {
-            return { error: ErrInvalidMessageCast() };
-        }
-        return {
-            recipient: playerAddress,
-            authorizedSigners: [playerAddress]
-        };
+        return checkMessageStartClassicGame(msg);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageSubmitGameResult(msg: any): any {
-        const playerAddress = normalizeBytes(msg?.playerAddress);
-        const gameId = normalizeBytes(msg?.gameId);
-        if (playerAddress.length !== 20) {
-            return { error: ErrInvalidAddress() };
-        }
-        if (gameId.length === 0) {
-            return { error: ErrInvalidMessageCast() };
-        }
-        return {
-            recipient: playerAddress,
-            authorizedSigners: [playerAddress]
-        };
+        return checkMessageSubmitGameResult(msg);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageClaimDailyReward(msg: any): any {
-        const playerAddress = normalizeBytes(msg?.playerAddress);
-        if (playerAddress.length !== 20) {
-            return { error: ErrInvalidAddress() };
-        }
-        if (!msg.utcDate || typeof msg.utcDate !== 'string') {
-            return { error: ErrInvalidMessageCast() };
-        }
-        return {
-            recipient: playerAddress,
-            authorizedSigners: [playerAddress]
-        };
+        return checkMessageClaimDailyReward(msg);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageRedeemClassicPoints(msg: any): any {
-        const playerAddress = normalizeBytes(msg?.playerAddress);
-        if (playerAddress.length !== 20) {
-            return { error: ErrInvalidAddress() };
-        }
-        if (toUint64(msg?.burnPoints as Long | number | undefined) === 0) {
-            return { error: ErrInvalidAmount() };
-        }
-        return {
-            recipient: playerAddress,
-            authorizedSigners: [playerAddress]
-        };
+        return checkMessageRedeemClassicPoints(msg);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageClaimDailyLoginReward(msg: any): any {
-        const playerAddress = normalizeBytes(msg?.playerAddress);
-        if (playerAddress.length !== 20) {
-            return { error: ErrInvalidAddress() };
-        }
-        return {
-            recipient: playerAddress,
-            authorizedSigners: [playerAddress]
-        };
+        return checkMessageClaimDailyLoginReward(msg);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageSetUsername(msg: any): any {
-        const playerAddress = normalizeBytes(msg?.playerAddress);
-        if (playerAddress.length !== 20) {
-            return { error: ErrInvalidAddress() };
-        }
-        return {
-            recipient: playerAddress,
-            authorizedSigners: [playerAddress]
-        };
+        return checkMessageSetUsername(msg);
     }
 }
 
@@ -587,16 +621,14 @@ export class ContractAsync {
         if (gameConfigErr) {
             return { error: gameConfigErr };
         }
-        const [dailyPrizePool] = decodeGame2048State('DailyPrizePool', dailyPoolBytes || new Uint8Array());
+        decodeDailyPrizePool(dailyPoolBytes);
         const [gameTreasury] = decodeGame2048State('GameTreasury', treasuryBytes || new Uint8Array());
-        const [playerStats] = decodeGame2048State('PlayerStats', statsBytes || new Uint8Array());
+        const stats = decodePlayerStats(statsBytes);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const player = playerRaw as any;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cfg = (gameConfig as any) || {};
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const dayPool = (dailyPrizePool as any) || {};
         const treasury = normalizeGameTreasury(gameTreasury);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const platformPool = platformPoolRaw as any;
@@ -606,8 +638,6 @@ export class ContractAsync {
         const shopPool = shopPoolRaw as any;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const dailyRewardPool = dailyRewardPoolRaw as any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stats = (playerStats as any) || {};
 
         const txFee = Long.fromNumber(toUint64(tx?.fee as Long | number | undefined));
         const playerAmount = Long.isLong(player?.amount)
@@ -636,19 +666,19 @@ export class ContractAsync {
             ? dailyRewardPool.amount
             : Long.fromNumber((dailyRewardPool?.amount as number) || 0);
         const updatedPlatformPool = types.Pool.create({
-            id: Long.fromNumber(gamePlatformPoolId),
+            id: Long.fromNumber(PoolIDs.PLATFORM),
             amount: platformPoolAmount.add(split.platform)
         });
         const updatedReservePool = types.Pool.create({
-            id: Long.fromNumber(gameReservePoolId),
+            id: Long.fromNumber(PoolIDs.RESERVE),
             amount: reservePoolAmount.add(split.reserve)
         });
         const updatedShopPool = types.Pool.create({
-            id: Long.fromNumber(gameShopPoolId),
+            id: Long.fromNumber(PoolIDs.SHOP),
             amount: shopPoolAmount.add(split.shop)
         });
         const updatedDailyRewardPool = types.Pool.create({
-            id: Long.fromNumber(gameDailyRewardPoolId),
+            id: Long.fromNumber(PoolIDs.DAILY_REWARD),
             amount: dailyRewardPoolAmount.add(split.daily)
         });
         const updatedTreasury = encodeGame2048State('GameTreasury', {
@@ -657,53 +687,33 @@ export class ContractAsync {
             shopBalance: treasury.shopBalance + split.shop.toNumber(),
             updatedAtUnix: toUint64(tx?.time as Long | number | undefined)
         });
-        const updatedDailyPrizePool = encodeGame2048State('DailyPrizePool', {
-            utcDate: msg.utcDate,
-            entryCount: toUint64(dayPool.entryCount as Long | number | undefined) + 1,
-            grossFees: Long.fromNumber(toUint64(dayPool.grossFees as Long | number | undefined)).add(txFee).toNumber(),
-            treasuryFees: Long.fromNumber(toUint64(dayPool.treasuryFees as Long | number | undefined)).add(split.platform).add(split.reserve).add(split.shop).toNumber(),
-            rewardPool: Long.fromNumber(toUint64(dayPool.rewardPool as Long | number | undefined)).add(split.daily).toNumber(),
-            finalized: false,
-            finalizedAtUnix: 0,
-            distributedRewards: toUint64(dayPool.distributedRewards as Long | number | undefined),
-            treasuryLeftover: toUint64(dayPool.treasuryLeftover as Long | number | undefined)
-        });
+        const updatedDailyPrizePool = decodeDailyPrizePool(dailyPoolBytes);
+        const poolUpdate = addDailyPoolEntry(
+            updatedDailyPrizePool,
+            txFee,
+            split.platform,
+            split.reserve,
+            split.shop,
+            split.daily
+        );
+        const updatedDailyPrizePoolValue = encodeDailyPrizePool(
+            { ...updatedDailyPrizePool, ...poolUpdate },
+            msg.utcDate
+        );
 
-        const sessionSeed = deriveDailySeed(contract.Config.ChainId, msg.utcDate);
-        const sessionValue = encodeGame2048State('GameSession', {
+        const sessionValue = createDailySession(
             gameId,
             playerAddress,
-            mode: 1,
-            utcDate: msg.utcDate,
-            seed: sessionSeed,
-            status: 1,
-            startedHeight: toUint64(tx?.createdHeight as Long | number | undefined),
-            startedAtUnix: toUint64(tx?.time as Long | number | undefined),
-            feePaid: txFee.toNumber(),
-            maxMoves: getConfiguredDailyMaxMoves(cfg)
-        });
-        const attemptValue = encodeGame2048State('DailyAttempt', {
-            utcDate: msg.utcDate,
-            playerAddress,
-            gameId
-        });
-        const statsValue = encodeGame2048State('PlayerStats', {
-            playerAddress,
-            dailyGamesStarted: toUint64(stats.dailyGamesStarted as Long | number | undefined) + 1,
-            classicGamesStarted: toUint64(stats.classicGamesStarted as Long | number | undefined),
-            gamesCompleted: toUint64(stats.gamesCompleted as Long | number | undefined),
-            wins: toUint64(stats.wins as Long | number | undefined),
-            losses: toUint64(stats.losses as Long | number | undefined),
-            bestDailyScore: toUint64(stats.bestDailyScore as Long | number | undefined),
-            bestClassicScore: toUint64(stats.bestClassicScore as Long | number | undefined),
-            bestTile: toUint64(stats.bestTile as Long | number | undefined),
-            totalScore: toUint64(stats.totalScore as Long | number | undefined),
-            classicPointsBalance: toUint64(stats.classicPointsBalance as Long | number | undefined),
-            classicPointsEarned: toUint64(stats.classicPointsEarned as Long | number | undefined),
-            loginStreak: toUint64(stats.loginStreak as Long | number | undefined),
-            lastLoginClaimUtcDate: stats.lastLoginClaimUtcDate || '',
-            classicPointsBonusUtcDate: stats.classicPointsBonusUtcDate || ''
-        });
+            msg.utcDate,
+            contract.Config.ChainId,
+            tx?.createdHeight,
+            tx?.time,
+            txFee,
+            getConfiguredDailyMaxMoves(cfg)
+        );
+        const attemptValue = createDailyAttempt(msg.utcDate, playerAddress, gameId);
+        const updatedStats = incrementStatsField(stats, 'dailyGamesStarted');
+        const statsValue = encodePlayerStats(updatedStats, playerAddress);
 
         const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, {
             sets: [
@@ -713,7 +723,7 @@ export class ContractAsync {
                 { key: shopPoolKey, value: types.Pool.encode(updatedShopPool).finish() },
                 { key: dailyRewardPoolKey, value: types.Pool.encode(updatedDailyRewardPool).finish() },
                 { key: gameTreasuryKey, value: updatedTreasury },
-                { key: dailyPoolKey, value: updatedDailyPrizePool },
+                { key: dailyPoolKey, value: updatedDailyPrizePoolValue },
                 { key: KeyForGameSession(gameId), value: sessionValue },
                 { key: dailyAttemptKey, value: attemptValue },
                 { key: playerStatsKey, value: statsValue }
@@ -789,7 +799,7 @@ export class ContractAsync {
         if (shopPoolErr) return { error: shopPoolErr };
         const [gameTreasury] = decodeGame2048State('GameTreasury', treasuryBytes || new Uint8Array());
         const [gameConfig] = decodeGame2048State('GameConfig', configBytes || new Uint8Array());
-        const [playerStats] = decodeGame2048State('PlayerStats', statsBytes || new Uint8Array());
+        const stats = decodePlayerStats(statsBytes);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const player = playerRaw as any;
@@ -802,8 +812,6 @@ export class ContractAsync {
         const shopPool = shopPoolRaw as any;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cfg = (gameConfig as any) || {};
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stats = (playerStats as any) || {};
 
         const txFee = Long.fromNumber(toUint64(tx?.fee as Long | number | undefined));
         const playerAmount = Long.isLong(player?.amount)
@@ -847,19 +855,19 @@ export class ContractAsync {
             ? shopPool.amount
             : Long.fromNumber((shopPool?.amount as number) || 0);
         const updatedPlatformPool = types.Pool.create({
-            id: Long.fromNumber(gamePlatformPoolId),
+            id: Long.fromNumber(PoolIDs.PLATFORM),
             amount: platformPoolAmount.add(split.platform)
         });
         const updatedMonthlyRewardPool = types.Pool.create({
-            id: Long.fromNumber(gameMonthlyRewardPoolId),
+            id: Long.fromNumber(PoolIDs.MONTHLY_REWARD),
             amount: monthlyRewardPoolAmount.add(split.monthly)
         });
         const updatedReservePool = types.Pool.create({
-            id: Long.fromNumber(gameReservePoolId),
+            id: Long.fromNumber(PoolIDs.RESERVE),
             amount: reservePoolAmount.add(split.reserve)
         });
         const updatedShopPool = types.Pool.create({
-            id: Long.fromNumber(gameShopPoolId),
+            id: Long.fromNumber(PoolIDs.SHOP),
             amount: shopPoolAmount.add(split.shop)
         });
         const updatedTreasury = encodeGame2048State('GameTreasury', {
@@ -869,36 +877,16 @@ export class ContractAsync {
             updatedAtUnix: toUint64(tx?.time as Long | number | undefined)
         });
 
-        const sessionSeed = deriveClassicSeed(playerAddress, tx);
-        const sessionValue = encodeGame2048State('GameSession', {
+        const sessionValue = createClassicSession(
             gameId,
             playerAddress,
-            mode: 2,
-            utcDate: '',
-            seed: sessionSeed,
-            status: 1,
-            startedHeight: toUint64(tx?.createdHeight as Long | number | undefined),
-            startedAtUnix: toUint64(tx?.time as Long | number | undefined),
-            feePaid: txFee.toNumber(),
-            maxMoves: 0
-        });
-        const statsValue = encodeGame2048State('PlayerStats', {
-            playerAddress,
-            dailyGamesStarted: toUint64(stats.dailyGamesStarted as Long | number | undefined),
-            classicGamesStarted: toUint64(stats.classicGamesStarted as Long | number | undefined) + 1,
-            gamesCompleted: toUint64(stats.gamesCompleted as Long | number | undefined),
-            wins: toUint64(stats.wins as Long | number | undefined),
-            losses: toUint64(stats.losses as Long | number | undefined),
-            bestDailyScore: toUint64(stats.bestDailyScore as Long | number | undefined),
-            bestClassicScore: toUint64(stats.bestClassicScore as Long | number | undefined),
-            bestTile: toUint64(stats.bestTile as Long | number | undefined),
-            totalScore: toUint64(stats.totalScore as Long | number | undefined),
-            classicPointsBalance: toUint64(stats.classicPointsBalance as Long | number | undefined),
-            classicPointsEarned: toUint64(stats.classicPointsEarned as Long | number | undefined),
-            loginStreak: toUint64(stats.loginStreak as Long | number | undefined),
-            lastLoginClaimUtcDate: stats.lastLoginClaimUtcDate || '',
-            classicPointsBonusUtcDate: stats.classicPointsBonusUtcDate || ''
-        });
+            tx,
+            tx?.createdHeight,
+            tx?.time,
+            txFee
+        );
+        const updatedStats = incrementStatsField(stats, 'classicGamesStarted');
+        const statsValue = encodePlayerStats(updatedStats, playerAddress);
 
         const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, {
             sets: [
@@ -962,17 +950,11 @@ export class ContractAsync {
         }
 
         // Get username if exists
-        let username = '';
-        if (usernameBytes && usernameBytes.length > 0) {
-            const [usernameReg] = decodeGame2048State('UsernameRegistration', usernameBytes);
-            if (usernameReg) {
-                username = (usernameReg as any).username || '';
-            }
-        }
+        const username = getUsernameFromState(null, usernameBytes);
 
-        const [session, sessionErr] = decodeGame2048State('GameSession', sessionBytes);
-        if (sessionErr) {
-            return { error: sessionErr };
+        const session = decodeSession(sessionBytes);
+        if (!session) {
+            return { error: ErrSessionNotFound() };
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -980,14 +962,14 @@ export class ContractAsync {
         if (!Buffer.from(normalizeBytes(gameSession?.playerAddress)).equals(Buffer.from(playerAddress))) {
             return { error: ErrSessionOwnerMismatch() };
         }
-        if (toUint64(gameSession?.status as Long | number | undefined) !== 1) {
+        if (!isSessionActive(gameSession)) {
             return { error: ErrSessionNotActive() };
         }
 
-        const maxMoves = toUint64(gameSession?.maxMoves as Long | number | undefined);
+        const maxMoves = getSessionMaxMoves(gameSession);
         const submittedMoves = normalizeMoves(msg.moves);
         const submittedMoveCount = submittedMoves.length;
-        const isDaily = toUint64(gameSession?.mode as Long | number | undefined) === 1;
+        const isDaily = isSessionDaily(gameSession);
         if (!areMovesValid(submittedMoves)) {
             return { error: ErrInvalidMoveDirection() };
         }
@@ -996,7 +978,7 @@ export class ContractAsync {
         }
 
         const replay = replayGame({
-            seed: gameSession?.seed || new Uint8Array(),
+            seed: getSessionSeed(gameSession),
             moves: submittedMoves,
             maxMoves,
             stopReason: toUint64(msg.stopReason as Long | number | undefined)
@@ -1013,35 +995,22 @@ export class ContractAsync {
             return { error: ErrReplayMismatch() };
         }
 
-        const [playerStats] = decodeGame2048State('PlayerStats', statsBytes || new Uint8Array());
+        const stats = decodePlayerStats(statsBytes);
         const [gameConfig] = decodeGame2048State('GameConfig', configBytes || new Uint8Array());
         const [classicPointsLedger] = decodeGame2048State('ClassicPointsDailyLedger', classicPointsLedgerBytes || new Uint8Array());
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stats = (playerStats as any) || {};
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cfg = (gameConfig as any) || {};
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const pointsLedger = (classicPointsLedger as any) || {};
-        const updatedSession = encodeGame2048State('GameSession', {
-            gameId: gameSession?.gameId,
-            playerAddress: gameSession?.playerAddress,
-            mode: gameSession?.mode,
-            utcDate: gameSession?.utcDate || '',
-            seed: gameSession?.seed || new Uint8Array(),
-            status: 2,
-            startedHeight: toUint64(gameSession?.startedHeight as Long | number | undefined),
-            startedAtUnix: toUint64(gameSession?.startedAtUnix as Long | number | undefined),
-            feePaid: toUint64(gameSession?.feePaid as Long | number | undefined),
-            maxMoves,
-            submittedScore: replay.score,
-            submittedMaxTile: replay.maxTile,
-            finalMoveCount: replay.moveCount,
-            stopReason: replay.endedReason,
-            submittedAtUnix: endedAtUnix
-        });
+        const updatedSession = completeSession(
+            gameSession,
+            replay.score,
+            replay.maxTile,
+            replay.moveCount,
+            replay.endedReason,
+            endedAtUnix
+        );
 
-        const previousBestDaily = toUint64(stats.bestDailyScore as Long | number | undefined);
-        const previousBestClassic = toUint64(stats.bestClassicScore as Long | number | undefined);
         const baseClassicPoints = isDaily ? 0 : calculateClassicPoints(replay.score);
         const classicBonusBps = stats.classicPointsBonusUtcDate === classicPointsUtcDate
             ? getConfiguredDailyLoginBonusBps(cfg)
@@ -1053,37 +1022,36 @@ export class ContractAsync {
         const cappedBasePoints = isDaily ? 0 : Math.min(baseClassicPoints, remainingClassicPoints);
         const bonusPoints = calculateBonusPoints(cappedBasePoints, classicBonusBps);
         const earnedClassicPoints = cappedBasePoints + bonusPoints;
-        const updatedStats = encodeGame2048State('PlayerStats', {
-            playerAddress,
-            dailyGamesStarted: toUint64(stats.dailyGamesStarted as Long | number | undefined),
-            classicGamesStarted: toUint64(stats.classicGamesStarted as Long | number | undefined),
-            gamesCompleted: toUint64(stats.gamesCompleted as Long | number | undefined) + 1,
-            wins: toUint64(stats.wins as Long | number | undefined) + (replay.win ? 1 : 0),
-            losses: toUint64(stats.losses as Long | number | undefined) + (replay.win ? 0 : 1),
-            bestDailyScore: isDaily ? Math.max(previousBestDaily, replay.score) : previousBestDaily,
-            bestClassicScore: isDaily ? previousBestClassic : Math.max(previousBestClassic, replay.score),
-            bestTile: Math.max(toUint64(stats.bestTile as Long | number | undefined), replay.maxTile),
-            totalScore: toUint64(stats.totalScore as Long | number | undefined) + replay.score,
-            classicPointsBalance: toUint64(stats.classicPointsBalance as Long | number | undefined) + earnedClassicPoints,
-            classicPointsEarned: toUint64(stats.classicPointsEarned as Long | number | undefined) + earnedClassicPoints,
-            loginStreak: toUint64(stats.loginStreak as Long | number | undefined),
-            lastLoginClaimUtcDate: stats.lastLoginClaimUtcDate || '',
-            classicPointsBonusUtcDate: stats.classicPointsBonusUtcDate || ''
-        });
+        
+        // Update stats using profile module functions
+        let updatedStats = stats;
+        updatedStats = incrementStatsField(updatedStats, 'gamesCompleted');
+        if (replay.win) {
+            updatedStats = incrementStatsField(updatedStats, 'wins');
+        } else {
+            updatedStats = incrementStatsField(updatedStats, 'losses');
+        }
+        updatedStats = updateBestScore(updatedStats, replay.score, isDaily ? 'daily' : 'classic');
+        updatedStats = updateBestTile(updatedStats, replay.maxTile);
+        updatedStats = addToStatsField(updatedStats, 'totalScore', replay.score);
+        updatedStats = addToStatsField(updatedStats, 'classicPointsBalance', earnedClassicPoints);
+        updatedStats = addToStatsField(updatedStats, 'classicPointsEarned', earnedClassicPoints);
+        
+        const updatedStatsValue = encodePlayerStats(updatedStats, playerAddress);
 
-        const leaderboardEntry = encodeGame2048State('LeaderboardEntry', {
+        const leaderboardEntry = createLeaderboardEntry(
             gameId,
             playerAddress,
-            score: replay.score,
-            maxTile: replay.maxTile,
-            moveCount: replay.moveCount,
+            replay.score,
+            replay.maxTile,
+            replay.moveCount,
             endedAtUnix,
             username
-        });
+        );
 
         const sets = [
             { key: KeyForGameSession(gameId), value: updatedSession },
-            { key: KeyForPlayerStats(playerAddress), value: updatedStats }
+            { key: KeyForPlayerStats(playerAddress), value: updatedStatsValue }
         ];
         
         const deletes: Array<{ key: Uint8Array }> = [];
@@ -1102,15 +1070,15 @@ export class ContractAsync {
             });
             sets.push({
                 key: KeyForDailySubmission(gameSession?.utcDate || '', playerAddress),
-                value: encodeGame2048State('DailySubmission', {
-                    utcDate: gameSession?.utcDate || '',
+                value: createDailySubmission(
+                    gameSession?.utcDate || '',
                     playerAddress,
                     gameId,
-                    score: replay.score,
-                    maxTile: replay.maxTile,
-                    moveCount: replay.moveCount,
-                    submittedAtUnix: endedAtUnix
-                })
+                    replay.score,
+                    replay.maxTile,
+                    replay.moveCount,
+                    endedAtUnix
+                )
             });
         } else {
             // Classic mode: Add to all-time leaderboard
@@ -1312,7 +1280,7 @@ export class ContractAsync {
             return { error: playerErr };
         }
         const [gameConfig] = decodeGame2048State('GameConfig', configBytes || new Uint8Array());
-        const [dailyPool] = decodeGame2048State('DailyPrizePool', poolBytes);
+        const pool = decodeDailyPrizePool(poolBytes);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const feePool = feePoolRaw as any;
@@ -1322,8 +1290,6 @@ export class ContractAsync {
         const player = playerRaw as any;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cfg = (gameConfig as any) || {};
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const pool = (dailyPool as any) || {};
         const payoutBps = getConfiguredDailyPayoutBps(cfg);
         const rewardPoolTotal = Long.fromNumber(toUint64(pool.rewardPool as Long | number | undefined));
 
@@ -1391,11 +1357,9 @@ export class ContractAsync {
             address: player?.address || playerAddress,
             amount: playerAmount.add(rewardAmount)
         });
-        const updatedDailyPool = encodeGame2048State('DailyPrizePool', {
-            utcDate,
-            entryCount: toUint64(pool.entryCount as Long | number | undefined),
-            grossFees: toUint64(pool.grossFees as Long | number | undefined),
-            treasuryFees: toUint64(pool.treasuryFees as Long | number | undefined),
+        
+        const updatedPoolData = {
+            ...pool,
             rewardPool: dailyRewardBalance.subtract(rewardAmount).toNumber(),
             finalized: true,
             finalizedAtUnix: pool.finalized
@@ -1407,7 +1371,8 @@ export class ContractAsync {
             treasuryLeftover: finalizationSummary
                 ? finalizationSummary.leftover.toNumber()
                 : toUint64(pool.treasuryLeftover as Long | number | undefined)
-        });
+        };
+        const updatedDailyPool = encodeDailyPrizePool(updatedPoolData, utcDate);
         // Compute transaction hash
         const txMessage = types.Transaction.create(tx);
         const txBytes = types.Transaction.encode(txMessage).finish();
@@ -1520,7 +1485,7 @@ export class ContractAsync {
         if (daoPoolErr) {
             return { error: daoPoolErr };
         }
-        const [playerStats] = decodeGame2048State('PlayerStats', statsBytes || new Uint8Array());
+        const stats = decodePlayerStats(statsBytes);
         const [gameConfig] = decodeGame2048State('GameConfig', configBytes || new Uint8Array());
         const [gameTreasury] = decodeGame2048State('GameTreasury', treasuryBytes || new Uint8Array());
 
@@ -1531,33 +1496,46 @@ export class ContractAsync {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const daoPool = daoPoolRaw as any;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stats = (playerStats as any) || {};
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cfg = (gameConfig as any) || {};
         const treasury = normalizeGameTreasury(gameTreasury);
 
+        // Get shop configuration
         const minRedeemPoints = getConfiguredShopMinRedeemPoints(cfg);
         const redeemStepPoints = getConfiguredShopRedeemStepPoints(cfg);
-        const redeemRatePoints = getConfiguredShopRedemptionRatePoints(cfg);
-        const redeemRateCnpy = getConfiguredShopRedemptionRateCnpy(cfg);
+        const ratePoints = getConfiguredShopRedemptionRatePoints(cfg);
+        const rateCnpy = getConfiguredShopRedemptionRateCnpy(cfg);
 
-        if (burnPoints < minRedeemPoints) {
-            return { error: ErrRedeemBelowMinimum() };
-        }
-        if (redeemStepPoints > 0 && burnPoints % redeemStepPoints !== 0) {
-            return { error: ErrRedeemInvalidStep() };
-        }
-
+        // Calculate payout
         const classicPointsBalance = toUint64(stats.classicPointsBalance as Long | number | undefined);
-        if (classicPointsBalance < burnPoints) {
-            return { error: ErrInsufficientClassicPoints() };
+        const payoutAmount = calculateRedeemPayout(burnPoints, ratePoints, rateCnpy);
+
+        // Validate redemption
+        const validation = validateRedemption(
+            burnPoints,
+            classicPointsBalance,
+            minRedeemPoints,
+            redeemStepPoints,
+            payoutAmount
+        );
+        
+        if (!validation.valid) {
+            // Map validation errors to existing error functions
+            if (validation.error?.includes('below minimum')) {
+                return { error: ErrRedeemBelowMinimum() };
+            }
+            if (validation.error?.includes('multiple of')) {
+                return { error: ErrRedeemInvalidStep() };
+            }
+            if (validation.error?.includes('Insufficient classic points')) {
+                return { error: ErrInsufficientClassicPoints() };
+            }
+            if (validation.error?.includes('zero or negative')) {
+                return { error: ErrRedeemPayoutZero() };
+            }
+            return { error: validation.error };
         }
 
-        const payoutAmount = calculateRedeemPayout(burnPoints, redeemRatePoints, redeemRateCnpy);
-        if (payoutAmount <= 0) {
-            return { error: ErrRedeemPayoutZero() };
-        }
-
+        // Check pool and treasury balances
         const shopPoolAmount = Long.isLong(feePool?.amount)
             ? feePool.amount
             : Long.fromNumber((feePool?.amount as number) || 0);
@@ -1566,14 +1544,19 @@ export class ContractAsync {
             : Long.fromNumber((daoPool?.amount as number) || 0);
         const payoutLong = Long.fromNumber(payoutAmount);
         const shopBalance = Long.fromNumber(treasury.shopBalance);
-        if (shopBalance.lessThan(payoutLong)) {
+        
+        if (!hasShopBalance(treasury.shopBalance, payoutAmount)) {
             return { error: ErrInsufficientFunds() };
         }
-        const useShopPool = !shopPoolAmount.lessThan(payoutLong);
-        if (!useShopPool && daoPoolAmount.lessThan(payoutLong)) {
+        
+        const useShopPool = selectPayoutPool(shopPoolAmount, daoPoolAmount, payoutLong);
+        const selectedPool = useShopPool ? shopPoolAmount : daoPoolAmount;
+        
+        if (!hasSufficientPoolFunds(selectedPool, payoutLong)) {
             return { error: ErrInsufficientFunds() };
         }
 
+        // Update balances
         const playerAmount = Long.isLong(player?.amount)
             ? player.amount
             : Long.fromNumber((player?.amount as number) || 0);
@@ -1592,23 +1575,12 @@ export class ContractAsync {
             shopBalance: shopBalance.subtract(payoutLong).toNumber(),
             updatedAtUnix: redeemedAtUnix
         });
-        const updatedStats = encodeGame2048State('PlayerStats', {
-            playerAddress,
-            dailyGamesStarted: toUint64(stats.dailyGamesStarted as Long | number | undefined),
-            classicGamesStarted: toUint64(stats.classicGamesStarted as Long | number | undefined),
-            gamesCompleted: toUint64(stats.gamesCompleted as Long | number | undefined),
-            wins: toUint64(stats.wins as Long | number | undefined),
-            losses: toUint64(stats.losses as Long | number | undefined),
-            bestDailyScore: toUint64(stats.bestDailyScore as Long | number | undefined),
-            bestClassicScore: toUint64(stats.bestClassicScore as Long | number | undefined),
-            bestTile: toUint64(stats.bestTile as Long | number | undefined),
-            totalScore: toUint64(stats.totalScore as Long | number | undefined),
-            classicPointsBalance: classicPointsBalance - burnPoints,
-            classicPointsEarned: toUint64(stats.classicPointsEarned as Long | number | undefined),
-            loginStreak: toUint64(stats.loginStreak as Long | number | undefined),
-            lastLoginClaimUtcDate: stats.lastLoginClaimUtcDate || '',
-            classicPointsBonusUtcDate: stats.classicPointsBonusUtcDate || ''
-        });
+        const updatedStatsObj = {
+            ...stats,
+            classicPointsBalance: classicPointsBalance - burnPoints
+        };
+        const updatedStats = encodePlayerStats(updatedStatsObj, playerAddress);
+        
         // Compute transaction hash
         const txMessage = types.Transaction.create(tx);
         const txBytes = types.Transaction.encode(txMessage).finish();
@@ -1621,13 +1593,14 @@ export class ContractAsync {
         console.log("TX_HASH_TYPE:", typeof txHash);
         console.log("TX_HASH_IS_BUFFER:", Buffer.isBuffer(txHash));
 
-        const redemptionValue = encodeGame2048State('ClassicPointRedemption', {
+        // Create redemption record
+        const redemptionValue = createRedemptionRecord(
             playerAddress,
             burnPoints,
             payoutAmount,
             redeemedAtUnix,
-            txHash: txHash
-        });
+            txHash
+        );
         
         console.log("RECORD_BEFORE_WRITE:", {
             playerAddress: Buffer.from(playerAddress).toString('hex'),
@@ -1698,53 +1671,47 @@ export class ContractAsync {
             return { error: ErrDailyLoginAlreadyClaimed() };
         }
 
-        const [playerStats] = decodeGame2048State('PlayerStats', statsBytes || new Uint8Array());
+        const stats = decodePlayerStats(statsBytes);
         const [gameConfig] = decodeGame2048State('GameConfig', configBytes || new Uint8Array());
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stats = (playerStats as any) || {};
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cfg = (gameConfig as any) || {};
 
-        const previousClaimUtcDate = stats.lastLoginClaimUtcDate || '';
-        let nextStreak = 1;
-        if (previousClaimUtcDate === previousUtcDate(utcDate)) {
-            const streakSchedule = getConfiguredDailyLoginRewardPoints(cfg);
-            const currentStreak = toUint64(stats.loginStreak as Long | number | undefined);
-            const scheduleLength = streakSchedule.length || 7;
-            // Cycle: 1→2→3→4→5→6→7→1 (wraps back to 1 after 7)
-            nextStreak = currentStreak >= scheduleLength ? 1 : currentStreak + 1;
-        }
-
+        // Calculate next streak day
         const streakSchedule = getConfiguredDailyLoginRewardPoints(cfg);
-        const rewardPoints = resolveDailyLoginRewardPoints(cfg, nextStreak);
-        const bonusBps = nextStreak >= streakSchedule.length ? getConfiguredDailyLoginBonusBps(cfg) : 0;
+        const scheduleLength = streakSchedule.length || 7;
+        const currentStreak = toUint64(stats.loginStreak as Long | number | undefined);
+        const previousClaimUtcDate = stats.lastLoginClaimUtcDate || '';
+        
+        const nextStreak = calculateNextStreak(
+            previousClaimUtcDate,
+            utcDate,
+            currentStreak,
+            scheduleLength
+        );
 
-        const updatedStats = encodeGame2048State('PlayerStats', {
-            playerAddress,
-            dailyGamesStarted: toUint64(stats.dailyGamesStarted as Long | number | undefined),
-            classicGamesStarted: toUint64(stats.classicGamesStarted as Long | number | undefined),
-            gamesCompleted: toUint64(stats.gamesCompleted as Long | number | undefined),
-            wins: toUint64(stats.wins as Long | number | undefined),
-            losses: toUint64(stats.losses as Long | number | undefined),
-            bestDailyScore: toUint64(stats.bestDailyScore as Long | number | undefined),
-            bestClassicScore: toUint64(stats.bestClassicScore as Long | number | undefined),
-            bestTile: toUint64(stats.bestTile as Long | number | undefined),
-            totalScore: toUint64(stats.totalScore as Long | number | undefined),
+        // Calculate rewards
+        const { rewardPoints, bonusBps } = calculateLoginReward(cfg, nextStreak);
+
+        // Update player stats
+        const updatedStatsObj = {
+            ...stats,
             classicPointsBalance: toUint64(stats.classicPointsBalance as Long | number | undefined) + rewardPoints,
             classicPointsEarned: toUint64(stats.classicPointsEarned as Long | number | undefined) + rewardPoints,
             loginStreak: nextStreak,
             lastLoginClaimUtcDate: utcDate,
             classicPointsBonusUtcDate: bonusBps > 0 ? utcDate : ''
-        });
+        };
+        const updatedStats = encodePlayerStats(updatedStatsObj, playerAddress);
 
-        const claimValue = encodeGame2048State('DailyLoginClaim', {
+        // Create claim record
+        const claimValue = createDailyLoginClaim(
             utcDate,
             playerAddress,
-            streakDay: nextStreak,
+            nextStreak,
             rewardPoints,
             bonusBps,
             claimedAtUnix
-        });
+        );
 
         const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, {
             sets: [
@@ -1769,11 +1736,11 @@ export class ContractAsync {
         const setAtUnix = toUint64(tx?.time as Long | number | undefined);
 
         // Validate username format
-        if (!validateUsername(username)) {
+        if (!isUsernameValid(username)) {
             return { error: ErrUsernameInvalid() };
         }
 
-        const normalizedUsername = normalizeUsername(username);
+        const normalizedUsername = normalizeUsernameForLookup(username);
         const playerIdentityKey = KeyForPlayerIdentity(playerAddress);
         const usernameByAddressKey = KeyForUsernameByAddress(playerAddress); // Keep for backward compatibility
         const addressByUsernameKey = KeyForAddressByUsername(normalizedUsername);
@@ -1814,22 +1781,16 @@ export class ContractAsync {
         }
 
         // Try to read from PlayerIdentity first, fallback to UsernameRegistration for migration
-        let existingIdentity = null;
-        let registeredAtUnix = setAtUnix;
+        const existingIdentity = decodePlayerIdentity(existingIdentityBytes);
+        const registeredAtUnix = getRegistrationTime(existingIdentityBytes, existingUsernameBytes) || setAtUnix;
         let oldNormalizedUsername = null;
 
-        if (existingIdentityBytes && existingIdentityBytes.length > 0) {
-            [existingIdentity] = decodeGame2048State('PlayerIdentity', existingIdentityBytes);
-            if (existingIdentity) {
-                registeredAtUnix = toUint64((existingIdentity as any).registeredAtUnix as Long | number | undefined);
-                oldNormalizedUsername = normalizeUsername((existingIdentity as any).username || '');
-            }
+        if (existingIdentity) {
+            oldNormalizedUsername = normalizeUsernameForLookup(existingIdentity.username || '');
         } else if (existingUsernameBytes && existingUsernameBytes.length > 0) {
-            // Migration path: read from old UsernameRegistration
-            const [existingUsername] = decodeGame2048State('UsernameRegistration', existingUsernameBytes);
+            const existingUsername = decodeUsernameRegistration(existingUsernameBytes);
             if (existingUsername) {
-                registeredAtUnix = toUint64((existingUsername as any).registeredAtUnix as Long | number | undefined);
-                oldNormalizedUsername = normalizeUsername((existingUsername as any).username || '');
+                oldNormalizedUsername = normalizeUsernameForLookup(existingUsername.username || '');
             }
         }
 
@@ -1839,28 +1800,28 @@ export class ContractAsync {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const deletes: any[] = [];
 
-        // Store new PlayerIdentity (with empty avatar/title/bio for now)
-        const playerIdentity = encodeGame2048State('PlayerIdentity', {
+        // Store new PlayerIdentity
+        const playerIdentityValue = encodePlayerIdentity({
             playerAddress,
             username,
-            avatarUrl: existingIdentity ? (existingIdentity as any).avatarUrl || '' : '',
-            title: existingIdentity ? (existingIdentity as any).title || '' : '',
-            bio: existingIdentity ? (existingIdentity as any).bio || '' : '',
+            avatarUrl: existingIdentity ? (existingIdentity.avatarUrl || '') : '',
+            title: existingIdentity ? (existingIdentity.title || '') : '',
+            bio: existingIdentity ? (existingIdentity.bio || '') : '',
             registeredAtUnix,
             lastUpdatedUnix: setAtUnix
         });
 
-        sets.push({ key: playerIdentityKey, value: playerIdentity });
+        sets.push({ key: playerIdentityKey, value: playerIdentityValue });
 
         // Also store in old UsernameRegistration format for backward compatibility
-        const usernameRegistration = encodeGame2048State('UsernameRegistration', {
+        const usernameRegistrationValue = encodeUsernameRegistration({
             playerAddress,
             username,
             registeredAtUnix,
             lastChangedAtUnix: setAtUnix
         });
 
-        sets.push({ key: usernameByAddressKey, value: usernameRegistration });
+        sets.push({ key: usernameByAddressKey, value: usernameRegistrationValue });
         sets.push({ key: addressByUsernameKey, value: playerAddress });
 
         // If player had a different username before, delete the old lookup
@@ -1869,28 +1830,9 @@ export class ContractAsync {
             deletes.push({ key: oldLookupKey });
         }
 
-        // Update PlayerStats with username
-        const [playerStats] = decodeGame2048State('PlayerStats', statsBytes || new Uint8Array());
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stats = (playerStats as any) || {};
-
-        const updatedStats = encodeGame2048State('PlayerStats', {
-            playerAddress,
-            dailyGamesStarted: toUint64(stats.dailyGamesStarted as Long | number | undefined),
-            classicGamesStarted: toUint64(stats.classicGamesStarted as Long | number | undefined),
-            gamesCompleted: toUint64(stats.gamesCompleted as Long | number | undefined),
-            wins: toUint64(stats.wins as Long | number | undefined),
-            losses: toUint64(stats.losses as Long | number | undefined),
-            bestDailyScore: toUint64(stats.bestDailyScore as Long | number | undefined),
-            bestClassicScore: toUint64(stats.bestClassicScore as Long | number | undefined),
-            bestTile: toUint64(stats.bestTile as Long | number | undefined),
-            totalScore: toUint64(stats.totalScore as Long | number | undefined),
-            classicPointsBalance: toUint64(stats.classicPointsBalance as Long | number | undefined),
-            classicPointsEarned: toUint64(stats.classicPointsEarned as Long | number | undefined),
-            loginStreak: toUint64(stats.loginStreak as Long | number | undefined),
-            lastLoginClaimUtcDate: stats.lastLoginClaimUtcDate || '',
-            classicPointsBonusUtcDate: stats.classicPointsBonusUtcDate || ''
-        });
+        // Update PlayerStats - just re-encode without changes (no username field in PlayerStats)
+        const stats = decodePlayerStats(statsBytes);
+        const updatedStats = encodePlayerStats(stats, playerAddress);
 
         sets.push({ key: playerStatsKey, value: updatedStats });
 
@@ -1908,713 +1850,4 @@ export class ContractAsync {
 
         return {};
     }
-}
-
-const accountPrefix = Buffer.from([1]); // store key prefix for accounts
-const poolPrefix = Buffer.from([2]); // store key prefix for pools
-const gamePrefix = Buffer.from([18]); // store key prefix for 2048 game state
-const paramsPrefix = Buffer.from([7]); // store key prefix for governance parameters
-const daoPoolId = 131071;
-const gamePlatformPoolId = daoPoolId + 1;
-const gameReservePoolId = daoPoolId + 2;
-const gameShopPoolId = daoPoolId + 3;
-const gameDailyRewardPoolId = daoPoolId + 4;
-const gameMonthlyRewardPoolId = daoPoolId + 5; // Monthly competition pool
-const defaultClassicStartFee = 2000000;    // 2 PROOF in uproof (micro-denomination)
-const defaultDailyStartFee = 25000000;     // 25 PROOF in uproof (micro-denomination)
-const legacyClassicStartFee = 90;
-const legacyDailyStartFee = 240;
-const defaultDailyMaxMoves = 80;
-const defaultDailyPlatformFeeBps = 500;
-const defaultDailyRewardFeeBps = 8000;
-const defaultDailyReserveFeeBps = 1000;
-const defaultDailyShopFeeBps = 500;
-const defaultClassicPlatformFeeBps = 500;
-const defaultClassicReserveFeeBps = 4500;
-const defaultClassicShopFeeBps = 5000;
-const defaultDailyPayoutBps = [3000, 2000, 1200, 900, 700, 600, 500, 400, 400, 300];
-const defaultClassicDailyPointsCap = 2000;
-const defaultShopRedemptionRatePoints = 300;
-const defaultShopRedemptionRateCnpy = 1000000;  // 1 PROOF in uproof (micro-denomination)
-const defaultShopMinRedeemPoints = 300;
-const defaultShopRedeemStepPoints = 300;
-const defaultDailyLoginRewardPoints = [20, 25, 30, 35, 40, 45, 50];
-const defaultDailyLoginBonusBps = 2000;
-
-// KeyForAccount() returns the state database key for an account
-export function KeyForAccount(addr: Uint8Array): Uint8Array {
-    return JoinLenPrefix(accountPrefix, Buffer.from(addr));
-}
-
-// KeyForFeeParams() returns the state database key for governance controlled 'fee parameters'
-export function KeyForFeeParams(): Uint8Array {
-    return JoinLenPrefix(paramsPrefix, Buffer.from('/f/'));
-}
-
-// KeyForFeePool() returns the state database key for governance controlled 'fee parameters'
-export function KeyForFeePool(chainId: Long): Uint8Array {
-    return JoinLenPrefix(poolPrefix, formatUint64(chainId));
-}
-
-export function KeyForGamePlatformPool(): Uint8Array {
-    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(gamePlatformPoolId)));
-}
-
-export function KeyForGameReservePool(): Uint8Array {
-    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(gameReservePoolId)));
-}
-
-export function KeyForGameShopPool(): Uint8Array {
-    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(gameShopPoolId)));
-}
-
-export function KeyForGameDailyRewardPool(): Uint8Array {
-    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(gameDailyRewardPoolId)));
-}
-
-export function KeyForGameMonthlyRewardPool(): Uint8Array {
-    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(gameMonthlyRewardPoolId)));
-}
-
-function KeyForDaoPool(): Uint8Array {
-    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(daoPoolId)));
-}
-
-export function KeyForGameConfig(): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('config'));
-}
-
-export function KeyForGameTreasury(): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('treasury'));
-}
-
-export function KeyForMonthlyLeaderboard(monthId: string, score: Long, gameId: Uint8Array): Uint8Array {
-    const invertedScore = invertUint64(score);
-    return JoinLenPrefix(
-        gamePrefix,
-        Buffer.from('monthly-leaderboard'),
-        Buffer.from(monthId, 'utf8'),
-        invertedScore,
-        gameId
-    );
-}
-
-export function KeyForMonthlyPlayerEntry(monthId: string, playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(
-        gamePrefix,
-        Buffer.from('monthly-player'),
-        Buffer.from(monthId, 'utf8'),
-        playerAddress
-    );
-}
-
-export function KeyForGameSession(gameId: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('session'), Buffer.from(gameId));
-}
-
-export function KeyForDailyAttempt(utcDate: string, playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('daily-attempt'), Buffer.from(utcDate, 'utf8'), Buffer.from(playerAddress));
-}
-
-export function KeyForDailySubmission(utcDate: string, playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('daily-submit'), Buffer.from(utcDate, 'utf8'), Buffer.from(playerAddress));
-}
-
-export function KeyForDailyPrizePool(utcDate: string): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('daily-pool'), Buffer.from(utcDate, 'utf8'));
-}
-
-export function KeyForDailyLeaderboard(
-    utcDate: string,
-    score: Long,
-    maxTile: Long,
-    moveCount: Long,
-    endedAtUnix: Long,
-    gameId: Uint8Array
-): Uint8Array {
-    return JoinLenPrefix(
-        gamePrefix,
-        Buffer.from('daily-leaderboard'),
-        Buffer.from(utcDate, 'utf8'),
-        invertUint64(score),
-        invertUint64(maxTile),
-        formatUint64(moveCount),
-        formatUint64(endedAtUnix),
-        Buffer.from(gameId)
-    );
-}
-
-export function KeyForClassicLeaderboard(score: Long, gameId: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('classic-leaderboard'), invertUint64(score), Buffer.from(gameId));
-}
-
-export function KeyForPlayerStats(playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('player-stats'), Buffer.from(playerAddress));
-}
-
-function calculateClassicPoints(score: number): number {
-    if (score < 64) {
-        return 0;
-    }
-    return Math.min(1000, Math.floor(score / 24));
-}
-
-export function KeyForDailyRewardAllocation(utcDate: string, rank: number, gameId: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('daily-reward'), Buffer.from(utcDate, 'utf8'), formatUint64(Long.fromNumber(rank)), Buffer.from(gameId));
-}
-
-export function KeyForDailyRewardByPlayer(utcDate: string, playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('daily-reward-player'), Buffer.from(playerAddress), Buffer.from(utcDate, 'utf8'));
-}
-
-export function KeyForDailyRewardClaim(utcDate: string, playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('daily-claim'), Buffer.from(utcDate, 'utf8'), Buffer.from(playerAddress));
-}
-
-export function KeyForDailyLoginClaim(utcDate: string, playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('daily-login'), Buffer.from(utcDate, 'utf8'), Buffer.from(playerAddress));
-}
-
-export function KeyForClassicPointsDailyLedger(utcDate: string, playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('classic-points-day'), Buffer.from(utcDate, 'utf8'), Buffer.from(playerAddress));
-}
-
-export function KeyForClassicPointRedemption(playerAddress: Uint8Array, redeemedAtUnix: number, burnPoints: number): Uint8Array {
-    return JoinLenPrefix(
-        gamePrefix,
-        Buffer.from('classic-redeem'),
-        Buffer.from(playerAddress),
-        formatUint64(Long.fromNumber(redeemedAtUnix)),
-        formatUint64(Long.fromNumber(burnPoints))
-    );
-}
-
-export function KeyForClassicPointRedemptionPrefix(playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('classic-redeem'), Buffer.from(playerAddress));
-}
-
-// KeyForUsernameByAddress stores the username for a specific address
-export function KeyForUsernameByAddress(playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('username-addr'), Buffer.from(playerAddress));
-}
-
-// KeyForPlayerIdentity stores the unified identity for a specific address
-export function KeyForPlayerIdentity(playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('player-identity'), Buffer.from(playerAddress));
-}
-
-// KeyForAddressByUsername stores the address that owns a normalized username
-export function KeyForAddressByUsername(normalizedUsername: string): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('username-lookup'), Buffer.from(normalizedUsername.toLowerCase(), 'utf8'));
-}
-
-function formatUint64(u: Long): Buffer {
-    const b = Buffer.alloc(8);
-    b.writeBigUInt64BE(BigInt(u.toString()));
-    return b;
-}
-
-function invertUint64(u: Long): Buffer {
-    const b = Buffer.alloc(8);
-    const max = BigInt('18446744073709551615');
-    b.writeBigUInt64BE(max - BigInt(u.toString()));
-    return b;
-}
-
-function randomQueryId(): Long {
-    return Long.fromNumber(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
-}
-
-// normalizeUsername converts a username to lowercase for case-insensitive uniqueness checks
-function normalizeUsername(username: string): string {
-    return username.toLowerCase();
-}
-
-// validateUsername checks if a username meets the requirements:
-// - 3-20 characters
-// - Alphanumeric + underscore only
-// Returns true if valid, false otherwise
-function validateUsername(username: string): boolean {
-    if (!username || username.length < 3 || username.length > 20) {
-        return false;
-    }
-    // Only allow letters, numbers, and underscore
-    const validPattern = /^[a-zA-Z0-9_]+$/;
-    return validPattern.test(username);
-}
-
-// buffersEqual compares two byte arrays for equality
-function buffersEqual(a: Uint8Array, b: Uint8Array): boolean {
-    if (a.length !== b.length) {
-        return false;
-    }
-    for (let i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getQueryValue(response: any, queryId: Long): Uint8Array | null {
-    for (const resp of response?.results || []) {
-        const qid = resp.queryId as Long;
-        if (qid.equals(queryId)) {
-            return resp.entries?.[0]?.value || null;
-        }
-    }
-    return null;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeBytes(value: any): Uint8Array {
-    if (!value) {
-        return new Uint8Array();
-    }
-    if (value instanceof Uint8Array) {
-        return value;
-    }
-    if (Buffer.isBuffer(value)) {
-        return new Uint8Array(value);
-    }
-    if (Array.isArray(value)) {
-        return Uint8Array.from(value);
-    }
-    if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (!trimmed) {
-            return new Uint8Array();
-        }
-        const hex = trimmed.startsWith('0x') ? trimmed.slice(2) : trimmed;
-        if (hex.length > 0 && hex.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(hex)) {
-            return new Uint8Array(Buffer.from(hex, 'hex'));
-        }
-        try {
-            return new Uint8Array(Buffer.from(trimmed, 'base64'));
-        } catch {
-            return new Uint8Array(Buffer.from(trimmed, 'utf8'));
-        }
-    }
-    if (typeof value === 'object') {
-        // protobufjs sometimes exposes bytes as `{ type: 'Buffer', data: [...] }`
-        if (Array.isArray(value.data)) {
-            return Uint8Array.from(value.data);
-        }
-    }
-    return new Uint8Array();
-}
-
-function deriveDailySeed(chainId: number, utcDate: string): Uint8Array {
-    // NOTE: This is a deterministic scaffold. For production, mix in an explicitly chain-derived
-    // daily entropy source such as a recorded block hash at the UTC boundary.
-    return sha256Bytes('daily-seed', chainId, utcDate);
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function deriveClassicSeed(playerAddress: Uint8Array, tx: any): Uint8Array {
-    return sha256Bytes(
-        'classic-seed',
-        normalizeBytes(playerAddress),
-        toUint64(tx?.createdHeight as Long | number | undefined),
-        toUint64(tx?.time as Long | number | undefined),
-        toUint64(tx?.fee as Long | number | undefined),
-        tx?.memo || ''
-    );
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeMoves(moves: any): number[] {
-    if (!Array.isArray(moves)) {
-        return [];
-    }
-    return moves.map((move) => toUint64(move as Long | number | undefined));
-}
-
-function areMovesValid(moves: number[]): boolean {
-    return moves.every((move) => move >= 1 && move <= 4);
-}
-
-function getConfiguredClassicStartFee(cfg: any): number {
-    const fee = toUint64(cfg?.classicStartFee as Long | number | undefined);
-    if (isLegacyStartFeePair(cfg)) {
-        return defaultClassicStartFee;
-    }
-    return fee > 0 ? fee : defaultClassicStartFee;
-}
-
-function getConfiguredDailyStartFee(cfg: any): number {
-    const fee = toUint64(cfg?.dailyStartFee as Long | number | undefined);
-    if (isLegacyStartFeePair(cfg)) {
-        return defaultDailyStartFee;
-    }
-    return fee > 0 ? fee : defaultDailyStartFee;
-}
-
-function isLegacyStartFeePair(cfg: any): boolean {
-    const classicFee = toUint64(cfg?.classicStartFee as Long | number | undefined);
-    const dailyFee = toUint64(cfg?.dailyStartFee as Long | number | undefined);
-    return classicFee === legacyClassicStartFee && dailyFee === legacyDailyStartFee;
-}
-
-function getConfiguredDailyMaxMoves(cfg: any): number {
-    const maxMoves = toUint64(cfg?.dailyMaxMoves as Long | number | undefined);
-    return maxMoves > 0 ? maxMoves : defaultDailyMaxMoves;
-}
-
-function getConfiguredDailyPlatformFeeBps(cfg: any): number {
-    const value = toUint64(cfg?.dailyPlatformFeeBps as Long | number | undefined);
-    return value > 0 ? value : defaultDailyPlatformFeeBps;
-}
-
-function getConfiguredDailyRewardFeeBps(cfg: any): number {
-    const value = toUint64(cfg?.dailyRewardFeeBps as Long | number | undefined);
-    return value > 0 ? value : defaultDailyRewardFeeBps;
-}
-
-function getConfiguredDailyReserveFeeBps(cfg: any): number {
-    const value = toUint64(cfg?.dailyReserveFeeBps as Long | number | undefined);
-    return value > 0 ? value : defaultDailyReserveFeeBps;
-}
-
-function getConfiguredDailyShopFeeBps(cfg: any): number {
-    const value = toUint64(cfg?.dailyShopFeeBps as Long | number | undefined);
-    return value > 0 ? value : defaultDailyShopFeeBps;
-}
-
-function getConfiguredDailyPayoutBps(cfg: any): number[] {
-    const values = Array.isArray(cfg?.dailyPayoutBps)
-        ? cfg.dailyPayoutBps.map((value: Long | number) => toUint64(value))
-        : [];
-    return values.length > 0 ? values : defaultDailyPayoutBps;
-}
-
-function getConfiguredClassicPlatformFeeBps(cfg: any): number {
-    const value = toUint64(cfg?.classicPlatformFeeBps as Long | number | undefined);
-    return value > 0 ? value : defaultClassicPlatformFeeBps;
-}
-
-// These functions are kept for future config flexibility but currently unused
-// @ts-ignore: Unused but kept for future use
-function getConfiguredClassicReserveFeeBps(cfg: any): number {
-    const value = toUint64(cfg?.classicReserveFeeBps as Long | number | undefined);
-    return value > 0 ? value : defaultClassicReserveFeeBps;
-}
-
-// @ts-ignore: Unused but kept for future use
-function getConfiguredClassicShopFeeBps(cfg: any): number {
-    const value = toUint64(cfg?.classicShopFeeBps as Long | number | undefined);
-    return value > 0 ? value : defaultClassicShopFeeBps;
-}
-
-function getConfiguredClassicDailyPointsCap(cfg: any): number {
-    const value = toUint64(cfg?.classicDailyPointsCap as Long | number | undefined);
-    return value > 0 ? value : defaultClassicDailyPointsCap;
-}
-
-function getConfiguredShopRedemptionRatePoints(cfg: any): number {
-    const value = toUint64(cfg?.shopRedemptionRatePoints as Long | number | undefined);
-    return value > 0 ? value : defaultShopRedemptionRatePoints;
-}
-
-function getConfiguredShopRedemptionRateCnpy(cfg: any): number {
-    const value = toUint64(cfg?.shopRedemptionRateCnpy as Long | number | undefined);
-    return value > 0 ? value : defaultShopRedemptionRateCnpy;
-}
-
-function getConfiguredShopMinRedeemPoints(cfg: any): number {
-    const value = toUint64(cfg?.shopMinRedeemPoints as Long | number | undefined);
-    return value > 0 ? value : defaultShopMinRedeemPoints;
-}
-
-function getConfiguredShopRedeemStepPoints(cfg: any): number {
-    const value = toUint64(cfg?.shopRedeemStepPoints as Long | number | undefined);
-    return value > 0 ? value : defaultShopRedeemStepPoints;
-}
-
-function getConfiguredDailyLoginRewardPoints(cfg: any): number[] {
-    const values = Array.isArray(cfg?.dailyLoginRewardPoints)
-        ? cfg.dailyLoginRewardPoints.map((value: Long | number) => toUint64(value))
-        : [];
-    return values.length > 0 ? values : defaultDailyLoginRewardPoints;
-}
-
-function getConfiguredDailyLoginBonusBps(cfg: any): number {
-    const value = toUint64(cfg?.dailyLoginBonusBps as Long | number | undefined);
-    return value > 0 ? value : defaultDailyLoginBonusBps;
-}
-
-function resolveDailyLoginRewardPoints(cfg: any, streakDay: number): number {
-    const schedule = getConfiguredDailyLoginRewardPoints(cfg);
-    if (schedule.length === 0) {
-        return 0;
-    }
-    const index = Math.max(0, Math.min(schedule.length - 1, streakDay - 1));
-    return schedule[index];
-}
-
-function calculateRedeemPayout(burnPoints: number, ratePoints: number, rateCnpy: number): number {
-    if (burnPoints <= 0 || ratePoints <= 0 || rateCnpy <= 0) {
-        return 0;
-    }
-    return Math.floor((burnPoints * rateCnpy) / ratePoints);
-}
-
-function calculateBonusPoints(basePoints: number, bonusBps: number): number {
-    if (basePoints <= 0 || bonusBps <= 0) {
-        return 0;
-    }
-    return Math.floor((basePoints * bonusBps) / 10000);
-}
-
-function calculateBpsAmount(amount: Long, bps: number): Long {
-    if (bps <= 0) {
-        return Long.ZERO;
-    }
-    return amount.multiply(bps).divide(10000);
-}
-
-function splitDailyFee(amount: Long, cfg: any): { platform: Long; daily: Long; reserve: Long; shop: Long } {
-    const platformBps = getConfiguredDailyPlatformFeeBps(cfg);
-    const dailyBps = getConfiguredDailyRewardFeeBps(cfg);
-    const reserveBps = getConfiguredDailyReserveFeeBps(cfg);
-    const shopBps = getConfiguredDailyShopFeeBps(cfg);
-    const platform = calculateBpsAmount(amount, platformBps);
-    const daily = calculateBpsAmount(amount, dailyBps);
-    const reserve = calculateBpsAmount(amount, reserveBps);
-    const shop = platformBps + dailyBps + reserveBps + shopBps === 10000
-        ? calculateBpsAmount(amount, shopBps)
-        : amount.subtract(platform).subtract(daily).subtract(reserve);
-    return { platform, daily, reserve, shop };
-}
-
-function splitClassicFee(amount: Long, cfg: any): { platform: Long; monthly: Long; reserve: Long; shop: Long } {
-    const platformBps = getConfiguredClassicPlatformFeeBps(cfg);  // 5%
-    const monthlyBps = 3000;  // 30% for monthly pool
-    const reserveBps = 2000;  // 20% (reduced from 45%)
-    const shopBps = 4500;     // 45% (reduced from 50%)
-    
-    const platform = calculateBpsAmount(amount, platformBps);
-    const monthly = calculateBpsAmount(amount, monthlyBps);
-    const reserve = calculateBpsAmount(amount, reserveBps);
-    const shop = platformBps + monthlyBps + reserveBps + shopBps === 10000
-        ? calculateBpsAmount(amount, shopBps)
-        : amount.subtract(platform).subtract(monthly).subtract(reserve);
-    
-    return { platform, monthly, reserve, shop };
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeGameTreasury(treasury: any) {
-    return {
-        platformBalance: toUint64(treasury?.platformBalance as Long | number | undefined),
-        reserveBalance: toUint64(treasury?.reserveBalance as Long | number | undefined),
-        shopBalance: toUint64(treasury?.shopBalance as Long | number | undefined),
-        updatedAtUnix: toUint64(treasury?.updatedAtUnix as Long | number | undefined)
-    };
-}
-
-function hasUtcDayEnded(utcDate: string, nowMicros: number): boolean {
-    if (!utcDate) {
-        return false;
-    }
-    const endMillis = Date.parse(`${utcDate}T00:00:00.000Z`) + 24 * 60 * 60 * 1000;
-    return nowMicros >= endMillis * 1000;
-}
-
-function utcDateFromMicros(nowMicros: number): string {
-    if (nowMicros <= 0) {
-        return new Date().toISOString().slice(0, 10);
-    }
-    return new Date(Math.floor(nowMicros / 1000)).toISOString().slice(0, 10);
-}
-
-function utcMonthFromMicros(nowMicros: number): string {
-    if (nowMicros <= 0) {
-        const now = new Date();
-        const year = now.getUTCFullYear();
-        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-        return `${year}-${month}`;
-    }
-    const date = new Date(Math.floor(nowMicros / 1000));
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-}
-
-function previousUtcDate(utcDate: string): string {
-    const baseMillis = Date.parse(`${utcDate}T00:00:00.000Z`);
-    if (Number.isNaN(baseMillis)) {
-        return '';
-    }
-    return new Date(baseMillis - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
-
-async function finalizeDailyRewardPoolIfNeeded(
-    contract: Contract,
-    utcDate: string,
-    nowMicros: number
-): Promise<IPluginError | null> {
-    const poolQueryId = randomQueryId();
-    const configQueryId = randomQueryId();
-    const [response, readErr] = await contract.plugin.StateRead(contract, {
-        keys: [
-            { queryId: poolQueryId, key: KeyForDailyPrizePool(utcDate) },
-            { queryId: configQueryId, key: KeyForGameConfig() }
-        ]
-    });
-    if (readErr) {
-        return readErr;
-    }
-    if (response?.error) {
-        return response.error;
-    }
-
-    const poolBytes = getQueryValue(response, poolQueryId);
-    if (!poolBytes || poolBytes.length === 0) {
-        return ErrDailyPrizePoolNotFound();
-    }
-    const configBytes = getQueryValue(response, configQueryId);
-    const [gameConfig] = decodeGame2048State('GameConfig', configBytes || new Uint8Array());
-    const [dailyPool] = decodeGame2048State('DailyPrizePool', poolBytes);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cfg = (gameConfig as any) || {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pool = (dailyPool as any) || {};
-
-    if (pool.finalized) {
-        return null;
-    }
-    if (!hasUtcDayEnded(utcDate, nowMicros)) {
-        return ErrDailyRewardDayNotClaimable();
-    }
-
-    const payoutBps = getConfiguredDailyPayoutBps(cfg);
-    const rewardPool = Long.fromNumber(toUint64(pool.rewardPool as Long | number | undefined));
-    const sets: Array<{ key: Uint8Array; value: Uint8Array }> = [];
-    const [summary, summaryErr] = await loadDailyRewardFinalizationSummary(contract, utcDate, rewardPool, payoutBps);
-    if (summaryErr) {
-        return summaryErr;
-    }
-
-    summary.allocations.forEach((allocation) => {
-        const allocationValue = encodeGame2048State('DailyRewardAllocation', allocation);
-        sets.push({
-            key: KeyForDailyRewardAllocation(
-                utcDate,
-                toUint64(allocation.rank as Long | number | undefined),
-                normalizeBytes(allocation.gameId)
-            ),
-            value: allocationValue
-        });
-        sets.push({
-            key: KeyForDailyRewardByPlayer(utcDate, normalizeBytes(allocation.playerAddress)),
-            value: allocationValue
-        });
-    });
-
-    const updatedPool = encodeGame2048State('DailyPrizePool', {
-        utcDate,
-        entryCount: toUint64(pool.entryCount as Long | number | undefined),
-        grossFees: toUint64(pool.grossFees as Long | number | undefined),
-        treasuryFees: toUint64(pool.treasuryFees as Long | number | undefined),
-        rewardPool: rewardPool.toNumber(),
-        finalized: true,
-        finalizedAtUnix: nowMicros,
-        distributedRewards: summary.distributed.toNumber(),
-        treasuryLeftover: summary.leftover.toNumber()
-    });
-    sets.push({ key: KeyForDailyPrizePool(utcDate), value: updatedPool });
-
-    const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, { sets });
-    if (writeErr) {
-        return writeErr;
-    }
-    if (writeResp?.error) {
-        return writeResp.error;
-    }
-    return null;
-}
-
-type DailyRewardAllocationRecord = {
-    utcDate: string;
-    playerAddress: Uint8Array;
-    gameId: Uint8Array;
-    rank: number;
-    rewardAmount: number;
-    score: number;
-    maxTile: number;
-    moveCount: number;
-    endedAtUnix: number;
-};
-
-type DailyRewardFinalizationSummary = {
-    allocations: DailyRewardAllocationRecord[];
-    distributed: Long;
-    leftover: Long;
-};
-
-async function loadDailyRewardFinalizationSummary(
-    contract: Contract,
-    utcDate: string,
-    rewardPool: Long,
-    payoutBps: number[]
-): Promise<[DailyRewardFinalizationSummary, IPluginError | null]> {
-    const leaderboardPrefix = JoinLenPrefix(gamePrefix, Buffer.from('daily-leaderboard'), Buffer.from(utcDate, 'utf8'));
-    const [iterResp, iterErr] = await contract.plugin.StateRead(contract, {
-        ranges: [
-            {
-                prefix: leaderboardPrefix,
-                limit: payoutBps.length
-            }
-        ]
-    });
-    if (iterErr) {
-        return [{ allocations: [], distributed: Long.ZERO, leftover: rewardPool }, iterErr];
-    }
-    if (iterResp?.error) {
-        return [{ allocations: [], distributed: Long.ZERO, leftover: rewardPool }, iterResp.error];
-    }
-
-    let distributed = Long.ZERO;
-    const allocations: DailyRewardAllocationRecord[] = [];
-    const entries = (iterResp?.results?.[0]?.entries || []).slice(0, payoutBps.length);
-    const usedPayoutBps = payoutBps.slice(0, entries.length);
-    const usedPayoutBpsTotal = usedPayoutBps.reduce((sum, bps) => sum + bps, 0);
-    entries.forEach((entry: any, index: number) => {
-        const [leaderboardEntry] = decodeGame2048State('LeaderboardEntry', entry.value || new Uint8Array());
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const boardEntry = (leaderboardEntry as any) || {};
-        const rewardAmount = index === entries.length - 1
-            ? rewardPool.subtract(distributed)
-            : calculateRenormalizedBpsAmount(
-                rewardPool,
-                usedPayoutBps[index] || 0,
-                usedPayoutBpsTotal
-            );
-        distributed = distributed.add(rewardAmount);
-        allocations.push({
-            utcDate,
-            playerAddress: normalizeBytes(boardEntry.playerAddress),
-            gameId: normalizeBytes(boardEntry.gameId),
-            rank: index + 1,
-            rewardAmount: rewardAmount.toNumber(),
-            score: toUint64(boardEntry.score as Long | number | undefined),
-            maxTile: toUint64(boardEntry.maxTile as Long | number | undefined),
-            moveCount: toUint64(boardEntry.moveCount as Long | number | undefined),
-            endedAtUnix: toUint64(boardEntry.endedAtUnix as Long | number | undefined)
-        });
-    });
-
-    const leftover = rewardPool.greaterThan(distributed) ? rewardPool.subtract(distributed) : Long.ZERO;
-    return [{ allocations, distributed, leftover }, null];
-}
-
-function calculateRenormalizedBpsAmount(total: Long, rankBps: number, usedTotalBps: number): Long {
-    if (rankBps <= 0 || usedTotalBps <= 0) {
-        return Long.ZERO;
-    }
-    return total
-        .multiply(Long.fromNumber(rankBps))
-        .divide(Long.fromNumber(usedTotalBps));
 }

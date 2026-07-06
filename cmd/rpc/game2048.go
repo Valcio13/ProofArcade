@@ -1686,24 +1686,10 @@ func loadGame2048Redemptions(state *fsm.StateMachine, address []byte) (game2048R
 			return response, decodeErr
 		}
 		redeemedAtUnix := uint64Field(message, "redeemed_at_unix", 0)
-		txHash := stringField(message, "tx_hash", "")
-
-		// DEBUG: Log what we're reading from state
-		fmt.Printf("=== BACKEND READ REDEMPTION ===\n")
-		fmt.Printf("redeemed_at=%d\n", redeemedAtUnix)
-		fmt.Printf("tx_hash=%s\n", txHash)
-		fmt.Printf("tx_hash_len=%d\n", len(txHash))
-		fmt.Printf("tx_hash_type=%T\n", txHash)
-
-		// Check field descriptor
-		field := message.Descriptor().Fields().ByName("tx_hash")
-		if field != nil {
-			fmt.Printf("proto_field_kind=%v\n", field.Kind())
-			fmt.Printf("proto_field_has=%v\n", message.Has(field))
-			rawValue := message.Get(field)
-			fmt.Printf("proto_raw_value_type=%T\n", rawValue.Interface())
-		}
-		fmt.Printf("=== END BACKEND READ ===\n")
+		
+		// Get tx_hash as bytes and convert to hex string
+		txHashBytes := bytesField(message, "tx_hash")
+		txHash := hex.EncodeToString(txHashBytes)
 
 		response.Redemptions = append(response.Redemptions, game2048RedemptionHistoryEntry{
 			BurnPoints:     uint64Field(message, "burn_points", 0),

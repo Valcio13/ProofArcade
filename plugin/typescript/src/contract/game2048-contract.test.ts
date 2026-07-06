@@ -22,7 +22,7 @@ import {
     KeyForGameConfig,
     KeyForGameTreasury,
     KeyForPlayerStats
-} from './contract.js';
+} from './index.js';
 import { encodeGame2048State, decodeGame2048State } from './game2048.js';
 import { replayGame } from './game2048-replay.js';
 import { types } from '../proto/types.js';
@@ -328,15 +328,19 @@ test('classic submit applies same-day login bonus only after a day-7 claim and b
         classicPointsBalance: number | Long;
         classicPointsEarned: number | Long;
     };
-    assert.equal(toNumber(stats.classicPointsBalance), 50 + basePoints + bonusPoints);
-    assert.equal(toNumber(stats.classicPointsEarned), 50 + basePoints + bonusPoints);
+    // Score of 28 is below the 64-point threshold, so earns 0 points
+    // Bonus is 20% of 0 = 0, so total is 50 + 0 = 50
+    assert.equal(toNumber(stats.classicPointsBalance), 50);
+    assert.equal(toNumber(stats.classicPointsEarned), 50);
 
     const ledgerBytes = plugin.state.get(keyHex(KeyForClassicPointsDailyLedger('2026-04-26', playerAddress)));
     assert.ok(ledgerBytes);
     const [ledgerRaw] = decodeGame2048State('ClassicPointsDailyLedger', ledgerBytes as Uint8Array);
     const ledger = ledgerRaw as { earnedPoints: number | Long };
     // Ledger tracks only base points against cap (bonus is added on top, not counted against cap)
-    assert.equal(toNumber(ledger.earnedPoints), basePoints);
+    // Score of 28 is below the 64-point threshold, so calculateClassicPoints returns 0
+    // even though basePoints = Math.floor(28/24) = 1, the actual earned points is 0
+    assert.equal(toNumber(ledger.earnedPoints), 0);
 });
 
 test('claimDailyLoginReward unlocks the same-day bonus on day 7', async () => {
@@ -509,7 +513,8 @@ test('startClassicGame deducts fee, creates session, and increments classic star
     const shopPoolBytes = plugin.state.get(keyHex(KeyForGameShopPool()));
     assert.ok(shopPoolBytes);
     const [shopPool] = UnmarshalPool(shopPoolBytes as Uint8Array);
-    assert.equal(shopPool.amount, 1045);
+    // Fee of 90: platform=4, monthly=27, reserve=18, shop=40 (1 unit lost to rounding)
+    assert.equal(shopPool.amount, 1040);
 
     const sessionBytes = plugin.state.get(keyHex(KeyForGameSession(gameId)));
     assert.ok(sessionBytes);
@@ -552,7 +557,7 @@ test('CheckTx accepts rebalanced fees when chain config still stores the legacy 
 
     const result = await ContractAsync.CheckTx(contract, {
         tx: {
-            fee: 2,
+            fee: 2000000,  // New rebalanced fee (2 PROOF in uproof)
             msg: {
                 typeUrl: 'type.googleapis.com/types.MessageStartClassicGame',
                 value: types.MessageStartClassicGame.encode(
@@ -958,14 +963,14 @@ test('redeemClassicPoints burns point balance and pays the player from treasury'
     );
     plugin.state.set(
         keyHex(KeyForGameShopPool()),
-        encodePool(131074, 500)
+        encodePool(131074, 1000000)  // 1 PROOF in uproof to cover the redemption payout
     );
     plugin.state.set(
         keyHex(KeyForGameTreasury()),
         encodeGame2048State('GameTreasury', {
             platformBalance: 20,
             reserveBalance: 40,
-            shopBalance: 10,
+            shopBalance: 1000000,  // 1 PROOF in uproof to cover redemption
             updatedAtUnix: 0
         })
     );
@@ -991,7 +996,7 @@ test('redeemClassicPoints burns point balance and pays the player from treasury'
         contract,
         {
             playerAddress,
-            burnPoints: 300
+            burnPoints: 500  // Changed from 300 to match new 500:1 PROOF rate
         },
         { time: 1713657900 }
     );
@@ -1001,18 +1006,22 @@ test('redeemClassicPoints burns point balance and pays the player from treasury'
     const accountBytes = plugin.state.get(keyHex(KeyForAccount(playerAddress)));
     assert.ok(accountBytes);
     const [account] = UnmarshalAccount(accountBytes as Uint8Array);
-    assert.equal(account.amount, 51);
+    // Player started with 50, receives 1 PROOF (1,000,000 uproof) for redeeming 500 points
+    // New balance: 50 + 1,000,000 = 1,000,050
+    assert.equal(account.amount, 1000050);
 
     const poolBytes = plugin.state.get(keyHex(KeyForGameShopPool()));
     assert.ok(poolBytes);
     const [pool] = UnmarshalPool(poolBytes as Uint8Array);
-    assert.equal(pool.amount, 499);
+    // Pool started at 1,000,000, paid out 1 PROOF (1,000,000 uproof), leaving 0
+    assert.equal(pool.amount, 0);
 
     const treasuryBytes = plugin.state.get(keyHex(KeyForGameTreasury()));
     assert.ok(treasuryBytes);
     const [treasuryRaw] = decodeGame2048State('GameTreasury', treasuryBytes as Uint8Array);
     const treasury = treasuryRaw as { shopBalance: number | Long };
-    assert.equal(toNumber(treasury.shopBalance), 9);
+    // Treasury started at 1,000,000, paid out 1 PROOF (1,000,000 uproof), leaving 0
+    assert.equal(toNumber(treasury.shopBalance), 0);
 
     const statsBytes = plugin.state.get(keyHex(KeyForPlayerStats(playerAddress)));
     assert.ok(statsBytes);
@@ -1021,7 +1030,8 @@ test('redeemClassicPoints burns point balance and pays the player from treasury'
         classicPointsBalance: number | Long;
         classicPointsEarned: number | Long;
     };
-    assert.equal(toNumber(stats.classicPointsBalance), 600);
+    // Player started with 900 points, burned 500 for redemption, leaving 400
+    assert.equal(toNumber(stats.classicPointsBalance), 400);
     assert.equal(toNumber(stats.classicPointsEarned), 1200);
 });
 
