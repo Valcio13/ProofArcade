@@ -333,7 +333,7 @@ export default function AdminPage() {
               </Link>
 
               <Link
-                to="/admin"
+                to="/admin/competitions"
                 className="rounded-xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-center space-x-3">
