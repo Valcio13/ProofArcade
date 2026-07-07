@@ -34,10 +34,12 @@ const Play2048Page = lazy(() => import('./pages/Play2048'))
 const PlaytestPage = lazy(() => import('./pages/Playtest'))
 const LeaderboardPage = lazy(() => import('./pages/Leaderboard'))
 const AdminPage = lazy(() => import('./pages/Admin'))
+const AdminLoginPage = lazy(() => import('./pages/AdminLogin'))
 const AdminEconomyPage = lazy(() => import('./pages/AdminEconomy'))
 const AdminCompetitionsPage = lazy(() => import('./pages/AdminCompetitions'))
 const AdminPlayersPage = lazy(() => import('./pages/AdminPlayers'))
 const AdminShopPage = lazy(() => import('./pages/AdminShop'))
+const AdminProtectedRoute = lazy(() => import('./components/admin/AdminProtectedRoute'))
 
 function RouteFallback() {
   return (
@@ -85,11 +87,12 @@ function AnimatedRoutes() {
           <Route path="/play" element={<Play2048Page />} />
           <Route path="/playtest" element={<PlaytestPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/admin/economy" element={<AdminEconomyPage />} />
-          <Route path="/admin/competitions" element={<AdminCompetitionsPage />} />
-          <Route path="/admin/players" element={<AdminPlayersPage />} />
-          <Route path="/admin/shop" element={<AdminShopPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin" element={<AdminProtectedRoute><AdminPage /></AdminProtectedRoute>} />
+          <Route path="/admin/economy" element={<AdminProtectedRoute><AdminEconomyPage /></AdminProtectedRoute>} />
+          <Route path="/admin/competitions" element={<AdminProtectedRoute><AdminCompetitionsPage /></AdminProtectedRoute>} />
+          <Route path="/admin/players" element={<AdminProtectedRoute><AdminPlayersPage /></AdminProtectedRoute>} />
+          <Route path="/admin/shop" element={<AdminProtectedRoute><AdminShopPage /></AdminProtectedRoute>} />
           <Route path="/orders" element={<ExplorerHomePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

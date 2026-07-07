@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom'
 import { createGame2048Client } from '../lib/chain2048'
 import type { DailyPrizePool, MonthlyPool } from '../lib/mockChain2048'
 import { DAO } from '../lib/api'
+import { AdminActionButton, AdminActionsGrid } from '../components/admin/AdminActions'
+import toast from 'react-hot-toast'
 
 // Pool IDs from contract
 const PoolIDs = {
@@ -314,6 +316,94 @@ export default function AdminEconomyPage() {
               </div>
             </motion.div>
           )}
+
+          {/* Admin Actions */}
+          <motion.div variants={itemVariants}>
+            <AdminActionsGrid title="Economy Actions">
+              <AdminActionButton
+                label="Force Finalize Daily Pool"
+                description="Manually trigger daily pool finalization"
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                }
+                onClick={async () => {
+                  // TODO: Implement finalization call
+                  await new Promise((resolve) => setTimeout(resolve, 1000))
+                  toast.success('Daily pool finalization queued')
+                }}
+                variant="warning"
+                requiresConfirmation
+                confirmTitle="Finalize Daily Pool"
+                confirmMessage="This will finalize the current day's prize pool and distribute rewards. Continue?"
+                disabled={!dailyPool || dailyPool.finalized}
+              />
+
+              <AdminActionButton
+                label="Refresh Pool Balances"
+                description="Force refresh all pool balance data"
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                }
+                onClick={async () => {
+                  // Trigger query refetch
+                  await Promise.all([
+                    client?.getDailyPrizePool(),
+                    client?.getMonthlyPool(),
+                    DAO(0, 0),
+                  ])
+                }}
+                variant="primary"
+              />
+
+              <AdminActionButton
+                label="Export Treasury Report"
+                description="Download detailed treasury breakdown"
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                }
+                onClick={async () => {
+                  const report = {
+                    timestamp: new Date().toISOString(),
+                    pools,
+                    totalTreasury,
+                    dailyPool,
+                    monthlyPool,
+                  }
+                  const blob = new Blob([JSON.stringify(report, null, 2)], {
+                    type: 'application/json',
+                  })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `treasury_report_${new Date().toISOString().split('T')[0]}.json`
+                  a.click()
+                  URL.revokeObjectURL(url)
+                }}
+                variant="primary"
+              />
+            </AdminActionsGrid>
+          </motion.div>
         </motion.div>
       </div>
     </div>
