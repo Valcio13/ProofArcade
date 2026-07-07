@@ -37,6 +37,7 @@ const AdminPage = lazy(() => import('./pages/Admin'))
 const AdminEconomyPage = lazy(() => import('./pages/AdminEconomy'))
 const AdminCompetitionsPage = lazy(() => import('./pages/AdminCompetitions'))
 const AdminPlayersPage = lazy(() => import('./pages/AdminPlayers'))
+const AdminShopPage = lazy(() => import('./pages/AdminShop'))
 
 function RouteFallback() {
   return (
@@ -88,6 +89,7 @@ function AnimatedRoutes() {
           <Route path="/admin/economy" element={<AdminEconomyPage />} />
           <Route path="/admin/competitions" element={<AdminCompetitionsPage />} />
           <Route path="/admin/players" element={<AdminPlayersPage />} />
+          <Route path="/admin/shop" element={<AdminShopPage />} />
           <Route path="/orders" element={<ExplorerHomePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
