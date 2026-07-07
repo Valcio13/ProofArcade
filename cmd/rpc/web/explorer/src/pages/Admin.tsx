@@ -205,7 +205,7 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm text-slate-400">Latest Block</p>
                   <p className="mt-1 text-2xl font-bold text-white">
-                    {blocksData?.blocks[0]?.height || 'Loading...'}
+                    {blocksData?.blocks?.[0]?.height || blocksData?.blocks?.[0]?.blockHeader?.height || 'Loading...'}
                   </p>
                 </div>
                 <div>
