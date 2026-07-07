@@ -316,7 +316,7 @@ export default function AdminPage() {
             <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Link
-                to="/admin"
+                to="/admin/economy"
                 className="rounded-xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-center space-x-3">
