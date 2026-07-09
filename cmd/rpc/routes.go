@@ -124,6 +124,8 @@ const (
 	LogsRoutePath                = "/v1/admin/log"
 	AddVoteRoutePath             = "/v1/gov/add-vote"
 	DelVoteRoutePath             = "/v1/gov/del-vote"
+	AdminVerifyRoutePath         = "/v1/admin/verify"
+	AdminConfigRoutePath         = "/v1/admin/admin-config"
 )
 
 const (
@@ -247,6 +249,8 @@ const (
 	AddVoteRouteName                = "add-vote"
 	DelVoteRouteName                = "del-vote"
 	SubscribeRCInfoName             = "subscribe-rc-info"
+	AdminVerifyRouteName            = "admin-verify"
+	AdminConfigRouteName            = "admin-config"
 )
 
 // routes contains the method and path for a canopy command
@@ -372,6 +376,8 @@ var routePaths = routes{
 	AddVoteRouteName:                {Method: http.MethodPost, Path: AddVoteRoutePath},
 	DelVoteRouteName:                {Method: http.MethodPost, Path: DelVoteRoutePath},
 	SubscribeRCInfoName:             {Method: http.MethodGet, Path: SubscribeRCInfoPath},
+	AdminVerifyRouteName:            {Method: http.MethodPost, Path: AdminVerifyRoutePath},
+	AdminConfigRouteName:            {Method: http.MethodGet, Path: AdminConfigRoutePath},
 }
 
 // httpRouteHandlers is a custom type that maps strings to httprouter handle functions
@@ -512,6 +518,8 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		LogsRouteName:                   logsHandler(s),
 		AddVoteRouteName:                s.AddVote,
 		DelVoteRouteName:                s.DelVote,
+		AdminVerifyRouteName:            s.AdminVerify,
+		AdminConfigRouteName:            s.AdminConfig,
 	}
 
 	// Initialize a new router using the httprouter package.
@@ -521,8 +529,14 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		// Retrieve the path configuration for the current route name.
 		path := routePaths[name]
 
+		// Wrap admin routes with authentication middleware (except verify and config endpoints)
+		wrappedHandler := handler
+		if name != AdminVerifyRouteName && name != AdminConfigRouteName {
+			wrappedHandler = s.AdminAuthMiddleware(handler)
+		}
+
 		// Add the handler for the specific path and HTTP method to the router.
-		router.Handle(path.Method, path.Path, logHandler{path.Path, handler}.Handle)
+		router.Handle(path.Method, path.Path, logHandler{path.Path, wrappedHandler}.Handle)
 	}
 
 	return router

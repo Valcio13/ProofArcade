@@ -60,11 +60,22 @@ type Server struct {
 	// handles the indexer blob caching
 	indexerBlobCache *indexerBlobCache
 
+	// admin authentication configuration
+	adminConfig *AdminAuthConfig
+
 	logger lib.LoggerI
 }
 
 // NewServer constructs and returns a new Canopy RPC server
 func NewServer(controller *controller.Controller, config lib.Config, logger lib.LoggerI) *Server {
+	// Load admin configuration
+	adminConfig := LoadAdminConfig(config.DataDirPath)
+	if adminConfig.Enabled {
+		logger.Infof("Admin authentication enabled with %d authorized address(es)", len(adminConfig.AdminAddresses))
+	} else {
+		logger.Warn("Admin authentication is DISABLED - all admin endpoints are publicly accessible")
+	}
+
 	return &Server{
 		controller:       controller,
 		config:           config,
@@ -73,6 +84,7 @@ func NewServer(controller *controller.Controller, config lib.Config, logger lib.
 		poll:             make(fsm.Poll),
 		pollMux:          &sync.RWMutex{},
 		indexerBlobCache: newIndexerBlobCache(100),
+		adminConfig:      adminConfig,
 	}
 }
 
