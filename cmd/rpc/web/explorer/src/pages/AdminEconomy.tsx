@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { createGame2048Client } from '../lib/chain2048'
 import type { DailyPrizePool, MonthlyPool } from '../lib/mockChain2048'
-import { DAO } from '../lib/api'
+import { DAO, Pool } from '../lib/api'
 import { AdminActionButton, AdminActionsGrid } from '../components/admin/AdminActions'
 import toast from 'react-hot-toast'
 
@@ -50,6 +50,27 @@ export default function AdminEconomyPage() {
   const { data: daoPoolData } = useQuery({
     queryKey: ['dao-pool'],
     queryFn: () => DAO(0, 0),
+    enabled: true,
+  })
+
+  // Fetch Shop pool
+  const { data: shopPoolData } = useQuery({
+    queryKey: ['shop-pool'],
+    queryFn: () => Pool(0, PoolIDs.SHOP),
+    enabled: true,
+  })
+
+  // Fetch Reserve pool
+  const { data: reservePoolData } = useQuery({
+    queryKey: ['reserve-pool'],
+    queryFn: () => Pool(0, PoolIDs.RESERVE),
+    enabled: true,
+  })
+
+  // Fetch Platform pool
+  const { data: platformPoolData } = useQuery({
+    queryKey: ['platform-pool'],
+    queryFn: () => Pool(0, PoolIDs.PLATFORM),
     enabled: true,
   })
 
@@ -104,19 +125,19 @@ export default function AdminEconomyPage() {
     {
       id: PoolIDs.SHOP,
       name: 'Shop Pool',
-      balance: 0, // TODO: Need API endpoint
+      balance: shopPoolData?.data?.amount || 0,
       description: 'Point redemption funding',
     },
     {
       id: PoolIDs.RESERVE,
       name: 'Reserve Pool',
-      balance: 0, // TODO: Need API endpoint
+      balance: reservePoolData?.data?.amount || 0,
       description: 'Safety buffer and contingency',
     },
     {
       id: PoolIDs.PLATFORM,
       name: 'Platform Pool',
-      balance: 0, // TODO: Need API endpoint
+      balance: platformPoolData?.data?.amount || 0,
       description: 'Platform revenue',
     },
   ]

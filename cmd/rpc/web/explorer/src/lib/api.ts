@@ -799,6 +799,11 @@ export function DAO(height: number, _: number) {
     return POST(rpcURL, heightAndIDRequest(height, DAO_POOL_ID), poolPath);
 }
 
+// Pool returns a Pool structure for a specific ID
+export function Pool(height: number, poolId: number) {
+    return POST(rpcURL, heightAndIDRequest(height, poolId), poolPath);
+}
+
 export function Account(height: number, address: string) {
     return POST(rpcURL, heightAndAddrRequest(height, address), accountPath);
 }
