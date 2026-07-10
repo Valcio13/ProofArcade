@@ -107,7 +107,7 @@ export default function AdminEconomyPage() {
     {
       id: PoolIDs.DAO,
       name: 'DAO Pool',
-      balance: daoPoolData?.data?.amount || 0,
+      balance: daoPoolData?.data?.amount || daoPoolData?.amount || 0,
       description: 'Community governance treasury',
     },
     {
@@ -125,19 +125,19 @@ export default function AdminEconomyPage() {
     {
       id: PoolIDs.SHOP,
       name: 'Shop Pool',
-      balance: shopPoolData?.data?.amount || 0,
+      balance: shopPoolData?.amount || 0,
       description: 'Point redemption funding',
     },
     {
       id: PoolIDs.RESERVE,
       name: 'Reserve Pool',
-      balance: reservePoolData?.data?.amount || 0,
+      balance: reservePoolData?.amount || 0,
       description: 'Safety buffer and contingency',
     },
     {
       id: PoolIDs.PLATFORM,
       name: 'Platform Pool',
-      balance: platformPoolData?.data?.amount || 0,
+      balance: platformPoolData?.amount || 0,
       description: 'Platform revenue',
     },
   ]
