@@ -205,13 +205,21 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm text-slate-400">Latest Block</p>
                   <p className="mt-1 text-2xl font-bold text-white">
-                    {blocksData?.blocks?.[0]?.height || blocksData?.blocks?.[0]?.blockHeader?.height || 'Loading...'}
+                    {(() => {
+                      const blocks = blocksData?.results || blocksData?.blocks || blocksData?.list || []
+                      const latestBlock = Array.isArray(blocks) && blocks.length > 0 ? blocks[0] : null
+                      return latestBlock?.blockHeader?.height || latestBlock?.height || 'Loading...'
+                    })()}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">Total Transactions</p>
                   <p className="mt-1 text-2xl font-bold text-white">
-                    {blocksData?.totalTxCount || 'Loading...'}
+                    {(() => {
+                      const blocks = blocksData?.results || blocksData?.blocks || blocksData?.list || []
+                      const latestBlock = Array.isArray(blocks) && blocks.length > 0 ? blocks[0] : null
+                      return latestBlock?.blockHeader?.totalTxs || blocksData?.totalCount || 'Loading...'
+                    })()}
                   </p>
                 </div>
                 <div>
