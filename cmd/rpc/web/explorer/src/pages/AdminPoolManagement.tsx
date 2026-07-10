@@ -209,28 +209,6 @@ export default function AdminPoolManagementPage() {
 
       const data = await response.json()
 
-      if (response.status === 501) {
-        // Not Implemented - show helpful message
-        toast.error(
-          'Pool transfers require additional contract implementation. This feature is planned for a future update.',
-          { duration: 5000 }
-        )
-        
-        const entry: AuditLogEntry = {
-          timestamp: new Date(),
-          operation: 'Transfer',
-          fromPool: PoolNames[transferModal.fromPoolId],
-          toPool: PoolNames[transferModal.toPoolId],
-          amount: amountMicro,
-          adminAddress: adminAddress,
-          status: 'error',
-          message: 'Feature not yet implemented',
-        }
-        setAuditLog([entry, ...auditLog])
-        handleCloseTransferModal()
-        return
-      }
-
       if (!response.ok || !data.success) {
         throw new Error(data.message || 'Transfer failed')
       }
@@ -324,15 +302,15 @@ export default function AdminPoolManagementPage() {
           <p className="text-slate-400 text-lg">
             View pool balances and manage fund transfers
           </p>
-          <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4">
+          <div className="mt-4 rounded-lg border border-green-500/20 bg-green-500/10 p-4">
             <div className="flex items-start gap-3">
-              <svg className="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <svg className="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-amber-400 mb-1">Backend Partially Implemented</h3>
-                <p className="text-sm text-amber-300/80">
-                  The backend endpoint exists and validates pool transfers, but the actual transaction execution requires additional contract-level implementation. Pool balance queries work correctly. Transfers will return a "Not Implemented" response until the contract handler is added.
+                <h3 className="text-sm font-semibold text-green-400 mb-1">Fully Operational</h3>
+                <p className="text-sm text-green-300/80">
+                  Pool management is fully implemented with live blockchain integration. Pool transfers create on-chain transactions that are processed by the contract. All pool balances are queried from the blockchain state. Please use caution when transferring funds.
                 </p>
               </div>
             </div>

@@ -3175,6 +3175,332 @@ $root.types = (function() {
         return MessageSetUsername;
     })();
 
+    types.MessagePoolTransfer = (function() {
+
+        /**
+         * Properties of a MessagePoolTransfer.
+         * @memberof types
+         * @interface IMessagePoolTransfer
+         * @property {number|Long|null} [fromPoolId] MessagePoolTransfer fromPoolId
+         * @property {number|Long|null} [toPoolId] MessagePoolTransfer toPoolId
+         * @property {number|Long|null} [amount] MessagePoolTransfer amount
+         * @property {Uint8Array|null} [adminAddress] MessagePoolTransfer adminAddress
+         */
+
+        /**
+         * Constructs a new MessagePoolTransfer.
+         * @memberof types
+         * @classdesc Represents a MessagePoolTransfer.
+         * @implements IMessagePoolTransfer
+         * @constructor
+         * @param {types.IMessagePoolTransfer=} [properties] Properties to set
+         */
+        function MessagePoolTransfer(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessagePoolTransfer fromPoolId.
+         * @member {number|Long} fromPoolId
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         */
+        MessagePoolTransfer.prototype.fromPoolId = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolTransfer toPoolId.
+         * @member {number|Long} toPoolId
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         */
+        MessagePoolTransfer.prototype.toPoolId = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolTransfer amount.
+         * @member {number|Long} amount
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         */
+        MessagePoolTransfer.prototype.amount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolTransfer adminAddress.
+         * @member {Uint8Array} adminAddress
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         */
+        MessagePoolTransfer.prototype.adminAddress = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessagePoolTransfer instance using the specified properties.
+         * @function create
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {types.IMessagePoolTransfer=} [properties] Properties to set
+         * @returns {types.MessagePoolTransfer} MessagePoolTransfer instance
+         */
+        MessagePoolTransfer.create = function create(properties) {
+            return new MessagePoolTransfer(properties);
+        };
+
+        /**
+         * Encodes the specified MessagePoolTransfer message. Does not implicitly {@link types.MessagePoolTransfer.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {types.IMessagePoolTransfer} message MessagePoolTransfer message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessagePoolTransfer.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.fromPoolId != null && Object.hasOwnProperty.call(message, "fromPoolId"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.fromPoolId);
+            if (message.toPoolId != null && Object.hasOwnProperty.call(message, "toPoolId"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.toPoolId);
+            if (message.amount != null && Object.hasOwnProperty.call(message, "amount"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.amount);
+            if (message.adminAddress != null && Object.hasOwnProperty.call(message, "adminAddress"))
+                writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.adminAddress);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessagePoolTransfer message, length delimited. Does not implicitly {@link types.MessagePoolTransfer.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {types.IMessagePoolTransfer} message MessagePoolTransfer message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessagePoolTransfer.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessagePoolTransfer message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessagePoolTransfer} MessagePoolTransfer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessagePoolTransfer.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessagePoolTransfer();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.fromPoolId = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.toPoolId = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.amount = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.adminAddress = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessagePoolTransfer message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessagePoolTransfer} MessagePoolTransfer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessagePoolTransfer.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessagePoolTransfer message.
+         * @function verify
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessagePoolTransfer.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.fromPoolId != null && message.hasOwnProperty("fromPoolId"))
+                if (!$util.isInteger(message.fromPoolId) && !(message.fromPoolId && $util.isInteger(message.fromPoolId.low) && $util.isInteger(message.fromPoolId.high)))
+                    return "fromPoolId: integer|Long expected";
+            if (message.toPoolId != null && message.hasOwnProperty("toPoolId"))
+                if (!$util.isInteger(message.toPoolId) && !(message.toPoolId && $util.isInteger(message.toPoolId.low) && $util.isInteger(message.toPoolId.high)))
+                    return "toPoolId: integer|Long expected";
+            if (message.amount != null && message.hasOwnProperty("amount"))
+                if (!$util.isInteger(message.amount) && !(message.amount && $util.isInteger(message.amount.low) && $util.isInteger(message.amount.high)))
+                    return "amount: integer|Long expected";
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                if (!(message.adminAddress && typeof message.adminAddress.length === "number" || $util.isString(message.adminAddress)))
+                    return "adminAddress: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessagePoolTransfer message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessagePoolTransfer} MessagePoolTransfer
+         */
+        MessagePoolTransfer.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessagePoolTransfer)
+                return object;
+            var message = new $root.types.MessagePoolTransfer();
+            if (object.fromPoolId != null)
+                if ($util.Long)
+                    (message.fromPoolId = $util.Long.fromValue(object.fromPoolId)).unsigned = true;
+                else if (typeof object.fromPoolId === "string")
+                    message.fromPoolId = parseInt(object.fromPoolId, 10);
+                else if (typeof object.fromPoolId === "number")
+                    message.fromPoolId = object.fromPoolId;
+                else if (typeof object.fromPoolId === "object")
+                    message.fromPoolId = new $util.LongBits(object.fromPoolId.low >>> 0, object.fromPoolId.high >>> 0).toNumber(true);
+            if (object.toPoolId != null)
+                if ($util.Long)
+                    (message.toPoolId = $util.Long.fromValue(object.toPoolId)).unsigned = true;
+                else if (typeof object.toPoolId === "string")
+                    message.toPoolId = parseInt(object.toPoolId, 10);
+                else if (typeof object.toPoolId === "number")
+                    message.toPoolId = object.toPoolId;
+                else if (typeof object.toPoolId === "object")
+                    message.toPoolId = new $util.LongBits(object.toPoolId.low >>> 0, object.toPoolId.high >>> 0).toNumber(true);
+            if (object.amount != null)
+                if ($util.Long)
+                    (message.amount = $util.Long.fromValue(object.amount)).unsigned = true;
+                else if (typeof object.amount === "string")
+                    message.amount = parseInt(object.amount, 10);
+                else if (typeof object.amount === "number")
+                    message.amount = object.amount;
+                else if (typeof object.amount === "object")
+                    message.amount = new $util.LongBits(object.amount.low >>> 0, object.amount.high >>> 0).toNumber(true);
+            if (object.adminAddress != null)
+                if (typeof object.adminAddress === "string")
+                    $util.base64.decode(object.adminAddress, message.adminAddress = $util.newBuffer($util.base64.length(object.adminAddress)), 0);
+                else if (object.adminAddress.length >= 0)
+                    message.adminAddress = object.adminAddress;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessagePoolTransfer message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {types.MessagePoolTransfer} message MessagePoolTransfer
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessagePoolTransfer.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.fromPoolId = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.fromPoolId = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.toPoolId = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.toPoolId = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.amount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.amount = options.longs === String ? "0" : 0;
+                if (options.bytes === String)
+                    object.adminAddress = "";
+                else {
+                    object.adminAddress = [];
+                    if (options.bytes !== Array)
+                        object.adminAddress = $util.newBuffer(object.adminAddress);
+                }
+            }
+            if (message.fromPoolId != null && message.hasOwnProperty("fromPoolId"))
+                if (typeof message.fromPoolId === "number")
+                    object.fromPoolId = options.longs === String ? String(message.fromPoolId) : message.fromPoolId;
+                else
+                    object.fromPoolId = options.longs === String ? $util.Long.prototype.toString.call(message.fromPoolId) : options.longs === Number ? new $util.LongBits(message.fromPoolId.low >>> 0, message.fromPoolId.high >>> 0).toNumber(true) : message.fromPoolId;
+            if (message.toPoolId != null && message.hasOwnProperty("toPoolId"))
+                if (typeof message.toPoolId === "number")
+                    object.toPoolId = options.longs === String ? String(message.toPoolId) : message.toPoolId;
+                else
+                    object.toPoolId = options.longs === String ? $util.Long.prototype.toString.call(message.toPoolId) : options.longs === Number ? new $util.LongBits(message.toPoolId.low >>> 0, message.toPoolId.high >>> 0).toNumber(true) : message.toPoolId;
+            if (message.amount != null && message.hasOwnProperty("amount"))
+                if (typeof message.amount === "number")
+                    object.amount = options.longs === String ? String(message.amount) : message.amount;
+                else
+                    object.amount = options.longs === String ? $util.Long.prototype.toString.call(message.amount) : options.longs === Number ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber(true) : message.amount;
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                object.adminAddress = options.bytes === String ? $util.base64.encode(message.adminAddress, 0, message.adminAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.adminAddress) : message.adminAddress;
+            return object;
+        };
+
+        /**
+         * Converts this MessagePoolTransfer to JSON.
+         * @function toJSON
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessagePoolTransfer.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessagePoolTransfer
+         * @function getTypeUrl
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessagePoolTransfer.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessagePoolTransfer";
+        };
+
+        return MessagePoolTransfer;
+    })();
+
     types.GameConfig = (function() {
 
         /**

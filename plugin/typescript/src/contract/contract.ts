@@ -170,7 +170,7 @@ export const ContractConfig: any = {
     name: 'game2048_contract',
     id: 1,
     version: 1,
-    supportedTransactions: ['send', 'startDailyGame', 'startClassicGame', 'submitGameResult', 'claimDailyReward', 'redeemClassicPoints', 'claimDailyLoginReward', 'setUsername'],
+    supportedTransactions: ['send', 'startDailyGame', 'startClassicGame', 'submitGameResult', 'claimDailyReward', 'redeemClassicPoints', 'claimDailyLoginReward', 'setUsername', 'poolTransfer'],
     transactionTypeUrls: [
         'type.googleapis.com/types.MessageSend',
         GAME2048_TYPE_URLS.startDailyGame,
@@ -179,7 +179,8 @@ export const ContractConfig: any = {
         GAME2048_TYPE_URLS.claimDailyReward,
         GAME2048_TYPE_URLS.redeemClassicPoints,
         GAME2048_TYPE_URLS.claimDailyLoginReward,
-        GAME2048_TYPE_URLS.setUsername
+        GAME2048_TYPE_URLS.setUsername,
+        GAME2048_TYPE_URLS.poolTransfer
     ],
     eventTypeUrls: [],
     fileDescriptorProtos
@@ -258,6 +259,12 @@ export class Contract {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageSetUsername(msg: any): any {
         return checkMessageSetUsername(msg);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    CheckMessagePoolTransfer(_msg: any): any {
+        // Pool transfers are admin-only, validation happens in DeliverTx
+        return {};
     }
 }
 
@@ -350,6 +357,8 @@ export class ContractAsync {
                     return contract.CheckMessageClaimDailyLoginReward(msg);
                 case 'MessageSetUsername':
                     return contract.CheckMessageSetUsername(msg);
+                case 'MessagePoolTransfer':
+                    return contract.CheckMessagePoolTransfer(msg);
                 default:
                     return { error: ErrInvalidMessageCast() };
             }
@@ -384,6 +393,8 @@ export class ContractAsync {
                     return ContractAsync.DeliverMessageClaimDailyLoginReward(contract, msg, request.tx);
                 case 'MessageSetUsername':
                     return ContractAsync.DeliverMessageSetUsername(contract, msg, request.tx);
+                case 'MessagePoolTransfer':
+                    return ContractAsync.DeliverMessagePoolTransfer(contract, msg, request.tx);
                 default:
                     return { error: ErrInvalidMessageCast() };
             }
@@ -1849,5 +1860,41 @@ export class ContractAsync {
         }
 
         return {};
+    }
+
+    // DeliverMessagePoolTransfer handles admin pool transfer operations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static async DeliverMessagePoolTransfer(contract: Contract, msg: any, _tx: any): Promise<any> {
+        const fromPoolId = toUint64(msg?.fromPoolId as Long | number | undefined);
+        const toPoolId = toUint64(msg?.toPoolId as Long | number | undefined);
+        const amount = Long.isLong(msg?.amount)
+            ? msg.amount
+            : Long.fromNumber((msg?.amount as number) || 0);
+        // Admin address validation could be added here if needed in the future
+        // const adminAddress = normalizeBytes(msg?.adminAddress);
+
+        // Validation
+        if (fromPoolId === 0 || toPoolId === 0) {
+            return { error: { code: 400, msg: 'Invalid pool IDs: both must be non-zero' } };
+        }
+
+        if (fromPoolId === toPoolId) {
+            return { error: { code: 400, msg: 'Cannot transfer to the same pool' } };
+        }
+
+        if (amount.isZero() || amount.isNegative()) {
+            return { error: { code: 400, msg: 'Transfer amount must be positive' } };
+        }
+
+        // Import transferBetweenPools from pool-operations
+        const { transferBetweenPools } = await import('./economy/pool-operations.js');
+
+        // Execute the pool transfer
+        try {
+            await transferBetweenPools(contract, fromPoolId, toPoolId, amount);
+            return {};
+        } catch (error: any) {
+            return { error: { code: 500, msg: error?.message || 'Pool transfer failed' } };
+        }
     }
 }

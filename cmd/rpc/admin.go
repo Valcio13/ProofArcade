@@ -22,6 +22,7 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/net"
 	"github.com/shirou/gopsutil/process"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 const defaultDevFaucetAmount uint64 = 100000000 // 100 PROOF in uproof (micro-denomination)
@@ -1038,8 +1039,8 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 
-	// Get validator private key for signing (not currently used, reserved for future implementation)
-	_, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
+	// Get validator private key for signing
+	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
 	if err != nil {
 		s.logger.Errorf("AdminPoolTransfer: failed to load validator key: %v", err)
 		write(w, poolTransferResponse{
@@ -1079,15 +1080,83 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 
-	// For now, return a temporary response indicating that this feature requires
-	// additional contract-level implementation
-	// The proper implementation would require:
-	// 1. A new message type in the game2048 contract
-	// 2. Contract handler to validate and execute pool transfers
-	// 3. State updates using the contract's pool operations
+	// Create the pool transfer message
+	msg, err := game2048AnyMessage("MessagePoolTransfer", func(message protoreflect.Message) {
+		setUint64Field(message, "from_pool_id", req.FromPoolId)
+		setUint64Field(message, "to_pool_id", req.ToPoolId)
+		setUint64Field(message, "amount", req.Amount)
+		setBytesField(message, "admin_address", req.AdminAddress)
+	})
+	if err != nil {
+		s.logger.Errorf("AdminPoolTransfer: failed to create message: %v", err)
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to create transfer message: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
 
+	// Create and sign the transaction
+	tx := &lib.Transaction{
+		MessageType:   "pool-transfer",
+		Msg:           msg,
+		CreatedHeight: s.controller.ChainHeight(),
+		Time:          uint64(time.Now().UnixMicro()),
+		Fee:           0,
+		NetworkId:     s.config.NetworkID,
+		ChainId:       s.config.ChainId,
+	}
+
+	if err := tx.Sign(privateKey); err != nil {
+		s.logger.Errorf("AdminPoolTransfer: failed to sign transaction: %v", err)
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to sign transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Get transaction hash
+	txHash, err := tx.GetHash()
+	if err != nil {
+		s.logger.Errorf("AdminPoolTransfer: failed to get tx hash: %v", err)
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to get transaction hash: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Marshal transaction
+	txBytes, err := lib.Marshal(tx)
+	if err != nil {
+		s.logger.Errorf("AdminPoolTransfer: failed to marshal transaction: %v", err)
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to marshal transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Submit transaction to the blockchain
+	if err := s.controller.SendTxMsgs([][]byte{txBytes}); err != nil {
+		s.logger.Errorf("AdminPoolTransfer: failed to submit transaction: %v", err)
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to submit transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	s.logger.Infof("AdminPoolTransfer: successfully submitted tx %s (pool %d -> %d, amount %d)",
+		hex.EncodeToString(txHash), req.FromPoolId, req.ToPoolId, req.Amount)
+
+	// Return success response
 	write(w, poolTransferResponse{
-		Success: false,
-		Message: "Pool transfer requires contract-level implementation. This endpoint will be fully functional in a future update. Please use the DAO transfer mechanism or implement a dedicated pool transfer message type in the game2048 contract.",
-	}, http.StatusNotImplemented)
+		Success:            true,
+		TxHash:             hex.EncodeToString(txHash),
+		FromPoolNewBalance: 0, // Will be updated after blockchain processes the tx
+		ToPoolNewBalance:   0, // Will be updated after blockchain processes the tx
+		Message:            "Pool transfer transaction submitted successfully",
+	}, http.StatusOK)
 }

@@ -21,7 +21,8 @@ export const GAME2048_TYPE_URLS = {
     claimDailyReward: 'type.googleapis.com/types.MessageClaimDailyReward',
     redeemClassicPoints: 'type.googleapis.com/types.MessageRedeemClassicPoints',
     claimDailyLoginReward: 'type.googleapis.com/types.MessageClaimDailyLoginReward',
-    setUsername: 'type.googleapis.com/types.MessageSetUsername'
+    setUsername: 'type.googleapis.com/types.MessageSetUsername',
+    poolTransfer: 'type.googleapis.com/types.MessagePoolTransfer'
 } as const;
 
 export type Game2048MessageType =
@@ -31,7 +32,8 @@ export type Game2048MessageType =
     | 'MessageClaimDailyReward'
     | 'MessageRedeemClassicPoints'
     | 'MessageClaimDailyLoginReward'
-    | 'MessageSetUsername';
+    | 'MessageSetUsername'
+    | 'MessagePoolTransfer';
 
 type Game2048StateType =
     | 'GameConfig'

@@ -81,6 +81,14 @@ message MessageSetUsername {
   string username = 2;
 }
 
+// MessagePoolTransfer transfers funds between pools (admin-only operation).
+message MessagePoolTransfer {
+  uint64 from_pool_id = 1; // @gotags: json:"fromPoolId"
+  uint64 to_pool_id = 2; // @gotags: json:"toPoolId"
+  uint64 amount = 3;
+  bytes admin_address = 4; // @gotags: json:"adminAddress"
+}
+
 // GameConfig stores governance-style configuration for the 2048 contract.
 message GameConfig {
   uint64 classic_start_fee = 1; // @gotags: json:"classicStartFee"

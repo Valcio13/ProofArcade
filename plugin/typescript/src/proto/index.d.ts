@@ -1225,6 +1225,121 @@ export namespace types {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** Properties of a MessagePoolTransfer. */
+    interface IMessagePoolTransfer {
+
+        /** MessagePoolTransfer fromPoolId */
+        fromPoolId?: (number|Long|null);
+
+        /** MessagePoolTransfer toPoolId */
+        toPoolId?: (number|Long|null);
+
+        /** MessagePoolTransfer amount */
+        amount?: (number|Long|null);
+
+        /** MessagePoolTransfer adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessagePoolTransfer. */
+    class MessagePoolTransfer implements IMessagePoolTransfer {
+
+        /**
+         * Constructs a new MessagePoolTransfer.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessagePoolTransfer);
+
+        /** MessagePoolTransfer fromPoolId. */
+        public fromPoolId: (number|Long);
+
+        /** MessagePoolTransfer toPoolId. */
+        public toPoolId: (number|Long);
+
+        /** MessagePoolTransfer amount. */
+        public amount: (number|Long);
+
+        /** MessagePoolTransfer adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessagePoolTransfer instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessagePoolTransfer instance
+         */
+        public static create(properties?: types.IMessagePoolTransfer): types.MessagePoolTransfer;
+
+        /**
+         * Encodes the specified MessagePoolTransfer message. Does not implicitly {@link types.MessagePoolTransfer.verify|verify} messages.
+         * @param message MessagePoolTransfer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessagePoolTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessagePoolTransfer message, length delimited. Does not implicitly {@link types.MessagePoolTransfer.verify|verify} messages.
+         * @param message MessagePoolTransfer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessagePoolTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessagePoolTransfer message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessagePoolTransfer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessagePoolTransfer;
+
+        /**
+         * Decodes a MessagePoolTransfer message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessagePoolTransfer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessagePoolTransfer;
+
+        /**
+         * Verifies a MessagePoolTransfer message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessagePoolTransfer message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessagePoolTransfer
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessagePoolTransfer;
+
+        /**
+         * Creates a plain object from a MessagePoolTransfer message. Also converts values to other types if specified.
+         * @param message MessagePoolTransfer
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessagePoolTransfer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessagePoolTransfer to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessagePoolTransfer
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a GameConfig. */
     interface IGameConfig {
 

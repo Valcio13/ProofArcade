@@ -79,3 +79,11 @@ message MessageSetUsername {
   bytes player_address = 1; // @gotags: json:"playerAddress"
   string username = 2;
 }
+
+// MessagePoolTransfer transfers funds between pools (admin-only operation).
+message MessagePoolTransfer {
+  uint64 from_pool_id = 1; // @gotags: json:"fromPoolId"
+  uint64 to_pool_id = 2; // @gotags: json:"toPoolId"
+  uint64 amount = 3;
+  bytes admin_address = 4; // @gotags: json:"adminAddress"
+}
