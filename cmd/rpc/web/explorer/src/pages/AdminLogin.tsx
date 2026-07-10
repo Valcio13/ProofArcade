@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { createGame2048Client } from '../lib/chain2048'
+import { loadStoredWalletAuth } from '../lib/walletAuth'
 import {
   authenticateAdmin,
   isAdminAuthenticated,
@@ -32,12 +33,12 @@ export default function AdminLoginPage() {
     refetchInterval: 2000,
   })
 
-  // Try to get connected address from localStorage (set by Auth page)
+  // Get connected address from wallet auth
   useEffect(() => {
     const checkConnection = () => {
-      const stored = localStorage.getItem('connected_address')
-      if (stored && !connectedAddress) {
-        setConnectedAddress(stored)
+      const storedAuth = loadStoredWalletAuth()
+      if (storedAuth?.address && !connectedAddress) {
+        setConnectedAddress(storedAuth.address)
       }
     }
     checkConnection()
