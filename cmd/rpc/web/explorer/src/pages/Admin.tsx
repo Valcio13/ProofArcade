@@ -322,7 +322,7 @@ export default function AdminPage() {
           {/* Quick Links */}
           <motion.div variants={itemVariants}>
             <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Link
                 to="/admin/monitoring"
                 className="rounded-xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm hover:bg-white/5 transition-colors"
@@ -336,6 +336,23 @@ export default function AdminPage() {
                   <div>
                     <p className="text-sm font-medium text-white">Monitoring</p>
                     <p className="text-xs text-slate-400">Live metrics</p>
+                  </div>
+                </div>
+              </Link>
+
+              <Link
+                to="/admin/pool-management"
+                className="rounded-xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm hover:bg-white/5 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="rounded-lg bg-cyan-500/10 p-2">
+                    <svg className="h-5 w-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">Pool Management</p>
+                    <p className="text-xs text-slate-400">Transfer funds</p>
                   </div>
                 </div>
               </Link>
