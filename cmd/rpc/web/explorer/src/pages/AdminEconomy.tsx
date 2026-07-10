@@ -107,7 +107,7 @@ export default function AdminEconomyPage() {
     {
       id: PoolIDs.DAO,
       name: 'DAO Pool',
-      balance: daoPoolData?.data?.amount || daoPoolData?.amount || 0,
+      balance: daoPoolData?.data?.amount || 0,
       description: 'Community governance treasury',
     },
     {
