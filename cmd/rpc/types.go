@@ -385,6 +385,23 @@ type txVotePoll struct {
 	fromFields
 }
 
+// poolTransferRequest is used for admin pool transfer operations
+type poolTransferRequest struct {
+	FromPoolId   uint64       `json:"fromPoolId"`
+	ToPoolId     uint64       `json:"toPoolId"`
+	Amount       uint64       `json:"amount"`
+	AdminAddress lib.HexBytes `json:"adminAddress"`
+}
+
+// poolTransferResponse returns the result of a pool transfer
+type poolTransferResponse struct {
+	Success            bool   `json:"success"`
+	TxHash             string `json:"txHash"`
+	FromPoolNewBalance uint64 `json:"fromPoolNewBalance"`
+	ToPoolNewBalance   uint64 `json:"toPoolNewBalance"`
+	Message            string `json:"message"`
+}
+
 type txChangeParamRequest struct {
 	ParamSpace string `json:"paramSpace"`
 	ParamKey   string `json:"paramKey"`

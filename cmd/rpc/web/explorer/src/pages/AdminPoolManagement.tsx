@@ -181,29 +181,72 @@ export default function AdminPoolManagementPage() {
 
     const amountMicro = Math.floor(amountNum * 1_000_000)
 
+    const adminAddress = localStorage.getItem('admin_address')
+    if (!adminAddress) {
+      toast.error('Admin address not found. Please log in again.')
+      return
+    }
+
     try {
-      toast.loading('Transferring funds...')
+      const loadingToast = toast.loading('Submitting pool transfer...')
       
-      // NOTE: This is a placeholder - actual backend endpoint needs to be implemented
-      // Backend endpoint would be: POST /v1/admin/pool-transfer
-      // Body: { fromPoolId, toPoolId, amount, adminAddress }
+      // Call the backend endpoint
+      const response = await fetch('http://localhost:26660/v1/admin/pool-transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Address': adminAddress,
+        },
+        body: JSON.stringify({
+          fromPoolId: transferModal.fromPoolId,
+          toPoolId: transferModal.toPoolId,
+          amount: amountMicro,
+          adminAddress: adminAddress,
+        }),
+      })
+
+      toast.dismiss(loadingToast)
+
+      const data = await response.json()
+
+      if (response.status === 501) {
+        // Not Implemented - show helpful message
+        toast.error(
+          'Pool transfers require additional contract implementation. This feature is planned for a future update.',
+          { duration: 5000 }
+        )
+        
+        const entry: AuditLogEntry = {
+          timestamp: new Date(),
+          operation: 'Transfer',
+          fromPool: PoolNames[transferModal.fromPoolId],
+          toPool: PoolNames[transferModal.toPoolId],
+          amount: amountMicro,
+          adminAddress: adminAddress,
+          status: 'error',
+          message: 'Feature not yet implemented',
+        }
+        setAuditLog([entry, ...auditLog])
+        handleCloseTransferModal()
+        return
+      }
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Transfer failed')
+      }
+
+      // Success!
+      toast.success(`Transfer successful! TX: ${data.txHash.substring(0, 12)}...`)
       
-      // Simulated success for UI demonstration
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      
-      toast.dismiss()
-      toast.error('Backend endpoint not yet implemented. This is a UI demonstration.')
-      
-      // Log the operation
       const entry: AuditLogEntry = {
         timestamp: new Date(),
         operation: 'Transfer',
         fromPool: PoolNames[transferModal.fromPoolId],
         toPool: PoolNames[transferModal.toPoolId],
         amount: amountMicro,
-        adminAddress: localStorage.getItem('admin_address') || 'Unknown',
-        status: 'error',
-        message: 'Backend endpoint not implemented',
+        adminAddress: adminAddress,
+        status: 'success',
+        message: data.message,
       }
       
       setAuditLog([entry, ...auditLog])
@@ -287,9 +330,9 @@ export default function AdminPoolManagementPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-amber-400 mb-1">UI Demonstration - Backend Incomplete</h3>
+                <h3 className="text-sm font-semibold text-amber-400 mb-1">Backend Partially Implemented</h3>
                 <p className="text-sm text-amber-300/80">
-                  Pool transfers require backend implementation. The transfer UI is functional but will not execute actual transfers until the backend endpoints are created. Pool balances are read-only queries and work correctly.
+                  The backend endpoint exists and validates pool transfers, but the actual transaction execution requires additional contract-level implementation. Pool balance queries work correctly. Transfers will return a "Not Implemented" response until the contract handler is added.
                 </p>
               </div>
             </div>

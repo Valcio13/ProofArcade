@@ -1000,3 +1000,94 @@ func (s *Server) WalletVerify(w http.ResponseWriter, r *http.Request, _ httprout
 	write(w, map[string]bool{"valid": true}, http.StatusOK)
 }
 
+
+// AdminPoolTransfer transfers funds between pools using a subsidy transaction
+// This is an admin-only operation that leverages the existing subsidy mechanism
+func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// Parse the pool transfer request
+	req := new(poolTransferRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	s.logger.Infof("AdminPoolTransfer: fromPool=%d, toPool=%d, amount=%d, adminAddr=%s",
+		req.FromPoolId, req.ToPoolId, req.Amount, hex.EncodeToString(req.AdminAddress))
+
+	// Validate request
+	if req.FromPoolId == 0 || req.ToPoolId == 0 {
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: "Invalid pool IDs: both fromPoolId and toPoolId must be non-zero",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if req.FromPoolId == req.ToPoolId {
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: "Cannot transfer to the same pool",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if req.Amount == 0 {
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: "Amount must be greater than 0",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Get validator private key for signing (not currently used, reserved for future implementation)
+	_, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
+	if err != nil {
+		s.logger.Errorf("AdminPoolTransfer: failed to load validator key: %v", err)
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to load validator key: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Read current pool balances from state
+	var fromPoolBalance uint64
+	if err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		var readErr lib.ErrorI
+		fromPoolBalance, readErr = state.GetPoolBalance(req.FromPoolId)
+		if readErr != nil {
+			return readErr
+		}
+		// Verify toPool exists
+		_, readErr = state.GetPoolBalance(req.ToPoolId)
+		return readErr
+	}); err != nil {
+		s.logger.Errorf("AdminPoolTransfer: failed to read pool balances: %v", err)
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to read pool balances: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Check if source pool has sufficient balance
+	if fromPoolBalance < req.Amount {
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: fmt.Sprintf("Insufficient balance in pool %d: has %d, needs %d",
+				req.FromPoolId, fromPoolBalance, req.Amount),
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// For now, return a temporary response indicating that this feature requires
+	// additional contract-level implementation
+	// The proper implementation would require:
+	// 1. A new message type in the game2048 contract
+	// 2. Contract handler to validate and execute pool transfers
+	// 3. State updates using the contract's pool operations
+
+	write(w, poolTransferResponse{
+		Success: false,
+		Message: "Pool transfer requires contract-level implementation. This endpoint will be fully functional in a future update. Please use the DAO transfer mechanism or implement a dedicated pool transfer message type in the game2048 contract.",
+	}, http.StatusNotImplemented)
+}

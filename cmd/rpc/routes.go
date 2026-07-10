@@ -126,6 +126,7 @@ const (
 	DelVoteRoutePath             = "/v1/gov/del-vote"
 	AdminVerifyRoutePath         = "/v1/admin/verify"
 	AdminConfigRoutePath         = "/v1/admin/admin-config"
+	AdminPoolTransferRoutePath   = "/v1/admin/pool-transfer"
 )
 
 const (
@@ -251,6 +252,7 @@ const (
 	SubscribeRCInfoName             = "subscribe-rc-info"
 	AdminVerifyRouteName            = "admin-verify"
 	AdminConfigRouteName            = "admin-config"
+	AdminPoolTransferRouteName      = "admin-pool-transfer"
 )
 
 // routes contains the method and path for a canopy command
@@ -378,6 +380,7 @@ var routePaths = routes{
 	SubscribeRCInfoName:             {Method: http.MethodGet, Path: SubscribeRCInfoPath},
 	AdminVerifyRouteName:            {Method: http.MethodPost, Path: AdminVerifyRoutePath},
 	AdminConfigRouteName:            {Method: http.MethodGet, Path: AdminConfigRoutePath},
+	AdminPoolTransferRouteName:      {Method: http.MethodPost, Path: AdminPoolTransferRoutePath},
 }
 
 // httpRouteHandlers is a custom type that maps strings to httprouter handle functions
@@ -520,6 +523,7 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		DelVoteRouteName:                s.DelVote,
 		AdminVerifyRouteName:            s.AdminVerify,
 		AdminConfigRouteName:            s.AdminConfig,
+		AdminPoolTransferRouteName:      s.AdminPoolTransfer,
 	}
 
 	// Initialize a new router using the httprouter package.
