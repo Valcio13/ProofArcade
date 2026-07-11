@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { DAO, Pool } from '../lib/api'
 import toast from 'react-hot-toast'
+import { loadStoredWalletAuth } from '../lib/walletAuth'
 
 // Pool IDs from contract
 const PoolIDs = {
@@ -181,11 +182,13 @@ export default function AdminPoolManagementPage() {
 
     const amountMicro = Math.floor(amountNum * 1_000_000)
 
-    const adminAddress = localStorage.getItem('admin_address')
-    if (!adminAddress) {
+    // Get admin address from wallet auth session
+    const walletAuth = loadStoredWalletAuth()
+    if (!walletAuth?.address) {
       toast.error('Admin address not found. Please log in again.')
       return
     }
+    const adminAddress = walletAuth.address
 
     try {
       const loadingToast = toast.loading('Submitting pool transfer...')
