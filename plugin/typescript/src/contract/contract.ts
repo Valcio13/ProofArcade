@@ -262,16 +262,11 @@ export class Contract {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CheckMessagePoolTransfer(msg: any): any {
-        // Pool transfers require admin signature
-        // The admin_address field specifies who can sign this transaction
-        const adminAddress = normalizeBytes(msg?.adminAddress);
-        if (!adminAddress || adminAddress.length === 0) {
-            return { error: { code: 400, msg: 'Admin address is required' } };
-        }
-        
-        // Return admin address as the only authorized signer
-        return { authorizedSigners: [adminAddress] };
+    CheckMessagePoolTransfer(_msg: any): any {
+        // Pool transfers are signed by the validator
+        // Admin authorization is checked during Deliver phase
+        // Return empty authorizedSigners to allow any valid signature
+        return { authorizedSigners: [] };
     }
 }
 
