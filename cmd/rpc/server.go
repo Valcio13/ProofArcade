@@ -116,10 +116,12 @@ func (s *Server) Start() {
 // startRPC starts an RPC server with the provided router and port
 func (s *Server) startRPC(router *httprouter.Router, port string) {
 
-	// Create CORS policy
+	// Create CORS policy with proper headers for admin endpoints
 	cor := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "OPTIONS", "POST"},
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "OPTIONS", "POST"},
+		AllowedHeaders:   []string{"*"}, // Allow all headers including X-Admin-Address
+		AllowCredentials: true,
 	})
 
 	// Create a default timeout for HTTP requests
