@@ -193,8 +193,8 @@ export default function AdminPoolManagementPage() {
     try {
       const loadingToast = toast.loading('Submitting pool transfer...')
       
-      // Call the backend endpoint - use env var for base URL
-      const baseUrl = import.meta.env.VITE_RPC_URL || 'http://localhost:15002'
+      // Call the backend admin endpoint - use ADMIN port from env var
+      const baseUrl = import.meta.env.VITE_ADMIN_RPC_URL || 'http://localhost:15003'
       const response = await fetch(`${baseUrl}/v1/admin/pool-transfer`, {
         method: 'POST',
         headers: {
