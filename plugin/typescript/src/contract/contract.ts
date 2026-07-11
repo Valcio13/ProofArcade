@@ -262,9 +262,16 @@ export class Contract {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CheckMessagePoolTransfer(_msg: any): any {
-        // Pool transfers are admin-only, validation happens in DeliverTx
-        return {};
+    CheckMessagePoolTransfer(msg: any): any {
+        // Pool transfers require admin signature
+        // The admin_address field specifies who can sign this transaction
+        const adminAddress = normalizeBytes(msg?.adminAddress);
+        if (!adminAddress || adminAddress.length === 0) {
+            return { error: { code: 400, msg: 'Admin address is required' } };
+        }
+        
+        // Return admin address as the only authorized signer
+        return { authorizedSigners: [adminAddress] };
     }
 }
 
