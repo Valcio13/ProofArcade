@@ -39,6 +39,13 @@ interface TransferModalState {
   amount: string
 }
 
+interface WithdrawalModalState {
+  isOpen: boolean
+  poolId: number | null
+  toAddress: string
+  amount: string
+}
+
 interface AuditLogEntry {
   timestamp: Date
   operation: string
@@ -57,6 +64,13 @@ export default function AdminPoolManagementPage() {
     isOpen: false,
     fromPoolId: null,
     toPoolId: null,
+    amount: '',
+  })
+  
+  const [withdrawalModal, setWithdrawalModal] = useState<WithdrawalModalState>({
+    isOpen: false,
+    poolId: null,
+    toAddress: '',
     amount: '',
   })
   
@@ -327,6 +341,112 @@ export default function AdminPoolManagementPage() {
     })
   }
 
+  const handleOpenWithdrawalModal = (poolId: number) => {
+    setWithdrawalModal({
+      isOpen: true,
+      poolId,
+      toAddress: '',
+      amount: '',
+    })
+  }
+
+  const handleCloseWithdrawalModal = () => {
+    setWithdrawalModal({
+      isOpen: false,
+      poolId: null,
+      toAddress: '',
+      amount: '',
+    })
+  }
+
+  const handleWithdrawal = async () => {
+    if (!withdrawalModal.poolId || !withdrawalModal.toAddress || !withdrawalModal.amount) {
+      toast.error('Please fill in all fields')
+      return
+    }
+
+    const amountNum = parseFloat(withdrawalModal.amount)
+    if (isNaN(amountNum) || amountNum <= 0) {
+      toast.error('Invalid amount')
+      return
+    }
+
+    const amountMicro = Math.floor(amountNum * 1_000_000)
+
+    // Validate address format (basic check)
+    if (!withdrawalModal.toAddress.match(/^[0-9a-fA-F]+$/)) {
+      toast.error('Invalid address format (must be hex)')
+      return
+    }
+
+    // Get admin address from wallet auth session
+    const walletAuth = loadStoredWalletAuth()
+    if (!walletAuth?.address) {
+      toast.error('Admin address not found. Please log in again.')
+      return
+    }
+    const adminAddress = walletAuth.address
+
+    try {
+      const loadingToast = toast.loading('Submitting pool withdrawal...')
+      
+      // Call the backend admin endpoint
+      const baseUrl = import.meta.env.VITE_ADMIN_RPC_URL || 'http://localhost:15003'
+      const response = await fetch(`${baseUrl}/v1/admin/pool-withdrawal`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Address': adminAddress,
+        },
+        body: JSON.stringify({
+          poolId: withdrawalModal.poolId,
+          toAddress: withdrawalModal.toAddress,
+          amount: amountMicro,
+          adminAddress: adminAddress,
+        }),
+      })
+
+      toast.dismiss(loadingToast)
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Withdrawal failed')
+      }
+
+      // Success!
+      toast.success(
+        <div>
+          Withdrawal successful!{' '}
+          <a 
+            href={`/transaction/${data.txHash}`}
+            className="underline font-semibold hover:text-blue-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            View TX
+          </a>
+        </div>
+      )
+      
+      handleCloseWithdrawalModal()
+      
+      // Refetch all pools and audit log
+      setTimeout(() => {
+        refetchDao()
+        refetchShop()
+        refetchReserve()
+        refetchPlatform()
+        refetchDaily()
+        refetchMonthly()
+        refetchAuditLog()
+      }, 3000)
+      
+    } catch (error: any) {
+      toast.dismiss()
+      toast.error(error.message || 'Withdrawal failed')
+    }
+  }
+
   const handleTransfer = async () => {
     if (!transferModal.fromPoolId || !transferModal.toPoolId || !transferModal.amount) {
       toast.error('Please fill in all fields')
@@ -581,6 +701,14 @@ export default function AdminPoolManagementPage() {
                     >
                       Transfer From This Pool
                     </button>
+                    {pool.id === PoolIDs.PLATFORM && (
+                      <button
+                        onClick={() => handleOpenWithdrawalModal(pool.id)}
+                        className="w-full mt-2 px-4 py-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors text-sm font-medium"
+                      >
+                        Withdraw to External Wallet
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -809,6 +937,91 @@ export default function AdminPoolManagementPage() {
                   className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Transfer
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Withdrawal Modal */}
+        {withdrawalModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-slate-800 rounded-xl border border-white/10 p-6 max-w-md w-full mx-4"
+            >
+              <h3 className="text-xl font-bold text-white mb-4">Withdraw to External Wallet</h3>
+              
+              <div className="space-y-4">
+                {/* From Pool */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    From Pool
+                  </label>
+                  <div className="px-4 py-3 rounded-lg bg-slate-700/50 text-white">
+                    {withdrawalModal.poolId ? PoolNames[withdrawalModal.poolId] : ''}
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Balance: {formatPROOF(pools.find(p => p.id === withdrawalModal.poolId)?.balance || 0)} PROOF
+                  </p>
+                </div>
+
+                {/* To Address */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Destination Wallet Address
+                  </label>
+                  <input
+                    type="text"
+                    value={withdrawalModal.toAddress}
+                    onChange={(e) => setWithdrawalModal({ ...withdrawalModal, toAddress: e.target.value })}
+                    placeholder="Enter hex address (without 0x prefix)"
+                    className="w-full px-4 py-3 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-green-500 focus:outline-none font-mono text-sm"
+                  />
+                  <p className="mt-1 text-xs text-slate-400">
+                    Enter the external wallet address (hex format)
+                  </p>
+                </div>
+
+                {/* Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Amount (PROOF)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={withdrawalModal.amount}
+                    onChange={(e) => setWithdrawalModal({ ...withdrawalModal, amount: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full px-4 py-3 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-green-500 focus:outline-none"
+                  />
+                </div>
+
+                {/* Warning */}
+                <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3">
+                  <p className="text-xs text-red-300">
+                    ⚠️ This will send PROOF tokens from the pool to an external wallet address. This action is irreversible. Please verify the address carefully.
+                  </p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 mt-6">
+                <button
+                  onClick={handleCloseWithdrawalModal}
+                  className="flex-1 px-4 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-600 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleWithdrawal}
+                  disabled={!withdrawalModal.toAddress || !withdrawalModal.amount}
+                  className="flex-1 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Withdraw
                 </button>
               </div>
             </motion.div>

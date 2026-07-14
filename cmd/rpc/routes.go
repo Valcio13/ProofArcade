@@ -127,6 +127,7 @@ const (
 	AdminVerifyRoutePath         = "/v1/admin/verify"
 	AdminConfigRoutePath         = "/v1/admin/admin-config"
 	AdminPoolTransferRoutePath   = "/v1/admin/pool-transfer"
+	AdminPoolWithdrawalRoutePath = "/v1/admin/pool-withdrawal"
 	AdminBanPlayerRoutePath      = "/v1/admin/ban-player"
 	AdminUnbanPlayerRoutePath    = "/v1/admin/unban-player"
 	AdminValidatorAddressRoutePath = "/v1/admin/validator-address"
@@ -256,6 +257,7 @@ const (
 	AdminVerifyRouteName            = "admin-verify"
 	AdminConfigRouteName            = "admin-config"
 	AdminPoolTransferRouteName      = "admin-pool-transfer"
+	AdminPoolWithdrawalRouteName    = "admin-pool-withdrawal"
 	AdminBanPlayerRouteName         = "admin-ban-player"
 	AdminUnbanPlayerRouteName       = "admin-unban-player"
 	AdminValidatorAddressRouteName  = "admin-validator-address"
@@ -387,6 +389,7 @@ var routePaths = routes{
 	AdminVerifyRouteName:            {Method: http.MethodPost, Path: AdminVerifyRoutePath},
 	AdminConfigRouteName:            {Method: http.MethodGet, Path: AdminConfigRoutePath},
 	AdminPoolTransferRouteName:      {Method: http.MethodPost, Path: AdminPoolTransferRoutePath},
+	AdminPoolWithdrawalRouteName:    {Method: http.MethodPost, Path: AdminPoolWithdrawalRoutePath},
 	AdminBanPlayerRouteName:         {Method: http.MethodPost, Path: AdminBanPlayerRoutePath},
 	AdminUnbanPlayerRouteName:       {Method: http.MethodPost, Path: AdminUnbanPlayerRoutePath},
 	AdminValidatorAddressRouteName:  {Method: http.MethodGet, Path: AdminValidatorAddressRoutePath},
@@ -533,6 +536,7 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		AdminVerifyRouteName:            s.AdminVerify,
 		AdminConfigRouteName:            s.AdminConfig,
 		AdminPoolTransferRouteName:      s.AdminPoolTransfer,
+		AdminPoolWithdrawalRouteName:    s.AdminPoolWithdrawal,
 		AdminBanPlayerRouteName:         s.AdminBanPlayer,
 		AdminUnbanPlayerRouteName:       s.AdminUnbanPlayer,
 		AdminValidatorAddressRouteName:  s.AdminValidatorAddress,

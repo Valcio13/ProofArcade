@@ -428,6 +428,21 @@ type unbanPlayerResponse struct {
 	Message string `json:"message"`
 }
 
+// poolWithdrawalRequest is used for admin withdrawal operations from pools to external addresses
+type poolWithdrawalRequest struct {
+	PoolId       uint64       `json:"poolId"`       // Source pool (typically platform pool)
+	ToAddress    lib.HexBytes `json:"toAddress"`    // External wallet address
+	Amount       uint64       `json:"amount"`       // Amount in micro-denomination (uproof)
+	AdminAddress lib.HexBytes `json:"adminAddress"` // Admin performing withdrawal
+}
+
+// poolWithdrawalResponse returns the result of a pool withdrawal
+type poolWithdrawalResponse struct {
+	Success bool   `json:"success"`
+	TxHash  string `json:"txHash,omitempty"`
+	Message string `json:"message"`
+}
+
 
 type txChangeParamRequest struct {
 	ParamSpace string `json:"paramSpace"`

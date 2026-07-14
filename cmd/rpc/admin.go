@@ -1409,6 +1409,140 @@ func (s *Server) AdminUnbanPlayer(w http.ResponseWriter, r *http.Request, _ http
 	}, http.StatusOK)
 }
 
+// AdminPoolWithdrawal sends PROOF from a pool to an external wallet address
+// This allows the platform pool (or other pools) to withdraw funds to external addresses
+func (s *Server) AdminPoolWithdrawal(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(poolWithdrawalRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	s.logger.Infof("AdminPoolWithdrawal: poolId=%d, toAddress=%s, amount=%d",
+		req.PoolId, hex.EncodeToString(req.ToAddress), req.Amount)
+
+	// Validate request
+	if req.PoolId == 0 {
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: "Pool ID is required",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if len(req.ToAddress) == 0 {
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: "Destination address is required",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if req.Amount == 0 {
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: "Amount must be greater than zero",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Get validator private key for signing admin operations
+	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
+	if err != nil {
+		s.logger.Errorf("AdminPoolWithdrawal: failed to load validator key: %v", err)
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to load validator key: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Check pool balance before withdrawal
+	var poolBalance uint64
+	if err := s.readOnlyState(0, func(sm *fsm.StateMachine) lib.ErrorI {
+		pool, e := sm.GetPool(req.PoolId)
+		if e != nil {
+			return e
+		}
+		poolBalance = pool.Amount
+		return nil
+	}); err != nil {
+		s.logger.Errorf("AdminPoolWithdrawal: failed to get pool balance: %v", err)
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to get pool balance: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	if poolBalance < req.Amount {
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: fmt.Sprintf("Insufficient pool balance: pool has %d uproof, requested %d uproof", poolBalance, req.Amount),
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Create a Send transaction FROM the pool TO the external address
+	// We'll use NewSendTransaction which creates a standard Send message
+	toAddress := crypto.NewAddress(req.ToAddress)
+	tx, err := fsm.NewSendTransaction(
+		privateKey,
+		toAddress,
+		req.Amount,
+		s.config.NetworkID,
+		s.config.ChainId,
+		0, // Fee (admin operations typically have 0 fee)
+		s.controller.ChainHeight(),
+		fmt.Sprintf("Pool withdrawal from pool %d", req.PoolId),
+	)
+	if err != nil {
+		s.logger.Errorf("AdminPoolWithdrawal: failed to create transaction: %v", err)
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to create withdrawal transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	txHash, err := tx.GetHash()
+	if err != nil {
+		s.logger.Errorf("AdminPoolWithdrawal: failed to get tx hash: %v", err)
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to get transaction hash: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	txBytes, err := lib.Marshal(tx)
+	if err != nil {
+		s.logger.Errorf("AdminPoolWithdrawal: failed to marshal transaction: %v", err)
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to marshal transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	if err := s.controller.SendTxMsgs([][]byte{txBytes}); err != nil {
+		s.logger.Errorf("AdminPoolWithdrawal: failed to submit transaction: %v", err)
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to submit transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	s.logger.Infof("AdminPoolWithdrawal: successfully submitted tx %s for withdrawal from pool %d to %s",
+		hex.EncodeToString(txHash), req.PoolId, hex.EncodeToString(req.ToAddress))
+
+	write(w, poolWithdrawalResponse{
+		Success: true,
+		TxHash:  hex.EncodeToString(txHash),
+		Message: "Pool withdrawal transaction submitted successfully",
+	}, http.StatusOK)
+}
+
 // AdminValidatorAddress returns authorized admin addresses (validator + config file admins)
 // Config file is reloaded on every request for hot-reload support (no backend restart needed)
 func (s *Server) AdminValidatorAddress(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
