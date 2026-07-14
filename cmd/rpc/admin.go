@@ -1397,3 +1397,22 @@ func (s *Server) AdminUnbanPlayer(w http.ResponseWriter, r *http.Request, _ http
 		Message: "Player unban transaction submitted successfully",
 	}, http.StatusOK)
 }
+
+// AdminValidatorAddress returns the validator address (for admin authentication)
+func (s *Server) AdminValidatorAddress(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// Load validator private key
+	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
+	if err != nil {
+		s.logger.Errorf("AdminValidatorAddress: failed to load validator key: %v", err)
+		write(w, map[string]any{
+			"error": "Failed to load validator key",
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	validatorAddress := privateKey.PublicKey().Address()
+	
+	write(w, map[string]string{
+		"address": hex.EncodeToString(validatorAddress.Bytes()),
+	}, http.StatusOK)
+}

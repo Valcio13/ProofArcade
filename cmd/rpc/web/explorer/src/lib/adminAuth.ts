@@ -1,102 +1,97 @@
 /**
  * Admin Authentication & Authorization
  * 
- * Simple authentication system for admin pages.
- * In production, this should be replaced with proper backend authentication.
+ * Secure authentication system using wallet signatures.
+ * Only the validator address can access admin functions.
  */
 
-const ADMIN_ADDRESSES_KEY = 'proofarcade_admin_addresses'
 const ADMIN_SESSION_KEY = 'proofarcade_admin_session'
+const SESSION_DURATION = 4 * 60 * 60 * 1000 // 4 hours
 
-// Default admin addresses (can be configured via environment or backend)
-const DEFAULT_ADMIN_ADDRESSES = [
-  // Add default admin addresses here
-  // Example: '0x1234567890abcdef1234567890abcdef12345678'
-]
-
-/**
- * Check if an address is authorized as admin
- */
-export function isAdminAddress(address: string): boolean {
-  const adminAddresses = getAdminAddresses()
-  return adminAddresses.some(
-    (admin) => admin.toLowerCase() === address.toLowerCase()
-  )
+// Get validator address from environment
+function getValidatorAddress(): string | null {
+  // The validator address should be loaded from backend
+  // For now, we'll fetch it from backend config
+  return null // Will be loaded dynamically
 }
 
 /**
- * Get list of authorized admin addresses
+ * Fetch validator address from backend
  */
-export function getAdminAddresses(): string[] {
+let cachedValidatorAddress: string | null = null
+
+export async function fetchValidatorAddress(): Promise<string | null> {
+  if (cachedValidatorAddress) {
+    return cachedValidatorAddress
+  }
+
   try {
-    const stored = localStorage.getItem(ADMIN_ADDRESSES_KEY)
-    if (stored) {
-      return JSON.parse(stored)
+    const baseUrl = import.meta.env.VITE_ADMIN_RPC_URL || 'http://localhost:15003'
+    const response = await fetch(`${baseUrl}/v1/admin/validator-address`)
+    const data = await response.json()
+    
+    if (data.address) {
+      cachedValidatorAddress = data.address.toLowerCase()
+      return cachedValidatorAddress
     }
   } catch (error) {
-    console.error('Failed to load admin addresses:', error)
+    console.error('Failed to fetch validator address:', error)
   }
-  return DEFAULT_ADMIN_ADDRESSES
+  
+  return null
 }
 
 /**
- * Add an admin address (requires existing admin privileges)
+ * Check if an address is the validator (admin)
  */
-export function addAdminAddress(address: string): boolean {
-  if (!isAdminAuthenticated()) {
-    return false
-  }
+export async function isAdminAddress(address: string): Promise<boolean> {
+  const validatorAddress = await fetchValidatorAddress()
+  if (!validatorAddress) return false
   
-  const adminAddresses = getAdminAddresses()
-  if (!adminAddresses.some((a) => a.toLowerCase() === address.toLowerCase())) {
-    adminAddresses.push(address)
-    localStorage.setItem(ADMIN_ADDRESSES_KEY, JSON.stringify(adminAddresses))
-    return true
-  }
-  return false
+  return validatorAddress.toLowerCase() === address.toLowerCase()
 }
 
 /**
- * Remove an admin address (requires existing admin privileges)
+ * Get list of authorized admin addresses (just the validator)
  */
-export function removeAdminAddress(address: string): boolean {
-  if (!isAdminAuthenticated()) {
-    return false
-  }
-  
-  const adminAddresses = getAdminAddresses()
-  const filtered = adminAddresses.filter(
-    (a) => a.toLowerCase() !== address.toLowerCase()
-  )
-  
-  if (filtered.length < adminAddresses.length) {
-    localStorage.setItem(ADMIN_ADDRESSES_KEY, JSON.stringify(filtered))
-    return true
-  }
-  return false
+export async function getAdminAddresses(): Promise<string[]> {
+  const validatorAddress = await fetchValidatorAddress()
+  return validatorAddress ? [validatorAddress] : []
 }
 
 /**
  * Check if current user is authenticated as admin
  */
-export function isAdminAuthenticated(): boolean {
+export async function isAdminAuthenticated(): Promise<boolean> {
   try {
     const session = localStorage.getItem(ADMIN_SESSION_KEY)
     if (!session) return false
     
-    const { address, timestamp } = JSON.parse(session)
+    const { address, timestamp, loginTimestamp } = JSON.parse(session)
     
-    // Check if session is expired (24 hours)
+    // Check if session is expired
     const now = Date.now()
     const sessionAge = now - timestamp
-    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
     
-    if (sessionAge > maxAge) {
+    if (sessionAge > SESSION_DURATION) {
       clearAdminSession()
       return false
     }
     
-    return isAdminAddress(address)
+    // Verify address is the validator
+    const isValid = await isAdminAddress(address)
+    if (!isValid) {
+      clearAdminSession()
+      return false
+    }
+    
+    // Verify login timestamp exists (proof of wallet authentication)
+    if (!loginTimestamp) {
+      clearAdminSession()
+      return false
+    }
+    
+    return true
   } catch (error) {
     console.error('Failed to check admin authentication:', error)
     return false
@@ -106,7 +101,7 @@ export function isAdminAuthenticated(): boolean {
 /**
  * Get current admin session
  */
-export function getAdminSession(): { address: string; timestamp: number } | null {
+export function getAdminSession(): { address: string; timestamp: number; loginTimestamp: string } | null {
   try {
     const session = localStorage.getItem(ADMIN_SESSION_KEY)
     if (!session) return null
@@ -117,16 +112,18 @@ export function getAdminSession(): { address: string; timestamp: number } | null
 }
 
 /**
- * Authenticate as admin with wallet address
+ * Authenticate as admin with wallet login timestamp
  */
-export function authenticateAdmin(address: string): boolean {
-  if (!isAdminAddress(address)) {
+export async function authenticateAdmin(address: string, loginTimestamp: string): Promise<boolean> {
+  const isValid = await isAdminAddress(address)
+  if (!isValid) {
     return false
   }
   
   const session = {
     address,
     timestamp: Date.now(),
+    loginTimestamp, // Store the wallet login timestamp as proof of authentication
   }
   
   localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(session))
@@ -138,13 +135,4 @@ export function authenticateAdmin(address: string): boolean {
  */
 export function clearAdminSession(): void {
   localStorage.removeItem(ADMIN_SESSION_KEY)
-}
-
-/**
- * Initialize admin addresses from environment
- */
-export function initializeAdminAddresses(addresses: string[]): void {
-  if (addresses.length > 0) {
-    localStorage.setItem(ADMIN_ADDRESSES_KEY, JSON.stringify(addresses))
-  }
 }

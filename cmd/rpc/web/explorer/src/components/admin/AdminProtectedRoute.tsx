@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { isAdminAuthenticated } from '../../lib/adminAuth'
@@ -9,14 +9,24 @@ interface AdminProtectedRouteProps {
 
 export default function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
   const navigate = useNavigate()
+  const [isChecking, setIsChecking] = useState(true)
+  const [isAuthorized, setIsAuthorized] = useState(false)
 
   useEffect(() => {
-    if (!isAdminAuthenticated()) {
-      navigate('/admin/login')
+    const checkAuth = async () => {
+      const authenticated = await isAdminAuthenticated()
+      setIsAuthorized(authenticated)
+      setIsChecking(false)
+      
+      if (!authenticated) {
+        navigate('/admin/login')
+      }
     }
+    
+    checkAuth()
   }, [navigate])
 
-  if (!isAdminAuthenticated()) {
+  if (isChecking || !isAuthorized) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <motion.div
