@@ -273,7 +273,7 @@ export default function AdminPoolManagementPage() {
     pool.percentage = totalBalance > 0 ? (pool.balance / totalBalance) * 100 : 0
   })
 
-  const formatCNPY = (amount: number) => {
+  const formatPROOF = (amount: number) => {
     return (amount / 1_000_000).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -282,13 +282,13 @@ export default function AdminPoolManagementPage() {
 
   const downloadAuditLog = () => {
     const csv = [
-      ['Timestamp', 'Operation', 'From Pool', 'To Pool', 'Amount (CNPY)', 'Admin Address', 'Status', 'Block Height', 'Transaction Hash'].join(','),
+      ['Timestamp', 'Operation', 'From Pool', 'To Pool', 'Amount (PROOF)', 'Admin Address', 'Status', 'Block Height', 'Transaction Hash'].join(','),
       ...auditLog.map(entry => [
         entry.timestamp.toISOString(),
         entry.operation,
         entry.fromPool,
         entry.toPool || '',
-        formatCNPY(entry.amount),
+        formatPROOF(entry.amount),
         entry.adminAddress,
         entry.status,
         entry.blockHeight || '',
@@ -510,7 +510,7 @@ export default function AdminPoolManagementPage() {
                 <div>
                   <p className="text-sm text-slate-400">Total Treasury Balance</p>
                   <p className="text-4xl font-bold text-white mt-2">
-                    {formatCNPY(totalBalance)} <span className="text-xl text-slate-400">CNPY</span>
+                    {formatPROOF(totalBalance)} <span className="text-xl text-slate-400">PROOF</span>
                   </p>
                 </div>
                 <div className="rounded-lg bg-blue-500/10 p-4">
@@ -560,8 +560,8 @@ export default function AdminPoolManagementPage() {
                   <div className="space-y-3">
                     <div>
                       <p className="text-sm text-slate-400">Balance</p>
-                      <p className="text-2xl font-bold text-white">{formatCNPY(pool.balance)}</p>
-                      <p className="text-xs text-slate-500">CNPY</p>
+                      <p className="text-2xl font-bold text-white">{formatPROOF(pool.balance)}</p>
+                      <p className="text-xs text-slate-500">PROOF</p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-400">Percentage of Total</p>
@@ -656,7 +656,7 @@ export default function AdminPoolManagementPage() {
                               {entry.toPool || '—'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                              {formatCNPY(entry.amount)} CNPY
+                              {formatPROOF(entry.amount)} PROOF
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
@@ -743,7 +743,7 @@ export default function AdminPoolManagementPage() {
                     {transferModal.fromPoolId ? PoolNames[transferModal.fromPoolId] : ''}
                   </div>
                   <p className="mt-1 text-xs text-slate-400">
-                    Balance: {formatCNPY(pools.find(p => p.id === transferModal.fromPoolId)?.balance || 0)} CNPY
+                    Balance: {formatPROOF(pools.find(p => p.id === transferModal.fromPoolId)?.balance || 0)} PROOF
                   </p>
                 </div>
 
@@ -769,7 +769,7 @@ export default function AdminPoolManagementPage() {
                 {/* Amount */}
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Amount (CNPY)
+                    Amount (PROOF)
                   </label>
                   <input
                     type="number"
