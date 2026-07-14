@@ -759,11 +759,16 @@ export default function AdminPoolManagementPage() {
                   >
                     <option value="">Select destination pool...</option>
                     {pools
-                      .filter(p => p.id !== transferModal.fromPoolId)
+                      .filter(p => p.id !== transferModal.fromPoolId && p.id !== PoolIDs.PLATFORM) // Block transfers TO platform pool
                       .map(p => (
                         <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
                   </select>
+                  {transferModal.fromPoolId !== PoolIDs.PLATFORM && (
+                    <p className="mt-1 text-xs text-amber-400">
+                      ⓘ Platform pool cannot receive transfers (it can only send)
+                    </p>
+                  )}
                 </div>
 
                 {/* Amount */}

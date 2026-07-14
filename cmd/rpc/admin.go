@@ -1031,6 +1031,17 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 
+	// Block transfers TO platform pool (131072)
+	// Platform pool can send to others, but cannot receive from others
+	const platformPoolId uint64 = 131072
+	if req.ToPoolId == platformPoolId {
+		write(w, poolTransferResponse{
+			Success: false,
+			Message: "Cannot transfer to platform pool. Platform pool can only send, not receive.",
+		}, http.StatusBadRequest)
+		return
+	}
+
 	if req.Amount == 0 {
 		write(w, poolTransferResponse{
 			Success: false,
