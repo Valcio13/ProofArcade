@@ -1399,6 +1399,7 @@ func (s *Server) AdminUnbanPlayer(w http.ResponseWriter, r *http.Request, _ http
 }
 
 // AdminValidatorAddress returns authorized admin addresses (validator + config file admins)
+// Config file is reloaded on every request for hot-reload support (no backend restart needed)
 func (s *Server) AdminValidatorAddress(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Load validator private key
 	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
@@ -1414,7 +1415,8 @@ func (s *Server) AdminValidatorAddress(w http.ResponseWriter, r *http.Request, _
 	validatorAddress := hex.EncodeToString(privateKey.PublicKey().Address().Bytes())
 	adminAddresses := []string{validatorAddress}
 	
-	// Try to load additional admins from admin_config.json
+	// Load additional admins from admin_config.json (fresh read every time - no cache)
+	// This allows hot-reload: edit config file and changes take effect immediately
 	configPath := filepath.Join(s.config.DataDirPath, "admin_config.json")
 	if configData, err := os.ReadFile(configPath); err == nil {
 		var config struct {
@@ -1442,11 +1444,9 @@ func (s *Server) AdminValidatorAddress(w http.ResponseWriter, r *http.Request, _
 					}
 				}
 			}
-			s.logger.Infof("AdminValidatorAddress: loaded %d additional admin(s) from config", len(adminAddresses)-1)
+			s.logger.Debugf("AdminValidatorAddress: loaded %d additional admin(s) from config", len(adminAddresses)-1)
 		}
 	}
-	
-	s.logger.Infof("AdminValidatorAddress: returning %d authorized admin address(es)", len(adminAddresses))
 	
 	write(w, map[string]any{
 		"addresses": adminAddresses,

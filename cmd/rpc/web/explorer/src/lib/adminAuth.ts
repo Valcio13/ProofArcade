@@ -17,14 +17,9 @@ function getValidatorAddress(): string | null {
 
 /**
  * Fetch authorized admin addresses from backend (validator + config)
+ * No caching - fetches fresh on every call for hot-reload support
  */
-let cachedAdminAddresses: string[] | null = null
-
 export async function fetchAdminAddresses(): Promise<string[]> {
-  if (cachedAdminAddresses && cachedAdminAddresses.length > 0) {
-    return cachedAdminAddresses
-  }
-
   try {
     const baseUrl = import.meta.env.VITE_ADMIN_RPC_URL || 'http://localhost:15003'
     const response = await fetch(`${baseUrl}/v1/admin/validator-address`)
@@ -32,8 +27,7 @@ export async function fetchAdminAddresses(): Promise<string[]> {
     
     if (data.addresses && Array.isArray(data.addresses)) {
       // Normalize all addresses to lowercase for comparison
-      cachedAdminAddresses = data.addresses.map((addr: string) => addr.toLowerCase())
-      return cachedAdminAddresses
+      return data.addresses.map((addr: string) => addr.toLowerCase())
     }
   } catch (error) {
     console.error('Failed to fetch admin addresses:', error)
