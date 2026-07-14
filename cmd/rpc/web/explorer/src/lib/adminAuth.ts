@@ -16,13 +16,13 @@ function getValidatorAddress(): string | null {
 }
 
 /**
- * Fetch validator address from backend
+ * Fetch authorized admin addresses from backend (validator + config)
  */
-let cachedValidatorAddress: string | null = null
+let cachedAdminAddresses: string[] | null = null
 
-export async function fetchValidatorAddress(): Promise<string | null> {
-  if (cachedValidatorAddress) {
-    return cachedValidatorAddress
+export async function fetchAdminAddresses(): Promise<string[]> {
+  if (cachedAdminAddresses && cachedAdminAddresses.length > 0) {
+    return cachedAdminAddresses
   }
 
   try {
@@ -30,33 +30,34 @@ export async function fetchValidatorAddress(): Promise<string | null> {
     const response = await fetch(`${baseUrl}/v1/admin/validator-address`)
     const data = await response.json()
     
-    if (data.address) {
-      cachedValidatorAddress = data.address.toLowerCase()
-      return cachedValidatorAddress
+    if (data.addresses && Array.isArray(data.addresses)) {
+      // Normalize all addresses to lowercase for comparison
+      cachedAdminAddresses = data.addresses.map((addr: string) => addr.toLowerCase())
+      return cachedAdminAddresses
     }
   } catch (error) {
-    console.error('Failed to fetch validator address:', error)
+    console.error('Failed to fetch admin addresses:', error)
   }
   
-  return null
+  return []
 }
 
 /**
- * Check if an address is the validator (admin)
+ * Check if an address is authorized admin (validator or configured admin)
  */
 export async function isAdminAddress(address: string): Promise<boolean> {
-  const validatorAddress = await fetchValidatorAddress()
-  if (!validatorAddress) return false
+  const adminAddresses = await fetchAdminAddresses()
+  if (adminAddresses.length === 0) return false
   
-  return validatorAddress.toLowerCase() === address.toLowerCase()
+  const normalizedAddress = address.toLowerCase()
+  return adminAddresses.some(admin => admin.toLowerCase() === normalizedAddress)
 }
 
 /**
- * Get list of authorized admin addresses (just the validator)
+ * Get list of authorized admin addresses (validator + config)
  */
 export async function getAdminAddresses(): Promise<string[]> {
-  const validatorAddress = await fetchValidatorAddress()
-  return validatorAddress ? [validatorAddress] : []
+  return fetchAdminAddresses()
 }
 
 /**

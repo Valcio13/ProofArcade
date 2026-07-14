@@ -1398,7 +1398,7 @@ func (s *Server) AdminUnbanPlayer(w http.ResponseWriter, r *http.Request, _ http
 	}, http.StatusOK)
 }
 
-// AdminValidatorAddress returns the validator address (for admin authentication)
+// AdminValidatorAddress returns authorized admin addresses (validator + config file admins)
 func (s *Server) AdminValidatorAddress(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Load validator private key
 	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
@@ -1410,9 +1410,45 @@ func (s *Server) AdminValidatorAddress(w http.ResponseWriter, r *http.Request, _
 		return
 	}
 
-	validatorAddress := privateKey.PublicKey().Address()
+	// Get validator address (always an admin)
+	validatorAddress := hex.EncodeToString(privateKey.PublicKey().Address().Bytes())
+	adminAddresses := []string{validatorAddress}
 	
-	write(w, map[string]string{
-		"address": hex.EncodeToString(validatorAddress.Bytes()),
+	// Try to load additional admins from admin_config.json
+	configPath := filepath.Join(s.config.DataDirPath, "admin_config.json")
+	if configData, err := os.ReadFile(configPath); err == nil {
+		var config struct {
+			Enabled        bool     `json:"enabled"`
+			AdminAddresses []string `json:"admin_addresses"`
+		}
+		if err := lib.Unmarshal(configData, &config); err == nil && config.Enabled {
+			// Add configured admin addresses (deduplicate validator)
+			for _, addr := range config.AdminAddresses {
+				// Normalize address format (remove 0x prefix if present, make lowercase)
+				normalizedAddr := strings.ToLower(strings.TrimPrefix(addr, "0x"))
+				normalizedValidator := strings.ToLower(strings.TrimPrefix(validatorAddress, "0x"))
+				
+				// Only add if different from validator and not already in list
+				if normalizedAddr != normalizedValidator {
+					isDuplicate := false
+					for _, existing := range adminAddresses {
+						if strings.ToLower(strings.TrimPrefix(existing, "0x")) == normalizedAddr {
+							isDuplicate = true
+							break
+						}
+					}
+					if !isDuplicate {
+						adminAddresses = append(adminAddresses, addr)
+					}
+				}
+			}
+			s.logger.Infof("AdminValidatorAddress: loaded %d additional admin(s) from config", len(adminAddresses)-1)
+		}
+	}
+	
+	s.logger.Infof("AdminValidatorAddress: returning %d authorized admin address(es)", len(adminAddresses))
+	
+	write(w, map[string]any{
+		"addresses": adminAddresses,
 	}, http.StatusOK)
 }

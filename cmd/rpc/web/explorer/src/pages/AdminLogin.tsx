@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
   const navigate = useNavigate()
   const [connectedAddress, setConnectedAddress] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
-  const [validatorAddress, setValidatorAddress] = useState<string | null>(null)
+  const [adminAddresses, setAdminAddresses] = useState<string[]>([])
 
   // Check if already authenticated
   useEffect(() => {
@@ -28,15 +28,15 @@ export default function AdminLoginPage() {
     checkAuth()
   }, [navigate])
 
-  // Fetch validator address
+  // Fetch admin addresses
   useEffect(() => {
-    const fetchValidator = async () => {
+    const fetchAddresses = async () => {
       const addresses = await getAdminAddresses()
       if (addresses.length > 0) {
-        setValidatorAddress(addresses[0])
+        setAdminAddresses(addresses)
       }
     }
-    fetchValidator()
+    fetchAddresses()
   }, [])
 
   // Fetch wallet connection status
@@ -156,13 +156,13 @@ export default function AdminLoginPage() {
                         </p>
                       </div>
                     </div>
-                    {validatorAddress && connectedAddress.toLowerCase() === validatorAddress.toLowerCase() ? (
+                    {adminAddresses.length > 0 && adminAddresses.some(addr => addr.toLowerCase() === connectedAddress.toLowerCase()) ? (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400">
-                        Validator ✓
+                        Admin ✓
                       </span>
                     ) : (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400">
-                        Not Validator
+                        Not Authorized
                       </span>
                     )}
                   </div>
@@ -201,35 +201,40 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            {/* Validator Info */}
+            {/* Admin Addresses Info */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Authorized Validator
+                Authorized Admin{adminAddresses.length > 1 ? 's' : ''} ({adminAddresses.length})
               </label>
               <div className="rounded-lg border border-white/10 bg-black/30 p-4">
-                {validatorAddress ? (
-                  <div className="flex items-center space-x-2">
-                    <svg
-                      className="w-4 h-4 text-blue-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                      />
-                    </svg>
-                    <p className="text-xs text-slate-400 font-mono">
-                      {validatorAddress.slice(0, 10)}...{validatorAddress.slice(-8)}
-                    </p>
+                {adminAddresses.length > 0 ? (
+                  <div className="space-y-2">
+                    {adminAddresses.map((addr, idx) => (
+                      <div key={addr} className="flex items-center space-x-2">
+                        <svg
+                          className="w-4 h-4 text-blue-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                          />
+                        </svg>
+                        <p className="text-xs text-slate-400 font-mono">
+                          {idx === 0 && <span className="text-blue-400 mr-2">[Validator]</span>}
+                          {addr.slice(0, 10)}...{addr.slice(-8)}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin w-4 h-4 border-2 border-slate-600 border-t-slate-400 rounded-full" />
-                    <p className="text-sm text-slate-500">Loading validator address...</p>
+                    <p className="text-sm text-slate-500">Loading admin addresses...</p>
                   </div>
                 )}
               </div>
@@ -238,7 +243,7 @@ export default function AdminLoginPage() {
             {/* Login Button */}
             <button
               onClick={handleLogin}
-              disabled={isLoading || !connectedAddress || !validatorAddress || connectedAddress.toLowerCase() !== validatorAddress.toLowerCase()}
+              disabled={isLoading || !connectedAddress || adminAddresses.length === 0 || !adminAddresses.some(addr => addr.toLowerCase() === connectedAddress.toLowerCase())}
               className="w-full rounded-lg bg-blue-500 px-4 py-3 text-sm font-medium text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               {isLoading ? (
@@ -251,10 +256,10 @@ export default function AdminLoginPage() {
                 </>
               ) : !connectedAddress ? (
                 'Connect Wallet First'
-              ) : !validatorAddress ? (
+              ) : adminAddresses.length === 0 ? (
                 'Loading...'
-              ) : connectedAddress.toLowerCase() !== validatorAddress.toLowerCase() ? (
-                'Only Validator Can Access'
+              ) : !adminAddresses.some(addr => addr.toLowerCase() === connectedAddress.toLowerCase()) ? (
+                'Only Authorized Admins Can Access'
               ) : (
                 'Access Admin Dashboard'
               )}
@@ -263,9 +268,11 @@ export default function AdminLoginPage() {
             {/* Info */}
             <div className="pt-4 border-t border-white/5">
               <p className="text-xs text-slate-500 text-center">
-                Admin access is restricted to the validator address only.
+                Admin access is restricted to authorized addresses only.
                 <br />
-                This ensures only the node operator can access admin functions.
+                {adminAddresses.length > 1 
+                  ? `${adminAddresses.length} addresses are currently authorized.`
+                  : 'Only the validator address can access admin functions.'}
               </p>
             </div>
           </div>
