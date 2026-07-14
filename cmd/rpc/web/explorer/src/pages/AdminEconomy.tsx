@@ -95,7 +95,7 @@ export default function AdminEconomyPage() {
     },
   }
 
-  const formatCNPY = (amount: number) => {
+  const formatPROOF = (amount: number) => {
     return (amount / 1_000_000).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -203,7 +203,7 @@ export default function AdminEconomyPage() {
             <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
               <div className="text-center">
                 <p className="text-sm text-slate-400 mb-2">Total Treasury Balance</p>
-                <p className="text-5xl font-bold text-white">{formatCNPY(totalTreasury)} <span className="text-2xl text-slate-400">CNPY</span></p>
+                <p className="text-5xl font-bold text-white">{formatPROOF(totalTreasury)} <span className="text-2xl text-slate-400">CNPY</span></p>
                 <p className="text-sm text-slate-500 mt-2">Across {pools.length} pools</p>
               </div>
             </div>
@@ -235,7 +235,7 @@ export default function AdminEconomyPage() {
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-white mb-2">
-                    {formatCNPY(pool.balance)} <span className="text-sm text-slate-400">CNPY</span>
+                    {formatPROOF(pool.balance)} <span className="text-sm text-slate-400">CNPY</span>
                   </p>
                   <p className="text-xs text-slate-400">{pool.description}</p>
                 </div>
@@ -298,7 +298,7 @@ export default function AdminEconomyPage() {
                   <div>
                     <p className="text-sm text-slate-400">Gross Fees</p>
                     <p className="mt-1 text-lg font-semibold text-white">
-                      {formatCNPY(dailyPool.grossFees)} CNPY
+                      {formatPROOF(dailyPool.grossFees)} CNPY
                     </p>
                   </div>
                   <div>
@@ -322,13 +322,13 @@ export default function AdminEconomyPage() {
                       <div>
                         <p className="text-sm text-slate-400">Distributed Rewards</p>
                         <p className="mt-1 text-lg font-semibold text-white">
-                          {formatCNPY(dailyPool.distributedRewards)} CNPY
+                          {formatPROOF(dailyPool.distributedRewards)} CNPY
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-slate-400">Treasury Leftover</p>
                         <p className="mt-1 text-lg font-semibold text-white">
-                          {formatCNPY(dailyPool.treasuryLeftover)} CNPY
+                          {formatPROOF(dailyPool.treasuryLeftover)} CNPY
                         </p>
                       </div>
                     </div>

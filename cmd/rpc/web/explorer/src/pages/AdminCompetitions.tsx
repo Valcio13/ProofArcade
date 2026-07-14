@@ -67,7 +67,7 @@ export default function AdminCompetitionsPage() {
     },
   }
 
-  const formatCNPY = (amount: number) => {
+  const formatPROOF = (amount: number) => {
     return (amount / 1_000_000).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -124,7 +124,7 @@ export default function AdminCompetitionsPage() {
     if (dailyPool.rewardPool < 50_000_000) { // Less than 50 CNPY
       warnings.push({
         level: 'info',
-        message: `Small prize pool: ${formatCNPY(dailyPool.rewardPool)} CNPY`,
+        message: `Small prize pool: ${formatPROOF(dailyPool.rewardPool)} CNPY`,
       })
     }
     
@@ -150,7 +150,7 @@ export default function AdminCompetitionsPage() {
       ['Date', dailyPool.utcDate, '', '', '', ''],
       ['Status', dailyPool.finalized ? 'Finalized' : 'Active', '', '', '', ''],
       ['Participants', dailyPool.entryCount.toString(), '', '', '', ''],
-      ['Prize Pool (CNPY)', formatCNPY(dailyPool.rewardPool), '', '', '', ''],
+      ['Prize Pool (CNPY)', formatPROOF(dailyPool.rewardPool), '', '', '', ''],
       ['', '', '', '', '', ''],
       ['Rank', 'Player', 'Score', 'Max Tile', 'Moves', 'Time'],
       ...leaderboards.daily.map((entry, idx) => [
@@ -281,7 +281,7 @@ export default function AdminCompetitionsPage() {
                   </div>
                   <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
                     <p className="text-sm text-slate-400">Prize Pool</p>
-                    <p className="mt-2 text-2xl font-bold text-white">{formatCNPY(dailyPool.rewardPool)}</p>
+                    <p className="mt-2 text-2xl font-bold text-white">{formatPROOF(dailyPool.rewardPool)}</p>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
                     <p className="text-sm text-slate-400">Status</p>
@@ -410,19 +410,19 @@ export default function AdminCompetitionsPage() {
                       <div>
                         <p className="text-sm text-slate-400">Gross Fees</p>
                         <p className="mt-1 text-lg font-semibold text-white">
-                          {formatCNPY(dailyPool.grossFees)} CNPY
+                          {formatPROOF(dailyPool.grossFees)} CNPY
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-slate-400">Distributed Rewards</p>
                         <p className="mt-1 text-lg font-semibold text-green-400">
-                          {formatCNPY(dailyPool.distributedRewards)} CNPY
+                          {formatPROOF(dailyPool.distributedRewards)} CNPY
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-slate-400">Treasury Leftover</p>
                         <p className="mt-1 text-lg font-semibold text-slate-300">
-                          {formatCNPY(dailyPool.treasuryLeftover)} CNPY
+                          {formatPROOF(dailyPool.treasuryLeftover)} CNPY
                         </p>
                       </div>
                     </div>
@@ -460,7 +460,7 @@ export default function AdminCompetitionsPage() {
                   <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
                     <p className="text-sm text-slate-400">Prize Pool</p>
                     <p className="mt-2 text-2xl font-bold text-white">
-                      {formatCNPY(monthlyPool?.balance || 0)}
+                      {formatPROOF(monthlyPool?.balance || 0)}
                     </p>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">

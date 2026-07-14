@@ -92,7 +92,7 @@ export default function AdminPlayersPage() {
     },
   }
 
-  const formatCNPY = (amount: number) => {
+  const formatPROOF = (amount: number) => {
     return (amount / 1_000_000).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -231,7 +231,7 @@ export default function AdminPlayersPage() {
                         <div>
                           <p className="text-xs text-slate-400">Balance</p>
                           <p className="mt-1 text-lg font-bold text-white">
-                            {formatCNPY(playerData.balance)} CNPY
+                            {formatPROOF(playerData.balance)} CNPY
                           </p>
                         </div>
                         <div>
@@ -315,7 +315,7 @@ export default function AdminPlayersPage() {
                                     {reward.score.toLocaleString()}
                                   </td>
                                   <td className="px-6 py-4 text-sm font-semibold text-green-400">
-                                    {formatCNPY(reward.rewardAmount)} CNPY
+                                    {formatPROOF(reward.rewardAmount)} CNPY
                                   </td>
                                 </tr>
                               ))}
@@ -417,7 +417,7 @@ export default function AdminPlayersPage() {
                                     -{redemption.burnPoints.toLocaleString()}
                                   </td>
                                   <td className="px-6 py-4 text-sm font-semibold text-green-400">
-                                    +{formatCNPY(redemption.payoutAmount)} CNPY
+                                    +{formatPROOF(redemption.payoutAmount)} CNPY
                                   </td>
                                 </tr>
                               ))}

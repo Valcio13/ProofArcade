@@ -92,7 +92,7 @@ export default function AdminPage() {
     return runDate.toDateString() === today.toDateString()
   }).length || 0
 
-  const formatCNPY = (amount: number) => {
+  const formatPROOF = (amount: number) => {
     return (amount / 1_000_000).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -163,7 +163,7 @@ export default function AdminPage() {
                   <div>
                     <p className="text-sm text-slate-400">Daily Prize Pool</p>
                     <p className="mt-2 text-3xl font-bold text-white">
-                      {dailyPool ? formatCNPY(dailyPool.rewardPool) : '0.00'}
+                      {dailyPool ? formatPROOF(dailyPool.rewardPool) : '0.00'}
                     </p>
                   </div>
                   <div className="rounded-lg bg-purple-500/10 p-3">
@@ -183,7 +183,7 @@ export default function AdminPage() {
                   <div>
                     <p className="text-sm text-slate-400">Monthly Pool</p>
                     <p className="mt-2 text-3xl font-bold text-white">
-                      {monthlyPool ? formatCNPY(monthlyPool.balance) : '0.00'}
+                      {monthlyPool ? formatPROOF(monthlyPool.balance) : '0.00'}
                     </p>
                   </div>
                   <div className="rounded-lg bg-amber-500/10 p-3">

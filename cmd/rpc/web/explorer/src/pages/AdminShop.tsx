@@ -78,7 +78,7 @@ export default function AdminShopPage() {
     },
   }
 
-  const formatCNPY = (amount: number) => {
+  const formatPROOF = (amount: number) => {
     return (amount / 1_000_000).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -209,7 +209,7 @@ export default function AdminShopPage() {
                   <div>
                     <p className="text-sm text-slate-400">CNPY Paid Out</p>
                     <p className="mt-2 text-3xl font-bold text-green-400">
-                      {formatCNPY(totalCNPYPaid)}
+                      {formatPROOF(totalCNPYPaid)}
                     </p>
                   </div>
                   <div className="rounded-lg bg-green-500/10 p-3">
@@ -268,7 +268,7 @@ export default function AdminShopPage() {
                             -{redemption.burnPoints.toLocaleString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-400">
-                            +{formatCNPY(redemption.payoutAmount)} CNPY
+                            +{formatPROOF(redemption.payoutAmount)} CNPY
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {redemption.txHash ? (
