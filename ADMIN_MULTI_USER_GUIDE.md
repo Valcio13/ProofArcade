@@ -3,6 +3,8 @@
 ## Overview
 By default, only the validator address can access the admin panel. You can add additional admin users by creating an `admin_config.json` file.
 
+**✨ Hot-Reload Support:** Changes to `admin_config.json` take effect immediately - no backend restart required!
+
 ## Quick Start
 
 ### 1. Create Configuration File
@@ -26,12 +28,12 @@ Ask the user to:
 ### 3. Add Address to Config
 Add the user's wallet address to the `admin_addresses` array in `admin_config.json`
 
-### 4. Restart Backend
-Restart the canopy backend to reload the configuration:
+### 4. Changes Take Effect Immediately!
+No restart needed! The backend reads the config file fresh on every admin request.
+
 ```bash
-# Stop canopy.exe
-# Start canopy.exe
-./canopy.exe
+# Just save the file - that's it!
+# Changes are picked up automatically
 ```
 
 The new admin can now access the admin panel!
@@ -149,10 +151,10 @@ Have the user:
 }
 ```
 
-### Step 3: Save and Restart
-1. Save the file
-2. Restart your canopy backend
-3. The new admin can now login at `/admin/login`
+### Step 3: Save the File - Done!
+No restart needed! Changes take effect immediately.
+
+The backend reads `admin_config.json` fresh on every request, so your changes are picked up automatically.
 
 ### Step 4: Verify Access
 Have the user:
@@ -166,7 +168,7 @@ Have the user:
 ### Method 1: Remove from Config
 1. Open `admin_config.json`
 2. Remove the user's address from the array
-3. Save and restart backend
+3. Save the file - access is revoked immediately (no restart needed)
 
 ### Method 2: Disable All Config Admins
 ```json
@@ -176,7 +178,7 @@ Have the user:
 }
 ```
 
-This immediately disables all config file admins (validator still has access)
+This immediately disables all config file admins (validator still has access). No restart needed.
 
 ## Troubleshooting
 
@@ -186,9 +188,10 @@ This immediately disables all config file admins (validator still has access)
 **Solutions**:
 1. Verify address in config file matches exactly
 2. Check that `enabled: true` in config
-3. Restart backend after config changes
+3. Save the file (no restart needed - changes are automatic)
 4. Check address format (with/without 0x prefix)
 5. Verify user is connected with the correct wallet
+6. Try refreshing the `/admin/login` page to fetch latest config
 
 ### Config Not Loading
 **Problem**: Config file exists but admins can't access
@@ -198,7 +201,7 @@ This immediately disables all config file admins (validator still has access)
 2. Verify JSON format is valid (use a JSON validator)
 3. Check file permissions (readable by canopy process)
 4. Review backend logs for config loading errors
-5. Ensure backend was restarted after creating config
+5. No restart needed - just save the file correctly
 
 ### How to Find Data Directory
 Check backend logs on startup - it will show the data directory path:
