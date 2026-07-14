@@ -155,6 +155,11 @@ export function getExplorerDecodedData(tx: any): string {
     const moves = Array.isArray(msg.moves) ? msg.moves.length : 0
     return `Score ${score} • Tile ${tile} • ${moves} moves`
   }
+  if (type === 'pooltransfer') {
+    const amount = msg.amount || '0'
+    const amountCNPY = (parseInt(amount, 10) / 1_000_000).toFixed(2)
+    return `${amountCNPY} CNPY transferred`
+  }
   return '0 PROOF'
 }
 
@@ -187,6 +192,29 @@ export function getExplorerDetailRows(tx: any): ExplorerDetailRow[] {
       { label: 'Declared Max Tile', value: String(msg.declaredMaxTile ?? '0') },
       { label: 'Stop Reason', value: formatStopReason(msg.stopReason) },
       { label: 'Move Count', value: String(Array.isArray(msg.moves) ? msg.moves.length : 0) },
+    ]
+  }
+
+  if (type === 'pooltransfer') {
+    const PoolNames: Record<number, string> = {
+      131071: 'DAO Pool',
+      131072: 'Platform Pool',
+      131073: 'Reserve Pool',
+      131074: 'Shop Pool',
+      131075: 'Daily Reward Pool',
+      131076: 'Monthly Reward Pool',
+    }
+    const fromPoolId = parseInt(msg.fromPoolId || '0', 10)
+    const toPoolId = parseInt(msg.toPoolId || '0', 10)
+    const amount = msg.amount || '0'
+    const amountCNPY = (parseInt(amount, 10) / 1_000_000).toFixed(2)
+    
+    return [
+      { label: 'Action', value: 'Pool Transfer' },
+      { label: 'Admin', value: getExplorerFromAddress(tx) },
+      { label: 'From Pool', value: PoolNames[fromPoolId] || `Pool ${fromPoolId}` },
+      { label: 'To Pool', value: PoolNames[toPoolId] || `Pool ${toPoolId}` },
+      { label: 'Amount', value: `${amountCNPY} CNPY` },
     ]
   }
 

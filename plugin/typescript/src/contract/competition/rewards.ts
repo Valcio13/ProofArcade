@@ -209,17 +209,49 @@ export async function loadDailyRewardFinalizationSummary(
     
     // Get top N entries from leaderboard (N = min(payoutBps.length, actual entries))
     const entries = (iterResp?.results?.[0]?.entries || []).slice(0, payoutBps.length);
-    const usedPayoutBps = payoutBps.slice(0, entries.length);
+    
+    // Filter out banned players
+    const { KeyForPlayerBan } = await import('../utils/state.js');
+    const eligibleEntries: any[] = [];
+    
+    for (const entry of entries) {
+        const [leaderboardEntry] = decodeGame2048State('LeaderboardEntry', entry.value || new Uint8Array());
+        const boardEntry = (leaderboardEntry as any) || {};
+        const playerAddress = normalizeBytes(boardEntry.playerAddress);
+        
+        // Check if player is banned
+        const banKey = KeyForPlayerBan(playerAddress);
+        const banQueryId = randomQueryId();
+        const [banResp, banErr] = await contract.plugin.StateRead(contract, {
+            keys: [{ queryId: banQueryId, key: banKey }]
+        });
+        
+        if (banErr) {
+            // On error, skip this player to be safe
+            continue;
+        }
+        
+        const banValue = getQueryValue(banResp, banQueryId);
+        if (banValue && banValue.length > 0) {
+            const ban = decodeGame2048State('PlayerBan', banValue);
+            // @ts-ignore
+            if (ban[0]?.active) {
+                // Player is banned, skip them (they keep leaderboard position but get no reward)
+                continue;
+            }
+        }
+        
+        // Player is eligible
+        eligibleEntries.push({ entry, boardEntry });
+    }
+    
+    const usedPayoutBps = payoutBps.slice(0, eligibleEntries.length);
     const usedPayoutBpsTotal = usedPayoutBps.reduce((sum, bps) => sum + bps, 0);
     
-    // Calculate allocation for each leaderboard entry
-    entries.forEach((entry: any, index: number) => {
-        const [leaderboardEntry] = decodeGame2048State('LeaderboardEntry', entry.value || new Uint8Array());
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const boardEntry = (leaderboardEntry as any) || {};
-        
+    // Calculate allocation for each eligible leaderboard entry
+    eligibleEntries.forEach(({ boardEntry }, index: number) => {
         // Last player gets remainder to ensure exact total
-        const rewardAmount = index === entries.length - 1
+        const rewardAmount = index === eligibleEntries.length - 1
             ? rewardPool.subtract(distributed)
             : calculateRenormalizedBpsAmount(
                 rewardPool,

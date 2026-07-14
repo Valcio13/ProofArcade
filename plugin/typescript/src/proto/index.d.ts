@@ -1340,6 +1340,224 @@ export namespace types {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** Properties of a MessageBanPlayer. */
+    interface IMessageBanPlayer {
+
+        /** MessageBanPlayer targetAddress */
+        targetAddress?: (Uint8Array|null);
+
+        /** MessageBanPlayer reason */
+        reason?: (string|null);
+
+        /** MessageBanPlayer adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessageBanPlayer. */
+    class MessageBanPlayer implements IMessageBanPlayer {
+
+        /**
+         * Constructs a new MessageBanPlayer.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageBanPlayer);
+
+        /** MessageBanPlayer targetAddress. */
+        public targetAddress: Uint8Array;
+
+        /** MessageBanPlayer reason. */
+        public reason: string;
+
+        /** MessageBanPlayer adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessageBanPlayer instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageBanPlayer instance
+         */
+        public static create(properties?: types.IMessageBanPlayer): types.MessageBanPlayer;
+
+        /**
+         * Encodes the specified MessageBanPlayer message. Does not implicitly {@link types.MessageBanPlayer.verify|verify} messages.
+         * @param message MessageBanPlayer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageBanPlayer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageBanPlayer message, length delimited. Does not implicitly {@link types.MessageBanPlayer.verify|verify} messages.
+         * @param message MessageBanPlayer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageBanPlayer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageBanPlayer message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageBanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageBanPlayer;
+
+        /**
+         * Decodes a MessageBanPlayer message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageBanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageBanPlayer;
+
+        /**
+         * Verifies a MessageBanPlayer message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageBanPlayer message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageBanPlayer
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageBanPlayer;
+
+        /**
+         * Creates a plain object from a MessageBanPlayer message. Also converts values to other types if specified.
+         * @param message MessageBanPlayer
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageBanPlayer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageBanPlayer to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageBanPlayer
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageUnbanPlayer. */
+    interface IMessageUnbanPlayer {
+
+        /** MessageUnbanPlayer targetAddress */
+        targetAddress?: (Uint8Array|null);
+
+        /** MessageUnbanPlayer reason */
+        reason?: (string|null);
+
+        /** MessageUnbanPlayer adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessageUnbanPlayer. */
+    class MessageUnbanPlayer implements IMessageUnbanPlayer {
+
+        /**
+         * Constructs a new MessageUnbanPlayer.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageUnbanPlayer);
+
+        /** MessageUnbanPlayer targetAddress. */
+        public targetAddress: Uint8Array;
+
+        /** MessageUnbanPlayer reason. */
+        public reason: string;
+
+        /** MessageUnbanPlayer adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessageUnbanPlayer instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageUnbanPlayer instance
+         */
+        public static create(properties?: types.IMessageUnbanPlayer): types.MessageUnbanPlayer;
+
+        /**
+         * Encodes the specified MessageUnbanPlayer message. Does not implicitly {@link types.MessageUnbanPlayer.verify|verify} messages.
+         * @param message MessageUnbanPlayer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageUnbanPlayer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageUnbanPlayer message, length delimited. Does not implicitly {@link types.MessageUnbanPlayer.verify|verify} messages.
+         * @param message MessageUnbanPlayer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageUnbanPlayer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageUnbanPlayer message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageUnbanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageUnbanPlayer;
+
+        /**
+         * Decodes a MessageUnbanPlayer message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageUnbanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageUnbanPlayer;
+
+        /**
+         * Verifies a MessageUnbanPlayer message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageUnbanPlayer message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageUnbanPlayer
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageUnbanPlayer;
+
+        /**
+         * Creates a plain object from a MessageUnbanPlayer message. Also converts values to other types if specified.
+         * @param message MessageUnbanPlayer
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageUnbanPlayer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageUnbanPlayer to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageUnbanPlayer
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a GameConfig. */
     interface IGameConfig {
 
@@ -3437,6 +3655,145 @@ export namespace types {
 
         /**
          * Gets the default type url for PlayerStats
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a PlayerBan. */
+    interface IPlayerBan {
+
+        /** PlayerBan playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** PlayerBan reason */
+        reason?: (string|null);
+
+        /** PlayerBan bannedBy */
+        bannedBy?: (Uint8Array|null);
+
+        /** PlayerBan bannedAtUnix */
+        bannedAtUnix?: (number|Long|null);
+
+        /** PlayerBan active */
+        active?: (boolean|null);
+
+        /** PlayerBan unbannedBy */
+        unbannedBy?: (Uint8Array|null);
+
+        /** PlayerBan unbannedAtUnix */
+        unbannedAtUnix?: (number|Long|null);
+
+        /** PlayerBan unbanReason */
+        unbanReason?: (string|null);
+    }
+
+    /** Represents a PlayerBan. */
+    class PlayerBan implements IPlayerBan {
+
+        /**
+         * Constructs a new PlayerBan.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IPlayerBan);
+
+        /** PlayerBan playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** PlayerBan reason. */
+        public reason: string;
+
+        /** PlayerBan bannedBy. */
+        public bannedBy: Uint8Array;
+
+        /** PlayerBan bannedAtUnix. */
+        public bannedAtUnix: (number|Long);
+
+        /** PlayerBan active. */
+        public active: boolean;
+
+        /** PlayerBan unbannedBy. */
+        public unbannedBy: Uint8Array;
+
+        /** PlayerBan unbannedAtUnix. */
+        public unbannedAtUnix: (number|Long);
+
+        /** PlayerBan unbanReason. */
+        public unbanReason: string;
+
+        /**
+         * Creates a new PlayerBan instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns PlayerBan instance
+         */
+        public static create(properties?: types.IPlayerBan): types.PlayerBan;
+
+        /**
+         * Encodes the specified PlayerBan message. Does not implicitly {@link types.PlayerBan.verify|verify} messages.
+         * @param message PlayerBan message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IPlayerBan, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified PlayerBan message, length delimited. Does not implicitly {@link types.PlayerBan.verify|verify} messages.
+         * @param message PlayerBan message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IPlayerBan, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a PlayerBan message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns PlayerBan
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.PlayerBan;
+
+        /**
+         * Decodes a PlayerBan message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns PlayerBan
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.PlayerBan;
+
+        /**
+         * Verifies a PlayerBan message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a PlayerBan message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns PlayerBan
+         */
+        public static fromObject(object: { [k: string]: any }): types.PlayerBan;
+
+        /**
+         * Creates a plain object from a PlayerBan message. Also converts values to other types if specified.
+         * @param message PlayerBan
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.PlayerBan, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this PlayerBan to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for PlayerBan
          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
          * @returns The default type url
          */

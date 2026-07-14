@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { DAO, Pool } from '../lib/api'
+import { DAO, Pool, AllTransactions } from '../lib/api'
 import toast from 'react-hot-toast'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
 
@@ -46,8 +46,10 @@ interface AuditLogEntry {
   toPool?: string
   amount: number
   adminAddress: string
-  status: 'success' | 'error'
+  status: 'success' | 'error' | 'pending'
   message?: string
+  txHash?: string
+  blockHeight?: number
 }
 
 export default function AdminPoolManagementPage() {
@@ -59,6 +61,134 @@ export default function AdminPoolManagementPage() {
   })
   
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([])
+  const [visibleCount, setVisibleCount] = useState(10)
+
+  // Fetch pool transfer transactions from blockchain
+  const { data: poolTransferTxs, refetch: refetchAuditLog } = useQuery({
+    queryKey: ['pool-transfer-transactions'],
+    queryFn: async () => {
+      try {
+        // Query all transactions and filter for poolTransfer type
+        const result = await AllTransactions(1, 100)
+        const transactions = result?.results || []
+        
+        // Filter for pool transfer transactions
+        const poolTransfers = transactions.filter((tx: any) => {
+          const messageType = tx?.messageType || tx?.type || ''
+          return messageType === 'poolTransfer' || messageType === 'pool-transfer'
+        })
+        
+        // Convert to audit log entries
+        const entries: AuditLogEntry[] = poolTransfers.map((tx: any) => {
+          // Try multiple ways to access the message data
+          // The msg might be at tx.msg, tx.message, tx.transaction.msg, etc.
+          let msg = tx?.msg || tx?.message || tx?.data || {}
+          
+          // If msg is empty, try looking in transaction object
+          if (Object.keys(msg).length === 0 && tx?.transaction) {
+            msg = tx.transaction.msg || tx.transaction.message || {}
+          }
+          
+          // Parse transaction data - handle different formats
+          let fromPoolId = 0
+          let toPoolId = 0
+          let amount = 0
+          
+          // Try direct field access (multiple naming conventions)
+          fromPoolId = msg?.fromPoolId || msg?.from_pool_id || msg?.FromPoolId || 
+                       msg?.fromPoolID || msg?.from_pool_ID || 0
+          toPoolId = msg?.toPoolId || msg?.to_pool_id || msg?.ToPoolId || 
+                     msg?.toPoolID || msg?.to_pool_ID || 0
+          amount = msg?.amount || msg?.Amount || 0
+          
+          // If still zero, try to parse from nested structures
+          if (fromPoolId === 0 && msg?.value) {
+            fromPoolId = msg.value.fromPoolId || msg.value.from_pool_id || 0
+            toPoolId = msg.value.toPoolId || msg.value.to_pool_id || 0
+            amount = msg.value.amount || 0
+          }
+          
+          // Try accessing fields array (protobuf style)
+          if (fromPoolId === 0 && msg?.fields) {
+            fromPoolId = msg.fields.fromPoolId || msg.fields.from_pool_id || 0
+            toPoolId = msg.fields.toPoolId || msg.fields.to_pool_id || 0
+            amount = msg.fields.amount || 0
+          }
+          
+          // Handle Long/number types AND string types
+          if (typeof fromPoolId === 'string') {
+            fromPoolId = parseInt(fromPoolId, 10) || 0
+          } else if (typeof fromPoolId === 'object' && fromPoolId !== null) {
+            fromPoolId = (fromPoolId as any).toNumber ? (fromPoolId as any).toNumber() : Number(fromPoolId)
+          }
+          
+          if (typeof toPoolId === 'string') {
+            toPoolId = parseInt(toPoolId, 10) || 0
+          } else if (typeof toPoolId === 'object' && toPoolId !== null) {
+            toPoolId = (toPoolId as any).toNumber ? (toPoolId as any).toNumber() : Number(toPoolId)
+          }
+          
+          if (typeof amount === 'string') {
+            amount = parseInt(amount, 10) || 0
+          } else if (typeof amount === 'object' && amount !== null) {
+            amount = (amount as any).toNumber ? (amount as any).toNumber() : Number(amount)
+          }
+          
+          const txHash = tx?.txHash || tx?.hash || ''
+          const blockHeight = tx?.blockHeight || tx?.height || 0
+          const timestamp = tx?.blockTime || tx?.time || tx?.timestamp || Date.now()
+          
+          // Convert timestamp to Date
+          let date: Date
+          if (typeof timestamp === 'number') {
+            if (timestamp > 1e15) {
+              date = new Date(timestamp / 1000000)
+            } else if (timestamp > 1e12) {
+              date = new Date(timestamp)
+            } else {
+              date = new Date(timestamp * 1000)
+            }
+          } else {
+            date = new Date(timestamp)
+          }
+          
+          return {
+            timestamp: date,
+            operation: 'Transfer',
+            fromPool: PoolNames[fromPoolId] || `Pool ${fromPoolId}`,
+            toPool: PoolNames[toPoolId] || `Pool ${toPoolId}`,
+            amount: amount,
+            adminAddress: tx?.sender || tx?.signer || 'Unknown',
+            status: 'success' as const,
+            txHash: txHash,
+            blockHeight: blockHeight,
+          }
+        })
+        
+        return entries
+      } catch (error) {
+        console.error('Failed to fetch pool transfer transactions:', error)
+        return []
+      }
+    },
+    refetchInterval: 20000, // Refetch every 20 seconds
+  })
+
+  // Load blockchain transactions into audit log
+  useEffect(() => {
+    if (poolTransferTxs && poolTransferTxs.length > 0) {
+      setAuditLog(poolTransferTxs)
+      // Reset visible count when new data loads
+      setVisibleCount(10)
+    }
+  }, [poolTransferTxs])
+
+  const showMoreTransactions = () => {
+    setVisibleCount(prev => prev + 10)
+  }
+
+  const visibleAuditLog = auditLog.slice(0, visibleCount)
+  const hasMore = visibleCount < auditLog.length
 
   // Fetch all pool balances
   const { data: daoPoolData, refetch: refetchDao } = useQuery({
@@ -150,6 +280,35 @@ export default function AdminPoolManagementPage() {
     })
   }
 
+  const downloadAuditLog = () => {
+    const csv = [
+      ['Timestamp', 'Operation', 'From Pool', 'To Pool', 'Amount (CNPY)', 'Admin Address', 'Status', 'Block Height', 'Transaction Hash'].join(','),
+      ...auditLog.map(entry => [
+        entry.timestamp.toISOString(),
+        entry.operation,
+        entry.fromPool,
+        entry.toPool || '',
+        formatCNPY(entry.amount),
+        entry.adminAddress,
+        entry.status,
+        entry.blockHeight || '',
+        entry.txHash || '',
+      ].map(field => `"${field}"`).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `pool-transfer-audit-log-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+    
+    toast.success('Audit log exported successfully')
+  }
+
   const handleOpenTransferModal = (fromPoolId: number) => {
     setTransferModal({
       isOpen: true,
@@ -218,8 +377,20 @@ export default function AdminPoolManagementPage() {
       }
 
       // Success!
-      toast.success(`Transfer successful! TX: ${data.txHash.substring(0, 12)}...`)
+      toast.success(
+        <div>
+          Transfer successful!{' '}
+          <a 
+            href={`/transaction/${data.txHash}`}
+            className="underline font-semibold hover:text-blue-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            View TX
+          </a>
+        </div>
+      )
       
+      // Add pending entry to audit log (will be replaced by blockchain data on next refetch)
       const entry: AuditLogEntry = {
         timestamp: new Date(),
         operation: 'Transfer',
@@ -227,20 +398,24 @@ export default function AdminPoolManagementPage() {
         toPool: PoolNames[transferModal.toPoolId],
         amount: amountMicro,
         adminAddress: adminAddress,
-        status: 'success',
-        message: data.message,
+        status: 'pending',
+        message: 'Transaction submitted, waiting for confirmation...',
+        txHash: data.txHash,
       }
       
       setAuditLog([entry, ...auditLog])
       handleCloseTransferModal()
       
-      // Refetch all pools
-      refetchDao()
-      refetchShop()
-      refetchReserve()
-      refetchPlatform()
-      refetchDaily()
-      refetchMonthly()
+      // Refetch all pools and audit log
+      setTimeout(() => {
+        refetchDao()
+        refetchShop()
+        refetchReserve()
+        refetchPlatform()
+        refetchDaily()
+        refetchMonthly()
+        refetchAuditLog()
+      }, 3000) // Wait 3 seconds for blockchain to process
       
     } catch (error: any) {
       toast.dismiss()
@@ -253,7 +428,7 @@ export default function AdminPoolManagementPage() {
         fromPool: PoolNames[transferModal.fromPoolId],
         toPool: transferModal.toPoolId ? PoolNames[transferModal.toPoolId] : undefined,
         amount: amountMicro,
-        adminAddress: localStorage.getItem('admin_address') || 'Unknown',
+        adminAddress: walletAuth?.address || 'Unknown',
         status: 'error',
         message: error.message,
       }
@@ -414,71 +589,135 @@ export default function AdminPoolManagementPage() {
 
           {/* Audit Log */}
           <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-white mb-4">Recent Operations</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-white">Recent Operations</h2>
+              {auditLog.length > 0 && (
+                <button
+                  onClick={downloadAuditLog}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-700 transition-colors text-sm font-medium"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Export CSV
+                </button>
+              )}
+            </div>
             <div className="rounded-xl border border-white/10 bg-black/20 backdrop-blur-sm overflow-hidden">
               {auditLog.length === 0 ? (
                 <div className="p-8 text-center text-slate-400">
                   No operations yet. Pool operations will appear here.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-black/30 border-b border-white/5">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                          Time
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                          Operation
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                          From
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                          To
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                          Amount
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {auditLog.map((entry, idx) => (
-                        <tr key={idx} className="hover:bg-white/5 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
-                            {entry.timestamp.toLocaleTimeString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
-                            {entry.operation}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
-                            {entry.fromPool}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
-                            {entry.toPool || '—'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                            {formatCNPY(entry.amount)} CNPY
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                entry.status === 'success'
-                                  ? 'bg-green-500/10 text-green-400'
-                                  : 'bg-red-500/10 text-red-400'
-                              }`}
-                            >
-                              {entry.status}
-                            </span>
-                          </td>
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-black/30 border-b border-white/5">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                            Time
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                            Operation
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                            From
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                            To
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                            Amount
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                            Block
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                            Transaction
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {visibleAuditLog.map((entry, idx) => (
+                          <tr key={idx} className="hover:bg-white/5 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                              {entry.timestamp.toLocaleTimeString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                              {entry.operation}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                              {entry.fromPool}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                              {entry.toPool || '—'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                              {formatCNPY(entry.amount)} CNPY
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  entry.status === 'success'
+                                    ? 'bg-green-500/10 text-green-400'
+                                    : entry.status === 'pending'
+                                    ? 'bg-yellow-500/10 text-yellow-400'
+                                    : 'bg-red-500/10 text-red-400'
+                                }`}
+                              >
+                                {entry.status === 'pending' && (
+                                  <svg className="animate-spin -ml-0.5 mr-1.5 h-3 w-3" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                )}
+                                {entry.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              {entry.blockHeight ? (
+                                <Link
+                                  to={`/block/${entry.blockHeight}`}
+                                  className="text-blue-400 hover:text-blue-300 underline"
+                                >
+                                  {entry.blockHeight}
+                                </Link>
+                              ) : (
+                                <span className="text-slate-500">—</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              {entry.txHash ? (
+                                <Link
+                                  to={`/transaction/${entry.txHash}`}
+                                  className="text-blue-400 hover:text-blue-300 underline font-mono"
+                                >
+                                  {entry.txHash.substring(0, 8)}...{entry.txHash.substring(entry.txHash.length - 6)}
+                                </Link>
+                              ) : (
+                                <span className="text-slate-500">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {hasMore && (
+                    <div className="border-t border-white/5 p-4 text-center">
+                      <button
+                        onClick={showMoreTransactions}
+                        className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium text-sm"
+                      >
+                        Show More
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </motion.div>

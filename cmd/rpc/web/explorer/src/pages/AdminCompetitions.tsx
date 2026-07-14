@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { createGame2048Client } from '../lib/chain2048'
 import type { DailyPrizePool, MonthlyLeaderboard, MonthlyPool, LeaderboardEntry } from '../lib/mockChain2048'
 
@@ -14,17 +15,19 @@ export default function AdminCompetitionsPage() {
   }, [])
 
   // Fetch daily leaderboard
-  const { data: leaderboards } = useQuery({
+  const { data: leaderboards, refetch: refetchLeaderboards } = useQuery({
     queryKey: ['leaderboards'],
     queryFn: () => client?.getLeaderboards(),
     enabled: !!client,
+    refetchInterval: 30000, // Refetch every 30 seconds for live updates
   })
 
   // Fetch daily prize pool (today)
-  const { data: dailyPool } = useQuery({
+  const { data: dailyPool, refetch: refetchDailyPool } = useQuery({
     queryKey: ['daily-pool'],
     queryFn: () => client?.getDailyPrizePool(),
     enabled: !!client,
+    refetchInterval: 30000, // Refetch every 30 seconds
   })
 
   // Fetch monthly leaderboard
@@ -32,6 +35,7 @@ export default function AdminCompetitionsPage() {
     queryKey: ['monthly-leaderboard'],
     queryFn: () => client?.getMonthlyLeaderboard(),
     enabled: !!client,
+    refetchInterval: 60000, // Refetch every minute
   })
 
   // Fetch monthly pool
@@ -39,6 +43,7 @@ export default function AdminCompetitionsPage() {
     queryKey: ['monthly-pool'],
     queryFn: () => client?.getMonthlyPool(),
     enabled: !!client,
+    refetchInterval: 60000, // Refetch every minute
   })
 
   const containerVariants = {
@@ -80,6 +85,98 @@ export default function AdminCompetitionsPage() {
       return dateStr
     }
   }
+
+  // Check if day has ended (UTC midnight has passed)
+  const hasDayEnded = (utcDate: string): boolean => {
+    const targetDate = new Date(utcDate + 'T23:59:59.999Z')
+    const now = new Date()
+    return now > targetDate
+  }
+
+  // Get competition status with enhanced info
+  const getCompetitionStatus = () => {
+    if (!dailyPool) return { text: 'Loading', color: 'gray', icon: '⏳' }
+    
+    if (dailyPool.finalized) {
+      return { text: 'Finalized', color: 'green', icon: '✓' }
+    }
+    
+    if (hasDayEnded(dailyPool.utcDate)) {
+      return { text: 'Awaiting Finalization', color: 'amber', icon: '⏱' }
+    }
+    
+    return { text: 'Active', color: 'blue', icon: '▶' }
+  }
+
+  // Get competition health warning
+  const getHealthWarning = () => {
+    if (!dailyPool) return null
+    
+    const warnings = []
+    
+    if (dailyPool.entryCount < 5) {
+      warnings.push({
+        level: 'warning',
+        message: `Low participation: Only ${dailyPool.entryCount} ${dailyPool.entryCount === 1 ? 'entry' : 'entries'} today`,
+      })
+    }
+    
+    if (dailyPool.rewardPool < 50_000_000) { // Less than 50 CNPY
+      warnings.push({
+        level: 'info',
+        message: `Small prize pool: ${formatCNPY(dailyPool.rewardPool)} CNPY`,
+      })
+    }
+    
+    if (hasDayEnded(dailyPool.utcDate) && !dailyPool.finalized) {
+      warnings.push({
+        level: 'info',
+        message: 'Day has ended. Pool will finalize when first player claims.',
+      })
+    }
+    
+    return warnings.length > 0 ? warnings : null
+  }
+
+  // Export daily competition data
+  const exportDailyCompetition = () => {
+    if (!dailyPool || !leaderboards?.daily) {
+      toast.error('No data to export')
+      return
+    }
+
+    const csv = [
+      ['Daily Competition Export', '', '', '', '', ''],
+      ['Date', dailyPool.utcDate, '', '', '', ''],
+      ['Status', dailyPool.finalized ? 'Finalized' : 'Active', '', '', '', ''],
+      ['Participants', dailyPool.entryCount.toString(), '', '', '', ''],
+      ['Prize Pool (CNPY)', formatCNPY(dailyPool.rewardPool), '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['Rank', 'Player', 'Score', 'Max Tile', 'Moves', 'Time'],
+      ...leaderboards.daily.map((entry, idx) => [
+        (idx + 1).toString(),
+        entry.username || entry.address,
+        entry.score.toString(),
+        entry.maxTile.toString(),
+        entry.moveCount.toString(),
+        new Date(entry.endedAt).toLocaleString(),
+      ]),
+    ]
+      .map((row) => row.join(','))
+      .join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `daily-competition-${dailyPool.utcDate}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('Competition data exported')
+  }
+
+  const status = getCompetitionStatus()
+  const warnings = getHealthWarning()
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
@@ -139,6 +236,37 @@ export default function AdminCompetitionsPage() {
           {/* Daily Competition View */}
           {selectedTab === 'daily' && dailyPool && (
             <>
+              {/* Competition Health Warnings */}
+              {warnings && warnings.length > 0 && (
+                <motion.div variants={itemVariants}>
+                  <div className="space-y-2">
+                    {warnings.map((warning, idx) => (
+                      <div
+                        key={idx}
+                        className={`rounded-lg border p-4 ${
+                          warning.level === 'warning'
+                            ? 'border-amber-500/20 bg-amber-500/10'
+                            : 'border-blue-500/20 bg-blue-500/10'
+                        }`}
+                      >
+                        <div className="flex items-start">
+                          <span className={`text-lg mr-3 ${
+                            warning.level === 'warning' ? 'text-amber-400' : 'text-blue-400'
+                          }`}>
+                            {warning.level === 'warning' ? '⚠️' : 'ℹ️'}
+                          </span>
+                          <p className={`text-sm ${
+                            warning.level === 'warning' ? 'text-amber-200' : 'text-blue-200'
+                          }`}>
+                            {warning.message}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
               {/* Daily Overview */}
               <motion.div variants={itemVariants}>
                 <h2 className="text-xl font-semibold text-white mb-4">Daily Overview</h2>
@@ -157,22 +285,45 @@ export default function AdminCompetitionsPage() {
                   </div>
                   <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
                     <p className="text-sm text-slate-400">Status</p>
-                    <span
-                      className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        dailyPool.finalized
-                          ? 'bg-green-500/10 text-green-400'
-                          : 'bg-yellow-500/10 text-yellow-400'
-                      }`}
-                    >
-                      {dailyPool.finalized ? 'Finalized' : 'Active'}
-                    </span>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-xl">{status.icon}</span>
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          status.color === 'green'
+                            ? 'bg-green-500/10 text-green-400'
+                            : status.color === 'amber'
+                            ? 'bg-amber-500/10 text-amber-400'
+                            : status.color === 'blue'
+                            ? 'bg-blue-500/10 text-blue-400'
+                            : 'bg-gray-500/10 text-gray-400'
+                        }`}
+                      >
+                        {status.text}
+                      </span>
+                    </div>
+                    {hasDayEnded(dailyPool.utcDate) && !dailyPool.finalized && (
+                      <p className="text-xs text-slate-500 mt-2">
+                        Awaiting first claim
+                      </p>
+                    )}
                   </div>
                 </div>
               </motion.div>
 
               {/* Daily Leaderboard */}
               <motion.div variants={itemVariants}>
-                <h2 className="text-xl font-semibold text-white mb-4">Daily Leaderboard</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-white">Daily Leaderboard</h2>
+                  <button
+                    onClick={exportDailyCompetition}
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 px-4 py-2 text-sm font-medium text-blue-400 hover:bg-blue-500/20 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export CSV
+                  </button>
+                </div>
                 <div className="rounded-xl border border-white/10 bg-black/20 backdrop-blur-sm overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">

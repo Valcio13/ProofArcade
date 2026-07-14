@@ -22,7 +22,9 @@ export const GAME2048_TYPE_URLS = {
     redeemClassicPoints: 'type.googleapis.com/types.MessageRedeemClassicPoints',
     claimDailyLoginReward: 'type.googleapis.com/types.MessageClaimDailyLoginReward',
     setUsername: 'type.googleapis.com/types.MessageSetUsername',
-    poolTransfer: 'type.googleapis.com/types.MessagePoolTransfer'
+    poolTransfer: 'type.googleapis.com/types.MessagePoolTransfer',
+    banPlayer: 'type.googleapis.com/types.MessageBanPlayer',
+    unbanPlayer: 'type.googleapis.com/types.MessageUnbanPlayer'
 } as const;
 
 export type Game2048MessageType =
@@ -33,7 +35,9 @@ export type Game2048MessageType =
     | 'MessageRedeemClassicPoints'
     | 'MessageClaimDailyLoginReward'
     | 'MessageSetUsername'
-    | 'MessagePoolTransfer';
+    | 'MessagePoolTransfer'
+    | 'MessageBanPlayer'
+    | 'MessageUnbanPlayer';
 
 type Game2048StateType =
     | 'GameConfig'
@@ -50,7 +54,8 @@ type Game2048StateType =
     | 'DailyLoginClaim'
     | 'PlayerStats'
     | 'UsernameRegistration'
-    | 'PlayerIdentity';
+    | 'PlayerIdentity'
+    | 'PlayerBan';
 
 function lookupType(typeName: Game2048MessageType | Game2048StateType): protobuf.Type {
     const type = game2048Root.lookupType(`types.${typeName}`);
@@ -86,6 +91,15 @@ export function decodeGame2048Any(any: any): [any | null, Game2048MessageType | 
         }
         if (typeUrl.includes('MessageSetUsername')) {
             return [lookupType('MessageSetUsername').decode(any.value), 'MessageSetUsername', null];
+        }
+        if (typeUrl.includes('MessagePoolTransfer')) {
+            return [lookupType('MessagePoolTransfer').decode(any.value), 'MessagePoolTransfer', null];
+        }
+        if (typeUrl.includes('MessageBanPlayer')) {
+            return [lookupType('MessageBanPlayer').decode(any.value), 'MessageBanPlayer', null];
+        }
+        if (typeUrl.includes('MessageUnbanPlayer')) {
+            return [lookupType('MessageUnbanPlayer').decode(any.value), 'MessageUnbanPlayer', null];
         }
         return [null, null, ErrInvalidMessageCast()];
     } catch (err) {

@@ -402,6 +402,33 @@ type poolTransferResponse struct {
 	Message            string `json:"message"`
 }
 
+// banPlayerRequest is used for admin ban operations
+type banPlayerRequest struct {
+	TargetAddress lib.HexBytes `json:"targetAddress"`
+	Reason        string       `json:"reason"`
+}
+
+// banPlayerResponse returns the result of a ban operation
+type banPlayerResponse struct {
+	Success bool   `json:"success"`
+	TxHash  string `json:"txHash"`
+	Message string `json:"message"`
+}
+
+// unbanPlayerRequest is used for admin unban operations
+type unbanPlayerRequest struct {
+	TargetAddress lib.HexBytes `json:"targetAddress"`
+	Reason        string       `json:"reason"`
+}
+
+// unbanPlayerResponse returns the result of an unban operation
+type unbanPlayerResponse struct {
+	Success bool   `json:"success"`
+	TxHash  string `json:"txHash"`
+	Message string `json:"message"`
+}
+
+
 type txChangeParamRequest struct {
 	ParamSpace string `json:"paramSpace"`
 	ParamKey   string `json:"paramKey"`

@@ -358,6 +358,23 @@ export default function AdminPage() {
               </Link>
 
               <Link
+                to="/admin/moderation"
+                className="rounded-xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm hover:bg-white/5 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="rounded-lg bg-red-500/10 p-2">
+                    <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">Moderation</p>
+                    <p className="text-xs text-slate-400">Ban/unban players</p>
+                  </div>
+                </div>
+              </Link>
+
+              <Link
                 to="/admin/economy"
                 className="rounded-xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm hover:bg-white/5 transition-colors"
               >

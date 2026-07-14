@@ -127,6 +127,8 @@ const (
 	AdminVerifyRoutePath         = "/v1/admin/verify"
 	AdminConfigRoutePath         = "/v1/admin/admin-config"
 	AdminPoolTransferRoutePath   = "/v1/admin/pool-transfer"
+	AdminBanPlayerRoutePath      = "/v1/admin/ban-player"
+	AdminUnbanPlayerRoutePath    = "/v1/admin/unban-player"
 )
 
 const (
@@ -253,6 +255,8 @@ const (
 	AdminVerifyRouteName            = "admin-verify"
 	AdminConfigRouteName            = "admin-config"
 	AdminPoolTransferRouteName      = "admin-pool-transfer"
+	AdminBanPlayerRouteName         = "admin-ban-player"
+	AdminUnbanPlayerRouteName       = "admin-unban-player"
 )
 
 // routes contains the method and path for a canopy command
@@ -381,6 +385,8 @@ var routePaths = routes{
 	AdminVerifyRouteName:            {Method: http.MethodPost, Path: AdminVerifyRoutePath},
 	AdminConfigRouteName:            {Method: http.MethodGet, Path: AdminConfigRoutePath},
 	AdminPoolTransferRouteName:      {Method: http.MethodPost, Path: AdminPoolTransferRoutePath},
+	AdminBanPlayerRouteName:         {Method: http.MethodPost, Path: AdminBanPlayerRoutePath},
+	AdminUnbanPlayerRouteName:       {Method: http.MethodPost, Path: AdminUnbanPlayerRoutePath},
 }
 
 // httpRouteHandlers is a custom type that maps strings to httprouter handle functions
@@ -524,6 +530,8 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		AdminVerifyRouteName:            s.AdminVerify,
 		AdminConfigRouteName:            s.AdminConfig,
 		AdminPoolTransferRouteName:      s.AdminPoolTransfer,
+		AdminBanPlayerRouteName:         s.AdminBanPlayer,
+		AdminUnbanPlayerRouteName:       s.AdminUnbanPlayer,
 	}
 
 	// Initialize a new router using the httprouter package.

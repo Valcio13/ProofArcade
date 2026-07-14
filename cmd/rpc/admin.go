@@ -1011,8 +1011,8 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 
-	s.logger.Infof("AdminPoolTransfer: fromPool=%d, toPool=%d, amount=%d, adminAddr=%s",
-		req.FromPoolId, req.ToPoolId, req.Amount, hex.EncodeToString(req.AdminAddress))
+	s.logger.Infof("AdminPoolTransfer: fromPool=%d, toPool=%d, amount=%d",
+		req.FromPoolId, req.ToPoolId, req.Amount)
 
 	// Validate request
 	if req.FromPoolId == 0 || req.ToPoolId == 0 {
@@ -1039,7 +1039,8 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 
-	// Get validator private key for signing
+	// Get validator private key for signing admin operations
+	// NOTE: In production, consider using a dedicated admin key separate from validator key
 	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
 	if err != nil {
 		s.logger.Errorf("AdminPoolTransfer: failed to load validator key: %v", err)
@@ -1049,6 +1050,11 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 		}, http.StatusInternalServerError)
 		return
 	}
+
+	// Get the validator address from the private key
+	// This is the address that will be authorized in the plugin
+	validatorAddress := privateKey.PublicKey().Address()
+	s.logger.Infof("AdminPoolTransfer: Using validator address as admin: %s", hex.EncodeToString(validatorAddress.Bytes()))
 
 	// Read current pool balances from state
 	var fromPoolBalance uint64
@@ -1081,11 +1087,12 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 	}
 
 	// Create the pool transfer message
+	// Use the validator address as the admin address
 	msg, err := game2048AnyMessage("MessagePoolTransfer", func(message protoreflect.Message) {
 		setUint64Field(message, "from_pool_id", req.FromPoolId)
 		setUint64Field(message, "to_pool_id", req.ToPoolId)
 		setUint64Field(message, "amount", req.Amount)
-		setBytesField(message, "admin_address", req.AdminAddress)
+		setBytesField(message, "admin_address", validatorAddress.Bytes())
 	})
 	if err != nil {
 		s.logger.Errorf("AdminPoolTransfer: failed to create message: %v", err)
@@ -1098,7 +1105,7 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 
 	// Create and sign the transaction
 	tx := &lib.Transaction{
-		MessageType:   "pool-transfer",
+		MessageType:   "poolTransfer",
 		Msg:           msg,
 		CreatedHeight: s.controller.ChainHeight(),
 		Time:          uint64(time.Now().UnixMicro()),
@@ -1158,5 +1165,235 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 		FromPoolNewBalance: 0, // Will be updated after blockchain processes the tx
 		ToPoolNewBalance:   0, // Will be updated after blockchain processes the tx
 		Message:            "Pool transfer transaction submitted successfully",
+	}, http.StatusOK)
+}
+
+// AdminBanPlayer bans a player from gameplay
+func (s *Server) AdminBanPlayer(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(banPlayerRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	s.logger.Infof("AdminBanPlayer: targetAddress=%s, reason=%s",
+		hex.EncodeToString(req.TargetAddress), req.Reason)
+
+	// Validate request
+	if len(req.TargetAddress) == 0 {
+		write(w, banPlayerResponse{
+			Success: false,
+			Message: "Target address is required",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if req.Reason == "" {
+		write(w, banPlayerResponse{
+			Success: false,
+			Message: "Ban reason is required",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Get validator private key for signing admin operations
+	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
+	if err != nil {
+		s.logger.Errorf("AdminBanPlayer: failed to load validator key: %v", err)
+		write(w, banPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to load validator key: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	validatorAddress := privateKey.PublicKey().Address()
+	s.logger.Infof("AdminBanPlayer: Using validator address as admin: %s", hex.EncodeToString(validatorAddress.Bytes()))
+
+	// Create the ban player message
+	msg, err := game2048AnyMessage("MessageBanPlayer", func(message protoreflect.Message) {
+		setBytesField(message, "target_address", req.TargetAddress)
+		setStringField(message, "reason", req.Reason)
+		setBytesField(message, "admin_address", validatorAddress.Bytes())
+	})
+	if err != nil {
+		s.logger.Errorf("AdminBanPlayer: failed to create message: %v", err)
+		write(w, banPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to create ban message: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Create and sign the transaction
+	tx := &lib.Transaction{
+		MessageType:   "banPlayer",
+		Msg:           msg,
+		CreatedHeight: s.controller.ChainHeight(),
+		Time:          uint64(time.Now().UnixMicro()),
+		Fee:           0,
+		NetworkId:     s.config.NetworkID,
+		ChainId:       s.config.ChainId,
+	}
+
+	if err := tx.Sign(privateKey); err != nil {
+		s.logger.Errorf("AdminBanPlayer: failed to sign transaction: %v", err)
+		write(w, banPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to sign transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	txHash, err := tx.GetHash()
+	if err != nil {
+		s.logger.Errorf("AdminBanPlayer: failed to get tx hash: %v", err)
+		write(w, banPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to get transaction hash: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	txBytes, err := lib.Marshal(tx)
+	if err != nil {
+		s.logger.Errorf("AdminBanPlayer: failed to marshal transaction: %v", err)
+		write(w, banPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to marshal transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	if err := s.controller.SendTxMsgs([][]byte{txBytes}); err != nil {
+		s.logger.Errorf("AdminBanPlayer: failed to submit transaction: %v", err)
+		write(w, banPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to submit transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	s.logger.Infof("AdminBanPlayer: successfully submitted tx %s for player %s",
+		hex.EncodeToString(txHash), hex.EncodeToString(req.TargetAddress))
+
+	write(w, banPlayerResponse{
+		Success: true,
+		TxHash:  hex.EncodeToString(txHash),
+		Message: "Player ban transaction submitted successfully",
+	}, http.StatusOK)
+}
+
+// AdminUnbanPlayer unbans a player
+func (s *Server) AdminUnbanPlayer(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(unbanPlayerRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	s.logger.Infof("AdminUnbanPlayer: targetAddress=%s, reason=%s",
+		hex.EncodeToString(req.TargetAddress), req.Reason)
+
+	// Validate request
+	if len(req.TargetAddress) == 0 {
+		write(w, unbanPlayerResponse{
+			Success: false,
+			Message: "Target address is required",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if req.Reason == "" {
+		write(w, unbanPlayerResponse{
+			Success: false,
+			Message: "Unban reason is required",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Get validator private key for signing admin operations
+	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
+	if err != nil {
+		s.logger.Errorf("AdminUnbanPlayer: failed to load validator key: %v", err)
+		write(w, unbanPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to load validator key: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	validatorAddress := privateKey.PublicKey().Address()
+	s.logger.Infof("AdminUnbanPlayer: Using validator address as admin: %s", hex.EncodeToString(validatorAddress.Bytes()))
+
+	// Create the unban player message
+	msg, err := game2048AnyMessage("MessageUnbanPlayer", func(message protoreflect.Message) {
+		setBytesField(message, "target_address", req.TargetAddress)
+		setStringField(message, "reason", req.Reason)
+		setBytesField(message, "admin_address", validatorAddress.Bytes())
+	})
+	if err != nil {
+		s.logger.Errorf("AdminUnbanPlayer: failed to create message: %v", err)
+		write(w, unbanPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to create unban message: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Create and sign the transaction
+	tx := &lib.Transaction{
+		MessageType:   "unbanPlayer",
+		Msg:           msg,
+		CreatedHeight: s.controller.ChainHeight(),
+		Time:          uint64(time.Now().UnixMicro()),
+		Fee:           0,
+		NetworkId:     s.config.NetworkID,
+		ChainId:       s.config.ChainId,
+	}
+
+	if err := tx.Sign(privateKey); err != nil {
+		s.logger.Errorf("AdminUnbanPlayer: failed to sign transaction: %v", err)
+		write(w, unbanPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to sign transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	txHash, err := tx.GetHash()
+	if err != nil {
+		s.logger.Errorf("AdminUnbanPlayer: failed to get tx hash: %v", err)
+		write(w, unbanPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to get transaction hash: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	txBytes, err := lib.Marshal(tx)
+	if err != nil {
+		s.logger.Errorf("AdminUnbanPlayer: failed to marshal transaction: %v", err)
+		write(w, unbanPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to marshal transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	if err := s.controller.SendTxMsgs([][]byte{txBytes}); err != nil {
+		s.logger.Errorf("AdminUnbanPlayer: failed to submit transaction: %v", err)
+		write(w, unbanPlayerResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to submit transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	s.logger.Infof("AdminUnbanPlayer: successfully submitted tx %s for player %s",
+		hex.EncodeToString(txHash), hex.EncodeToString(req.TargetAddress))
+
+	write(w, unbanPlayerResponse{
+		Success: true,
+		TxHash:  hex.EncodeToString(txHash),
+		Message: "Player unban transaction submitted successfully",
 	}, http.StatusOK)
 }
