@@ -105,16 +105,17 @@ export default function AdminShopPage() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <Link
-            to="/admin"
-            className="inline-flex items-center text-sm text-slate-400 hover:text-white mb-4 transition-colors"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </Link>
-          <h1 className="text-4xl font-bold text-white mb-2">Shop & Redemptions</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <Link
+              to="/admin"
+              className="text-slate-400 hover:text-white transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </Link>
+            <h1 className="text-4xl font-bold text-white">Shop & Redemptions</h1>
+          </div>
           <p className="text-slate-400 text-lg">Platform-wide redemption activity</p>
         </motion.div>
 
