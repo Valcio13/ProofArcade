@@ -258,7 +258,7 @@ func (c *MultiConn) startReceiveService() {
 				}
 				// handle the packet within the stream
 				if slash, er := stream.handlePacket(info, x, c.p2p.metrics); er != nil {
-					c.log.Warnf(er.Error())
+					c.log.Warnf("%s", er.Error())
 					c.Error(er, slash)
 					return
 				}
