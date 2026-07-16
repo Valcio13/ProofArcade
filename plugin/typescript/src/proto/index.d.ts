@@ -1225,6 +1225,563 @@ export namespace types {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** Properties of a MessagePoolTransfer. */
+    interface IMessagePoolTransfer {
+
+        /** MessagePoolTransfer fromPoolId */
+        fromPoolId?: (number|Long|null);
+
+        /** MessagePoolTransfer toPoolId */
+        toPoolId?: (number|Long|null);
+
+        /** MessagePoolTransfer amount */
+        amount?: (number|Long|null);
+
+        /** MessagePoolTransfer adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessagePoolTransfer. */
+    class MessagePoolTransfer implements IMessagePoolTransfer {
+
+        /**
+         * Constructs a new MessagePoolTransfer.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessagePoolTransfer);
+
+        /** MessagePoolTransfer fromPoolId. */
+        public fromPoolId: (number|Long);
+
+        /** MessagePoolTransfer toPoolId. */
+        public toPoolId: (number|Long);
+
+        /** MessagePoolTransfer amount. */
+        public amount: (number|Long);
+
+        /** MessagePoolTransfer adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessagePoolTransfer instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessagePoolTransfer instance
+         */
+        public static create(properties?: types.IMessagePoolTransfer): types.MessagePoolTransfer;
+
+        /**
+         * Encodes the specified MessagePoolTransfer message. Does not implicitly {@link types.MessagePoolTransfer.verify|verify} messages.
+         * @param message MessagePoolTransfer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessagePoolTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessagePoolTransfer message, length delimited. Does not implicitly {@link types.MessagePoolTransfer.verify|verify} messages.
+         * @param message MessagePoolTransfer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessagePoolTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessagePoolTransfer message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessagePoolTransfer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessagePoolTransfer;
+
+        /**
+         * Decodes a MessagePoolTransfer message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessagePoolTransfer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessagePoolTransfer;
+
+        /**
+         * Verifies a MessagePoolTransfer message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessagePoolTransfer message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessagePoolTransfer
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessagePoolTransfer;
+
+        /**
+         * Creates a plain object from a MessagePoolTransfer message. Also converts values to other types if specified.
+         * @param message MessagePoolTransfer
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessagePoolTransfer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessagePoolTransfer to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessagePoolTransfer
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessagePoolDeposit. */
+    interface IMessagePoolDeposit {
+
+        /** MessagePoolDeposit poolId */
+        poolId?: (number|Long|null);
+
+        /** MessagePoolDeposit amount */
+        amount?: (number|Long|null);
+
+        /** MessagePoolDeposit adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessagePoolDeposit. */
+    class MessagePoolDeposit implements IMessagePoolDeposit {
+
+        /**
+         * Constructs a new MessagePoolDeposit.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessagePoolDeposit);
+
+        /** MessagePoolDeposit poolId. */
+        public poolId: (number|Long);
+
+        /** MessagePoolDeposit amount. */
+        public amount: (number|Long);
+
+        /** MessagePoolDeposit adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessagePoolDeposit instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessagePoolDeposit instance
+         */
+        public static create(properties?: types.IMessagePoolDeposit): types.MessagePoolDeposit;
+
+        /**
+         * Encodes the specified MessagePoolDeposit message. Does not implicitly {@link types.MessagePoolDeposit.verify|verify} messages.
+         * @param message MessagePoolDeposit message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessagePoolDeposit, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessagePoolDeposit message, length delimited. Does not implicitly {@link types.MessagePoolDeposit.verify|verify} messages.
+         * @param message MessagePoolDeposit message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessagePoolDeposit, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessagePoolDeposit message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessagePoolDeposit
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessagePoolDeposit;
+
+        /**
+         * Decodes a MessagePoolDeposit message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessagePoolDeposit
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessagePoolDeposit;
+
+        /**
+         * Verifies a MessagePoolDeposit message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessagePoolDeposit message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessagePoolDeposit
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessagePoolDeposit;
+
+        /**
+         * Creates a plain object from a MessagePoolDeposit message. Also converts values to other types if specified.
+         * @param message MessagePoolDeposit
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessagePoolDeposit, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessagePoolDeposit to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessagePoolDeposit
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessagePoolWithdrawal. */
+    interface IMessagePoolWithdrawal {
+
+        /** MessagePoolWithdrawal poolId */
+        poolId?: (number|Long|null);
+
+        /** MessagePoolWithdrawal amount */
+        amount?: (number|Long|null);
+
+        /** MessagePoolWithdrawal toAddress */
+        toAddress?: (Uint8Array|null);
+
+        /** MessagePoolWithdrawal adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessagePoolWithdrawal. */
+    class MessagePoolWithdrawal implements IMessagePoolWithdrawal {
+
+        /**
+         * Constructs a new MessagePoolWithdrawal.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessagePoolWithdrawal);
+
+        /** MessagePoolWithdrawal poolId. */
+        public poolId: (number|Long);
+
+        /** MessagePoolWithdrawal amount. */
+        public amount: (number|Long);
+
+        /** MessagePoolWithdrawal toAddress. */
+        public toAddress: Uint8Array;
+
+        /** MessagePoolWithdrawal adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessagePoolWithdrawal instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessagePoolWithdrawal instance
+         */
+        public static create(properties?: types.IMessagePoolWithdrawal): types.MessagePoolWithdrawal;
+
+        /**
+         * Encodes the specified MessagePoolWithdrawal message. Does not implicitly {@link types.MessagePoolWithdrawal.verify|verify} messages.
+         * @param message MessagePoolWithdrawal message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessagePoolWithdrawal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessagePoolWithdrawal message, length delimited. Does not implicitly {@link types.MessagePoolWithdrawal.verify|verify} messages.
+         * @param message MessagePoolWithdrawal message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessagePoolWithdrawal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessagePoolWithdrawal message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessagePoolWithdrawal
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessagePoolWithdrawal;
+
+        /**
+         * Decodes a MessagePoolWithdrawal message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessagePoolWithdrawal
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessagePoolWithdrawal;
+
+        /**
+         * Verifies a MessagePoolWithdrawal message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessagePoolWithdrawal message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessagePoolWithdrawal
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessagePoolWithdrawal;
+
+        /**
+         * Creates a plain object from a MessagePoolWithdrawal message. Also converts values to other types if specified.
+         * @param message MessagePoolWithdrawal
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessagePoolWithdrawal, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessagePoolWithdrawal to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessagePoolWithdrawal
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageBanPlayer. */
+    interface IMessageBanPlayer {
+
+        /** MessageBanPlayer targetAddress */
+        targetAddress?: (Uint8Array|null);
+
+        /** MessageBanPlayer reason */
+        reason?: (string|null);
+
+        /** MessageBanPlayer adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessageBanPlayer. */
+    class MessageBanPlayer implements IMessageBanPlayer {
+
+        /**
+         * Constructs a new MessageBanPlayer.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageBanPlayer);
+
+        /** MessageBanPlayer targetAddress. */
+        public targetAddress: Uint8Array;
+
+        /** MessageBanPlayer reason. */
+        public reason: string;
+
+        /** MessageBanPlayer adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessageBanPlayer instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageBanPlayer instance
+         */
+        public static create(properties?: types.IMessageBanPlayer): types.MessageBanPlayer;
+
+        /**
+         * Encodes the specified MessageBanPlayer message. Does not implicitly {@link types.MessageBanPlayer.verify|verify} messages.
+         * @param message MessageBanPlayer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageBanPlayer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageBanPlayer message, length delimited. Does not implicitly {@link types.MessageBanPlayer.verify|verify} messages.
+         * @param message MessageBanPlayer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageBanPlayer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageBanPlayer message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageBanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageBanPlayer;
+
+        /**
+         * Decodes a MessageBanPlayer message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageBanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageBanPlayer;
+
+        /**
+         * Verifies a MessageBanPlayer message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageBanPlayer message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageBanPlayer
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageBanPlayer;
+
+        /**
+         * Creates a plain object from a MessageBanPlayer message. Also converts values to other types if specified.
+         * @param message MessageBanPlayer
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageBanPlayer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageBanPlayer to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageBanPlayer
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageUnbanPlayer. */
+    interface IMessageUnbanPlayer {
+
+        /** MessageUnbanPlayer targetAddress */
+        targetAddress?: (Uint8Array|null);
+
+        /** MessageUnbanPlayer reason */
+        reason?: (string|null);
+
+        /** MessageUnbanPlayer adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessageUnbanPlayer. */
+    class MessageUnbanPlayer implements IMessageUnbanPlayer {
+
+        /**
+         * Constructs a new MessageUnbanPlayer.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageUnbanPlayer);
+
+        /** MessageUnbanPlayer targetAddress. */
+        public targetAddress: Uint8Array;
+
+        /** MessageUnbanPlayer reason. */
+        public reason: string;
+
+        /** MessageUnbanPlayer adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessageUnbanPlayer instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageUnbanPlayer instance
+         */
+        public static create(properties?: types.IMessageUnbanPlayer): types.MessageUnbanPlayer;
+
+        /**
+         * Encodes the specified MessageUnbanPlayer message. Does not implicitly {@link types.MessageUnbanPlayer.verify|verify} messages.
+         * @param message MessageUnbanPlayer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageUnbanPlayer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageUnbanPlayer message, length delimited. Does not implicitly {@link types.MessageUnbanPlayer.verify|verify} messages.
+         * @param message MessageUnbanPlayer message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageUnbanPlayer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageUnbanPlayer message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageUnbanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageUnbanPlayer;
+
+        /**
+         * Decodes a MessageUnbanPlayer message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageUnbanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageUnbanPlayer;
+
+        /**
+         * Verifies a MessageUnbanPlayer message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageUnbanPlayer message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageUnbanPlayer
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageUnbanPlayer;
+
+        /**
+         * Creates a plain object from a MessageUnbanPlayer message. Also converts values to other types if specified.
+         * @param message MessageUnbanPlayer
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageUnbanPlayer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageUnbanPlayer to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageUnbanPlayer
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a GameConfig. */
     interface IGameConfig {
 
@@ -3322,6 +3879,145 @@ export namespace types {
 
         /**
          * Gets the default type url for PlayerStats
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a PlayerBan. */
+    interface IPlayerBan {
+
+        /** PlayerBan playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** PlayerBan reason */
+        reason?: (string|null);
+
+        /** PlayerBan bannedBy */
+        bannedBy?: (Uint8Array|null);
+
+        /** PlayerBan bannedAtUnix */
+        bannedAtUnix?: (number|Long|null);
+
+        /** PlayerBan active */
+        active?: (boolean|null);
+
+        /** PlayerBan unbannedBy */
+        unbannedBy?: (Uint8Array|null);
+
+        /** PlayerBan unbannedAtUnix */
+        unbannedAtUnix?: (number|Long|null);
+
+        /** PlayerBan unbanReason */
+        unbanReason?: (string|null);
+    }
+
+    /** Represents a PlayerBan. */
+    class PlayerBan implements IPlayerBan {
+
+        /**
+         * Constructs a new PlayerBan.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IPlayerBan);
+
+        /** PlayerBan playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** PlayerBan reason. */
+        public reason: string;
+
+        /** PlayerBan bannedBy. */
+        public bannedBy: Uint8Array;
+
+        /** PlayerBan bannedAtUnix. */
+        public bannedAtUnix: (number|Long);
+
+        /** PlayerBan active. */
+        public active: boolean;
+
+        /** PlayerBan unbannedBy. */
+        public unbannedBy: Uint8Array;
+
+        /** PlayerBan unbannedAtUnix. */
+        public unbannedAtUnix: (number|Long);
+
+        /** PlayerBan unbanReason. */
+        public unbanReason: string;
+
+        /**
+         * Creates a new PlayerBan instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns PlayerBan instance
+         */
+        public static create(properties?: types.IPlayerBan): types.PlayerBan;
+
+        /**
+         * Encodes the specified PlayerBan message. Does not implicitly {@link types.PlayerBan.verify|verify} messages.
+         * @param message PlayerBan message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IPlayerBan, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified PlayerBan message, length delimited. Does not implicitly {@link types.PlayerBan.verify|verify} messages.
+         * @param message PlayerBan message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IPlayerBan, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a PlayerBan message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns PlayerBan
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.PlayerBan;
+
+        /**
+         * Decodes a PlayerBan message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns PlayerBan
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.PlayerBan;
+
+        /**
+         * Verifies a PlayerBan message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a PlayerBan message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns PlayerBan
+         */
+        public static fromObject(object: { [k: string]: any }): types.PlayerBan;
+
+        /**
+         * Creates a plain object from a PlayerBan message. Also converts values to other types if specified.
+         * @param message PlayerBan
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.PlayerBan, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this PlayerBan to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for PlayerBan
          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
          * @returns The default type url
          */

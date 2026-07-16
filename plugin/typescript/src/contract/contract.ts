@@ -170,7 +170,7 @@ export const ContractConfig: any = {
     name: 'game2048_contract',
     id: 1,
     version: 1,
-    supportedTransactions: ['send', 'startDailyGame', 'startClassicGame', 'submitGameResult', 'claimDailyReward', 'redeemClassicPoints', 'claimDailyLoginReward', 'setUsername'],
+    supportedTransactions: ['send', 'startDailyGame', 'startClassicGame', 'submitGameResult', 'claimDailyReward', 'redeemClassicPoints', 'claimDailyLoginReward', 'setUsername', 'poolTransfer', 'poolDeposit', 'poolWithdrawal', 'banPlayer', 'unbanPlayer'],
     transactionTypeUrls: [
         'type.googleapis.com/types.MessageSend',
         GAME2048_TYPE_URLS.startDailyGame,
@@ -179,7 +179,12 @@ export const ContractConfig: any = {
         GAME2048_TYPE_URLS.claimDailyReward,
         GAME2048_TYPE_URLS.redeemClassicPoints,
         GAME2048_TYPE_URLS.claimDailyLoginReward,
-        GAME2048_TYPE_URLS.setUsername
+        GAME2048_TYPE_URLS.setUsername,
+        GAME2048_TYPE_URLS.poolTransfer,
+        GAME2048_TYPE_URLS.poolDeposit,
+        GAME2048_TYPE_URLS.poolWithdrawal,
+        GAME2048_TYPE_URLS.banPlayer,
+        GAME2048_TYPE_URLS.unbanPlayer
     ],
     eventTypeUrls: [],
     fileDescriptorProtos
@@ -259,6 +264,94 @@ export class Contract {
     CheckMessageSetUsername(msg: any): any {
         return checkMessageSetUsername(msg);
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    CheckMessagePoolTransfer(msg: any): any {
+        console.error('=== [POOL_TRANSFER_DEBUG] CheckMessagePoolTransfer CALLED ===');
+        console.error('[POOL_TRANSFER_DEBUG] Full message:', JSON.stringify(msg, null, 2));
+        
+        // Pool transfers require admin authorization
+        // The admin address is provided in the message by the backend
+        // The backend uses the validator key, so admin address = validator address
+        const adminAddress = normalizeBytes(msg?.adminAddress);
+        
+        console.error('[POOL_TRANSFER_DEBUG] Admin address after normalize:', 
+            adminAddress ? Buffer.from(adminAddress).toString('hex') : 'NULL/EMPTY');
+        
+        if (!adminAddress || adminAddress.length === 0) {
+            console.error('[POOL_TRANSFER_DEBUG] ERROR: No admin address in message');
+            return { 
+                error: { 
+                    code: 400, 
+                    msg: 'Admin address not provided in transaction message' 
+                } 
+            };
+        }
+        
+        console.error('[POOL_TRANSFER_DEBUG] Authorizing admin address:', Buffer.from(adminAddress).toString('hex'));
+        console.error('[POOL_TRANSFER_DEBUG] Returning authorizedSigners array');
+        
+        // Return the admin address as the only authorized signer
+        // FSM will verify transaction signer matches this address
+        return { authorizedSigners: [adminAddress] };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    CheckMessagePoolDeposit(msg: any): any {
+        console.error('=== [POOL_DEPOSIT] CheckMessagePoolDeposit CALLED ===');
+        console.error('[POOL_DEPOSIT] Full message:', JSON.stringify(msg, null, 2));
+        
+        // Pool deposits require admin authorization
+        const adminAddress = normalizeBytes(msg?.adminAddress);
+        
+        console.error('[POOL_DEPOSIT] Admin address after normalize:', 
+            adminAddress ? Buffer.from(adminAddress).toString('hex') : 'NULL/EMPTY');
+        
+        if (!adminAddress || adminAddress.length === 0) {
+            console.error('[POOL_DEPOSIT] ERROR: No admin address in message');
+            return { 
+                error: { 
+                    code: 400, 
+                    msg: 'Admin address not provided in transaction message' 
+                } 
+            };
+        }
+        
+        console.error('[POOL_DEPOSIT] Authorizing admin address:', Buffer.from(adminAddress).toString('hex'));
+        
+        // Return the admin address as the only authorized signer
+        // FSM will verify transaction signer matches this address
+        return { authorizedSigners: [adminAddress] };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    CheckMessagePoolWithdrawal(msg: any): any {
+        console.error('=== [POOL_WITHDRAWAL] CheckMessagePoolWithdrawal CALLED ===');
+        console.error('[POOL_WITHDRAWAL] Full message:', JSON.stringify(msg, null, 2));
+        
+        // Pool withdrawals require admin authorization
+        const adminAddress = normalizeBytes(msg?.adminAddress);
+        
+        console.error('[POOL_WITHDRAWAL] Admin address after normalize:', 
+            adminAddress ? Buffer.from(adminAddress).toString('hex') : 'NULL/EMPTY');
+        
+        if (!adminAddress || adminAddress.length === 0) {
+            console.error('[POOL_WITHDRAWAL] ERROR: No admin address in message');
+            return { 
+                error: { 
+                    code: 400, 
+                    msg: 'Admin address not provided in transaction message' 
+                } 
+            };
+        }
+        
+        console.error('[POOL_WITHDRAWAL] Authorizing admin address:', Buffer.from(adminAddress).toString('hex'));
+        
+        // Return the admin address as the only authorized signer
+        // FSM will verify transaction signer matches this address
+        return { authorizedSigners: [adminAddress] };
+    }
+
 }
 
 // Async versions of contract methods for proper state handling
@@ -350,6 +443,12 @@ export class ContractAsync {
                     return contract.CheckMessageClaimDailyLoginReward(msg);
                 case 'MessageSetUsername':
                     return contract.CheckMessageSetUsername(msg);
+                case 'MessagePoolTransfer':
+                    return contract.CheckMessagePoolTransfer(msg);
+                case 'MessagePoolDeposit':
+                    return contract.CheckMessagePoolDeposit(msg);
+                case 'MessagePoolWithdrawal':
+                    return contract.CheckMessagePoolWithdrawal(msg);
                 default:
                     return { error: ErrInvalidMessageCast() };
             }
@@ -384,6 +483,12 @@ export class ContractAsync {
                     return ContractAsync.DeliverMessageClaimDailyLoginReward(contract, msg, request.tx);
                 case 'MessageSetUsername':
                     return ContractAsync.DeliverMessageSetUsername(contract, msg, request.tx);
+                case 'MessagePoolTransfer':
+                    return ContractAsync.DeliverMessagePoolTransfer(contract, msg, request.tx);
+                case 'MessagePoolDeposit':
+                    return ContractAsync.DeliverMessagePoolDeposit(contract, msg, request.tx);
+                case 'MessagePoolWithdrawal':
+                    return ContractAsync.DeliverMessagePoolWithdrawal(contract, msg, request.tx);
                 default:
                     return { error: ErrInvalidMessageCast() };
             }
@@ -546,6 +651,7 @@ export class ContractAsync {
     static async DeliverMessageStartDailyGame(contract: Contract, msg: any, tx: any): Promise<any> {
         const playerAddress = normalizeBytes(msg?.playerAddress);
         const gameId = normalizeBytes(msg?.gameId);
+
         const playerKey = KeyForAccount(playerAddress);
         const gameConfigKey = KeyForGameConfig();
         const gameTreasuryKey = KeyForGameTreasury();
@@ -744,6 +850,7 @@ export class ContractAsync {
     static async DeliverMessageStartClassicGame(contract: Contract, msg: any, tx: any): Promise<any> {
         const playerAddress = normalizeBytes(msg?.playerAddress);
         const gameId = normalizeBytes(msg?.gameId);
+
         const playerKey = KeyForAccount(playerAddress);
         const gameTreasuryKey = KeyForGameTreasury();
         const platformPoolKey = KeyForGamePlatformPool();
@@ -1850,4 +1957,394 @@ export class ContractAsync {
 
         return {};
     }
+
+    // DeliverMessagePoolTransfer handles admin pool transfer operations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static async DeliverMessagePoolTransfer(contract: Contract, msg: any, _tx: any): Promise<any> {
+        console.error('=== [POOL_TRANSFER_DEBUG] DeliverMessagePoolTransfer CALLED ===');
+        console.error('[POOL_TRANSFER_DEBUG] Message:', JSON.stringify(msg, null, 2));
+        
+        const fromPoolId = toUint64(msg?.fromPoolId as Long | number | undefined);
+        const toPoolId = toUint64(msg?.toPoolId as Long | number | undefined);
+        const amount = Long.isLong(msg?.amount)
+            ? msg.amount
+            : Long.fromNumber((msg?.amount as number) || 0);
+        
+        console.error('[POOL_TRANSFER_DEBUG] Parsed values:');
+        console.error(`  fromPoolId: ${fromPoolId}`);
+        console.error(`  toPoolId: ${toPoolId}`);
+        console.error(`  amount: ${amount.toString()}`);
+        
+        // Admin address validation could be added here if needed in the future
+        // const adminAddress = normalizeBytes(msg?.adminAddress);
+
+        // Validation
+        if (fromPoolId === 0 || toPoolId === 0) {
+            console.error('[POOL_TRANSFER_DEBUG] ERROR: Invalid pool IDs');
+            return { error: { code: 400, msg: 'Invalid pool IDs: both must be non-zero' } };
+        }
+
+        if (fromPoolId === toPoolId) {
+            console.error('[POOL_TRANSFER_DEBUG] ERROR: Same pool transfer');
+            return { error: { code: 400, msg: 'Cannot transfer to the same pool' } };
+        }
+
+        if (amount.isZero() || amount.isNegative()) {
+            console.error('[POOL_TRANSFER_DEBUG] ERROR: Invalid amount');
+            return { error: { code: 400, msg: 'Transfer amount must be positive' } };
+        }
+
+        console.error('[POOL_TRANSFER_DEBUG] Validation passed, importing transferBetweenPools...');
+        
+        // Import transferBetweenPools from pool-operations
+        const { transferBetweenPools } = await import('./economy/pool-operations.js');
+
+        // Execute the pool transfer
+        try {
+            console.error('[POOL_TRANSFER_DEBUG] Calling transferBetweenPools...');
+            await transferBetweenPools(contract, fromPoolId, toPoolId, amount);
+            console.error('[POOL_TRANSFER_DEBUG] transferBetweenPools completed successfully!');
+            return {};
+        } catch (error: any) {
+            console.error('[POOL_TRANSFER_DEBUG] ERROR in transferBetweenPools:', error);
+            console.error('[POOL_TRANSFER_DEBUG] Error message:', error?.message);
+            console.error('[POOL_TRANSFER_DEBUG] Error stack:', error?.stack);
+            return { error: { code: 500, msg: error?.message || 'Pool transfer failed' } };
+        }
+    }
+
+    // DeliverMessagePoolDeposit handles admin deposit from external wallet to Reserve Pool
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static async DeliverMessagePoolDeposit(contract: Contract, msg: any, _tx: any): Promise<any> {
+        console.error('=== [POOL_DEPOSIT] DeliverMessagePoolDeposit CALLED ===');
+        console.error('[POOL_DEPOSIT] Message:', JSON.stringify(msg, null, 2));
+        
+        const poolId = toUint64(msg?.poolId as Long | number | undefined);
+        const amount = Long.isLong(msg?.amount)
+            ? msg.amount
+            : Long.fromNumber((msg?.amount as number) || 0);
+        const adminAddress = normalizeBytes(msg?.adminAddress);
+        
+        console.error('[POOL_DEPOSIT] Parsed values:');
+        console.error(`  poolId: ${poolId}`);
+        console.error(`  amount: ${amount.toString()}`);
+        console.error(`  adminAddress: ${adminAddress ? Buffer.from(adminAddress).toString('hex') : 'null'}`);
+        
+        // CRITICAL: Only allow deposits to Reserve Pool (131073)
+        const RESERVE_POOL_ID = 131073;
+        if (poolId !== RESERVE_POOL_ID) {
+            console.error('[POOL_DEPOSIT] ERROR: Invalid pool ID (must be Reserve Pool)');
+            return { error: { code: 400, msg: `Deposits only allowed to Reserve Pool (ID: ${RESERVE_POOL_ID})` } };
+        }
+
+        if (amount.isZero() || amount.isNegative()) {
+            console.error('[POOL_DEPOSIT] ERROR: Invalid amount');
+            return { error: { code: 400, msg: 'Deposit amount must be positive' } };
+        }
+
+        if (!adminAddress) {
+            console.error('[POOL_DEPOSIT] ERROR: Missing admin address');
+            return { error: { code: 400, msg: 'Admin address is required' } };
+        }
+
+        console.error('[POOL_DEPOSIT] Validation passed, reading admin account and pool...');
+        
+        try {
+            // Read admin account and Reserve Pool
+            const adminKey = KeyForAccount(adminAddress);
+            const poolKey = KeyForGameReservePool();  // Always Reserve Pool for deposits
+            
+            const adminQueryId = randomQueryId();
+            const poolQueryId = randomQueryId();
+            
+            const [readResp, readErr] = await contract.plugin.StateRead(contract, {
+                keys: [
+                    { queryId: adminQueryId, key: adminKey },
+                    { queryId: poolQueryId, key: poolKey }
+                ]
+            });
+            
+            if (readErr) {
+                console.error('[POOL_DEPOSIT] ERROR reading state:', readErr);
+                return { error: readErr };
+            }
+            
+            const adminBytes = getQueryValue(readResp, adminQueryId);
+            const poolBytes = getQueryValue(readResp, poolQueryId);
+            
+            // Unmarshal admin account
+            const [adminRaw, adminErr] = Unmarshal(adminBytes || new Uint8Array(), types.Account);
+            if (adminErr) {
+                console.error('[POOL_DEPOSIT] ERROR unmarshaling admin account:', adminErr);
+                return { error: adminErr };
+            }
+            
+            // Unmarshal pool
+            const [poolRaw, poolErr] = Unmarshal(poolBytes || new Uint8Array(), types.Pool);
+            if (poolErr) {
+                console.error('[POOL_DEPOSIT] ERROR unmarshaling pool:', poolErr);
+                return { error: poolErr };
+            }
+            
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const admin = adminRaw as any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const pool = poolRaw as any;
+            
+            const adminAmount = Long.isLong(admin?.amount)
+                ? admin.amount
+                : Long.fromNumber((admin?.amount as number) || 0);
+            
+            const poolAmount = Long.isLong(pool?.amount)
+                ? pool.amount
+                : Long.fromNumber((pool?.amount as number) || 0);
+            
+            console.error(`[POOL_DEPOSIT] Admin balance: ${adminAmount.toString()}`);
+            console.error(`[POOL_DEPOSIT] Pool balance: ${poolAmount.toString()}`);
+            
+            // Check if admin has sufficient balance
+            if (adminAmount.lessThan(amount)) {
+                console.error('[POOL_DEPOSIT] ERROR: Insufficient admin balance');
+                return { 
+                    error: { 
+                        code: 400, 
+                        msg: `Insufficient admin wallet balance: has ${adminAmount}, needs ${amount}` 
+                    } 
+                };
+            }
+            
+            // Calculate new amounts
+            const newAdminAmount = adminAmount.subtract(amount);
+            const newPoolAmount = poolAmount.add(amount);
+            
+            console.error(`[POOL_DEPOSIT] New admin balance will be: ${newAdminAmount.toString()}`);
+            console.error(`[POOL_DEPOSIT] New pool balance will be: ${newPoolAmount.toString()}`);
+            
+            // Create updated account and pool
+            const updatedAdmin = types.Account.create({
+                address: admin?.address,
+                amount: newAdminAmount
+            });
+            
+            const updatedPool = types.Pool.create({
+                id: Long.fromNumber(poolId),
+                amount: newPoolAmount
+            });
+            
+            // Write both atomically
+            console.error('[POOL_DEPOSIT] Writing updated state...');
+            const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, {
+                sets: [
+                    { key: adminKey, value: types.Account.encode(updatedAdmin).finish() },
+                    { key: poolKey, value: types.Pool.encode(updatedPool).finish() }
+                ]
+            });
+            
+            if (writeErr) {
+                console.error('[POOL_DEPOSIT] ERROR writing state:', writeErr);
+                return { error: writeErr };
+            }
+            
+            if (writeResp?.error) {
+                console.error('[POOL_DEPOSIT] ERROR in write response:', writeResp.error);
+                return { error: writeResp.error };
+            }
+            
+            console.error('[POOL_DEPOSIT] Deposit completed successfully!');
+            return {};
+            
+        } catch (error: any) {
+            console.error('[POOL_DEPOSIT] EXCEPTION:', error);
+            console.error('[POOL_DEPOSIT] Error message:', error?.message);
+            console.error('[POOL_DEPOSIT] Error stack:', error?.stack);
+            return { error: { code: 500, msg: error?.message || 'Pool deposit failed' } };
+        }
+    }
+
+    // DeliverMessagePoolWithdrawal handles admin withdrawal from pool to external wallet
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static async DeliverMessagePoolWithdrawal(contract: Contract, msg: any, _tx: any): Promise<any> {
+        console.error('=== [POOL_WITHDRAWAL] DeliverMessagePoolWithdrawal CALLED ===');
+        console.error('[POOL_WITHDRAWAL] Message:', JSON.stringify(msg, null, 2));
+        
+        const poolId = toUint64(msg?.poolId as Long | number | undefined);
+        const amount = Long.isLong(msg?.amount)
+            ? msg.amount
+            : Long.fromNumber((msg?.amount as number) || 0);
+        const toAddress = normalizeBytes(msg?.toAddress);
+        const adminAddress = normalizeBytes(msg?.adminAddress);
+        
+        console.error('[POOL_WITHDRAWAL] Parsed values:');
+        console.error(`  poolId: ${poolId}`);
+        console.error(`  amount: ${amount.toString()}`);
+        console.error(`  toAddress: ${toAddress ? Buffer.from(toAddress).toString('hex') : 'null'}`);
+        console.error(`  adminAddress: ${adminAddress ? Buffer.from(adminAddress).toString('hex') : 'null'}`);
+        
+        // Validate inputs
+        if (poolId === 0) {
+            console.error('[POOL_WITHDRAWAL] ERROR: Invalid pool ID');
+            return { error: { code: 400, msg: 'Pool ID is required' } };
+        }
+
+        if (amount.isZero() || amount.isNegative()) {
+            console.error('[POOL_WITHDRAWAL] ERROR: Invalid amount');
+            return { error: { code: 400, msg: 'Withdrawal amount must be positive' } };
+        }
+
+        if (!toAddress) {
+            console.error('[POOL_WITHDRAWAL] ERROR: Missing destination address');
+            return { error: { code: 400, msg: 'Destination address is required' } };
+        }
+
+        if (!adminAddress) {
+            console.error('[POOL_WITHDRAWAL] ERROR: Missing admin address');
+            return { error: { code: 400, msg: 'Admin address is required' } };
+        }
+
+        console.error('[POOL_WITHDRAWAL] Validation passed, reading pool and destination account...');
+        
+        try {
+            // Get pool state key based on pool ID
+            let poolKey: Uint8Array;
+            switch (poolId) {
+                case 131071: // DAO Pool
+                    poolKey = KeyForDaoPool();
+                    break;
+                case 131072: // Platform Pool
+                    poolKey = KeyForGamePlatformPool();
+                    break;
+                case 131073: // Reserve Pool
+                    poolKey = KeyForGameReservePool();
+                    break;
+                case 131074: // Shop Pool
+                    poolKey = KeyForGameShopPool();
+                    break;
+                case 131075: // Daily Reward Pool
+                    poolKey = KeyForGameDailyRewardPool();
+                    break;
+                case 131076: // Monthly Reward Pool
+                    poolKey = KeyForGameMonthlyRewardPool();
+                    break;
+                default:
+                    console.error(`[POOL_WITHDRAWAL] ERROR: Unknown pool ID ${poolId}`);
+                    return { error: { code: 400, msg: `Invalid pool ID: ${poolId}` } };
+            }
+            
+            const toAccountKey = KeyForAccount(toAddress);
+            
+            const poolQueryId = randomQueryId();
+            const toQueryId = randomQueryId();
+            
+            const [readResp, readErr] = await contract.plugin.StateRead(contract, {
+                keys: [
+                    { queryId: poolQueryId, key: poolKey },
+                    { queryId: toQueryId, key: toAccountKey }
+                ]
+            });
+            
+            if (readErr) {
+                console.error('[POOL_WITHDRAWAL] ERROR reading state:', readErr);
+                return { error: readErr };
+            }
+            
+            const poolBytes = getQueryValue(readResp, poolQueryId);
+            const toBytes = getQueryValue(readResp, toQueryId);
+            
+            // Unmarshal pool
+            const [poolRaw, poolErr] = Unmarshal(poolBytes || new Uint8Array(), types.Pool);
+            if (poolErr) {
+                console.error('[POOL_WITHDRAWAL] ERROR unmarshaling pool:', poolErr);
+                return { error: poolErr };
+            }
+            
+            // Unmarshal or create destination account
+            let toAccount: any;
+            if (!toBytes || toBytes.length === 0) {
+                // Create new account if it doesn't exist
+                console.error('[POOL_WITHDRAWAL] Destination account does not exist, creating new account');
+                toAccount = { address: toAddress, amount: Long.ZERO };
+            } else {
+                const [toRaw, toErr] = Unmarshal(toBytes, types.Account);
+                if (toErr) {
+                    console.error('[POOL_WITHDRAWAL] ERROR unmarshaling destination account:', toErr);
+                    return { error: toErr };
+                }
+                toAccount = toRaw;
+            }
+            
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const pool = poolRaw as any;
+            
+            const poolAmount = Long.isLong(pool?.amount)
+                ? pool.amount
+                : Long.fromNumber((pool?.amount as number) || 0);
+            
+            const toAmount = Long.isLong(toAccount?.amount)
+                ? toAccount.amount
+                : Long.fromNumber((toAccount?.amount as number) || 0);
+            
+            console.error(`[POOL_WITHDRAWAL] Pool balance: ${poolAmount.toString()}`);
+            console.error(`[POOL_WITHDRAWAL] Destination balance: ${toAmount.toString()}`);
+            
+            // Check if pool has sufficient balance
+            if (poolAmount.lessThan(amount)) {
+                console.error('[POOL_WITHDRAWAL] ERROR: Insufficient pool balance');
+                return { 
+                    error: { 
+                        code: 400, 
+                        msg: `Insufficient pool balance: pool has ${poolAmount}, needs ${amount}` 
+                    } 
+                };
+            }
+            
+            // Calculate new amounts
+            const newPoolAmount = poolAmount.subtract(amount);
+            const newToAmount = toAmount.add(amount);
+            
+            console.error(`[POOL_WITHDRAWAL] New pool balance will be: ${newPoolAmount.toString()}`);
+            console.error(`[POOL_WITHDRAWAL] New destination balance will be: ${newToAmount.toString()}`);
+            
+            // Create updated pool and account
+            const updatedPool = types.Pool.create({
+                id: Long.fromNumber(poolId),
+                amount: newPoolAmount
+            });
+            
+            const updatedToAccount = types.Account.create({
+                address: toAddress,
+                amount: newToAmount
+            });
+            
+            // Write both atomically
+            console.error('[POOL_WITHDRAWAL] Writing updated state...');
+            const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, {
+                sets: [
+                    { key: poolKey, value: types.Pool.encode(updatedPool).finish() },
+                    { key: toAccountKey, value: types.Account.encode(updatedToAccount).finish() }
+                ]
+            });
+            
+            if (writeErr) {
+                console.error('[POOL_WITHDRAWAL] ERROR writing state:', writeErr);
+                return { error: writeErr };
+            }
+            
+            if (writeResp?.error) {
+                console.error('[POOL_WITHDRAWAL] ERROR in write response:', writeResp.error);
+                return { error: writeResp.error };
+            }
+            
+            console.error('[POOL_WITHDRAWAL] Withdrawal completed successfully!');
+            return {};
+            
+        } catch (error: any) {
+            console.error('[POOL_WITHDRAWAL] EXCEPTION:', error);
+            console.error('[POOL_WITHDRAWAL] Error message:', error?.message);
+            console.error('[POOL_WITHDRAWAL] Error stack:', error?.stack);
+            return { error: { code: 500, msg: error?.message || 'Pool withdrawal failed' } };
+        }
+    }
+
+    // DeliverMessageBanPlayer handles admin ban operations
 }
+

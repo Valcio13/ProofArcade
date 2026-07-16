@@ -1,0 +1,6 @@
+{
+  "ChainId": 1,
+  "DataDirPath": "./data",
+  "rpcAddress": "0.0.0.0:50010",
+  "proofArcadeAdmin": "ADMIN_ADDRESS_HEX_HERE"
+}

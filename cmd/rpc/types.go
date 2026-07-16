@@ -385,6 +385,79 @@ type txVotePoll struct {
 	fromFields
 }
 
+// poolTransferRequest is used for admin pool transfer operations
+type poolTransferRequest struct {
+	FromPoolId   uint64       `json:"fromPoolId"`
+	ToPoolId     uint64       `json:"toPoolId"`
+	Amount       uint64       `json:"amount"`
+	AdminAddress lib.HexBytes `json:"adminAddress"`
+}
+
+// poolTransferResponse returns the result of a pool transfer
+type poolTransferResponse struct {
+	Success            bool   `json:"success"`
+	TxHash             string `json:"txHash"`
+	FromPoolNewBalance uint64 `json:"fromPoolNewBalance"`
+	ToPoolNewBalance   uint64 `json:"toPoolNewBalance"`
+	Message            string `json:"message"`
+}
+
+// banPlayerRequest is used for admin ban operations
+type banPlayerRequest struct {
+	TargetAddress lib.HexBytes `json:"targetAddress"`
+	Reason        string       `json:"reason"`
+}
+
+// banPlayerResponse returns the result of a ban operation
+type banPlayerResponse struct {
+	Success bool   `json:"success"`
+	TxHash  string `json:"txHash"`
+	Message string `json:"message"`
+}
+
+// unbanPlayerRequest is used for admin unban operations
+type unbanPlayerRequest struct {
+	TargetAddress lib.HexBytes `json:"targetAddress"`
+	Reason        string       `json:"reason"`
+}
+
+// unbanPlayerResponse returns the result of an unban operation
+type unbanPlayerResponse struct {
+	Success bool   `json:"success"`
+	TxHash  string `json:"txHash"`
+	Message string `json:"message"`
+}
+
+// poolWithdrawalRequest is used for admin withdrawal operations from pools to external addresses
+type poolWithdrawalRequest struct {
+	PoolId       uint64       `json:"poolId"`       // Source pool (typically platform pool)
+	ToAddress    lib.HexBytes `json:"toAddress"`    // External wallet address
+	Amount       uint64       `json:"amount"`       // Amount in micro-denomination (uproof)
+	AdminAddress lib.HexBytes `json:"adminAddress"` // Admin performing withdrawal
+}
+
+// poolWithdrawalResponse returns the result of a pool withdrawal
+type poolWithdrawalResponse struct {
+	Success bool   `json:"success"`
+	TxHash  string `json:"txHash,omitempty"`
+	Message string `json:"message"`
+}
+
+// poolDepositRequest is used for admin deposit operations from external wallet to Reserve Pool
+type poolDepositRequest struct {
+	PoolId       uint64       `json:"poolId"`       // Destination pool (must be Reserve Pool = 131073)
+	Amount       uint64       `json:"amount"`       // Amount in micro-denomination (uproof)
+	AdminAddress lib.HexBytes `json:"adminAddress"` // Admin performing deposit
+}
+
+// poolDepositResponse returns the result of a pool deposit
+type poolDepositResponse struct {
+	Success bool   `json:"success"`
+	TxHash  string `json:"txHash,omitempty"`
+	Message string `json:"message"`
+}
+
+
 type txChangeParamRequest struct {
 	ParamSpace string `json:"paramSpace"`
 	ParamKey   string `json:"paramKey"`

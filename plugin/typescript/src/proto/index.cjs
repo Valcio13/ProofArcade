@@ -3175,6 +3175,1482 @@ $root.types = (function() {
         return MessageSetUsername;
     })();
 
+    types.MessagePoolTransfer = (function() {
+
+        /**
+         * Properties of a MessagePoolTransfer.
+         * @memberof types
+         * @interface IMessagePoolTransfer
+         * @property {number|Long|null} [fromPoolId] MessagePoolTransfer fromPoolId
+         * @property {number|Long|null} [toPoolId] MessagePoolTransfer toPoolId
+         * @property {number|Long|null} [amount] MessagePoolTransfer amount
+         * @property {Uint8Array|null} [adminAddress] MessagePoolTransfer adminAddress
+         */
+
+        /**
+         * Constructs a new MessagePoolTransfer.
+         * @memberof types
+         * @classdesc Represents a MessagePoolTransfer.
+         * @implements IMessagePoolTransfer
+         * @constructor
+         * @param {types.IMessagePoolTransfer=} [properties] Properties to set
+         */
+        function MessagePoolTransfer(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessagePoolTransfer fromPoolId.
+         * @member {number|Long} fromPoolId
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         */
+        MessagePoolTransfer.prototype.fromPoolId = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolTransfer toPoolId.
+         * @member {number|Long} toPoolId
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         */
+        MessagePoolTransfer.prototype.toPoolId = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolTransfer amount.
+         * @member {number|Long} amount
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         */
+        MessagePoolTransfer.prototype.amount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolTransfer adminAddress.
+         * @member {Uint8Array} adminAddress
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         */
+        MessagePoolTransfer.prototype.adminAddress = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessagePoolTransfer instance using the specified properties.
+         * @function create
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {types.IMessagePoolTransfer=} [properties] Properties to set
+         * @returns {types.MessagePoolTransfer} MessagePoolTransfer instance
+         */
+        MessagePoolTransfer.create = function create(properties) {
+            return new MessagePoolTransfer(properties);
+        };
+
+        /**
+         * Encodes the specified MessagePoolTransfer message. Does not implicitly {@link types.MessagePoolTransfer.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {types.IMessagePoolTransfer} message MessagePoolTransfer message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessagePoolTransfer.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.fromPoolId != null && Object.hasOwnProperty.call(message, "fromPoolId"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.fromPoolId);
+            if (message.toPoolId != null && Object.hasOwnProperty.call(message, "toPoolId"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.toPoolId);
+            if (message.amount != null && Object.hasOwnProperty.call(message, "amount"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.amount);
+            if (message.adminAddress != null && Object.hasOwnProperty.call(message, "adminAddress"))
+                writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.adminAddress);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessagePoolTransfer message, length delimited. Does not implicitly {@link types.MessagePoolTransfer.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {types.IMessagePoolTransfer} message MessagePoolTransfer message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessagePoolTransfer.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessagePoolTransfer message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessagePoolTransfer} MessagePoolTransfer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessagePoolTransfer.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessagePoolTransfer();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.fromPoolId = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.toPoolId = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.amount = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.adminAddress = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessagePoolTransfer message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessagePoolTransfer} MessagePoolTransfer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessagePoolTransfer.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessagePoolTransfer message.
+         * @function verify
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessagePoolTransfer.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.fromPoolId != null && message.hasOwnProperty("fromPoolId"))
+                if (!$util.isInteger(message.fromPoolId) && !(message.fromPoolId && $util.isInteger(message.fromPoolId.low) && $util.isInteger(message.fromPoolId.high)))
+                    return "fromPoolId: integer|Long expected";
+            if (message.toPoolId != null && message.hasOwnProperty("toPoolId"))
+                if (!$util.isInteger(message.toPoolId) && !(message.toPoolId && $util.isInteger(message.toPoolId.low) && $util.isInteger(message.toPoolId.high)))
+                    return "toPoolId: integer|Long expected";
+            if (message.amount != null && message.hasOwnProperty("amount"))
+                if (!$util.isInteger(message.amount) && !(message.amount && $util.isInteger(message.amount.low) && $util.isInteger(message.amount.high)))
+                    return "amount: integer|Long expected";
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                if (!(message.adminAddress && typeof message.adminAddress.length === "number" || $util.isString(message.adminAddress)))
+                    return "adminAddress: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessagePoolTransfer message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessagePoolTransfer} MessagePoolTransfer
+         */
+        MessagePoolTransfer.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessagePoolTransfer)
+                return object;
+            var message = new $root.types.MessagePoolTransfer();
+            if (object.fromPoolId != null)
+                if ($util.Long)
+                    (message.fromPoolId = $util.Long.fromValue(object.fromPoolId)).unsigned = true;
+                else if (typeof object.fromPoolId === "string")
+                    message.fromPoolId = parseInt(object.fromPoolId, 10);
+                else if (typeof object.fromPoolId === "number")
+                    message.fromPoolId = object.fromPoolId;
+                else if (typeof object.fromPoolId === "object")
+                    message.fromPoolId = new $util.LongBits(object.fromPoolId.low >>> 0, object.fromPoolId.high >>> 0).toNumber(true);
+            if (object.toPoolId != null)
+                if ($util.Long)
+                    (message.toPoolId = $util.Long.fromValue(object.toPoolId)).unsigned = true;
+                else if (typeof object.toPoolId === "string")
+                    message.toPoolId = parseInt(object.toPoolId, 10);
+                else if (typeof object.toPoolId === "number")
+                    message.toPoolId = object.toPoolId;
+                else if (typeof object.toPoolId === "object")
+                    message.toPoolId = new $util.LongBits(object.toPoolId.low >>> 0, object.toPoolId.high >>> 0).toNumber(true);
+            if (object.amount != null)
+                if ($util.Long)
+                    (message.amount = $util.Long.fromValue(object.amount)).unsigned = true;
+                else if (typeof object.amount === "string")
+                    message.amount = parseInt(object.amount, 10);
+                else if (typeof object.amount === "number")
+                    message.amount = object.amount;
+                else if (typeof object.amount === "object")
+                    message.amount = new $util.LongBits(object.amount.low >>> 0, object.amount.high >>> 0).toNumber(true);
+            if (object.adminAddress != null)
+                if (typeof object.adminAddress === "string")
+                    $util.base64.decode(object.adminAddress, message.adminAddress = $util.newBuffer($util.base64.length(object.adminAddress)), 0);
+                else if (object.adminAddress.length >= 0)
+                    message.adminAddress = object.adminAddress;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessagePoolTransfer message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {types.MessagePoolTransfer} message MessagePoolTransfer
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessagePoolTransfer.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.fromPoolId = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.fromPoolId = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.toPoolId = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.toPoolId = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.amount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.amount = options.longs === String ? "0" : 0;
+                if (options.bytes === String)
+                    object.adminAddress = "";
+                else {
+                    object.adminAddress = [];
+                    if (options.bytes !== Array)
+                        object.adminAddress = $util.newBuffer(object.adminAddress);
+                }
+            }
+            if (message.fromPoolId != null && message.hasOwnProperty("fromPoolId"))
+                if (typeof message.fromPoolId === "number")
+                    object.fromPoolId = options.longs === String ? String(message.fromPoolId) : message.fromPoolId;
+                else
+                    object.fromPoolId = options.longs === String ? $util.Long.prototype.toString.call(message.fromPoolId) : options.longs === Number ? new $util.LongBits(message.fromPoolId.low >>> 0, message.fromPoolId.high >>> 0).toNumber(true) : message.fromPoolId;
+            if (message.toPoolId != null && message.hasOwnProperty("toPoolId"))
+                if (typeof message.toPoolId === "number")
+                    object.toPoolId = options.longs === String ? String(message.toPoolId) : message.toPoolId;
+                else
+                    object.toPoolId = options.longs === String ? $util.Long.prototype.toString.call(message.toPoolId) : options.longs === Number ? new $util.LongBits(message.toPoolId.low >>> 0, message.toPoolId.high >>> 0).toNumber(true) : message.toPoolId;
+            if (message.amount != null && message.hasOwnProperty("amount"))
+                if (typeof message.amount === "number")
+                    object.amount = options.longs === String ? String(message.amount) : message.amount;
+                else
+                    object.amount = options.longs === String ? $util.Long.prototype.toString.call(message.amount) : options.longs === Number ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber(true) : message.amount;
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                object.adminAddress = options.bytes === String ? $util.base64.encode(message.adminAddress, 0, message.adminAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.adminAddress) : message.adminAddress;
+            return object;
+        };
+
+        /**
+         * Converts this MessagePoolTransfer to JSON.
+         * @function toJSON
+         * @memberof types.MessagePoolTransfer
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessagePoolTransfer.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessagePoolTransfer
+         * @function getTypeUrl
+         * @memberof types.MessagePoolTransfer
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessagePoolTransfer.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessagePoolTransfer";
+        };
+
+        return MessagePoolTransfer;
+    })();
+
+    types.MessagePoolDeposit = (function() {
+
+        /**
+         * Properties of a MessagePoolDeposit.
+         * @memberof types
+         * @interface IMessagePoolDeposit
+         * @property {number|Long|null} [poolId] MessagePoolDeposit poolId
+         * @property {number|Long|null} [amount] MessagePoolDeposit amount
+         * @property {Uint8Array|null} [adminAddress] MessagePoolDeposit adminAddress
+         */
+
+        /**
+         * Constructs a new MessagePoolDeposit.
+         * @memberof types
+         * @classdesc Represents a MessagePoolDeposit.
+         * @implements IMessagePoolDeposit
+         * @constructor
+         * @param {types.IMessagePoolDeposit=} [properties] Properties to set
+         */
+        function MessagePoolDeposit(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessagePoolDeposit poolId.
+         * @member {number|Long} poolId
+         * @memberof types.MessagePoolDeposit
+         * @instance
+         */
+        MessagePoolDeposit.prototype.poolId = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolDeposit amount.
+         * @member {number|Long} amount
+         * @memberof types.MessagePoolDeposit
+         * @instance
+         */
+        MessagePoolDeposit.prototype.amount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolDeposit adminAddress.
+         * @member {Uint8Array} adminAddress
+         * @memberof types.MessagePoolDeposit
+         * @instance
+         */
+        MessagePoolDeposit.prototype.adminAddress = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessagePoolDeposit instance using the specified properties.
+         * @function create
+         * @memberof types.MessagePoolDeposit
+         * @static
+         * @param {types.IMessagePoolDeposit=} [properties] Properties to set
+         * @returns {types.MessagePoolDeposit} MessagePoolDeposit instance
+         */
+        MessagePoolDeposit.create = function create(properties) {
+            return new MessagePoolDeposit(properties);
+        };
+
+        /**
+         * Encodes the specified MessagePoolDeposit message. Does not implicitly {@link types.MessagePoolDeposit.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessagePoolDeposit
+         * @static
+         * @param {types.IMessagePoolDeposit} message MessagePoolDeposit message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessagePoolDeposit.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.poolId != null && Object.hasOwnProperty.call(message, "poolId"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.poolId);
+            if (message.amount != null && Object.hasOwnProperty.call(message, "amount"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.amount);
+            if (message.adminAddress != null && Object.hasOwnProperty.call(message, "adminAddress"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.adminAddress);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessagePoolDeposit message, length delimited. Does not implicitly {@link types.MessagePoolDeposit.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessagePoolDeposit
+         * @static
+         * @param {types.IMessagePoolDeposit} message MessagePoolDeposit message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessagePoolDeposit.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessagePoolDeposit message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessagePoolDeposit
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessagePoolDeposit} MessagePoolDeposit
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessagePoolDeposit.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessagePoolDeposit();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.poolId = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.amount = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.adminAddress = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessagePoolDeposit message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessagePoolDeposit
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessagePoolDeposit} MessagePoolDeposit
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessagePoolDeposit.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessagePoolDeposit message.
+         * @function verify
+         * @memberof types.MessagePoolDeposit
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessagePoolDeposit.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.poolId != null && message.hasOwnProperty("poolId"))
+                if (!$util.isInteger(message.poolId) && !(message.poolId && $util.isInteger(message.poolId.low) && $util.isInteger(message.poolId.high)))
+                    return "poolId: integer|Long expected";
+            if (message.amount != null && message.hasOwnProperty("amount"))
+                if (!$util.isInteger(message.amount) && !(message.amount && $util.isInteger(message.amount.low) && $util.isInteger(message.amount.high)))
+                    return "amount: integer|Long expected";
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                if (!(message.adminAddress && typeof message.adminAddress.length === "number" || $util.isString(message.adminAddress)))
+                    return "adminAddress: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessagePoolDeposit message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessagePoolDeposit
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessagePoolDeposit} MessagePoolDeposit
+         */
+        MessagePoolDeposit.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessagePoolDeposit)
+                return object;
+            var message = new $root.types.MessagePoolDeposit();
+            if (object.poolId != null)
+                if ($util.Long)
+                    (message.poolId = $util.Long.fromValue(object.poolId)).unsigned = true;
+                else if (typeof object.poolId === "string")
+                    message.poolId = parseInt(object.poolId, 10);
+                else if (typeof object.poolId === "number")
+                    message.poolId = object.poolId;
+                else if (typeof object.poolId === "object")
+                    message.poolId = new $util.LongBits(object.poolId.low >>> 0, object.poolId.high >>> 0).toNumber(true);
+            if (object.amount != null)
+                if ($util.Long)
+                    (message.amount = $util.Long.fromValue(object.amount)).unsigned = true;
+                else if (typeof object.amount === "string")
+                    message.amount = parseInt(object.amount, 10);
+                else if (typeof object.amount === "number")
+                    message.amount = object.amount;
+                else if (typeof object.amount === "object")
+                    message.amount = new $util.LongBits(object.amount.low >>> 0, object.amount.high >>> 0).toNumber(true);
+            if (object.adminAddress != null)
+                if (typeof object.adminAddress === "string")
+                    $util.base64.decode(object.adminAddress, message.adminAddress = $util.newBuffer($util.base64.length(object.adminAddress)), 0);
+                else if (object.adminAddress.length >= 0)
+                    message.adminAddress = object.adminAddress;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessagePoolDeposit message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessagePoolDeposit
+         * @static
+         * @param {types.MessagePoolDeposit} message MessagePoolDeposit
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessagePoolDeposit.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.poolId = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.poolId = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.amount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.amount = options.longs === String ? "0" : 0;
+                if (options.bytes === String)
+                    object.adminAddress = "";
+                else {
+                    object.adminAddress = [];
+                    if (options.bytes !== Array)
+                        object.adminAddress = $util.newBuffer(object.adminAddress);
+                }
+            }
+            if (message.poolId != null && message.hasOwnProperty("poolId"))
+                if (typeof message.poolId === "number")
+                    object.poolId = options.longs === String ? String(message.poolId) : message.poolId;
+                else
+                    object.poolId = options.longs === String ? $util.Long.prototype.toString.call(message.poolId) : options.longs === Number ? new $util.LongBits(message.poolId.low >>> 0, message.poolId.high >>> 0).toNumber(true) : message.poolId;
+            if (message.amount != null && message.hasOwnProperty("amount"))
+                if (typeof message.amount === "number")
+                    object.amount = options.longs === String ? String(message.amount) : message.amount;
+                else
+                    object.amount = options.longs === String ? $util.Long.prototype.toString.call(message.amount) : options.longs === Number ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber(true) : message.amount;
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                object.adminAddress = options.bytes === String ? $util.base64.encode(message.adminAddress, 0, message.adminAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.adminAddress) : message.adminAddress;
+            return object;
+        };
+
+        /**
+         * Converts this MessagePoolDeposit to JSON.
+         * @function toJSON
+         * @memberof types.MessagePoolDeposit
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessagePoolDeposit.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessagePoolDeposit
+         * @function getTypeUrl
+         * @memberof types.MessagePoolDeposit
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessagePoolDeposit.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessagePoolDeposit";
+        };
+
+        return MessagePoolDeposit;
+    })();
+
+    types.MessagePoolWithdrawal = (function() {
+
+        /**
+         * Properties of a MessagePoolWithdrawal.
+         * @memberof types
+         * @interface IMessagePoolWithdrawal
+         * @property {number|Long|null} [poolId] MessagePoolWithdrawal poolId
+         * @property {number|Long|null} [amount] MessagePoolWithdrawal amount
+         * @property {Uint8Array|null} [toAddress] MessagePoolWithdrawal toAddress
+         * @property {Uint8Array|null} [adminAddress] MessagePoolWithdrawal adminAddress
+         */
+
+        /**
+         * Constructs a new MessagePoolWithdrawal.
+         * @memberof types
+         * @classdesc Represents a MessagePoolWithdrawal.
+         * @implements IMessagePoolWithdrawal
+         * @constructor
+         * @param {types.IMessagePoolWithdrawal=} [properties] Properties to set
+         */
+        function MessagePoolWithdrawal(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessagePoolWithdrawal poolId.
+         * @member {number|Long} poolId
+         * @memberof types.MessagePoolWithdrawal
+         * @instance
+         */
+        MessagePoolWithdrawal.prototype.poolId = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolWithdrawal amount.
+         * @member {number|Long} amount
+         * @memberof types.MessagePoolWithdrawal
+         * @instance
+         */
+        MessagePoolWithdrawal.prototype.amount = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessagePoolWithdrawal toAddress.
+         * @member {Uint8Array} toAddress
+         * @memberof types.MessagePoolWithdrawal
+         * @instance
+         */
+        MessagePoolWithdrawal.prototype.toAddress = $util.newBuffer([]);
+
+        /**
+         * MessagePoolWithdrawal adminAddress.
+         * @member {Uint8Array} adminAddress
+         * @memberof types.MessagePoolWithdrawal
+         * @instance
+         */
+        MessagePoolWithdrawal.prototype.adminAddress = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessagePoolWithdrawal instance using the specified properties.
+         * @function create
+         * @memberof types.MessagePoolWithdrawal
+         * @static
+         * @param {types.IMessagePoolWithdrawal=} [properties] Properties to set
+         * @returns {types.MessagePoolWithdrawal} MessagePoolWithdrawal instance
+         */
+        MessagePoolWithdrawal.create = function create(properties) {
+            return new MessagePoolWithdrawal(properties);
+        };
+
+        /**
+         * Encodes the specified MessagePoolWithdrawal message. Does not implicitly {@link types.MessagePoolWithdrawal.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessagePoolWithdrawal
+         * @static
+         * @param {types.IMessagePoolWithdrawal} message MessagePoolWithdrawal message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessagePoolWithdrawal.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.poolId != null && Object.hasOwnProperty.call(message, "poolId"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.poolId);
+            if (message.amount != null && Object.hasOwnProperty.call(message, "amount"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.amount);
+            if (message.toAddress != null && Object.hasOwnProperty.call(message, "toAddress"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.toAddress);
+            if (message.adminAddress != null && Object.hasOwnProperty.call(message, "adminAddress"))
+                writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.adminAddress);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessagePoolWithdrawal message, length delimited. Does not implicitly {@link types.MessagePoolWithdrawal.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessagePoolWithdrawal
+         * @static
+         * @param {types.IMessagePoolWithdrawal} message MessagePoolWithdrawal message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessagePoolWithdrawal.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessagePoolWithdrawal message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessagePoolWithdrawal
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessagePoolWithdrawal} MessagePoolWithdrawal
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessagePoolWithdrawal.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessagePoolWithdrawal();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.poolId = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.amount = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.toAddress = reader.bytes();
+                        break;
+                    }
+                case 4: {
+                        message.adminAddress = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessagePoolWithdrawal message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessagePoolWithdrawal
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessagePoolWithdrawal} MessagePoolWithdrawal
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessagePoolWithdrawal.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessagePoolWithdrawal message.
+         * @function verify
+         * @memberof types.MessagePoolWithdrawal
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessagePoolWithdrawal.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.poolId != null && message.hasOwnProperty("poolId"))
+                if (!$util.isInteger(message.poolId) && !(message.poolId && $util.isInteger(message.poolId.low) && $util.isInteger(message.poolId.high)))
+                    return "poolId: integer|Long expected";
+            if (message.amount != null && message.hasOwnProperty("amount"))
+                if (!$util.isInteger(message.amount) && !(message.amount && $util.isInteger(message.amount.low) && $util.isInteger(message.amount.high)))
+                    return "amount: integer|Long expected";
+            if (message.toAddress != null && message.hasOwnProperty("toAddress"))
+                if (!(message.toAddress && typeof message.toAddress.length === "number" || $util.isString(message.toAddress)))
+                    return "toAddress: buffer expected";
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                if (!(message.adminAddress && typeof message.adminAddress.length === "number" || $util.isString(message.adminAddress)))
+                    return "adminAddress: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessagePoolWithdrawal message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessagePoolWithdrawal
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessagePoolWithdrawal} MessagePoolWithdrawal
+         */
+        MessagePoolWithdrawal.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessagePoolWithdrawal)
+                return object;
+            var message = new $root.types.MessagePoolWithdrawal();
+            if (object.poolId != null)
+                if ($util.Long)
+                    (message.poolId = $util.Long.fromValue(object.poolId)).unsigned = true;
+                else if (typeof object.poolId === "string")
+                    message.poolId = parseInt(object.poolId, 10);
+                else if (typeof object.poolId === "number")
+                    message.poolId = object.poolId;
+                else if (typeof object.poolId === "object")
+                    message.poolId = new $util.LongBits(object.poolId.low >>> 0, object.poolId.high >>> 0).toNumber(true);
+            if (object.amount != null)
+                if ($util.Long)
+                    (message.amount = $util.Long.fromValue(object.amount)).unsigned = true;
+                else if (typeof object.amount === "string")
+                    message.amount = parseInt(object.amount, 10);
+                else if (typeof object.amount === "number")
+                    message.amount = object.amount;
+                else if (typeof object.amount === "object")
+                    message.amount = new $util.LongBits(object.amount.low >>> 0, object.amount.high >>> 0).toNumber(true);
+            if (object.toAddress != null)
+                if (typeof object.toAddress === "string")
+                    $util.base64.decode(object.toAddress, message.toAddress = $util.newBuffer($util.base64.length(object.toAddress)), 0);
+                else if (object.toAddress.length >= 0)
+                    message.toAddress = object.toAddress;
+            if (object.adminAddress != null)
+                if (typeof object.adminAddress === "string")
+                    $util.base64.decode(object.adminAddress, message.adminAddress = $util.newBuffer($util.base64.length(object.adminAddress)), 0);
+                else if (object.adminAddress.length >= 0)
+                    message.adminAddress = object.adminAddress;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessagePoolWithdrawal message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessagePoolWithdrawal
+         * @static
+         * @param {types.MessagePoolWithdrawal} message MessagePoolWithdrawal
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessagePoolWithdrawal.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.poolId = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.poolId = options.longs === String ? "0" : 0;
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.amount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.amount = options.longs === String ? "0" : 0;
+                if (options.bytes === String)
+                    object.toAddress = "";
+                else {
+                    object.toAddress = [];
+                    if (options.bytes !== Array)
+                        object.toAddress = $util.newBuffer(object.toAddress);
+                }
+                if (options.bytes === String)
+                    object.adminAddress = "";
+                else {
+                    object.adminAddress = [];
+                    if (options.bytes !== Array)
+                        object.adminAddress = $util.newBuffer(object.adminAddress);
+                }
+            }
+            if (message.poolId != null && message.hasOwnProperty("poolId"))
+                if (typeof message.poolId === "number")
+                    object.poolId = options.longs === String ? String(message.poolId) : message.poolId;
+                else
+                    object.poolId = options.longs === String ? $util.Long.prototype.toString.call(message.poolId) : options.longs === Number ? new $util.LongBits(message.poolId.low >>> 0, message.poolId.high >>> 0).toNumber(true) : message.poolId;
+            if (message.amount != null && message.hasOwnProperty("amount"))
+                if (typeof message.amount === "number")
+                    object.amount = options.longs === String ? String(message.amount) : message.amount;
+                else
+                    object.amount = options.longs === String ? $util.Long.prototype.toString.call(message.amount) : options.longs === Number ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber(true) : message.amount;
+            if (message.toAddress != null && message.hasOwnProperty("toAddress"))
+                object.toAddress = options.bytes === String ? $util.base64.encode(message.toAddress, 0, message.toAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.toAddress) : message.toAddress;
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                object.adminAddress = options.bytes === String ? $util.base64.encode(message.adminAddress, 0, message.adminAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.adminAddress) : message.adminAddress;
+            return object;
+        };
+
+        /**
+         * Converts this MessagePoolWithdrawal to JSON.
+         * @function toJSON
+         * @memberof types.MessagePoolWithdrawal
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessagePoolWithdrawal.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessagePoolWithdrawal
+         * @function getTypeUrl
+         * @memberof types.MessagePoolWithdrawal
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessagePoolWithdrawal.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessagePoolWithdrawal";
+        };
+
+        return MessagePoolWithdrawal;
+    })();
+
+    types.MessageBanPlayer = (function() {
+
+        /**
+         * Properties of a MessageBanPlayer.
+         * @memberof types
+         * @interface IMessageBanPlayer
+         * @property {Uint8Array|null} [targetAddress] MessageBanPlayer targetAddress
+         * @property {string|null} [reason] MessageBanPlayer reason
+         * @property {Uint8Array|null} [adminAddress] MessageBanPlayer adminAddress
+         */
+
+        /**
+         * Constructs a new MessageBanPlayer.
+         * @memberof types
+         * @classdesc Represents a MessageBanPlayer.
+         * @implements IMessageBanPlayer
+         * @constructor
+         * @param {types.IMessageBanPlayer=} [properties] Properties to set
+         */
+        function MessageBanPlayer(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageBanPlayer targetAddress.
+         * @member {Uint8Array} targetAddress
+         * @memberof types.MessageBanPlayer
+         * @instance
+         */
+        MessageBanPlayer.prototype.targetAddress = $util.newBuffer([]);
+
+        /**
+         * MessageBanPlayer reason.
+         * @member {string} reason
+         * @memberof types.MessageBanPlayer
+         * @instance
+         */
+        MessageBanPlayer.prototype.reason = "";
+
+        /**
+         * MessageBanPlayer adminAddress.
+         * @member {Uint8Array} adminAddress
+         * @memberof types.MessageBanPlayer
+         * @instance
+         */
+        MessageBanPlayer.prototype.adminAddress = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessageBanPlayer instance using the specified properties.
+         * @function create
+         * @memberof types.MessageBanPlayer
+         * @static
+         * @param {types.IMessageBanPlayer=} [properties] Properties to set
+         * @returns {types.MessageBanPlayer} MessageBanPlayer instance
+         */
+        MessageBanPlayer.create = function create(properties) {
+            return new MessageBanPlayer(properties);
+        };
+
+        /**
+         * Encodes the specified MessageBanPlayer message. Does not implicitly {@link types.MessageBanPlayer.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageBanPlayer
+         * @static
+         * @param {types.IMessageBanPlayer} message MessageBanPlayer message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageBanPlayer.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.targetAddress != null && Object.hasOwnProperty.call(message, "targetAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.targetAddress);
+            if (message.reason != null && Object.hasOwnProperty.call(message, "reason"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.reason);
+            if (message.adminAddress != null && Object.hasOwnProperty.call(message, "adminAddress"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.adminAddress);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageBanPlayer message, length delimited. Does not implicitly {@link types.MessageBanPlayer.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageBanPlayer
+         * @static
+         * @param {types.IMessageBanPlayer} message MessageBanPlayer message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageBanPlayer.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageBanPlayer message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageBanPlayer
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageBanPlayer} MessageBanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageBanPlayer.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageBanPlayer();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.targetAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.reason = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.adminAddress = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageBanPlayer message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageBanPlayer
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageBanPlayer} MessageBanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageBanPlayer.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageBanPlayer message.
+         * @function verify
+         * @memberof types.MessageBanPlayer
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageBanPlayer.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.targetAddress != null && message.hasOwnProperty("targetAddress"))
+                if (!(message.targetAddress && typeof message.targetAddress.length === "number" || $util.isString(message.targetAddress)))
+                    return "targetAddress: buffer expected";
+            if (message.reason != null && message.hasOwnProperty("reason"))
+                if (!$util.isString(message.reason))
+                    return "reason: string expected";
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                if (!(message.adminAddress && typeof message.adminAddress.length === "number" || $util.isString(message.adminAddress)))
+                    return "adminAddress: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessageBanPlayer message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageBanPlayer
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageBanPlayer} MessageBanPlayer
+         */
+        MessageBanPlayer.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageBanPlayer)
+                return object;
+            var message = new $root.types.MessageBanPlayer();
+            if (object.targetAddress != null)
+                if (typeof object.targetAddress === "string")
+                    $util.base64.decode(object.targetAddress, message.targetAddress = $util.newBuffer($util.base64.length(object.targetAddress)), 0);
+                else if (object.targetAddress.length >= 0)
+                    message.targetAddress = object.targetAddress;
+            if (object.reason != null)
+                message.reason = String(object.reason);
+            if (object.adminAddress != null)
+                if (typeof object.adminAddress === "string")
+                    $util.base64.decode(object.adminAddress, message.adminAddress = $util.newBuffer($util.base64.length(object.adminAddress)), 0);
+                else if (object.adminAddress.length >= 0)
+                    message.adminAddress = object.adminAddress;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageBanPlayer message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageBanPlayer
+         * @static
+         * @param {types.MessageBanPlayer} message MessageBanPlayer
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageBanPlayer.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.targetAddress = "";
+                else {
+                    object.targetAddress = [];
+                    if (options.bytes !== Array)
+                        object.targetAddress = $util.newBuffer(object.targetAddress);
+                }
+                object.reason = "";
+                if (options.bytes === String)
+                    object.adminAddress = "";
+                else {
+                    object.adminAddress = [];
+                    if (options.bytes !== Array)
+                        object.adminAddress = $util.newBuffer(object.adminAddress);
+                }
+            }
+            if (message.targetAddress != null && message.hasOwnProperty("targetAddress"))
+                object.targetAddress = options.bytes === String ? $util.base64.encode(message.targetAddress, 0, message.targetAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.targetAddress) : message.targetAddress;
+            if (message.reason != null && message.hasOwnProperty("reason"))
+                object.reason = message.reason;
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                object.adminAddress = options.bytes === String ? $util.base64.encode(message.adminAddress, 0, message.adminAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.adminAddress) : message.adminAddress;
+            return object;
+        };
+
+        /**
+         * Converts this MessageBanPlayer to JSON.
+         * @function toJSON
+         * @memberof types.MessageBanPlayer
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageBanPlayer.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageBanPlayer
+         * @function getTypeUrl
+         * @memberof types.MessageBanPlayer
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageBanPlayer.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageBanPlayer";
+        };
+
+        return MessageBanPlayer;
+    })();
+
+    types.MessageUnbanPlayer = (function() {
+
+        /**
+         * Properties of a MessageUnbanPlayer.
+         * @memberof types
+         * @interface IMessageUnbanPlayer
+         * @property {Uint8Array|null} [targetAddress] MessageUnbanPlayer targetAddress
+         * @property {string|null} [reason] MessageUnbanPlayer reason
+         * @property {Uint8Array|null} [adminAddress] MessageUnbanPlayer adminAddress
+         */
+
+        /**
+         * Constructs a new MessageUnbanPlayer.
+         * @memberof types
+         * @classdesc Represents a MessageUnbanPlayer.
+         * @implements IMessageUnbanPlayer
+         * @constructor
+         * @param {types.IMessageUnbanPlayer=} [properties] Properties to set
+         */
+        function MessageUnbanPlayer(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageUnbanPlayer targetAddress.
+         * @member {Uint8Array} targetAddress
+         * @memberof types.MessageUnbanPlayer
+         * @instance
+         */
+        MessageUnbanPlayer.prototype.targetAddress = $util.newBuffer([]);
+
+        /**
+         * MessageUnbanPlayer reason.
+         * @member {string} reason
+         * @memberof types.MessageUnbanPlayer
+         * @instance
+         */
+        MessageUnbanPlayer.prototype.reason = "";
+
+        /**
+         * MessageUnbanPlayer adminAddress.
+         * @member {Uint8Array} adminAddress
+         * @memberof types.MessageUnbanPlayer
+         * @instance
+         */
+        MessageUnbanPlayer.prototype.adminAddress = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessageUnbanPlayer instance using the specified properties.
+         * @function create
+         * @memberof types.MessageUnbanPlayer
+         * @static
+         * @param {types.IMessageUnbanPlayer=} [properties] Properties to set
+         * @returns {types.MessageUnbanPlayer} MessageUnbanPlayer instance
+         */
+        MessageUnbanPlayer.create = function create(properties) {
+            return new MessageUnbanPlayer(properties);
+        };
+
+        /**
+         * Encodes the specified MessageUnbanPlayer message. Does not implicitly {@link types.MessageUnbanPlayer.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageUnbanPlayer
+         * @static
+         * @param {types.IMessageUnbanPlayer} message MessageUnbanPlayer message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageUnbanPlayer.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.targetAddress != null && Object.hasOwnProperty.call(message, "targetAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.targetAddress);
+            if (message.reason != null && Object.hasOwnProperty.call(message, "reason"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.reason);
+            if (message.adminAddress != null && Object.hasOwnProperty.call(message, "adminAddress"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.adminAddress);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageUnbanPlayer message, length delimited. Does not implicitly {@link types.MessageUnbanPlayer.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageUnbanPlayer
+         * @static
+         * @param {types.IMessageUnbanPlayer} message MessageUnbanPlayer message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageUnbanPlayer.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageUnbanPlayer message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageUnbanPlayer
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageUnbanPlayer} MessageUnbanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageUnbanPlayer.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageUnbanPlayer();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.targetAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.reason = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.adminAddress = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageUnbanPlayer message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageUnbanPlayer
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageUnbanPlayer} MessageUnbanPlayer
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageUnbanPlayer.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageUnbanPlayer message.
+         * @function verify
+         * @memberof types.MessageUnbanPlayer
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageUnbanPlayer.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.targetAddress != null && message.hasOwnProperty("targetAddress"))
+                if (!(message.targetAddress && typeof message.targetAddress.length === "number" || $util.isString(message.targetAddress)))
+                    return "targetAddress: buffer expected";
+            if (message.reason != null && message.hasOwnProperty("reason"))
+                if (!$util.isString(message.reason))
+                    return "reason: string expected";
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                if (!(message.adminAddress && typeof message.adminAddress.length === "number" || $util.isString(message.adminAddress)))
+                    return "adminAddress: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessageUnbanPlayer message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageUnbanPlayer
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageUnbanPlayer} MessageUnbanPlayer
+         */
+        MessageUnbanPlayer.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageUnbanPlayer)
+                return object;
+            var message = new $root.types.MessageUnbanPlayer();
+            if (object.targetAddress != null)
+                if (typeof object.targetAddress === "string")
+                    $util.base64.decode(object.targetAddress, message.targetAddress = $util.newBuffer($util.base64.length(object.targetAddress)), 0);
+                else if (object.targetAddress.length >= 0)
+                    message.targetAddress = object.targetAddress;
+            if (object.reason != null)
+                message.reason = String(object.reason);
+            if (object.adminAddress != null)
+                if (typeof object.adminAddress === "string")
+                    $util.base64.decode(object.adminAddress, message.adminAddress = $util.newBuffer($util.base64.length(object.adminAddress)), 0);
+                else if (object.adminAddress.length >= 0)
+                    message.adminAddress = object.adminAddress;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageUnbanPlayer message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageUnbanPlayer
+         * @static
+         * @param {types.MessageUnbanPlayer} message MessageUnbanPlayer
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageUnbanPlayer.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.targetAddress = "";
+                else {
+                    object.targetAddress = [];
+                    if (options.bytes !== Array)
+                        object.targetAddress = $util.newBuffer(object.targetAddress);
+                }
+                object.reason = "";
+                if (options.bytes === String)
+                    object.adminAddress = "";
+                else {
+                    object.adminAddress = [];
+                    if (options.bytes !== Array)
+                        object.adminAddress = $util.newBuffer(object.adminAddress);
+                }
+            }
+            if (message.targetAddress != null && message.hasOwnProperty("targetAddress"))
+                object.targetAddress = options.bytes === String ? $util.base64.encode(message.targetAddress, 0, message.targetAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.targetAddress) : message.targetAddress;
+            if (message.reason != null && message.hasOwnProperty("reason"))
+                object.reason = message.reason;
+            if (message.adminAddress != null && message.hasOwnProperty("adminAddress"))
+                object.adminAddress = options.bytes === String ? $util.base64.encode(message.adminAddress, 0, message.adminAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.adminAddress) : message.adminAddress;
+            return object;
+        };
+
+        /**
+         * Converts this MessageUnbanPlayer to JSON.
+         * @function toJSON
+         * @memberof types.MessageUnbanPlayer
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageUnbanPlayer.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageUnbanPlayer
+         * @function getTypeUrl
+         * @memberof types.MessageUnbanPlayer
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageUnbanPlayer.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageUnbanPlayer";
+        };
+
+        return MessageUnbanPlayer;
+    })();
+
     types.GameConfig = (function() {
 
         /**
@@ -10200,6 +11676,428 @@ $root.types = (function() {
         };
 
         return PlayerStats;
+    })();
+
+    types.PlayerBan = (function() {
+
+        /**
+         * Properties of a PlayerBan.
+         * @memberof types
+         * @interface IPlayerBan
+         * @property {Uint8Array|null} [playerAddress] PlayerBan playerAddress
+         * @property {string|null} [reason] PlayerBan reason
+         * @property {Uint8Array|null} [bannedBy] PlayerBan bannedBy
+         * @property {number|Long|null} [bannedAtUnix] PlayerBan bannedAtUnix
+         * @property {boolean|null} [active] PlayerBan active
+         * @property {Uint8Array|null} [unbannedBy] PlayerBan unbannedBy
+         * @property {number|Long|null} [unbannedAtUnix] PlayerBan unbannedAtUnix
+         * @property {string|null} [unbanReason] PlayerBan unbanReason
+         */
+
+        /**
+         * Constructs a new PlayerBan.
+         * @memberof types
+         * @classdesc Represents a PlayerBan.
+         * @implements IPlayerBan
+         * @constructor
+         * @param {types.IPlayerBan=} [properties] Properties to set
+         */
+        function PlayerBan(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * PlayerBan playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.PlayerBan
+         * @instance
+         */
+        PlayerBan.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * PlayerBan reason.
+         * @member {string} reason
+         * @memberof types.PlayerBan
+         * @instance
+         */
+        PlayerBan.prototype.reason = "";
+
+        /**
+         * PlayerBan bannedBy.
+         * @member {Uint8Array} bannedBy
+         * @memberof types.PlayerBan
+         * @instance
+         */
+        PlayerBan.prototype.bannedBy = $util.newBuffer([]);
+
+        /**
+         * PlayerBan bannedAtUnix.
+         * @member {number|Long} bannedAtUnix
+         * @memberof types.PlayerBan
+         * @instance
+         */
+        PlayerBan.prototype.bannedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerBan active.
+         * @member {boolean} active
+         * @memberof types.PlayerBan
+         * @instance
+         */
+        PlayerBan.prototype.active = false;
+
+        /**
+         * PlayerBan unbannedBy.
+         * @member {Uint8Array} unbannedBy
+         * @memberof types.PlayerBan
+         * @instance
+         */
+        PlayerBan.prototype.unbannedBy = $util.newBuffer([]);
+
+        /**
+         * PlayerBan unbannedAtUnix.
+         * @member {number|Long} unbannedAtUnix
+         * @memberof types.PlayerBan
+         * @instance
+         */
+        PlayerBan.prototype.unbannedAtUnix = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * PlayerBan unbanReason.
+         * @member {string} unbanReason
+         * @memberof types.PlayerBan
+         * @instance
+         */
+        PlayerBan.prototype.unbanReason = "";
+
+        /**
+         * Creates a new PlayerBan instance using the specified properties.
+         * @function create
+         * @memberof types.PlayerBan
+         * @static
+         * @param {types.IPlayerBan=} [properties] Properties to set
+         * @returns {types.PlayerBan} PlayerBan instance
+         */
+        PlayerBan.create = function create(properties) {
+            return new PlayerBan(properties);
+        };
+
+        /**
+         * Encodes the specified PlayerBan message. Does not implicitly {@link types.PlayerBan.verify|verify} messages.
+         * @function encode
+         * @memberof types.PlayerBan
+         * @static
+         * @param {types.IPlayerBan} message PlayerBan message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PlayerBan.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.reason != null && Object.hasOwnProperty.call(message, "reason"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.reason);
+            if (message.bannedBy != null && Object.hasOwnProperty.call(message, "bannedBy"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.bannedBy);
+            if (message.bannedAtUnix != null && Object.hasOwnProperty.call(message, "bannedAtUnix"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.bannedAtUnix);
+            if (message.active != null && Object.hasOwnProperty.call(message, "active"))
+                writer.uint32(/* id 5, wireType 0 =*/40).bool(message.active);
+            if (message.unbannedBy != null && Object.hasOwnProperty.call(message, "unbannedBy"))
+                writer.uint32(/* id 6, wireType 2 =*/50).bytes(message.unbannedBy);
+            if (message.unbannedAtUnix != null && Object.hasOwnProperty.call(message, "unbannedAtUnix"))
+                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.unbannedAtUnix);
+            if (message.unbanReason != null && Object.hasOwnProperty.call(message, "unbanReason"))
+                writer.uint32(/* id 8, wireType 2 =*/66).string(message.unbanReason);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified PlayerBan message, length delimited. Does not implicitly {@link types.PlayerBan.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.PlayerBan
+         * @static
+         * @param {types.IPlayerBan} message PlayerBan message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        PlayerBan.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a PlayerBan message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.PlayerBan
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.PlayerBan} PlayerBan
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PlayerBan.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.PlayerBan();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.reason = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.bannedBy = reader.bytes();
+                        break;
+                    }
+                case 4: {
+                        message.bannedAtUnix = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.active = reader.bool();
+                        break;
+                    }
+                case 6: {
+                        message.unbannedBy = reader.bytes();
+                        break;
+                    }
+                case 7: {
+                        message.unbannedAtUnix = reader.uint64();
+                        break;
+                    }
+                case 8: {
+                        message.unbanReason = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a PlayerBan message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.PlayerBan
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.PlayerBan} PlayerBan
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        PlayerBan.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a PlayerBan message.
+         * @function verify
+         * @memberof types.PlayerBan
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        PlayerBan.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.reason != null && message.hasOwnProperty("reason"))
+                if (!$util.isString(message.reason))
+                    return "reason: string expected";
+            if (message.bannedBy != null && message.hasOwnProperty("bannedBy"))
+                if (!(message.bannedBy && typeof message.bannedBy.length === "number" || $util.isString(message.bannedBy)))
+                    return "bannedBy: buffer expected";
+            if (message.bannedAtUnix != null && message.hasOwnProperty("bannedAtUnix"))
+                if (!$util.isInteger(message.bannedAtUnix) && !(message.bannedAtUnix && $util.isInteger(message.bannedAtUnix.low) && $util.isInteger(message.bannedAtUnix.high)))
+                    return "bannedAtUnix: integer|Long expected";
+            if (message.active != null && message.hasOwnProperty("active"))
+                if (typeof message.active !== "boolean")
+                    return "active: boolean expected";
+            if (message.unbannedBy != null && message.hasOwnProperty("unbannedBy"))
+                if (!(message.unbannedBy && typeof message.unbannedBy.length === "number" || $util.isString(message.unbannedBy)))
+                    return "unbannedBy: buffer expected";
+            if (message.unbannedAtUnix != null && message.hasOwnProperty("unbannedAtUnix"))
+                if (!$util.isInteger(message.unbannedAtUnix) && !(message.unbannedAtUnix && $util.isInteger(message.unbannedAtUnix.low) && $util.isInteger(message.unbannedAtUnix.high)))
+                    return "unbannedAtUnix: integer|Long expected";
+            if (message.unbanReason != null && message.hasOwnProperty("unbanReason"))
+                if (!$util.isString(message.unbanReason))
+                    return "unbanReason: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a PlayerBan message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.PlayerBan
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.PlayerBan} PlayerBan
+         */
+        PlayerBan.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.PlayerBan)
+                return object;
+            var message = new $root.types.PlayerBan();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.reason != null)
+                message.reason = String(object.reason);
+            if (object.bannedBy != null)
+                if (typeof object.bannedBy === "string")
+                    $util.base64.decode(object.bannedBy, message.bannedBy = $util.newBuffer($util.base64.length(object.bannedBy)), 0);
+                else if (object.bannedBy.length >= 0)
+                    message.bannedBy = object.bannedBy;
+            if (object.bannedAtUnix != null)
+                if ($util.Long)
+                    (message.bannedAtUnix = $util.Long.fromValue(object.bannedAtUnix)).unsigned = true;
+                else if (typeof object.bannedAtUnix === "string")
+                    message.bannedAtUnix = parseInt(object.bannedAtUnix, 10);
+                else if (typeof object.bannedAtUnix === "number")
+                    message.bannedAtUnix = object.bannedAtUnix;
+                else if (typeof object.bannedAtUnix === "object")
+                    message.bannedAtUnix = new $util.LongBits(object.bannedAtUnix.low >>> 0, object.bannedAtUnix.high >>> 0).toNumber(true);
+            if (object.active != null)
+                message.active = Boolean(object.active);
+            if (object.unbannedBy != null)
+                if (typeof object.unbannedBy === "string")
+                    $util.base64.decode(object.unbannedBy, message.unbannedBy = $util.newBuffer($util.base64.length(object.unbannedBy)), 0);
+                else if (object.unbannedBy.length >= 0)
+                    message.unbannedBy = object.unbannedBy;
+            if (object.unbannedAtUnix != null)
+                if ($util.Long)
+                    (message.unbannedAtUnix = $util.Long.fromValue(object.unbannedAtUnix)).unsigned = true;
+                else if (typeof object.unbannedAtUnix === "string")
+                    message.unbannedAtUnix = parseInt(object.unbannedAtUnix, 10);
+                else if (typeof object.unbannedAtUnix === "number")
+                    message.unbannedAtUnix = object.unbannedAtUnix;
+                else if (typeof object.unbannedAtUnix === "object")
+                    message.unbannedAtUnix = new $util.LongBits(object.unbannedAtUnix.low >>> 0, object.unbannedAtUnix.high >>> 0).toNumber(true);
+            if (object.unbanReason != null)
+                message.unbanReason = String(object.unbanReason);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a PlayerBan message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.PlayerBan
+         * @static
+         * @param {types.PlayerBan} message PlayerBan
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        PlayerBan.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                object.reason = "";
+                if (options.bytes === String)
+                    object.bannedBy = "";
+                else {
+                    object.bannedBy = [];
+                    if (options.bytes !== Array)
+                        object.bannedBy = $util.newBuffer(object.bannedBy);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.bannedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.bannedAtUnix = options.longs === String ? "0" : 0;
+                object.active = false;
+                if (options.bytes === String)
+                    object.unbannedBy = "";
+                else {
+                    object.unbannedBy = [];
+                    if (options.bytes !== Array)
+                        object.unbannedBy = $util.newBuffer(object.unbannedBy);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.unbannedAtUnix = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.unbannedAtUnix = options.longs === String ? "0" : 0;
+                object.unbanReason = "";
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.reason != null && message.hasOwnProperty("reason"))
+                object.reason = message.reason;
+            if (message.bannedBy != null && message.hasOwnProperty("bannedBy"))
+                object.bannedBy = options.bytes === String ? $util.base64.encode(message.bannedBy, 0, message.bannedBy.length) : options.bytes === Array ? Array.prototype.slice.call(message.bannedBy) : message.bannedBy;
+            if (message.bannedAtUnix != null && message.hasOwnProperty("bannedAtUnix"))
+                if (typeof message.bannedAtUnix === "number")
+                    object.bannedAtUnix = options.longs === String ? String(message.bannedAtUnix) : message.bannedAtUnix;
+                else
+                    object.bannedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.bannedAtUnix) : options.longs === Number ? new $util.LongBits(message.bannedAtUnix.low >>> 0, message.bannedAtUnix.high >>> 0).toNumber(true) : message.bannedAtUnix;
+            if (message.active != null && message.hasOwnProperty("active"))
+                object.active = message.active;
+            if (message.unbannedBy != null && message.hasOwnProperty("unbannedBy"))
+                object.unbannedBy = options.bytes === String ? $util.base64.encode(message.unbannedBy, 0, message.unbannedBy.length) : options.bytes === Array ? Array.prototype.slice.call(message.unbannedBy) : message.unbannedBy;
+            if (message.unbannedAtUnix != null && message.hasOwnProperty("unbannedAtUnix"))
+                if (typeof message.unbannedAtUnix === "number")
+                    object.unbannedAtUnix = options.longs === String ? String(message.unbannedAtUnix) : message.unbannedAtUnix;
+                else
+                    object.unbannedAtUnix = options.longs === String ? $util.Long.prototype.toString.call(message.unbannedAtUnix) : options.longs === Number ? new $util.LongBits(message.unbannedAtUnix.low >>> 0, message.unbannedAtUnix.high >>> 0).toNumber(true) : message.unbannedAtUnix;
+            if (message.unbanReason != null && message.hasOwnProperty("unbanReason"))
+                object.unbanReason = message.unbanReason;
+            return object;
+        };
+
+        /**
+         * Converts this PlayerBan to JSON.
+         * @function toJSON
+         * @memberof types.PlayerBan
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        PlayerBan.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for PlayerBan
+         * @function getTypeUrl
+         * @memberof types.PlayerBan
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        PlayerBan.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.PlayerBan";
+        };
+
+        return PlayerBan;
     })();
 
     types.FSMToPlugin = (function() {

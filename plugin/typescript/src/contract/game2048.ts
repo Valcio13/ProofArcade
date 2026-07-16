@@ -21,7 +21,12 @@ export const GAME2048_TYPE_URLS = {
     claimDailyReward: 'type.googleapis.com/types.MessageClaimDailyReward',
     redeemClassicPoints: 'type.googleapis.com/types.MessageRedeemClassicPoints',
     claimDailyLoginReward: 'type.googleapis.com/types.MessageClaimDailyLoginReward',
-    setUsername: 'type.googleapis.com/types.MessageSetUsername'
+    setUsername: 'type.googleapis.com/types.MessageSetUsername',
+    poolTransfer: 'type.googleapis.com/types.MessagePoolTransfer',
+    poolDeposit: 'type.googleapis.com/types.MessagePoolDeposit',
+    poolWithdrawal: 'type.googleapis.com/types.MessagePoolWithdrawal',
+    banPlayer: 'type.googleapis.com/types.MessageBanPlayer',
+    unbanPlayer: 'type.googleapis.com/types.MessageUnbanPlayer'
 } as const;
 
 export type Game2048MessageType =
@@ -31,7 +36,12 @@ export type Game2048MessageType =
     | 'MessageClaimDailyReward'
     | 'MessageRedeemClassicPoints'
     | 'MessageClaimDailyLoginReward'
-    | 'MessageSetUsername';
+    | 'MessageSetUsername'
+    | 'MessagePoolTransfer'
+    | 'MessagePoolDeposit'
+    | 'MessagePoolWithdrawal'
+    | 'MessageBanPlayer'
+    | 'MessageUnbanPlayer';
 
 type Game2048StateType =
     | 'GameConfig'
@@ -48,7 +58,8 @@ type Game2048StateType =
     | 'DailyLoginClaim'
     | 'PlayerStats'
     | 'UsernameRegistration'
-    | 'PlayerIdentity';
+    | 'PlayerIdentity'
+    | 'PlayerBan';
 
 function lookupType(typeName: Game2048MessageType | Game2048StateType): protobuf.Type {
     const type = game2048Root.lookupType(`types.${typeName}`);
@@ -84,6 +95,21 @@ export function decodeGame2048Any(any: any): [any | null, Game2048MessageType | 
         }
         if (typeUrl.includes('MessageSetUsername')) {
             return [lookupType('MessageSetUsername').decode(any.value), 'MessageSetUsername', null];
+        }
+        if (typeUrl.includes('MessagePoolTransfer')) {
+            return [lookupType('MessagePoolTransfer').decode(any.value), 'MessagePoolTransfer', null];
+        }
+        if (typeUrl.includes('MessagePoolDeposit')) {
+            return [lookupType('MessagePoolDeposit').decode(any.value), 'MessagePoolDeposit', null];
+        }
+        if (typeUrl.includes('MessagePoolWithdrawal')) {
+            return [lookupType('MessagePoolWithdrawal').decode(any.value), 'MessagePoolWithdrawal', null];
+        }
+        if (typeUrl.includes('MessageBanPlayer')) {
+            return [lookupType('MessageBanPlayer').decode(any.value), 'MessageBanPlayer', null];
+        }
+        if (typeUrl.includes('MessageUnbanPlayer')) {
+            return [lookupType('MessageUnbanPlayer').decode(any.value), 'MessageUnbanPlayer', null];
         }
         return [null, null, ErrInvalidMessageCast()];
     } catch (err) {

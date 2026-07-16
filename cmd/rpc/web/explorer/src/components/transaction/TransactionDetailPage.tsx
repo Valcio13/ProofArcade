@@ -134,6 +134,91 @@ const TransactionDetailPage: React.FC = () => {
         return str.length > n * 2 ? `${str.slice(0, n)}…${str.slice(-8)}` : str
     }
 
+    // Helper function to convert base64 to hex
+    const base64ToHex = (base64: string): string => {
+        try {
+            const bytes = atob(base64)
+            return Array.from(bytes, (byte: any) => 
+                ('0' + (byte.charCodeAt(0) & 0xFF).toString(16)).slice(-2)
+            ).join('')
+        } catch {
+            return base64
+        }
+    }
+
+    // Helper function to check if a string is likely base64
+    const isLikelyBase64 = (str: string): boolean => {
+        // Must contain base64 characters and either have padding or be properly sized
+        if (!str.match(/^[A-Za-z0-9+/]+=*$/)) return false
+        // Base64 strings are typically multiples of 4 characters
+        if (str.length % 4 !== 0 && !str.includes('=')) return false
+        return true
+    }
+
+    // Helper function to recursively convert base64 byte fields to hex in an object
+    const convertBytesToHex = (obj: any): any => {
+        if (obj === null || obj === undefined) return obj
+        if (typeof obj !== 'object') return obj
+        
+        if (Array.isArray(obj)) {
+            return obj.map(item => convertBytesToHex(item))
+        }
+        
+        const result: any = {}
+        for (const key in obj) {
+            const value = obj[key]
+            
+            // Only convert specific byte fields that should be hex (addresses, hashes, keys, signatures)
+            const isByteField = 
+                key.toLowerCase().includes('address') || 
+                key.toLowerCase().includes('hash') || 
+                key === 'publicKey' || 
+                key === 'signature' || 
+                key === 'signer' ||
+                key === 'recipient' ||
+                key === 'sender'
+            
+            if (isByteField && typeof value === 'string') {
+                // Check if already hex (all hex chars, even length, 20 or 32 bytes typical)
+                if (value.match(/^[0-9a-f]+$/i) && value.length % 2 === 0) {
+                    // Already hex, keep as-is
+                    result[key] = value
+                } else if (isLikelyBase64(value)) {
+                    // This looks like base64, try to convert
+                    const hex = base64ToHex(value)
+                    // Validate: common byte lengths in blockchain
+                    // 40 chars (20 bytes) - addresses
+                    // 64 chars (32 bytes) - hashes (SHA256)
+                    // 96 chars (48 bytes) - BLS public keys
+                    // 128 chars (64 bytes) - some signatures
+                    // 192 chars (96 bytes) - BLS signatures
+                    const validLength = [40, 64, 96, 128, 192].includes(hex.length)
+                    if (validLength && hex.match(/^[0-9a-f]+$/i)) {
+                        result[key] = hex
+                    } else {
+                        // Invalid conversion, keep original
+                        result[key] = value
+                    }
+                } else {
+                    // Not hex, not base64, keep as-is
+                    result[key] = value
+                }
+            } else if (typeof value === 'object') {
+                // Recursively process nested objects
+                result[key] = convertBytesToHex(value)
+            } else {
+                // Keep other values as-is (numbers, booleans, non-byte strings)
+                result[key] = value
+            }
+        }
+        return result
+    }
+
+    // Convert transaction for raw display
+    const transactionForRawDisplay = useMemo(() => {
+        return convertBytesToHex(transaction)
+    }, [transaction])
+
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text)
         toast.success('Copied to clipboard!', {
@@ -264,8 +349,8 @@ const TransactionDetailPage: React.FC = () => {
     const timestamp = transaction?.transaction?.time || transaction?.timestamp || transaction?.time || new Date().toISOString()
     const fee = formatFee(transactionFeeMicro)
 
-    const from = getExplorerFromAddress(transaction)
-    const to = getExplorerToAddress(transaction)
+    const from = getExplorerFromAddress(transactionForRawDisplay)
+    const to = getExplorerToAddress(transactionForRawDisplay)
     const nonce = transaction.nonce || 0
     // Extract real data from endpoint
     const position = transaction?.index ?? null // Position in block (index field from endpoint)
@@ -757,7 +842,7 @@ const TransactionDetailPage: React.FC = () => {
                             <div className="border border-gray-600/60 rounded-lg p-4">
                                 <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                                     <code className="text-gray-300">
-                                        {JSON.stringify(transaction, null, 2)
+                                        {JSON.stringify(transactionForRawDisplay, null, 2)
                                             .replace(/(".*?")\s*:/g, '<span class="text-blue-400">$1</span>:')
                                             .replace(/:\s*(".*?")/g, ': <span class="text-green-400">$1</span>')
                                             .replace(/:\s*(\d+)/g, ': <span class="text-yellow-400">$1</span>')

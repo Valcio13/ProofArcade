@@ -124,6 +124,14 @@ const (
 	LogsRoutePath                = "/v1/admin/log"
 	AddVoteRoutePath             = "/v1/gov/add-vote"
 	DelVoteRoutePath             = "/v1/gov/del-vote"
+	AdminVerifyRoutePath         = "/v1/admin/verify"
+	AdminConfigRoutePath         = "/v1/admin/admin-config"
+	AdminPoolTransferRoutePath   = "/v1/admin/pool-transfer"
+	AdminPoolWithdrawalRoutePath = "/v1/admin/pool-withdrawal"
+	AdminPoolDepositRoutePath    = "/v1/admin/pool-deposit"
+	AdminBanPlayerRoutePath      = "/v1/admin/ban-player"
+	AdminUnbanPlayerRoutePath    = "/v1/admin/unban-player"
+	AdminValidatorAddressRoutePath = "/v1/admin/validator-address"
 )
 
 const (
@@ -247,6 +255,14 @@ const (
 	AddVoteRouteName                = "add-vote"
 	DelVoteRouteName                = "del-vote"
 	SubscribeRCInfoName             = "subscribe-rc-info"
+	AdminVerifyRouteName            = "admin-verify"
+	AdminConfigRouteName            = "admin-config"
+	AdminPoolTransferRouteName      = "admin-pool-transfer"
+	AdminPoolWithdrawalRouteName    = "admin-pool-withdrawal"
+	AdminPoolDepositRouteName       = "admin-pool-deposit"
+	AdminBanPlayerRouteName         = "admin-ban-player"
+	AdminUnbanPlayerRouteName       = "admin-unban-player"
+	AdminValidatorAddressRouteName  = "admin-validator-address"
 )
 
 // routes contains the method and path for a canopy command
@@ -372,6 +388,14 @@ var routePaths = routes{
 	AddVoteRouteName:                {Method: http.MethodPost, Path: AddVoteRoutePath},
 	DelVoteRouteName:                {Method: http.MethodPost, Path: DelVoteRoutePath},
 	SubscribeRCInfoName:             {Method: http.MethodGet, Path: SubscribeRCInfoPath},
+	AdminVerifyRouteName:            {Method: http.MethodPost, Path: AdminVerifyRoutePath},
+	AdminConfigRouteName:            {Method: http.MethodGet, Path: AdminConfigRoutePath},
+	AdminPoolTransferRouteName:      {Method: http.MethodPost, Path: AdminPoolTransferRoutePath},
+	AdminPoolWithdrawalRouteName:    {Method: http.MethodPost, Path: AdminPoolWithdrawalRoutePath},
+	AdminPoolDepositRouteName:       {Method: http.MethodPost, Path: AdminPoolDepositRoutePath},
+	AdminBanPlayerRouteName:         {Method: http.MethodPost, Path: AdminBanPlayerRoutePath},
+	AdminUnbanPlayerRouteName:       {Method: http.MethodPost, Path: AdminUnbanPlayerRoutePath},
+	AdminValidatorAddressRouteName:  {Method: http.MethodGet, Path: AdminValidatorAddressRoutePath},
 }
 
 // httpRouteHandlers is a custom type that maps strings to httprouter handle functions
@@ -512,6 +536,14 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		LogsRouteName:                   logsHandler(s),
 		AddVoteRouteName:                s.AddVote,
 		DelVoteRouteName:                s.DelVote,
+		AdminVerifyRouteName:            s.AdminVerify,
+		AdminConfigRouteName:            s.AdminConfig,
+		AdminPoolTransferRouteName:      s.AdminPoolTransfer,
+		AdminPoolWithdrawalRouteName:    s.AdminPoolWithdrawal,
+		AdminPoolDepositRouteName:       s.AdminPoolDeposit,
+		AdminBanPlayerRouteName:         s.AdminBanPlayer,
+		AdminUnbanPlayerRouteName:       s.AdminUnbanPlayer,
+		AdminValidatorAddressRouteName:  s.AdminValidatorAddress,
 	}
 
 	// Initialize a new router using the httprouter package.
@@ -521,8 +553,21 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		// Retrieve the path configuration for the current route name.
 		path := routePaths[name]
 
+		// Only wrap specific admin-only routes with authentication middleware
+		// These are the routes that require admin authorization
+		requiresAdminAuth := name == AdminPoolTransferRouteName ||
+			name == AdminPoolWithdrawalRouteName ||
+			name == AdminPoolDepositRouteName ||
+			name == AdminBanPlayerRouteName ||
+			name == AdminUnbanPlayerRouteName
+
+		wrappedHandler := handler
+		if requiresAdminAuth {
+			wrappedHandler = s.AdminAuthMiddleware(handler)
+		}
+
 		// Add the handler for the specific path and HTTP method to the router.
-		router.Handle(path.Method, path.Path, logHandler{path.Path, handler}.Handle)
+		router.Handle(path.Method, path.Path, logHandler{path.Path, wrappedHandler}.Handle)
 	}
 
 	return router

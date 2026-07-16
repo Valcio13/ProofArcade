@@ -209,17 +209,25 @@ export async function loadDailyRewardFinalizationSummary(
     
     // Get top N entries from leaderboard (N = min(payoutBps.length, actual entries))
     const entries = (iterResp?.results?.[0]?.entries || []).slice(0, payoutBps.length);
-    const usedPayoutBps = payoutBps.slice(0, entries.length);
-    const usedPayoutBpsTotal = usedPayoutBps.reduce((sum, bps) => sum + bps, 0);
     
-    // Calculate allocation for each leaderboard entry
-    entries.forEach((entry: any, index: number) => {
+    // Decode all eligible entries
+    const eligibleEntries: any[] = [];
+    
+    for (const entry of entries) {
         const [leaderboardEntry] = decodeGame2048State('LeaderboardEntry', entry.value || new Uint8Array());
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const boardEntry = (leaderboardEntry as any) || {};
         
+        // All players on leaderboard are eligible
+        eligibleEntries.push({ entry, boardEntry });
+    }
+    
+    const usedPayoutBps = payoutBps.slice(0, eligibleEntries.length);
+    const usedPayoutBpsTotal = usedPayoutBps.reduce((sum, bps) => sum + bps, 0);
+    
+    // Calculate allocation for each eligible leaderboard entry
+    eligibleEntries.forEach(({ boardEntry }, index: number) => {
         // Last player gets remainder to ensure exact total
-        const rewardAmount = index === entries.length - 1
+        const rewardAmount = index === eligibleEntries.length - 1
             ? rewardPool.subtract(distributed)
             : calculateRenormalizedBpsAmount(
                 rewardPool,

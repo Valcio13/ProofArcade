@@ -33,6 +33,16 @@ const SupplyPage = lazy(() => import('./components/staking/SupplyPage'))
 const Play2048Page = lazy(() => import('./pages/Play2048'))
 const PlaytestPage = lazy(() => import('./pages/Playtest'))
 const LeaderboardPage = lazy(() => import('./pages/Leaderboard'))
+const AdminPage = lazy(() => import('./pages/Admin'))
+const AdminLoginPage = lazy(() => import('./pages/AdminLogin'))
+const AdminEconomyPage = lazy(() => import('./pages/AdminEconomy'))
+const AdminCompetitionsPage = lazy(() => import('./pages/AdminCompetitions'))
+const AdminPlayersPage = lazy(() => import('./pages/AdminPlayers'))
+const AdminShopPage = lazy(() => import('./pages/AdminShop'))
+const AdminMonitoringPage = lazy(() => import('./pages/AdminMonitoring'))
+const AdminPoolManagementPage = lazy(() => import('./pages/AdminPoolManagement'))
+const AdminModerationPage = lazy(() => import('./pages/AdminModeration'))
+const AdminProtectedRoute = lazy(() => import('./components/admin/AdminProtectedRoute'))
 
 function RouteFallback() {
   return (
@@ -80,6 +90,15 @@ function AnimatedRoutes() {
           <Route path="/play" element={<Play2048Page />} />
           <Route path="/playtest" element={<PlaytestPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin" element={<AdminProtectedRoute><AdminPage /></AdminProtectedRoute>} />
+          <Route path="/admin/economy" element={<AdminProtectedRoute><AdminEconomyPage /></AdminProtectedRoute>} />
+          <Route path="/admin/competitions" element={<AdminProtectedRoute><AdminCompetitionsPage /></AdminProtectedRoute>} />
+          <Route path="/admin/players" element={<AdminProtectedRoute><AdminPlayersPage /></AdminProtectedRoute>} />
+          <Route path="/admin/shop" element={<AdminProtectedRoute><AdminShopPage /></AdminProtectedRoute>} />
+          <Route path="/admin/monitoring" element={<AdminProtectedRoute><AdminMonitoringPage /></AdminProtectedRoute>} />
+          <Route path="/admin/pool-management" element={<AdminProtectedRoute><AdminPoolManagementPage /></AdminProtectedRoute>} />
+          <Route path="/admin/moderation" element={<AdminProtectedRoute><AdminModerationPage /></AdminProtectedRoute>} />
           <Route path="/orders" element={<ExplorerHomePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

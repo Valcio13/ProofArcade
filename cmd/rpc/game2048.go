@@ -2347,6 +2347,33 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				bytesFieldDescriptor("player_address", 1),
 				stringFieldDescriptor("username", 2),
 			}),
+			messageDescriptor("MessagePoolTransfer", []*descriptorpb.FieldDescriptorProto{
+				uint64FieldDescriptor("from_pool_id", 1),
+				uint64FieldDescriptor("to_pool_id", 2),
+				uint64FieldDescriptor("amount", 3),
+				bytesFieldDescriptor("admin_address", 4),
+			}),
+			messageDescriptor("MessagePoolDeposit", []*descriptorpb.FieldDescriptorProto{
+				uint64FieldDescriptor("pool_id", 1),
+				uint64FieldDescriptor("amount", 2),
+				bytesFieldDescriptor("admin_address", 3),
+			}),
+			messageDescriptor("MessagePoolWithdrawal", []*descriptorpb.FieldDescriptorProto{
+				uint64FieldDescriptor("pool_id", 1),
+				uint64FieldDescriptor("amount", 2),
+				bytesFieldDescriptor("to_address", 3),
+				bytesFieldDescriptor("admin_address", 4),
+			}),
+			messageDescriptor("MessageBanPlayer", []*descriptorpb.FieldDescriptorProto{
+				bytesFieldDescriptor("target_address", 1),
+				stringFieldDescriptor("reason", 2),
+				bytesFieldDescriptor("admin_address", 3),
+			}),
+			messageDescriptor("MessageUnbanPlayer", []*descriptorpb.FieldDescriptorProto{
+				bytesFieldDescriptor("target_address", 1),
+				stringFieldDescriptor("reason", 2),
+				bytesFieldDescriptor("admin_address", 3),
+			}),
 			messageDescriptor("GameConfig", []*descriptorpb.FieldDescriptorProto{
 				uint64FieldDescriptor("classic_start_fee", 1),
 				uint64FieldDescriptor("daily_start_fee", 2),
@@ -2499,6 +2526,16 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				uint64FieldDescriptor("login_streak", 13),
 				stringFieldDescriptor("last_login_claim_utc_date", 14),
 				stringFieldDescriptor("classic_points_bonus_utc_date", 15),
+			}),
+			messageDescriptor("PlayerBan", []*descriptorpb.FieldDescriptorProto{
+				bytesFieldDescriptor("player_address", 1),
+				stringFieldDescriptor("reason", 2),
+				bytesFieldDescriptor("banned_by", 3),
+				uint64FieldDescriptor("banned_at_unix", 4),
+				boolFieldDescriptor("active", 5),
+				bytesFieldDescriptor("unbanned_by", 6),
+				uint64FieldDescriptor("unbanned_at_unix", 7),
+				stringFieldDescriptor("unban_reason", 8),
 			}),
 		},
 	}

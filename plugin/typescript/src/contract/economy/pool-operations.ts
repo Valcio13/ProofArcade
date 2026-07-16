@@ -48,8 +48,9 @@ function formatUint64(value: Long): Uint8Array {
 
 /**
  * Pool prefix for state keys
+ * IMPORTANT: Must match FSM poolPrefix = []byte{2}
  */
-const poolPrefix = Buffer.from([5]);
+const poolPrefix = Buffer.from([2]);
 
 /**
  * Generates state key for a pool by ID
@@ -68,14 +69,23 @@ export async function readPoolBalance(
     contract: Contract,
     poolId: number
 ): Promise<{ id: number; amount: Long } | null> {
+    console.error(`[POOL_OPS_DEBUG] readPoolBalance called for pool ${poolId}`);
+    
     const queryId = randomQueryId();
     const poolKey = keyForPool(poolId);
+    
+    console.error(`[POOL_OPS_DEBUG] Pool ${poolId} key: ${Buffer.from(poolKey).toString('hex')}`);
+    console.error(`[POOL_OPS_DEBUG] Calling StateRead...`);
     
     const [response, readErr] = await contract.plugin.StateRead(contract, {
         keys: [{ queryId, key: poolKey }]
     });
     
+    console.error(`[POOL_OPS_DEBUG] StateRead completed for pool ${poolId}`);
+    console.error(`[POOL_OPS_DEBUG] readErr: ${readErr ? JSON.stringify(readErr) : 'null'}`);
+    
     if (readErr) {
+        console.error(`[POOL_OPS_DEBUG] ERROR: Failed to read pool ${poolId}`);
         throw new EconomyError(
             `Failed to read pool ${poolId}: ${readErr.msg}`,
             EconomyErrorCodes.POOL_NOT_FOUND
@@ -83,6 +93,7 @@ export async function readPoolBalance(
     }
     
     if (response?.error) {
+        console.error(`[POOL_OPS_DEBUG] ERROR: Response contains error for pool ${poolId}`);
         throw new EconomyError(
             `Failed to read pool ${poolId}: ${response.error.msg}`,
             EconomyErrorCodes.POOL_NOT_FOUND
@@ -90,13 +101,17 @@ export async function readPoolBalance(
     }
     
     const poolBytes = getQueryValue(response, queryId);
+    console.error(`[POOL_OPS_DEBUG] Pool ${poolId} bytes length: ${poolBytes ? poolBytes.length : 0}`);
+    
     if (!poolBytes || poolBytes.length === 0) {
+        console.error(`[POOL_OPS_DEBUG] Pool ${poolId} does not exist yet (returning null)`);
         // Pool doesn't exist yet - return null
         return null;
     }
     
     const [poolRaw, unmarshalErr] = Unmarshal(poolBytes, types.Pool);
     if (unmarshalErr) {
+        console.error(`[POOL_OPS_DEBUG] ERROR: Failed to unmarshal pool ${poolId}`);
         throw new EconomyError(
             `Failed to unmarshal pool ${poolId}: ${unmarshalErr.msg}`,
             EconomyErrorCodes.POOL_NOT_FOUND
@@ -108,6 +123,8 @@ export async function readPoolBalance(
     const amount = Long.isLong(pool?.amount)
         ? pool.amount
         : Long.fromNumber((pool?.amount as number) || 0);
+    
+    console.error(`[POOL_OPS_DEBUG] Pool ${poolId} balance: ${amount.toString()}`);
     
     return {
         id: poolId,
@@ -195,12 +212,18 @@ export async function transferBetweenPools(
     toPoolId: number,
     amount: Long
 ): Promise<void> {
+    console.error('[POOL_OPS_DEBUG] transferBetweenPools called');
+    console.error(`[POOL_OPS_DEBUG] fromPoolId: ${fromPoolId}, toPoolId: ${toPoolId}, amount: ${amount.toString()}`);
+    
     if (amount.isNegative() || amount.isZero()) {
+        console.error('[POOL_OPS_DEBUG] ERROR: Amount is negative or zero');
         throw new EconomyError(
             'Transfer amount must be positive',
             EconomyErrorCodes.INVALID_AMOUNT
         );
     }
+    
+    console.error('[POOL_OPS_DEBUG] Reading pool balances...');
     
     // Read both pools
     const fromPool = await readPoolBalance(contract, fromPoolId);
@@ -209,7 +232,11 @@ export async function transferBetweenPools(
     const fromAmount = fromPool?.amount || Long.fromNumber(0);
     const toAmount = toPool?.amount || Long.fromNumber(0);
     
+    console.error(`[POOL_OPS_DEBUG] Pool ${fromPoolId} current balance: ${fromAmount.toString()}`);
+    console.error(`[POOL_OPS_DEBUG] Pool ${toPoolId} current balance: ${toAmount.toString()}`);
+    
     if (fromAmount.lessThan(amount)) {
+        console.error('[POOL_OPS_DEBUG] ERROR: Insufficient balance');
         throw new EconomyError(
             `Insufficient balance in pool ${fromPoolId}: has ${fromAmount}, needs ${amount}`,
             EconomyErrorCodes.INSUFFICIENT_BALANCE
@@ -219,6 +246,9 @@ export async function transferBetweenPools(
     // Calculate new amounts
     const newFromAmount = fromAmount.subtract(amount);
     const newToAmount = toAmount.add(amount);
+    
+    console.error(`[POOL_OPS_DEBUG] New pool ${fromPoolId} balance will be: ${newFromAmount.toString()}`);
+    console.error(`[POOL_OPS_DEBUG] New pool ${toPoolId} balance will be: ${newToAmount.toString()}`);
     
     // Create updated pools
     const updatedFromPool = types.Pool.create({
@@ -231,9 +261,15 @@ export async function transferBetweenPools(
         amount: newToAmount
     });
     
+    console.error('[POOL_OPS_DEBUG] Pools created, preparing StateWrite...');
+    
     // Write both pools atomically
     const fromKey = keyForPool(fromPoolId);
     const toKey = keyForPool(toPoolId);
+    
+    console.error(`[POOL_OPS_DEBUG] fromKey: ${Buffer.from(fromKey).toString('hex')}`);
+    console.error(`[POOL_OPS_DEBUG] toKey: ${Buffer.from(toKey).toString('hex')}`);
+    console.error('[POOL_OPS_DEBUG] Calling StateWrite...');
     
     const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, {
         sets: [
@@ -242,7 +278,12 @@ export async function transferBetweenPools(
         ]
     });
     
+    console.error('[POOL_OPS_DEBUG] StateWrite completed');
+    console.error(`[POOL_OPS_DEBUG] writeErr: ${writeErr ? JSON.stringify(writeErr) : 'null'}`);
+    console.error(`[POOL_OPS_DEBUG] writeResp: ${writeResp ? JSON.stringify(writeResp) : 'null'}`);
+    
     if (writeErr) {
+        console.error('[POOL_OPS_DEBUG] ERROR: StateWrite returned error');
         throw new EconomyError(
             `Failed to transfer between pools: ${writeErr.msg}`,
             EconomyErrorCodes.POOL_NOT_FOUND
@@ -250,11 +291,14 @@ export async function transferBetweenPools(
     }
     
     if (writeResp?.error) {
+        console.error('[POOL_OPS_DEBUG] ERROR: StateWrite response contains error');
         throw new EconomyError(
             `Failed to transfer between pools: ${writeResp.error.msg}`,
             EconomyErrorCodes.POOL_NOT_FOUND
         );
     }
+    
+    console.error('[POOL_OPS_DEBUG] Transfer completed successfully!');
 }
 
 /**

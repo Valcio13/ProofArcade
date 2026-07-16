@@ -57,6 +57,11 @@ export interface Config {
     DataDirPath: string;
     // rpcAddress is the listen address for the plugin's own HTTP server that exposes custom RPC endpoints
     rpcAddress: string;
+    // proofArcadeAdmin is the authorized admin address for pool transfers and system operations
+    // If not provided, will attempt to use validator address from environment
+    proofArcadeAdmin?: string;  // Hex string or base64
+    // validatorAddress can be used as fallback admin address if proofArcadeAdmin is not set
+    validatorAddress?: string;  // Hex string or base64
 }
 
 function pluginNetwork(): 'unix' | 'tcp' {

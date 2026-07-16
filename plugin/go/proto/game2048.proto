@@ -79,3 +79,52 @@ message MessageSetUsername {
   bytes player_address = 1; // @gotags: json:"playerAddress"
   string username = 2;
 }
+
+// MessagePoolTransfer transfers funds between pools (admin-only operation).
+message MessagePoolTransfer {
+  uint64 from_pool_id = 1; // @gotags: json:"fromPoolId"
+  uint64 to_pool_id = 2; // @gotags: json:"toPoolId"
+  uint64 amount = 3;
+  bytes admin_address = 4; // @gotags: json:"adminAddress"
+}
+
+// MessagePoolDeposit deposits funds from admin wallet to Reserve Pool only (admin-only operation).
+message MessagePoolDeposit {
+  uint64 pool_id = 1; // @gotags: json:"poolId" - Must be Reserve Pool (131073)
+  uint64 amount = 2;
+  bytes admin_address = 3; // @gotags: json:"adminAddress"
+}
+
+// MessagePoolWithdrawal withdraws funds from a pool to an external wallet address (admin-only operation).
+message MessagePoolWithdrawal {
+  uint64 pool_id = 1; // @gotags: json:"poolId" - Pool to withdraw from
+  uint64 amount = 2;
+  bytes to_address = 3; // @gotags: json:"toAddress" - Destination wallet address
+  bytes admin_address = 4; // @gotags: json:"adminAddress"
+}
+
+// MessageBanPlayer bans a player from gameplay (admin-only operation).
+message MessageBanPlayer {
+  bytes target_address = 1; // @gotags: json:"targetAddress"
+  string reason = 2;
+  bytes admin_address = 3; // @gotags: json:"adminAddress"
+}
+
+// MessageUnbanPlayer unbans a player (admin-only operation).
+message MessageUnbanPlayer {
+  bytes target_address = 1; // @gotags: json:"targetAddress"
+  string reason = 2;
+  bytes admin_address = 3; // @gotags: json:"adminAddress"
+}
+
+// PlayerBan stores ban information for a player.
+message PlayerBan {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  string reason = 2;
+  bytes banned_by = 3; // @gotags: json:"bannedBy"
+  uint64 banned_at_unix = 4; // @gotags: json:"bannedAtUnix"
+  bool active = 5;
+  bytes unbanned_by = 6; // @gotags: json:"unbannedBy"
+  uint64 unbanned_at_unix = 7; // @gotags: json:"unbannedAtUnix"
+  string unban_reason = 8; // @gotags: json:"unbanReason"
+}
