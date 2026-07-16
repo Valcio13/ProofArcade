@@ -49,7 +49,6 @@
         "response": {
           "amount": "number",
           "totalAmount": "number",
-          "spendableAmount": "number",
           "vestedAmount": "number",
           "lockedAmount": "number",
           "vestingAmount": "number",
