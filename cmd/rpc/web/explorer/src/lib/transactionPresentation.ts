@@ -111,6 +111,17 @@ export function getExplorerToAddress(tx: any): string {
     return tx.recipient || tx.to
   }
 
+  // Check for pool withdrawal destination address
+  const msg = tx?.transaction?.msg
+  if (msg?.messagePoolWithdrawal?.toAddress) {
+    return msg.messagePoolWithdrawal.toAddress
+  }
+
+  // Also check if msg itself is the messagePoolWithdrawal
+  if (msg?.toAddress && (tx?.messageType === 'poolWithdrawal' || tx?.transaction?.type === 'poolWithdrawal')) {
+    return msg.toAddress
+  }
+
   const type = normalizeTxType(tx?.transaction?.type || tx?.messageType || tx?.type)
   if (is2048Tx(type)) {
     return getExplorerFromAddress(tx)

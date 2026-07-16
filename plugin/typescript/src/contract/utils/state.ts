@@ -210,7 +210,3 @@ export function KeyForAddressByUsername(normalizedUsername: string): Uint8Array 
 export function KeyForPlayerIdentity(playerAddress: Uint8Array): Uint8Array {
     return JoinLenPrefix(gamePrefix, Buffer.from('player-identity'), Buffer.from(playerAddress));
 }
-
-export function KeyForPlayerBan(playerAddress: Uint8Array): Uint8Array {
-    return JoinLenPrefix(gamePrefix, Buffer.from('player-ban'), Buffer.from(playerAddress));
-}

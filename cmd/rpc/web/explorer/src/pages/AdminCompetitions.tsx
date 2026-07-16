@@ -179,28 +179,35 @@ export default function AdminCompetitionsPage() {
   const warnings = getHealthWarning()
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <Link
-              to="/admin"
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </Link>
-            <h1 className="text-4xl font-bold text-white">Competitions</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-2 sm:px-6 lg:px-8"
+    >
+      {/* Header */}
+      <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
+        <div className="flex items-center gap-3 mb-3">
+          <Link
+            to="/admin"
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">Admin Tools</p>
+            <h1 className="mt-1 text-3xl font-bold leading-tight text-white sm:text-4xl">
+              Competitions
+            </h1>
           </div>
-          <p className="text-slate-400 text-lg">Daily and monthly competition management</p>
-        </motion.div>
+        </div>
+        <p className="mt-2 text-base leading-7 text-slate-300">
+          Daily and monthly competition management
+        </p>
+      </section>
 
         <motion.div
           variants={containerVariants}
@@ -208,94 +215,125 @@ export default function AdminCompetitionsPage() {
           animate="visible"
           className="space-y-6"
         >
-          {/* Competition Tabs */}
-          <motion.div variants={itemVariants}>
-            <div className="flex space-x-2 rounded-xl border border-white/10 bg-black/20 p-1 backdrop-blur-sm">
-              <button
-                onClick={() => setSelectedTab('daily')}
-                className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                  selectedTab === 'daily'
-                    ? 'bg-purple-500/20 text-purple-300 shadow-lg'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Daily Challenge
-              </button>
-              <button
-                onClick={() => setSelectedTab('monthly')}
-                className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                  selectedTab === 'monthly'
-                    ? 'bg-amber-500/20 text-amber-300 shadow-lg'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Monthly Competition
-              </button>
-            </div>
-          </motion.div>
+        {/* Competition Tabs */}
+        <motion.div variants={itemVariants}>
+          <div className="flex space-x-2 rounded-2xl border border-white/10 bg-card p-1">
+            <button
+              onClick={() => setSelectedTab('daily')}
+              className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+                selectedTab === 'daily'
+                  ? 'bg-[#a78bfa]/20 text-[#c4b5fd] shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Daily Challenge
+            </button>
+            <button
+              onClick={() => setSelectedTab('monthly')}
+              className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+                selectedTab === 'monthly'
+                  ? 'bg-[#f6df84]/20 text-[#f6df84] shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Monthly Competition
+            </button>
+          </div>
+        </motion.div>
 
           {/* Daily Competition View */}
           {selectedTab === 'daily' && dailyPool && (
             <>
-              {/* Competition Health Warnings */}
-              {warnings && warnings.length > 0 && (
-                <motion.div variants={itemVariants}>
-                  <div className="space-y-2">
-                    {warnings.map((warning, idx) => (
-                      <div
-                        key={idx}
-                        className={`rounded-lg border p-4 ${
-                          warning.level === 'warning'
-                            ? 'border-amber-500/20 bg-amber-500/10'
-                            : 'border-blue-500/20 bg-blue-500/10'
-                        }`}
-                      >
-                        <div className="flex items-start">
-                          <span className={`text-lg mr-3 ${
-                            warning.level === 'warning' ? 'text-amber-400' : 'text-blue-400'
-                          }`}>
-                            {warning.level === 'warning' ? '⚠️' : 'ℹ️'}
-                          </span>
-                          <p className={`text-sm ${
-                            warning.level === 'warning' ? 'text-amber-200' : 'text-blue-200'
-                          }`}>
-                            {warning.message}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Daily Overview */}
+            {/* Competition Health Warnings */}
+            {warnings && warnings.length > 0 && (
               <motion.div variants={itemVariants}>
-                <h2 className="text-xl font-semibold text-white mb-4">Daily Overview</h2>
+                <div className="space-y-2">
+                  {warnings.map((warning, idx) => (
+                    <div
+                      key={idx}
+                      className={`rounded-xl border p-4 ${
+                        warning.level === 'warning'
+                          ? 'border-[#f6df84]/20 bg-[#f6df84]/10'
+                          : 'border-[#53a6ff]/20 bg-[#53a6ff]/10'
+                      }`}
+                    >
+                      <div className="flex items-start">
+                        <span className={`text-lg mr-3 ${
+                          warning.level === 'warning' ? 'text-[#f6df84]' : 'text-[#9fd0ff]'
+                        }`}>
+                          {warning.level === 'warning' ? '⚠️' : 'ℹ️'}
+                        </span>
+                        <p className={`text-sm ${
+                          warning.level === 'warning' ? 'text-[#f6df84]/90' : 'text-[#9fd0ff]/90'
+                        }`}>
+                          {warning.message}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Daily Overview */}
+            <motion.div variants={itemVariants}>
+              <section>
+                <div className="mb-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Today</p>
+                  <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Daily Overview</h2>
+                </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                    <p className="text-sm text-slate-400">Date</p>
-                    <p className="mt-2 text-2xl font-bold text-white">{formatDate(dailyPool.utcDate)}</p>
+                  <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Date</p>
+                        <p className="mt-2 text-2xl font-black text-[#f6df84]">{formatDate(dailyPool.utcDate)}</p>
+                      </div>
+                      <div className="rounded-xl bg-[#a78bfa]/10 p-2.5 text-[#c4b5fd]">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                    <p className="text-sm text-slate-400">Participants</p>
-                    <p className="mt-2 text-2xl font-bold text-white">{dailyPool.entryCount}</p>
+                  <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Participants</p>
+                        <p className="mt-2 text-2xl font-black text-[#f6df84]">{dailyPool.entryCount}</p>
+                      </div>
+                      <div className="rounded-xl bg-[#53a6ff]/10 p-2.5 text-[#9fd0ff]">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                    <p className="text-sm text-slate-400">Prize Pool</p>
-                    <p className="mt-2 text-2xl font-bold text-white">{formatPROOF(dailyPool.rewardPool)}</p>
+                  <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Prize Pool</p>
+                        <p className="mt-2 text-2xl font-black text-[#f6df84]">{formatPROOF(dailyPool.rewardPool)}</p>
+                      </div>
+                      <div className="rounded-xl bg-[#4ade80]/10 p-2.5 text-[#86efac]">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                    <p className="text-sm text-slate-400">Status</p>
+                  <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Status</p>
                     <div className="mt-2 flex items-center gap-2">
                       <span className="text-xl">{status.icon}</span>
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                           status.color === 'green'
-                            ? 'bg-green-500/10 text-green-400'
+                            ? 'bg-[#4ade80]/10 text-[#86efac]'
                             : status.color === 'amber'
-                            ? 'bg-amber-500/10 text-amber-400'
+                            ? 'bg-[#f6df84]/10 text-[#f6df84]'
                             : status.color === 'blue'
-                            ? 'bg-blue-500/10 text-blue-400'
+                            ? 'bg-[#53a6ff]/10 text-[#9fd0ff]'
                             : 'bg-gray-500/10 text-gray-400'
                         }`}
                       >
@@ -309,15 +347,20 @@ export default function AdminCompetitionsPage() {
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </section>
+            </motion.div>
 
-              {/* Daily Leaderboard */}
-              <motion.div variants={itemVariants}>
+            {/* Daily Leaderboard */}
+            <motion.div variants={itemVariants}>
+              <section>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-white">Daily Leaderboard</h2>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Rankings</p>
+                    <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Daily Leaderboard</h2>
+                  </div>
                   <button
                     onClick={exportDailyCompetition}
-                    className="inline-flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 px-4 py-2 text-sm font-medium text-blue-400 hover:bg-blue-500/20 transition-colors"
+                    className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -325,10 +368,10 @@ export default function AdminCompetitionsPage() {
                     Export CSV
                   </button>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/20 backdrop-blur-sm overflow-hidden">
+                <div className="rounded-2xl border border-white/10 bg-card overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-black/30 border-b border-white/5">
+                      <thead className="bg-black/20 border-b border-white/10">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                             Rank
@@ -400,34 +443,39 @@ export default function AdminCompetitionsPage() {
                     </table>
                   </div>
                 </div>
-              </motion.div>
+              </section>
+            </motion.div>
 
-              {/* Finalization Details */}
-              {dailyPool.finalized && (
-                <motion.div variants={itemVariants}>
-                  <h2 className="text-xl font-semibold text-white mb-4">Finalization Details</h2>
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
+            {/* Finalization Details */}
+            {dailyPool.finalized && (
+              <motion.div variants={itemVariants}>
+                <section>
+                  <div className="mb-4">
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Details</p>
+                    <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Finalization Details</h2>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-card p-6 transition-colors hover:border-white/20">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                       <div>
-                        <p className="text-sm text-slate-400">Gross Fees</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Gross Fees</p>
                         <p className="mt-1 text-lg font-semibold text-white">
                           {formatPROOF(dailyPool.grossFees)} CNPY
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-400">Distributed Rewards</p>
-                        <p className="mt-1 text-lg font-semibold text-green-400">
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Distributed Rewards</p>
+                        <p className="mt-1 text-lg font-semibold text-[#86efac]">
                           {formatPROOF(dailyPool.distributedRewards)} CNPY
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-400">Treasury Leftover</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Treasury Leftover</p>
                         <p className="mt-1 text-lg font-semibold text-slate-300">
                           {formatPROOF(dailyPool.treasuryLeftover)} CNPY
                         </p>
                       </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-white/5">
+                    <div className="mt-4 pt-4 border-t border-white/10">
                       <p className="text-xs text-slate-500">
                         Finalized at:{' '}
                         {dailyPool.finalizedAtUnix
@@ -436,50 +484,87 @@ export default function AdminCompetitionsPage() {
                       </p>
                     </div>
                   </div>
-                </motion.div>
-              )}
+                </section>
+              </motion.div>
+            )}
             </>
           )}
 
           {/* Monthly Competition View */}
           {selectedTab === 'monthly' && (
             <>
-              {/* Monthly Overview */}
-              <motion.div variants={itemVariants}>
-                <h2 className="text-xl font-semibold text-white mb-4">Monthly Overview</h2>
+            {/* Monthly Overview */}
+            <motion.div variants={itemVariants}>
+              <section>
+                <div className="mb-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">This Month</p>
+                  <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Monthly Overview</h2>
+                </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                    <p className="text-sm text-slate-400">Month</p>
-                    <p className="mt-2 text-2xl font-bold text-white">{monthlyPool?.monthId || 'N/A'}</p>
+                  <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Month</p>
+                        <p className="mt-2 text-2xl font-black text-[#f6df84]">{monthlyPool?.monthId || 'N/A'}</p>
+                      </div>
+                      <div className="rounded-xl bg-[#a78bfa]/10 p-2.5 text-[#c4b5fd]">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                    <p className="text-sm text-slate-400">Participants</p>
-                    <p className="mt-2 text-2xl font-bold text-white">
-                      {monthlyLeaderboard?.entries.length || 0}
-                    </p>
+                  <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Participants</p>
+                        <p className="mt-2 text-2xl font-black text-[#f6df84]">
+                          {monthlyLeaderboard?.entries.length || 0}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-[#53a6ff]/10 p-2.5 text-[#9fd0ff]">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                    <p className="text-sm text-slate-400">Prize Pool</p>
-                    <p className="mt-2 text-2xl font-bold text-white">
-                      {formatPROOF(monthlyPool?.balance || 0)}
-                    </p>
+                  <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Prize Pool</p>
+                        <p className="mt-2 text-2xl font-black text-[#f6df84]">
+                          {formatPROOF(monthlyPool?.balance || 0)}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-[#4ade80]/10 p-2.5 text-[#86efac]">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                    <p className="text-sm text-slate-400">Status</p>
-                    <span className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500/10 text-blue-400">
+                  <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Status</p>
+                    <span className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#53a6ff]/10 text-[#9fd0ff]">
                       Active
                     </span>
                   </div>
                 </div>
-              </motion.div>
+              </section>
+            </motion.div>
 
-              {/* Monthly Leaderboard */}
-              <motion.div variants={itemVariants}>
-                <h2 className="text-xl font-semibold text-white mb-4">Monthly Leaderboard</h2>
-                <div className="rounded-xl border border-white/10 bg-black/20 backdrop-blur-sm overflow-hidden">
+            {/* Monthly Leaderboard */}
+            <motion.div variants={itemVariants}>
+              <section>
+                <div className="mb-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Rankings</p>
+                  <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Monthly Leaderboard</h2>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-card overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-black/30 border-b border-white/5">
+                      <thead className="bg-black/20 border-b border-white/10">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                             Rank
@@ -542,11 +627,11 @@ export default function AdminCompetitionsPage() {
                     </table>
                   </div>
                 </div>
+              </section>
               </motion.div>
             </>
           )}
         </motion.div>
-      </div>
-    </div>
+    </motion.div>
   )
 }

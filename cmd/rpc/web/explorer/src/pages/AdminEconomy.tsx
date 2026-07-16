@@ -169,28 +169,35 @@ export default function AdminEconomyPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <Link
-              to="/admin"
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </Link>
-            <h1 className="text-4xl font-bold text-white">Economy & Treasury</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-2 sm:px-6 lg:px-8"
+    >
+      {/* Header */}
+      <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
+        <div className="flex items-center gap-3 mb-3">
+          <Link
+            to="/admin"
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">Admin Tools</p>
+            <h1 className="mt-1 text-3xl font-bold leading-tight text-white sm:text-4xl">
+              Economy & Treasury
+            </h1>
           </div>
-          <p className="text-slate-400 text-lg">Pool balances and fee distribution</p>
-        </motion.div>
+        </div>
+        <p className="mt-2 text-base leading-7 text-slate-300">
+          Pool balances and fee distribution
+        </p>
+      </section>
 
         <motion.div
           variants={containerVariants}
@@ -199,33 +206,39 @@ export default function AdminEconomyPage() {
           className="space-y-6"
         >
           {/* Treasury Overview */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-white mb-4">Treasury Overview</h2>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
+          <section>
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Financial Overview</p>
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Treasury Balance</h2>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-card p-6">
               <div className="text-center">
-                <p className="text-sm text-slate-400 mb-2">Total Treasury Balance</p>
-                <p className="text-5xl font-bold text-white">{formatPROOF(totalTreasury)} <span className="text-2xl text-slate-400">CNPY</span></p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">Total Treasury Balance</p>
+                <p className="text-5xl font-black text-[#f6df84]">{formatPROOF(totalTreasury)} <span className="text-2xl text-slate-400">PROOF</span></p>
                 <p className="text-sm text-slate-500 mt-2">Across {pools.length} pools</p>
               </div>
             </div>
-          </motion.div>
+          </section>
 
           {/* All Pools */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-white mb-4">Pool Balances</h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <section>
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Pool Distribution</p>
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Pool Balances</h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {pools.map((pool) => (
                 <div
                   key={pool.id}
-                  className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm hover:bg-white/5 transition-colors"
+                  className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h3 className="text-lg font-semibold text-white">{pool.name}</h3>
                       <p className="text-xs text-slate-500 mt-1">Pool ID: {pool.id}</p>
                     </div>
-                    <div className="rounded-lg bg-blue-500/10 p-2">
-                      <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="rounded-xl bg-[#53a6ff]/10 p-2.5 text-[#9fd0ff]">
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -235,21 +248,24 @@ export default function AdminEconomyPage() {
                       </svg>
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-white mb-2">
-                    {formatPROOF(pool.balance)} <span className="text-sm text-slate-400">CNPY</span>
+                  <p className="text-2xl font-black text-[#f6df84] mb-2">
+                    {formatPROOF(pool.balance)} <span className="text-sm text-slate-400">PROOF</span>
                   </p>
                   <p className="text-xs text-slate-400">{pool.description}</p>
                 </div>
               ))}
             </div>
-          </motion.div>
+          </section>
 
           {/* Fee Distribution Configuration */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-white mb-4">Fee Distribution Rules</h2>
+          <section>
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Revenue Model</p>
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Fee Distribution Rules</h2>
+            </div>
             <div className="space-y-4">
               {feeDistributions.map((config, idx) => (
-                <div key={idx} className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
+                <div key={idx} className="rounded-2xl border border-white/10 bg-card p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-white">{config.mode}</h3>
@@ -258,18 +274,18 @@ export default function AdminEconomyPage() {
                     <span
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                         idx === 0
-                          ? 'bg-purple-500/10 text-purple-400'
-                          : 'bg-blue-500/10 text-blue-400'
+                          ? 'bg-[#a78bfa]/10 text-[#c4b5fd]'
+                          : 'bg-[#53a6ff]/10 text-[#9fd0ff]'
                       }`}
                     >
                       {config.mode}
                     </span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     {config.splits.map((split, splitIdx) => (
                       <div
                         key={splitIdx}
-                        className="rounded-lg border border-white/5 bg-black/10 p-4"
+                        className="rounded-xl border border-white/5 bg-black/10 p-4"
                       >
                         <p className="text-xs text-slate-500 mb-1">{split.name}</p>
                         <p className="text-xl font-bold text-white">{split.percentage}</p>
@@ -280,35 +296,38 @@ export default function AdminEconomyPage() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </section>
 
           {/* Daily Pool Details */}
           {dailyPool && (
-            <motion.div variants={itemVariants}>
-              <h2 className="text-xl font-semibold text-white mb-4">Daily Pool Details</h2>
-              <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <section>
+              <div className="mb-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Current Cycle</p>
+                <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Daily Pool Details</h2>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-card p-6">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   <div>
-                    <p className="text-sm text-slate-400">Date</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Date</p>
                     <p className="mt-1 text-lg font-semibold text-white">{dailyPool.utcDate}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-400">Entries</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Entries</p>
                     <p className="mt-1 text-lg font-semibold text-white">{dailyPool.entryCount}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-400">Gross Fees</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Gross Fees</p>
                     <p className="mt-1 text-lg font-semibold text-white">
-                      {formatPROOF(dailyPool.grossFees)} CNPY
+                      {formatPROOF(dailyPool.grossFees)} PROOF
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-400">Status</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Status</p>
                     <p className="mt-1">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           dailyPool.finalized
-                            ? 'bg-green-500/10 text-green-400'
+                            ? 'bg-[#4ade80]/10 text-[#4ade80]'
                             : 'bg-yellow-500/10 text-yellow-400'
                         }`}
                       >
@@ -319,28 +338,28 @@ export default function AdminEconomyPage() {
                 </div>
                 {dailyPool.finalized && (
                   <div className="mt-6 pt-6 border-t border-white/5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="grid gap-6 sm:grid-cols-2">
                       <div>
-                        <p className="text-sm text-slate-400">Distributed Rewards</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Distributed Rewards</p>
                         <p className="mt-1 text-lg font-semibold text-white">
-                          {formatPROOF(dailyPool.distributedRewards)} CNPY
+                          {formatPROOF(dailyPool.distributedRewards)} PROOF
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-400">Treasury Leftover</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Treasury Leftover</p>
                         <p className="mt-1 text-lg font-semibold text-white">
-                          {formatPROOF(dailyPool.treasuryLeftover)} CNPY
+                          {formatPROOF(dailyPool.treasuryLeftover)} PROOF
                         </p>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
-            </motion.div>
+            </section>
           )}
 
           {/* Admin Actions */}
-          <motion.div variants={itemVariants}>
+          <section>
             <AdminActionsGrid title="Economy Actions">
               <AdminActionButton
                 label="Force Finalize Daily Pool"
@@ -425,9 +444,8 @@ export default function AdminEconomyPage() {
                 variant="primary"
               />
             </AdminActionsGrid>
-          </motion.div>
+          </section>
         </motion.div>
-      </div>
-    </div>
+    </motion.div>
   )
 }

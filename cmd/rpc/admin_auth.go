@@ -86,6 +86,9 @@ func (s *Server) AdminAuthMiddleware(next httprouter.Handle) httprouter.Handle {
 			address = r.URL.Query().Get("admin_address")
 		}
 
+		s.logger.Infof("AdminAuthMiddleware: Checking address='%s', authorized addresses=%v", 
+			address, s.adminConfig.AdminAddresses)
+
 		if address == "" {
 			write(w, ErrString("Admin authentication required: missing address"), http.StatusUnauthorized)
 			return
@@ -93,9 +96,12 @@ func (s *Server) AdminAuthMiddleware(next httprouter.Handle) httprouter.Handle {
 
 		// Verify address is in admin whitelist
 		if !s.IsAdminAddress(address) {
+			s.logger.Warnf("AdminAuthMiddleware: Address '%s' not in whitelist", address)
 			write(w, ErrString("Access denied: address not authorized as admin"), http.StatusForbidden)
 			return
 		}
+
+		s.logger.Infof("AdminAuthMiddleware: Address '%s' authorized successfully", address)
 
 		// Check signature if provided (optional enhanced security)
 		signature := r.Header.Get("X-Admin-Signature")

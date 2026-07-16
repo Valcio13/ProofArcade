@@ -70,7 +70,6 @@ import {
     KeyForUsernameByAddress,
     KeyForAddressByUsername,
     KeyForPlayerIdentity,
-    KeyForPlayerBan,
     PoolIDs
 } from './utils/state.js';
 import {
@@ -353,81 +352,6 @@ export class Contract {
         return { authorizedSigners: [adminAddress] };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CheckMessageBanPlayer(msg: any): any {
-        // Ban operations require admin authorization
-        const adminAddress = normalizeBytes(msg?.adminAddress);
-        
-        if (!adminAddress || adminAddress.length === 0) {
-            return { 
-                error: { 
-                    code: 400, 
-                    msg: 'Admin address not provided in transaction message' 
-                } 
-            };
-        }
-
-        // Validate target address exists
-        const targetAddress = normalizeBytes(msg?.targetAddress);
-        if (!targetAddress || targetAddress.length === 0) {
-            return { 
-                error: { 
-                    code: 400, 
-                    msg: 'Target player address not provided' 
-                } 
-            };
-        }
-
-        // Validate reason is provided
-        if (!msg?.reason || msg.reason.trim().length === 0) {
-            return { 
-                error: { 
-                    code: 400, 
-                    msg: 'Ban reason is required' 
-                } 
-            };
-        }
-
-        return { authorizedSigners: [adminAddress] };
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CheckMessageUnbanPlayer(msg: any): any {
-        // Unban operations require admin authorization
-        const adminAddress = normalizeBytes(msg?.adminAddress);
-        
-        if (!adminAddress || adminAddress.length === 0) {
-            return { 
-                error: { 
-                    code: 400, 
-                    msg: 'Admin address not provided in transaction message' 
-                } 
-            };
-        }
-
-        // Validate target address exists
-        const targetAddress = normalizeBytes(msg?.targetAddress);
-        if (!targetAddress || targetAddress.length === 0) {
-            return { 
-                error: { 
-                    code: 400, 
-                    msg: 'Target player address not provided' 
-                } 
-            };
-        }
-
-        // Validate reason is provided
-        if (!msg?.reason || msg.reason.trim().length === 0) {
-            return { 
-                error: { 
-                    code: 400, 
-                    msg: 'Unban reason is required' 
-                } 
-            };
-        }
-
-        return { authorizedSigners: [adminAddress] };
-    }
 }
 
 // Async versions of contract methods for proper state handling
@@ -525,10 +449,6 @@ export class ContractAsync {
                     return contract.CheckMessagePoolDeposit(msg);
                 case 'MessagePoolWithdrawal':
                     return contract.CheckMessagePoolWithdrawal(msg);
-                case 'MessageBanPlayer':
-                    return contract.CheckMessageBanPlayer(msg);
-                case 'MessageUnbanPlayer':
-                    return contract.CheckMessageUnbanPlayer(msg);
                 default:
                     return { error: ErrInvalidMessageCast() };
             }
@@ -569,10 +489,6 @@ export class ContractAsync {
                     return ContractAsync.DeliverMessagePoolDeposit(contract, msg, request.tx);
                 case 'MessagePoolWithdrawal':
                     return ContractAsync.DeliverMessagePoolWithdrawal(contract, msg, request.tx);
-                case 'MessageBanPlayer':
-                    return ContractAsync.DeliverMessageBanPlayer(contract, msg, request.tx);
-                case 'MessageUnbanPlayer':
-                    return ContractAsync.DeliverMessageUnbanPlayer(contract, msg, request.tx);
                 default:
                     return { error: ErrInvalidMessageCast() };
             }
@@ -735,27 +651,6 @@ export class ContractAsync {
     static async DeliverMessageStartDailyGame(contract: Contract, msg: any, tx: any): Promise<any> {
         const playerAddress = normalizeBytes(msg?.playerAddress);
         const gameId = normalizeBytes(msg?.gameId);
-        
-        // Check if player is banned
-        const banKey = KeyForPlayerBan(playerAddress);
-        const banQueryId = randomQueryId();
-        const [banResp, banErr] = await contract.plugin.StateRead(contract, {
-            keys: [{ queryId: banQueryId, key: banKey }]
-        });
-
-        if (banErr) {
-            return { error: banErr };
-        }
-
-        const banValue = getQueryValue(banResp, banQueryId);
-        if (banValue && banValue.length > 0) {
-            const [ban] = decodeGame2048State('PlayerBan', banValue);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((ban as any)?.active) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return { error: { code: 403, msg: `Player is banned. Reason: ${(ban as any).reason}` } };
-            }
-        }
 
         const playerKey = KeyForAccount(playerAddress);
         const gameConfigKey = KeyForGameConfig();
@@ -955,27 +850,6 @@ export class ContractAsync {
     static async DeliverMessageStartClassicGame(contract: Contract, msg: any, tx: any): Promise<any> {
         const playerAddress = normalizeBytes(msg?.playerAddress);
         const gameId = normalizeBytes(msg?.gameId);
-        
-        // Check if player is banned
-        const banKey = KeyForPlayerBan(playerAddress);
-        const banQueryId = randomQueryId();
-        const [banResp, banErr] = await contract.plugin.StateRead(contract, {
-            keys: [{ queryId: banQueryId, key: banKey }]
-        });
-
-        if (banErr) {
-            return { error: banErr };
-        }
-
-        const banValue = getQueryValue(banResp, banQueryId);
-        if (banValue && banValue.length > 0) {
-            const [ban] = decodeGame2048State('PlayerBan', banValue);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((ban as any)?.active) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return { error: { code: 403, msg: `Player is banned. Reason: ${(ban as any).reason}` } };
-            }
-        }
 
         const playerKey = KeyForAccount(playerAddress);
         const gameTreasuryKey = KeyForGameTreasury();
@@ -2472,119 +2346,5 @@ export class ContractAsync {
     }
 
     // DeliverMessageBanPlayer handles admin ban operations
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    static async DeliverMessageBanPlayer(contract: Contract, msg: any, tx: any): Promise<any> {
-        const targetAddress = normalizeBytes(msg?.targetAddress);
-        const reason = msg?.reason || '';
-        const adminAddress = normalizeBytes(msg?.adminAddress);
-
-        if (!targetAddress || !adminAddress) {
-            return { error: { code: 400, msg: 'Missing required addresses' } };
-        }
-
-        // Check if player is already banned
-        const banKey = KeyForPlayerBan(targetAddress);
-        const queryId = randomQueryId();
-        const [readResp, readErr] = await contract.plugin.StateRead(contract, {
-            keys: [{ queryId, key: banKey }]
-        });
-
-        if (readErr) {
-            return { error: readErr };
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let existingBan: any | null = null;
-        const banValue = getQueryValue(readResp, queryId);
-        if (banValue && banValue.length > 0) {
-            const [ban] = decodeGame2048State('PlayerBan', banValue);
-            existingBan = ban;
-        }
-
-        // If already actively banned, return error
-        if (existingBan && existingBan.active) {
-            return { error: { code: 400, msg: 'Player is already banned' } };
-        }
-
-        // Create ban record
-        const nowMicros = toUint64(tx?.time as Long | number | undefined);
-        const ban = {
-            playerAddress: targetAddress,
-            reason,
-            bannedBy: adminAddress,
-            bannedAtUnix: Long.fromNumber(nowMicros),
-            active: true,
-            unbannedBy: new Uint8Array(0),
-            unbannedAtUnix: Long.ZERO,
-            unbanReason: ''
-        };
-
-        // Write ban to state
-        const encoded = encodeGame2048State('PlayerBan', ban);
-        const [, writeErr] = await contract.plugin.StateWrite(contract, {
-            pairs: [{ key: banKey, value: encoded }]
-        });
-
-        if (writeErr) {
-            return { error: writeErr };
-        }
-
-        return {};
-    }
-
-    // DeliverMessageUnbanPlayer handles admin unban operations
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    static async DeliverMessageUnbanPlayer(contract: Contract, msg: any, tx: any): Promise<any> {
-        const targetAddress = normalizeBytes(msg?.targetAddress);
-        const reason = msg?.reason || '';
-        const adminAddress = normalizeBytes(msg?.adminAddress);
-
-        if (!targetAddress || !adminAddress) {
-            return { error: { code: 400, msg: 'Missing required addresses' } };
-        }
-
-        // Load existing ban
-        const banKey = KeyForPlayerBan(targetAddress);
-        const queryId = randomQueryId();
-        const [readResp, readErr] = await contract.plugin.StateRead(contract, {
-            keys: [{ queryId, key: banKey }]
-        });
-
-        if (readErr) {
-            return { error: readErr };
-        }
-
-        const banValue = getQueryValue(readResp, queryId);
-        if (!banValue || banValue.length === 0) {
-            return { error: { code: 404, msg: 'Player is not banned' } };
-        }
-
-        const [banData] = decodeGame2048State('PlayerBan', banValue);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const ban = banData as any;
-        
-        if (!ban.active) {
-            return { error: { code: 400, msg: 'Player is already unbanned' } };
-        }
-
-        // Update ban record
-        const nowMicros = toUint64(tx?.time as Long | number | undefined);
-        ban.active = false;
-        ban.unbannedBy = adminAddress;
-        ban.unbannedAtUnix = Long.fromNumber(nowMicros);
-        ban.unbanReason = reason;
-
-        // Write updated ban to state
-        const encoded = encodeGame2048State('PlayerBan', ban);
-        const [, writeErr] = await contract.plugin.StateWrite(contract, {
-            pairs: [{ key: banKey, value: encoded }]
-        });
-
-        if (writeErr) {
-            return { error: writeErr };
-        }
-
-        return {};
-    }
 }
 

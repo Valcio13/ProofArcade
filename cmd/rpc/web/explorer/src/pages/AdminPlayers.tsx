@@ -112,28 +112,35 @@ export default function AdminPlayersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <Link
-              to="/admin"
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </Link>
-            <h1 className="text-4xl font-bold text-white">Player Search</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-2 sm:px-6 lg:px-8"
+    >
+      {/* Header */}
+      <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
+        <div className="flex items-center gap-3 mb-3">
+          <Link
+            to="/admin"
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">Admin Tools</p>
+            <h1 className="mt-1 text-3xl font-bold leading-tight text-white sm:text-4xl">
+              Player Search
+            </h1>
           </div>
-          <p className="text-slate-400 text-lg">Search and view player details</p>
-        </motion.div>
+        </div>
+        <p className="mt-2 text-base leading-7 text-slate-300">
+          Search and view player details
+        </p>
+      </section>
 
         <motion.div
           variants={containerVariants}
@@ -143,15 +150,15 @@ export default function AdminPlayersPage() {
         >
           {/* Search Box */}
           <motion.div variants={itemVariants}>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
+            <section className="rounded-2xl border border-white/10 bg-card p-6 transition-colors hover:border-white/20">
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Search Type Toggle */}
-                <div className="flex rounded-lg border border-white/10 bg-black/20 p-1">
+                <div className="flex rounded-xl border border-white/10 bg-white/5 p-1">
                   <button
                     onClick={() => setSearchType('address')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                       searchType === 'address'
-                        ? 'bg-blue-500/20 text-blue-300'
+                        ? 'bg-[#53a6ff]/20 text-[#9fd0ff]'
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
@@ -159,9 +166,9 @@ export default function AdminPlayersPage() {
                   </button>
                   <button
                     onClick={() => setSearchType('username')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                       searchType === 'username'
-                        ? 'bg-blue-500/20 text-blue-300'
+                        ? 'bg-[#53a6ff]/20 text-[#9fd0ff]'
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
@@ -181,18 +188,18 @@ export default function AdminPlayersPage() {
                         ? 'Enter player address...'
                         : 'Enter username...'
                     }
-                    className="flex-1 rounded-lg border border-white/10 bg-black/30 px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#53a6ff]/50"
                   />
                   <button
                     onClick={handleSearch}
                     disabled={!searchQuery.trim()}
-                    className="rounded-lg bg-blue-500 px-6 py-2 text-sm font-medium text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="rounded-xl bg-[#f0cf52] px-6 py-2 text-sm font-bold text-[#2e2510] hover:brightness-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     Search
                   </button>
                 </div>
               </div>
-            </div>
+            </section>
           </motion.div>
 
           {/* Player Data Display */}
@@ -214,8 +221,12 @@ export default function AdminPlayersPage() {
                 <>
                   {/* Player Overview */}
                   <motion.div variants={itemVariants}>
-                    <h2 className="text-xl font-semibold text-white mb-4">Player Overview</h2>
-                    <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
+                    <section>
+                      <div className="mb-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Profile</p>
+                        <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Player Overview</h2>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-card p-6 transition-colors hover:border-white/20">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                         <div>
                           <p className="text-sm text-slate-400">Address</p>
@@ -253,33 +264,39 @@ export default function AdminPlayersPage() {
                         </div>
                       </div>
                     </div>
+                  </section>
                   </motion.div>
 
                   {/* Check-in Status */}
                   <motion.div variants={itemVariants}>
-                    <h2 className="text-xl font-semibold text-white mb-4">Check-in Status</h2>
-                    <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <div>
-                          <p className="text-sm text-slate-400">Current Streak</p>
-                          <p className="mt-1 text-2xl font-bold text-green-400">
-                            {playerData.loginStreak} {playerData.loginStreak === 1 ? 'day' : 'days'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-400">Last Check-in</p>
-                          <p className="mt-1 text-lg font-semibold text-white">
-                            {playerData.lastLoginClaimUtcDate || 'Never'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-400">Total Check-ins</p>
-                          <p className="mt-1 text-lg font-semibold text-white">
-                            {playerData.lastLoginClaimUtcDate ? 'Active' : 'None'}
-                          </p>
+                    <section>
+                      <div className="mb-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Activity</p>
+                        <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Check-in Status</h2>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-card p-6 transition-colors hover:border-white/20">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Current Streak</p>
+                            <p className="mt-1 text-2xl font-black text-[#86efac]">
+                              {playerData.loginStreak} {playerData.loginStreak === 1 ? 'day' : 'days'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Last Check-in</p>
+                            <p className="mt-1 text-lg font-semibold text-white">
+                              {playerData.lastLoginClaimUtcDate || 'Never'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Total Check-ins</p>
+                            <p className="mt-1 text-lg font-semibold text-white">
+                              {playerData.lastLoginClaimUtcDate ? 'Active' : 'None'}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </section>
                   </motion.div>
 
                   {/* Claimable Rewards */}
@@ -453,7 +470,6 @@ export default function AdminPlayersPage() {
             </motion.div>
           )}
         </motion.div>
-      </div>
-    </div>
+    </motion.div>
   )
 }

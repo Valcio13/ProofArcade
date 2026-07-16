@@ -152,39 +152,42 @@ export default function AdminMonitoringPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Link
-                  to="/admin"
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                  </svg>
-                </Link>
-                <h1 className="text-4xl font-bold text-white">Real-Time Monitoring</h1>
-              </div>
-              <p className="text-slate-400 text-lg">Live blockchain performance metrics</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-              </div>
-              <span className="text-sm text-slate-400">Live Updates</span>
-            </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-2 sm:px-6 lg:px-8"
+    >
+      {/* Header */}
+      <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
+        <div className="flex items-center gap-3 mb-3">
+          <Link
+            to="/admin"
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">Admin Tools</p>
+            <h1 className="mt-1 text-3xl font-bold leading-tight text-white sm:text-4xl">
+              Real-Time Monitoring
+            </h1>
           </div>
-        </motion.div>
+        </div>
+        <p className="mt-2 text-base leading-7 text-slate-300">
+          Live blockchain performance metrics
+        </p>
+        <div className="mt-4 flex items-center gap-2">
+          <div className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+          </div>
+          <span className="text-sm text-slate-400">Live Updates</span>
+        </div>
+      </section>
 
         <motion.div
           variants={containerVariants}
@@ -193,85 +196,99 @@ export default function AdminMonitoringPage() {
           className="space-y-6"
         >
           {/* Live Metrics Cards */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-white mb-4">Performance Metrics</h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <section>
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Performance Metrics</p>
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Live Stats</h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {/* Block Time */}
-              <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-slate-400">Avg Block Time</p>
-                  <div className="rounded-lg bg-blue-500/10 p-2">
-                    <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Avg Block Time</p>
+                    <p className="mt-2 text-2xl font-black text-[#f6df84]">
+                      {metrics.blockTime > 0 ? metrics.blockTime.toFixed(2) : '—'}
+                      <span className="text-base text-slate-400 ml-1">sec</span>
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-[#53a6ff]/10 p-2.5 text-[#9fd0ff]">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-white">
-                  {metrics.blockTime > 0 ? metrics.blockTime.toFixed(2) : '—'}
-                  <span className="text-lg text-slate-400 ml-1">sec</span>
-                </p>
                 <p className="mt-2 text-xs text-slate-500">Target: ~5s per block</p>
               </div>
 
               {/* Blocks Per Minute */}
-              <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-slate-400">Block Rate</p>
-                  <div className="rounded-lg bg-purple-500/10 p-2">
-                    <svg className="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Block Rate</p>
+                    <p className="mt-2 text-2xl font-black text-[#f6df84]">
+                      {metrics.blocksPerMinute > 0 ? metrics.blocksPerMinute.toFixed(1) : '—'}
+                      <span className="text-base text-slate-400 ml-1">/ min</span>
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-[#a78bfa]/10 p-2.5 text-[#c4b5fd]">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-white">
-                  {metrics.blocksPerMinute > 0 ? metrics.blocksPerMinute.toFixed(1) : '—'}
-                  <span className="text-lg text-slate-400 ml-1">/ min</span>
-                </p>
                 <p className="mt-2 text-xs text-slate-500">Target: ~12 blocks/min</p>
               </div>
 
               {/* TPS */}
-              <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-slate-400">Throughput</p>
-                  <div className="rounded-lg bg-green-500/10 p-2">
-                    <svg className="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Throughput</p>
+                    <p className="mt-2 text-2xl font-black text-[#f6df84]">
+                      {metrics.transactionsPerSecond >= 0 ? metrics.transactionsPerSecond.toFixed(2) : '—'}
+                      <span className="text-base text-slate-400 ml-1">TPS</span>
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-[#4ade80]/10 p-2.5 text-[#86efac]">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
                     </svg>
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-white">
-                  {metrics.transactionsPerSecond >= 0 ? metrics.transactionsPerSecond.toFixed(2) : '—'}
-                  <span className="text-lg text-slate-400 ml-1">TPS</span>
-                </p>
                 <p className="mt-2 text-xs text-slate-500">Transactions per second</p>
               </div>
 
               {/* Network Health */}
-              <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-slate-400">Network Health</p>
-                  <div className={`rounded-lg bg-${health.color}-500/10 p-2`}>
-                    <svg className={`h-5 w-5 text-${health.color}-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="rounded-2xl border border-white/10 bg-card p-4 transition-colors hover:border-white/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Network Health</p>
+                    <p className={`mt-2 text-2xl font-black ${health.status === 'excellent' || health.status === 'good' ? 'text-[#4ade80]' : health.status === 'fair' ? 'text-yellow-400' : health.status === 'slow' ? 'text-[#ef4444]' : 'text-slate-400'}`}>
+                      {health.text}
+                    </p>
+                  </div>
+                  <div className={`rounded-xl p-2.5 ${health.status === 'excellent' || health.status === 'good' ? 'bg-[#4ade80]/10 text-[#86efac]' : health.status === 'fair' ? 'bg-yellow-500/10 text-yellow-400' : health.status === 'slow' ? 'bg-[#ef4444]/10 text-[#f87171]' : 'bg-slate-500/10 text-slate-400'}`}>
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                 </div>
-                <p className={`text-3xl font-bold text-${health.color}-400`}>
-                  {health.text}
-                </p>
                 <p className="mt-2 text-xs text-slate-500">Based on block production</p>
               </div>
             </div>
-          </motion.div>
+          </section>
 
           {/* Recent Blocks Timeline */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-white mb-4">Recent Blocks</h2>
-            <div className="rounded-xl border border-white/10 bg-black/20 backdrop-blur-sm overflow-hidden">
+          <section>
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Activity Log</p>
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Recent Blocks</h2>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-card overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-black/30 border-b border-white/5">
+                  <thead className="bg-black/20 border-b border-white/10">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                         Height
@@ -334,9 +351,8 @@ export default function AdminMonitoringPage() {
                 </table>
               </div>
             </div>
-          </motion.div>
+          </section>
         </motion.div>
-      </div>
-    </div>
+    </motion.div>
   )
 }
