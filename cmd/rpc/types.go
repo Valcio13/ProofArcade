@@ -443,6 +443,20 @@ type poolWithdrawalResponse struct {
 	Message string `json:"message"`
 }
 
+// poolDepositRequest is used for admin deposit operations from external wallet to Reserve Pool
+type poolDepositRequest struct {
+	PoolId       uint64       `json:"poolId"`       // Destination pool (must be Reserve Pool = 131073)
+	Amount       uint64       `json:"amount"`       // Amount in micro-denomination (uproof)
+	AdminAddress lib.HexBytes `json:"adminAddress"` // Admin performing deposit
+}
+
+// poolDepositResponse returns the result of a pool deposit
+type poolDepositResponse struct {
+	Success bool   `json:"success"`
+	TxHash  string `json:"txHash,omitempty"`
+	Message string `json:"message"`
+}
+
 
 type txChangeParamRequest struct {
 	ParamSpace string `json:"paramSpace"`

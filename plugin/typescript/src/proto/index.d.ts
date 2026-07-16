@@ -1340,6 +1340,230 @@ export namespace types {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** Properties of a MessagePoolDeposit. */
+    interface IMessagePoolDeposit {
+
+        /** MessagePoolDeposit poolId */
+        poolId?: (number|Long|null);
+
+        /** MessagePoolDeposit amount */
+        amount?: (number|Long|null);
+
+        /** MessagePoolDeposit adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessagePoolDeposit. */
+    class MessagePoolDeposit implements IMessagePoolDeposit {
+
+        /**
+         * Constructs a new MessagePoolDeposit.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessagePoolDeposit);
+
+        /** MessagePoolDeposit poolId. */
+        public poolId: (number|Long);
+
+        /** MessagePoolDeposit amount. */
+        public amount: (number|Long);
+
+        /** MessagePoolDeposit adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessagePoolDeposit instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessagePoolDeposit instance
+         */
+        public static create(properties?: types.IMessagePoolDeposit): types.MessagePoolDeposit;
+
+        /**
+         * Encodes the specified MessagePoolDeposit message. Does not implicitly {@link types.MessagePoolDeposit.verify|verify} messages.
+         * @param message MessagePoolDeposit message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessagePoolDeposit, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessagePoolDeposit message, length delimited. Does not implicitly {@link types.MessagePoolDeposit.verify|verify} messages.
+         * @param message MessagePoolDeposit message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessagePoolDeposit, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessagePoolDeposit message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessagePoolDeposit
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessagePoolDeposit;
+
+        /**
+         * Decodes a MessagePoolDeposit message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessagePoolDeposit
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessagePoolDeposit;
+
+        /**
+         * Verifies a MessagePoolDeposit message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessagePoolDeposit message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessagePoolDeposit
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessagePoolDeposit;
+
+        /**
+         * Creates a plain object from a MessagePoolDeposit message. Also converts values to other types if specified.
+         * @param message MessagePoolDeposit
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessagePoolDeposit, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessagePoolDeposit to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessagePoolDeposit
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessagePoolWithdrawal. */
+    interface IMessagePoolWithdrawal {
+
+        /** MessagePoolWithdrawal poolId */
+        poolId?: (number|Long|null);
+
+        /** MessagePoolWithdrawal amount */
+        amount?: (number|Long|null);
+
+        /** MessagePoolWithdrawal toAddress */
+        toAddress?: (Uint8Array|null);
+
+        /** MessagePoolWithdrawal adminAddress */
+        adminAddress?: (Uint8Array|null);
+    }
+
+    /** Represents a MessagePoolWithdrawal. */
+    class MessagePoolWithdrawal implements IMessagePoolWithdrawal {
+
+        /**
+         * Constructs a new MessagePoolWithdrawal.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessagePoolWithdrawal);
+
+        /** MessagePoolWithdrawal poolId. */
+        public poolId: (number|Long);
+
+        /** MessagePoolWithdrawal amount. */
+        public amount: (number|Long);
+
+        /** MessagePoolWithdrawal toAddress. */
+        public toAddress: Uint8Array;
+
+        /** MessagePoolWithdrawal adminAddress. */
+        public adminAddress: Uint8Array;
+
+        /**
+         * Creates a new MessagePoolWithdrawal instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessagePoolWithdrawal instance
+         */
+        public static create(properties?: types.IMessagePoolWithdrawal): types.MessagePoolWithdrawal;
+
+        /**
+         * Encodes the specified MessagePoolWithdrawal message. Does not implicitly {@link types.MessagePoolWithdrawal.verify|verify} messages.
+         * @param message MessagePoolWithdrawal message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessagePoolWithdrawal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessagePoolWithdrawal message, length delimited. Does not implicitly {@link types.MessagePoolWithdrawal.verify|verify} messages.
+         * @param message MessagePoolWithdrawal message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessagePoolWithdrawal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessagePoolWithdrawal message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessagePoolWithdrawal
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessagePoolWithdrawal;
+
+        /**
+         * Decodes a MessagePoolWithdrawal message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessagePoolWithdrawal
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessagePoolWithdrawal;
+
+        /**
+         * Verifies a MessagePoolWithdrawal message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessagePoolWithdrawal message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessagePoolWithdrawal
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessagePoolWithdrawal;
+
+        /**
+         * Creates a plain object from a MessagePoolWithdrawal message. Also converts values to other types if specified.
+         * @param message MessagePoolWithdrawal
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessagePoolWithdrawal, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessagePoolWithdrawal to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessagePoolWithdrawal
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a MessageBanPlayer. */
     interface IMessageBanPlayer {
 

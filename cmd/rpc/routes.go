@@ -128,6 +128,7 @@ const (
 	AdminConfigRoutePath         = "/v1/admin/admin-config"
 	AdminPoolTransferRoutePath   = "/v1/admin/pool-transfer"
 	AdminPoolWithdrawalRoutePath = "/v1/admin/pool-withdrawal"
+	AdminPoolDepositRoutePath    = "/v1/admin/pool-deposit"
 	AdminBanPlayerRoutePath      = "/v1/admin/ban-player"
 	AdminUnbanPlayerRoutePath    = "/v1/admin/unban-player"
 	AdminValidatorAddressRoutePath = "/v1/admin/validator-address"
@@ -258,6 +259,7 @@ const (
 	AdminConfigRouteName            = "admin-config"
 	AdminPoolTransferRouteName      = "admin-pool-transfer"
 	AdminPoolWithdrawalRouteName    = "admin-pool-withdrawal"
+	AdminPoolDepositRouteName       = "admin-pool-deposit"
 	AdminBanPlayerRouteName         = "admin-ban-player"
 	AdminUnbanPlayerRouteName       = "admin-unban-player"
 	AdminValidatorAddressRouteName  = "admin-validator-address"
@@ -390,6 +392,7 @@ var routePaths = routes{
 	AdminConfigRouteName:            {Method: http.MethodGet, Path: AdminConfigRoutePath},
 	AdminPoolTransferRouteName:      {Method: http.MethodPost, Path: AdminPoolTransferRoutePath},
 	AdminPoolWithdrawalRouteName:    {Method: http.MethodPost, Path: AdminPoolWithdrawalRoutePath},
+	AdminPoolDepositRouteName:       {Method: http.MethodPost, Path: AdminPoolDepositRoutePath},
 	AdminBanPlayerRouteName:         {Method: http.MethodPost, Path: AdminBanPlayerRoutePath},
 	AdminUnbanPlayerRouteName:       {Method: http.MethodPost, Path: AdminUnbanPlayerRoutePath},
 	AdminValidatorAddressRouteName:  {Method: http.MethodGet, Path: AdminValidatorAddressRoutePath},
@@ -537,6 +540,7 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		AdminConfigRouteName:            s.AdminConfig,
 		AdminPoolTransferRouteName:      s.AdminPoolTransfer,
 		AdminPoolWithdrawalRouteName:    s.AdminPoolWithdrawal,
+		AdminPoolDepositRouteName:       s.AdminPoolDeposit,
 		AdminBanPlayerRouteName:         s.AdminBanPlayer,
 		AdminUnbanPlayerRouteName:       s.AdminUnbanPlayer,
 		AdminValidatorAddressRouteName:  s.AdminValidatorAddress,
@@ -549,9 +553,16 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		// Retrieve the path configuration for the current route name.
 		path := routePaths[name]
 
-		// Wrap admin routes with authentication middleware (except verify and config endpoints)
+		// Only wrap specific admin-only routes with authentication middleware
+		// These are the routes that require admin authorization
+		requiresAdminAuth := name == AdminPoolTransferRouteName ||
+			name == AdminPoolWithdrawalRouteName ||
+			name == AdminPoolDepositRouteName ||
+			name == AdminBanPlayerRouteName ||
+			name == AdminUnbanPlayerRouteName
+
 		wrappedHandler := handler
-		if name != AdminVerifyRouteName && name != AdminConfigRouteName {
+		if requiresAdminAuth {
 			wrappedHandler = s.AdminAuthMiddleware(handler)
 		}
 

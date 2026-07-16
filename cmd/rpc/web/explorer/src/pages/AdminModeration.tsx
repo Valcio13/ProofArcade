@@ -133,28 +133,35 @@ export default function AdminModerationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <Link
-              to="/admin"
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </Link>
-            <h1 className="text-4xl font-bold text-white">Player Moderation</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-2 sm:px-6 lg:px-8"
+    >
+      {/* Header */}
+      <section className="rounded-3xl border border-white/10 bg-card p-6 sm:p-8">
+        <div className="flex items-center gap-3 mb-3">
+          <Link
+            to="/admin"
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-[#f6df84]">Admin Tools</p>
+            <h1 className="mt-1 text-3xl font-bold leading-tight text-white sm:text-4xl">
+              Player Moderation
+            </h1>
           </div>
-          <p className="text-slate-400 text-lg">Ban or unban players from gameplay</p>
-        </motion.div>
+        </div>
+        <p className="mt-2 text-base leading-7 text-slate-300">
+          Ban or unban players from gameplay
+        </p>
+      </section>
 
         <motion.div
           variants={containerVariants}
@@ -163,8 +170,8 @@ export default function AdminModerationPage() {
           className="space-y-6"
         >
           {/* Warning Banner */}
-          <motion.div variants={itemVariants}>
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-6 backdrop-blur-sm">
+          <section>
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-6">
               <div className="flex items-start">
                 <span className="text-2xl mr-3">⚠️</span>
                 <div>
@@ -180,13 +187,16 @@ export default function AdminModerationPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </section>
 
           {/* Target Address Input */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-white mb-4">Player Address</h2>
-            <div className="rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+          <section>
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Player Selection</p>
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Target Address</h2>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-card p-6">
+              <label className="block text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">
                 Target Player Address
               </label>
               <input
@@ -194,27 +204,30 @@ export default function AdminModerationPage() {
                 value={targetAddress}
                 onChange={(e) => setTargetAddress(e.target.value)}
                 placeholder="0x..."
-                className="w-full rounded-lg bg-slate-800/50 border border-slate-700 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                className="w-full rounded-xl bg-black/20 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f0cf52] focus:border-transparent font-mono text-sm"
               />
               <p className="text-xs text-slate-500 mt-2">
                 Enter the full address of the player to moderate
               </p>
             </div>
-          </motion.div>
+          </section>
 
           {/* Ban Section */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-white mb-4">Ban Player</h2>
-            <div className="rounded-xl border border-red-500/20 bg-black/20 p-6 backdrop-blur-sm">
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Ban Reason <span className="text-red-400">*</span>
+          <section>
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Moderation Action</p>
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Ban Player</h2>
+            </div>
+            <div className="rounded-2xl border border-red-500/20 bg-card p-6">
+              <label className="block text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">
+                Ban Reason <span className="text-[#ef4444]">*</span>
               </label>
               <textarea
                 value={banReason}
                 onChange={(e) => setBanReason(e.target.value)}
                 placeholder="Describe the reason for banning this player..."
                 rows={4}
-                className="w-full rounded-lg bg-slate-800/50 border border-slate-700 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                className="w-full rounded-xl bg-black/20 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#ef4444] focus:border-transparent resize-none"
               />
               <p className="text-xs text-slate-500 mt-2 mb-4">
                 This reason will be recorded on-chain and publicly visible
@@ -222,7 +235,7 @@ export default function AdminModerationPage() {
               <button
                 onClick={handleBanPlayer}
                 disabled={loading || !targetAddress.trim() || !banReason.trim()}
-                className="inline-flex items-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:bg-red-600/50 disabled:cursor-not-allowed px-6 py-3 text-sm font-semibold text-white transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#ef4444] hover:brightness-105 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 text-sm font-bold text-white transition-all"
               >
                 {loading ? (
                   <>
@@ -242,21 +255,24 @@ export default function AdminModerationPage() {
                 )}
               </button>
             </div>
-          </motion.div>
+          </section>
 
           {/* Unban Section */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-white mb-4">Unban Player</h2>
-            <div className="rounded-xl border border-green-500/20 bg-black/20 p-6 backdrop-blur-sm">
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Unban Reason <span className="text-green-400">*</span>
+          <section>
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Restore Access</p>
+              <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Unban Player</h2>
+            </div>
+            <div className="rounded-2xl border border-green-500/20 bg-card p-6">
+              <label className="block text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">
+                Unban Reason <span className="text-[#4ade80]">*</span>
               </label>
               <textarea
                 value={unbanReason}
                 onChange={(e) => setUnbanReason(e.target.value)}
                 placeholder="Describe the reason for unbanning this player..."
                 rows={4}
-                className="w-full rounded-lg bg-slate-800/50 border border-slate-700 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                className="w-full rounded-xl bg-black/20 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#4ade80] focus:border-transparent resize-none"
               />
               <p className="text-xs text-slate-500 mt-2 mb-4">
                 This reason will be recorded on-chain and publicly visible
@@ -264,7 +280,7 @@ export default function AdminModerationPage() {
               <button
                 onClick={handleUnbanPlayer}
                 disabled={loading || !targetAddress.trim() || !unbanReason.trim()}
-                className="inline-flex items-center gap-2 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 disabled:cursor-not-allowed px-6 py-3 text-sm font-semibold text-white transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#4ade80] hover:brightness-105 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 text-sm font-bold text-[#0f1a14] transition-all"
               >
                 {loading ? (
                   <>
@@ -284,9 +300,8 @@ export default function AdminModerationPage() {
                 )}
               </button>
             </div>
-          </motion.div>
+          </section>
         </motion.div>
-      </div>
-    </div>
+    </motion.div>
   )
 }

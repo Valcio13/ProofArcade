@@ -23,6 +23,8 @@ export const GAME2048_TYPE_URLS = {
     claimDailyLoginReward: 'type.googleapis.com/types.MessageClaimDailyLoginReward',
     setUsername: 'type.googleapis.com/types.MessageSetUsername',
     poolTransfer: 'type.googleapis.com/types.MessagePoolTransfer',
+    poolDeposit: 'type.googleapis.com/types.MessagePoolDeposit',
+    poolWithdrawal: 'type.googleapis.com/types.MessagePoolWithdrawal',
     banPlayer: 'type.googleapis.com/types.MessageBanPlayer',
     unbanPlayer: 'type.googleapis.com/types.MessageUnbanPlayer'
 } as const;
@@ -36,6 +38,8 @@ export type Game2048MessageType =
     | 'MessageClaimDailyLoginReward'
     | 'MessageSetUsername'
     | 'MessagePoolTransfer'
+    | 'MessagePoolDeposit'
+    | 'MessagePoolWithdrawal'
     | 'MessageBanPlayer'
     | 'MessageUnbanPlayer';
 
@@ -94,6 +98,12 @@ export function decodeGame2048Any(any: any): [any | null, Game2048MessageType | 
         }
         if (typeUrl.includes('MessagePoolTransfer')) {
             return [lookupType('MessagePoolTransfer').decode(any.value), 'MessagePoolTransfer', null];
+        }
+        if (typeUrl.includes('MessagePoolDeposit')) {
+            return [lookupType('MessagePoolDeposit').decode(any.value), 'MessagePoolDeposit', null];
+        }
+        if (typeUrl.includes('MessagePoolWithdrawal')) {
+            return [lookupType('MessagePoolWithdrawal').decode(any.value), 'MessagePoolWithdrawal', null];
         }
         if (typeUrl.includes('MessageBanPlayer')) {
             return [lookupType('MessageBanPlayer').decode(any.value), 'MessageBanPlayer', null];

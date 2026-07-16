@@ -2353,6 +2353,17 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				uint64FieldDescriptor("amount", 3),
 				bytesFieldDescriptor("admin_address", 4),
 			}),
+			messageDescriptor("MessagePoolDeposit", []*descriptorpb.FieldDescriptorProto{
+				uint64FieldDescriptor("pool_id", 1),
+				uint64FieldDescriptor("amount", 2),
+				bytesFieldDescriptor("admin_address", 3),
+			}),
+			messageDescriptor("MessagePoolWithdrawal", []*descriptorpb.FieldDescriptorProto{
+				uint64FieldDescriptor("pool_id", 1),
+				uint64FieldDescriptor("amount", 2),
+				bytesFieldDescriptor("to_address", 3),
+				bytesFieldDescriptor("admin_address", 4),
+			}),
 			messageDescriptor("MessageBanPlayer", []*descriptorpb.FieldDescriptorProto{
 				bytesFieldDescriptor("target_address", 1),
 				stringFieldDescriptor("reason", 2),

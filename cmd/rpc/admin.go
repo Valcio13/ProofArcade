@@ -3,6 +3,7 @@ package rpc
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -22,6 +23,7 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/net"
 	"github.com/shirou/gopsutil/process"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -1114,6 +1116,11 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 
+	// DEBUG: Log the created message details
+	s.logger.Infof("AdminPoolTransfer: Created message type_url=%s", msg.TypeUrl)
+	msgBytes, _ := proto.Marshal(msg)
+	s.logger.Infof("AdminPoolTransfer: Message bytes length=%d, hex=%s", len(msgBytes), hex.EncodeToString(msgBytes))
+
 	// Create and sign the transaction
 	tx := &lib.Transaction{
 		MessageType:   "poolTransfer",
@@ -1155,6 +1162,9 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 		}, http.StatusInternalServerError)
 		return
 	}
+
+	// DEBUG: Log transaction bytes for comparison
+	s.logger.Infof("AdminPoolTransfer: Transaction bytes length=%d, hex=%s", len(txBytes), hex.EncodeToString(txBytes[:min(100, len(txBytes))]))
 
 	// Submit transaction to the blockchain
 	if err := s.controller.SendTxMsgs([][]byte{txBytes}); err != nil {
@@ -1410,7 +1420,7 @@ func (s *Server) AdminUnbanPlayer(w http.ResponseWriter, r *http.Request, _ http
 }
 
 // AdminPoolWithdrawal sends PROOF from a pool to an external wallet address
-// This allows the platform pool (or other pools) to withdraw funds to external addresses
+// This allows pools to withdraw funds to external addresses using MessagePoolWithdrawal
 func (s *Server) AdminPoolWithdrawal(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	req := new(poolWithdrawalRequest)
 	if !unmarshal(w, r, req) {
@@ -1445,6 +1455,15 @@ func (s *Server) AdminPoolWithdrawal(w http.ResponseWriter, r *http.Request, _ h
 		return
 	}
 
+	// Get admin address from request
+	if len(req.AdminAddress) == 0 {
+		write(w, poolWithdrawalResponse{
+			Success: false,
+			Message: "Admin address is required",
+		}, http.StatusBadRequest)
+		return
+	}
+
 	// Get validator private key for signing admin operations
 	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
 	if err != nil {
@@ -1456,50 +1475,47 @@ func (s *Server) AdminPoolWithdrawal(w http.ResponseWriter, r *http.Request, _ h
 		return
 	}
 
-	// Check pool balance before withdrawal
-	var poolBalance uint64
-	if err := s.readOnlyState(0, func(sm *fsm.StateMachine) lib.ErrorI {
-		pool, e := sm.GetPool(req.PoolId)
-		if e != nil {
-			return e
-		}
-		poolBalance = pool.Amount
-		return nil
-	}); err != nil {
-		s.logger.Errorf("AdminPoolWithdrawal: failed to get pool balance: %v", err)
+	// Use validator address as admin (will be verified by contract authorization)
+	adminAddress := privateKey.PublicKey().Address()
+	s.logger.Infof("AdminPoolWithdrawal: Using admin address: %s", hex.EncodeToString(adminAddress.Bytes()))
+
+	// Create the pool withdrawal message
+	msg, err := game2048AnyMessage("MessagePoolWithdrawal", func(message protoreflect.Message) {
+		setUint64Field(message, "pool_id", req.PoolId)
+		setUint64Field(message, "amount", req.Amount)
+		setBytesField(message, "to_address", req.ToAddress)
+		setBytesField(message, "admin_address", adminAddress.Bytes())
+	})
+	if err != nil {
+		s.logger.Errorf("AdminPoolWithdrawal: failed to create message: %v", err)
 		write(w, poolWithdrawalResponse{
 			Success: false,
-			Message: fmt.Sprintf("Failed to get pool balance: %v", err),
+			Message: fmt.Sprintf("Failed to create withdrawal message: %v", err),
 		}, http.StatusInternalServerError)
 		return
 	}
 
-	if poolBalance < req.Amount {
-		write(w, poolWithdrawalResponse{
-			Success: false,
-			Message: fmt.Sprintf("Insufficient pool balance: pool has %d uproof, requested %d uproof", poolBalance, req.Amount),
-		}, http.StatusBadRequest)
-		return
+	// DEBUG: Log the created message details
+	s.logger.Infof("AdminPoolWithdrawal: Created message type_url=%s", msg.TypeUrl)
+	msgBytes, _ := proto.Marshal(msg)
+	s.logger.Infof("AdminPoolWithdrawal: Message bytes length=%d, hex=%s", len(msgBytes), hex.EncodeToString(msgBytes))
+
+	// Create and sign the transaction
+	tx := &lib.Transaction{
+		MessageType:   "poolWithdrawal",
+		Msg:           msg,
+		CreatedHeight: s.controller.ChainHeight(),
+		Time:          uint64(time.Now().UnixMicro()),
+		Fee:           0,
+		NetworkId:     s.config.NetworkID,
+		ChainId:       s.config.ChainId,
 	}
 
-	// Create a Send transaction FROM the pool TO the external address
-	// We'll use NewSendTransaction which creates a standard Send message
-	toAddress := crypto.NewAddress(req.ToAddress)
-	tx, err := fsm.NewSendTransaction(
-		privateKey,
-		toAddress,
-		req.Amount,
-		s.config.NetworkID,
-		s.config.ChainId,
-		0, // Fee (admin operations typically have 0 fee)
-		s.controller.ChainHeight(),
-		fmt.Sprintf("Pool withdrawal from pool %d", req.PoolId),
-	)
-	if err != nil {
-		s.logger.Errorf("AdminPoolWithdrawal: failed to create transaction: %v", err)
+	if err := tx.Sign(privateKey); err != nil {
+		s.logger.Errorf("AdminPoolWithdrawal: failed to sign transaction: %v", err)
 		write(w, poolWithdrawalResponse{
 			Success: false,
-			Message: fmt.Sprintf("Failed to create withdrawal transaction: %v", err),
+			Message: fmt.Sprintf("Failed to sign transaction: %v", err),
 		}, http.StatusInternalServerError)
 		return
 	}
@@ -1524,6 +1540,9 @@ func (s *Server) AdminPoolWithdrawal(w http.ResponseWriter, r *http.Request, _ h
 		return
 	}
 
+	// DEBUG: Log transaction bytes for comparison
+	s.logger.Infof("AdminPoolWithdrawal: Transaction bytes length=%d, hex=%s", len(txBytes), hex.EncodeToString(txBytes[:min(100, len(txBytes))]))
+
 	if err := s.controller.SendTxMsgs([][]byte{txBytes}); err != nil {
 		s.logger.Errorf("AdminPoolWithdrawal: failed to submit transaction: %v", err)
 		write(w, poolWithdrawalResponse{
@@ -1540,6 +1559,148 @@ func (s *Server) AdminPoolWithdrawal(w http.ResponseWriter, r *http.Request, _ h
 		Success: true,
 		TxHash:  hex.EncodeToString(txHash),
 		Message: "Pool withdrawal transaction submitted successfully",
+	}, http.StatusOK)
+}
+
+// AdminPoolDeposit deposits PROOF from admin's external wallet to the Reserve Pool only
+// This is the inverse of withdrawal - it funds the Reserve Pool from external sources
+func (s *Server) AdminPoolDeposit(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(poolDepositRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+
+	s.logger.Infof("AdminPoolDeposit: poolId=%d, amount=%d", req.PoolId, req.Amount)
+
+	// CRITICAL: Only allow deposits to Reserve Pool (131073)
+	const reservePoolId uint64 = 131073
+	if req.PoolId != reservePoolId {
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: "Deposits are only allowed to Reserve Pool (ID: 131073)",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if req.Amount == 0 {
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: "Amount must be greater than zero",
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Get validator private key for signing admin operations
+	privateKey, err := crypto.NewBLS12381PrivateKeyFromFile(filepath.Join(s.config.DataDirPath, lib.ValKeyPath))
+	if err != nil {
+		s.logger.Errorf("AdminPoolDeposit: failed to load validator key: %v", err)
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to load validator key: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Check admin's wallet balance
+	adminAddress := privateKey.PublicKey().Address()
+	var adminBalance uint64
+	if err := s.readOnlyState(0, func(sm *fsm.StateMachine) lib.ErrorI {
+		acc, e := sm.GetAccount(adminAddress)
+		if e != nil {
+			return e
+		}
+		adminBalance = acc.Amount
+		return nil
+	}); err != nil {
+		s.logger.Errorf("AdminPoolDeposit: failed to get admin balance: %v", err)
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to get admin balance: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Ensure admin has enough balance (amount + fee)
+	// Fee is 0 for admin operations, but good practice to check
+	if adminBalance < req.Amount {
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: fmt.Sprintf("Insufficient admin wallet balance: has %d uproof, needs %d uproof", adminBalance, req.Amount),
+		}, http.StatusBadRequest)
+		return
+	}
+
+	// Create the pool deposit message - this will transfer from admin to Reserve Pool
+	msg, err := game2048AnyMessage("MessagePoolDeposit", func(message protoreflect.Message) {
+		setUint64Field(message, "pool_id", req.PoolId)
+		setUint64Field(message, "amount", req.Amount)
+		setBytesField(message, "admin_address", adminAddress.Bytes())
+	})
+	if err != nil {
+		s.logger.Errorf("AdminPoolDeposit: failed to create message: %v", err)
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to create deposit message: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	// Create and sign the transaction
+	tx := &lib.Transaction{
+		MessageType:   "poolDeposit",
+		Msg:           msg,
+		CreatedHeight: s.controller.ChainHeight(),
+		Time:          uint64(time.Now().UnixMicro()),
+		Fee:           0,
+		NetworkId:     s.config.NetworkID,
+		ChainId:       s.config.ChainId,
+	}
+
+	if err := tx.Sign(privateKey); err != nil {
+		s.logger.Errorf("AdminPoolDeposit: failed to sign transaction: %v", err)
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to sign transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	txHash, err := tx.GetHash()
+	if err != nil {
+		s.logger.Errorf("AdminPoolDeposit: failed to get tx hash: %v", err)
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to get transaction hash: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	txBytes, err := lib.Marshal(tx)
+	if err != nil {
+		s.logger.Errorf("AdminPoolDeposit: failed to marshal transaction: %v", err)
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to marshal transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	if err := s.controller.SendTxMsgs([][]byte{txBytes}); err != nil {
+		s.logger.Errorf("AdminPoolDeposit: failed to submit transaction: %v", err)
+		write(w, poolDepositResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to submit transaction: %v", err),
+		}, http.StatusInternalServerError)
+		return
+	}
+
+	s.logger.Infof("AdminPoolDeposit: successfully submitted tx %s for deposit to Reserve Pool (amount: %d)",
+		hex.EncodeToString(txHash), req.Amount)
+
+	write(w, poolDepositResponse{
+		Success: true,
+		TxHash:  hex.EncodeToString(txHash),
+		Message: "Pool deposit transaction submitted successfully",
 	}, http.StatusOK)
 }
 
@@ -1568,7 +1729,7 @@ func (s *Server) AdminValidatorAddress(w http.ResponseWriter, r *http.Request, _
 			Enabled        bool     `json:"enabled"`
 			AdminAddresses []string `json:"admin_addresses"`
 		}
-		if err := lib.Unmarshal(configData, &config); err == nil && config.Enabled {
+		if err := json.Unmarshal(configData, &config); err == nil && config.Enabled {
 			// Add configured admin addresses (deduplicate validator)
 			for _, addr := range config.AdminAddresses {
 				// Normalize address format (remove 0x prefix if present, make lowercase)

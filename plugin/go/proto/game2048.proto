@@ -88,6 +88,21 @@ message MessagePoolTransfer {
   bytes admin_address = 4; // @gotags: json:"adminAddress"
 }
 
+// MessagePoolDeposit deposits funds from admin wallet to Reserve Pool only (admin-only operation).
+message MessagePoolDeposit {
+  uint64 pool_id = 1; // @gotags: json:"poolId" - Must be Reserve Pool (131073)
+  uint64 amount = 2;
+  bytes admin_address = 3; // @gotags: json:"adminAddress"
+}
+
+// MessagePoolWithdrawal withdraws funds from a pool to an external wallet address (admin-only operation).
+message MessagePoolWithdrawal {
+  uint64 pool_id = 1; // @gotags: json:"poolId" - Pool to withdraw from
+  uint64 amount = 2;
+  bytes to_address = 3; // @gotags: json:"toAddress" - Destination wallet address
+  bytes admin_address = 4; // @gotags: json:"adminAddress"
+}
+
 // MessageBanPlayer bans a player from gameplay (admin-only operation).
 message MessageBanPlayer {
   bytes target_address = 1; // @gotags: json:"targetAddress"
