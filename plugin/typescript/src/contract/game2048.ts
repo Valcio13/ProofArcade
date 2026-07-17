@@ -25,6 +25,8 @@ export const GAME2048_TYPE_URLS = {
     poolTransfer: 'type.googleapis.com/types.MessagePoolTransfer',
     poolDeposit: 'type.googleapis.com/types.MessagePoolDeposit',
     poolWithdrawal: 'type.googleapis.com/types.MessagePoolWithdrawal',
+    startWeeklyBlitzGame: 'type.googleapis.com/types.MessageStartWeeklyBlitzGame',
+    claimWeeklyBlitzReward: 'type.googleapis.com/types.MessageClaimWeeklyBlitzReward',
     banPlayer: 'type.googleapis.com/types.MessageBanPlayer',
     unbanPlayer: 'type.googleapis.com/types.MessageUnbanPlayer'
 } as const;
@@ -40,6 +42,8 @@ export type Game2048MessageType =
     | 'MessagePoolTransfer'
     | 'MessagePoolDeposit'
     | 'MessagePoolWithdrawal'
+    | 'MessageStartWeeklyBlitzGame'
+    | 'MessageClaimWeeklyBlitzReward'
     | 'MessageBanPlayer'
     | 'MessageUnbanPlayer';
 

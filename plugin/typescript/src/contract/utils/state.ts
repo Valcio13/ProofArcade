@@ -18,6 +18,7 @@ export const PoolIDs = {
     SHOP: 131074,
     DAILY_REWARD: 131075,
     MONTHLY_REWARD: 131076,
+    WEEKLY_BLITZ: 196608, // 0x30000
 } as const;
 
 // State key prefixes
@@ -209,4 +210,80 @@ export function KeyForAddressByUsername(normalizedUsername: string): Uint8Array 
 
 export function KeyForPlayerIdentity(playerAddress: Uint8Array): Uint8Array {
     return JoinLenPrefix(gamePrefix, Buffer.from('player-identity'), Buffer.from(playerAddress));
+}
+
+// ==================== Weekly Blitz ====================
+
+export function KeyForWeeklyBlitzPool(): Uint8Array {
+    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(196608))); // 0x30000
+}
+
+export function KeyForWeeklyBlitzSession(gameId: Uint8Array): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('weekly-blitz-session'), Buffer.from(gameId));
+}
+
+export function KeyForWeeklyBlitzDailyTracking(utcDate: string, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-daily'),
+        Buffer.from(utcDate, 'utf8'),
+        Buffer.from(playerAddress)
+    );
+}
+
+export function KeyForWeeklyBlitzPlayerScore(weekId: number, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-score'),
+        formatUint64(Long.fromNumber(weekId)),
+        Buffer.from(playerAddress)
+    );
+}
+
+export function KeyForWeeklyBlitzLeaderboard(
+    weekId: number,
+    cumulativeScore: Long,
+    playerAddress: Uint8Array
+): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-leaderboard'),
+        formatUint64(Long.fromNumber(weekId)),
+        invertUint64(cumulativeScore),
+        Buffer.from(playerAddress)
+    );
+}
+
+export function KeyForWeeklyBlitzLeaderboardPrefix(weekId: number): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-leaderboard'),
+        formatUint64(Long.fromNumber(weekId))
+    );
+}
+
+export function KeyForWeeklyBlitzPrizePool(weekId: number): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-pool'),
+        formatUint64(Long.fromNumber(weekId))
+    );
+}
+
+export function KeyForWeeklyBlitzRewardAllocation(weekId: number, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-reward'),
+        formatUint64(Long.fromNumber(weekId)),
+        Buffer.from(playerAddress)
+    );
+}
+
+export function KeyForWeeklyBlitzRewardClaim(weekId: number, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-claim'),
+        formatUint64(Long.fromNumber(weekId)),
+        Buffer.from(playerAddress)
+    );
 }

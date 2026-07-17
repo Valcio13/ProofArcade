@@ -1011,5 +1011,72 @@ export async function getTableData(page: number, category: number, committee?: n
     }
 }
 
+// Weekly Blitz API Functions
+const weeklyBlitzCurrentPath = "/v1/query/2048/weekly-blitz/current";
+const weeklyBlitzWeekPath = "/v1/query/2048/weekly-blitz/:weekId";
+const weeklyBlitzLeaderboardPath = "/v1/query/2048/weekly-blitz/:weekId/leaderboard";
+const weeklyBlitzPlayerStatusPath = "/v1/query/2048/weekly-blitz/player/:address/status";
+
+export interface WeeklyBlitzCurrentResponse {
+  weekId: number;
+  weekStart: number;
+  weekEnd: number;
+  utcDate: string;
+  currentUnix: number;
+  poolBalance: number;
+}
+
+export interface WeeklyBlitzWeekResponse {
+  weekId: number;
+  weekStart: number;
+  weekEnd: number;
+}
+
+export interface WeeklyBlitzLeaderboardEntry {
+  address: string;
+  username?: string;
+  cumulativeScore: number;
+  runCount: number;
+  bestSingleScore: number;
+  rank: number;
+}
+
+export interface WeeklyBlitzLeaderboardResponse {
+  weekId: number;
+  leaderboard: WeeklyBlitzLeaderboardEntry[];
+}
+
+export interface WeeklyBlitzPlayerStatusResponse {
+  address: string;
+  weekId: number;
+  utcDate: string;
+  officialRunsUsed: number;
+  officialRunsRemaining: number;
+  retriesUsed: number;
+  retriesRemaining: number;
+  cumulativeScore: number;
+  runCount: number;
+  bestSingleScore: number;
+}
+
+export function getWeeklyBlitzCurrent(): Promise<WeeklyBlitzCurrentResponse> {
+  return GET(rpcURL, weeklyBlitzCurrentPath);
+}
+
+export function getWeeklyBlitzWeek(weekId: number): Promise<WeeklyBlitzWeekResponse> {
+  const path = weeklyBlitzWeekPath.replace(':weekId', String(weekId));
+  return GET(rpcURL, path);
+}
+
+export function getWeeklyBlitzLeaderboard(weekId: number): Promise<WeeklyBlitzLeaderboardResponse> {
+  const path = weeklyBlitzLeaderboardPath.replace(':weekId', String(weekId));
+  return GET(rpcURL, path);
+}
+
+export function getWeeklyBlitzPlayerStatus(address: string): Promise<WeeklyBlitzPlayerStatusResponse> {
+  const path = weeklyBlitzPlayerStatusPath.replace(':address', address);
+  return POST(rpcURL, '{}', path);
+}
+
 // Export rpcURL for use in hooks
 export { rpcURL };

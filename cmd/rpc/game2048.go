@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,6 +29,7 @@ import (
 const (
 	game2048StartDailyMessageName    = "startDailyGame"
 	game2048StartClassicMessageName  = "startClassicGame"
+	game2048StartWeeklyBlitzMessageName = "startWeeklyBlitzGame"
 	game2048SubmitMessageName        = "submitGameResult"
 	game2048ClaimDailyMessageName    = "claimDailyReward"
 	game2048RedeemClassicMessageName = "redeemClassicPoints"
@@ -36,6 +38,7 @@ const (
 
 	game2048StartDailyTypeURL    = "type.googleapis.com/types.MessageStartDailyGame"
 	game2048StartClassicTypeURL  = "type.googleapis.com/types.MessageStartClassicGame"
+	game2048StartWeeklyBlitzTypeURL = "type.googleapis.com/types.MessageStartWeeklyBlitzGame"
 	game2048SubmitTypeURL        = "type.googleapis.com/types.MessageSubmitGameResult"
 	game2048ClaimDailyTypeURL    = "type.googleapis.com/types.MessageClaimDailyReward"
 	game2048RedeemClassicTypeURL = "type.googleapis.com/types.MessageRedeemClassicPoints"
@@ -44,6 +47,7 @@ const (
 
 	game2048ModeDaily   = 1
 	game2048ModeClassic = 2
+	game2048ModeWeeklyBlitz = 3
 
 	game2048StatusActive = 1
 
@@ -51,6 +55,7 @@ const (
 
 	game2048DefaultClassicFee               = 2000000  // 2 PROOF in uproof (micro-denomination)
 	game2048DefaultDailyFee                 = 25000000 // 25 PROOF in uproof (micro-denomination)
+	game2048DefaultWeeklyBlitzFee           = 5000000  // 5 PROOF in uproof (micro-denomination)
 	game2048LegacyClassicFee                = 90
 	game2048LegacyDailyFee                  = 240
 	game2048DefaultDailyMoves               = 80
@@ -74,6 +79,7 @@ const (
 	game2048ShopPoolID       = lib.DAOPoolID + 3
 	game2048DailyPoolID      = lib.DAOPoolID + 4
 	game2048MonthlyPoolID    = lib.DAOPoolID + 5
+	game2048WeeklyBlitzPoolID = lib.DAOPoolID + 6
 )
 
 var (
@@ -231,13 +237,15 @@ type game2048ClaimDailyLoginRewardRequest struct {
 }
 
 type game2048SessionResponse struct {
-	TxHash    string `json:"txHash"`
-	GameID    string `json:"gameId"`
-	Mode      string `json:"mode"`
-	Seed      string `json:"seed"`
-	UTCDate   string `json:"utcDate"`
-	MaxMoves  uint64 `json:"maxMoves"`
-	Submitted bool   `json:"submitted"`
+	TxHash        string `json:"txHash"`
+	GameID        string `json:"gameId"`
+	Mode          string `json:"mode"`
+	Seed          string `json:"seed"`
+	UTCDate       string `json:"utcDate"`
+	MaxMoves      uint64 `json:"maxMoves"`
+	Submitted     bool   `json:"submitted"`
+	WeekId        uint64 `json:"weekId,omitempty"`
+	ExpiresAtUnix uint64 `json:"expiresAtUnix,omitempty"`
 }
 
 type game2048SubmitResponse struct {
@@ -641,6 +649,10 @@ func (s *Server) Game2048StartClassic(w http.ResponseWriter, r *http.Request, _ 
 	s.game2048Start(w, r, game2048ModeClassic)
 }
 
+func (s *Server) Game2048StartWeeklyBlitz(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	s.game2048Start(w, r, game2048ModeWeeklyBlitz)
+}
+
 func (s *Server) Game2048Submit(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	req := new(game2048SubmitRequest)
 	if !unmarshal(w, r, req) {
@@ -949,6 +961,8 @@ func (s *Server) game2048Start(w http.ResponseWriter, r *http.Request, mode uint
 		requiredFee := cfg.ClassicFee
 		if mode == game2048ModeDaily {
 			requiredFee = cfg.DailyFee
+		} else if mode == game2048ModeWeeklyBlitz {
+			requiredFee = game2048DefaultWeeklyBlitzFee
 		}
 		if account.Amount < requiredFee {
 			return fsm.ErrInsufficientFunds()
@@ -967,6 +981,8 @@ func (s *Server) game2048Start(w http.ResponseWriter, r *http.Request, mode uint
 
 		if mode == game2048ModeDaily {
 			tx, gameErr = s.buildGame2048StartDailyTx(privateKey, req.Address, utcDate, gameID, createdHeight, micros, requiredFee)
+		} else if mode == game2048ModeWeeklyBlitz {
+			tx, gameErr = s.buildGame2048StartWeeklyBlitzTx(privateKey, req.Address, gameID, createdHeight, micros, requiredFee)
 		} else {
 			tx, gameErr = s.buildGame2048StartClassicTx(privateKey, req.Address, gameID, createdHeight, micros, requiredFee)
 		}
@@ -1056,6 +1072,34 @@ func (s *Server) buildGame2048StartClassicTx(
 
 	tx := &lib.Transaction{
 		MessageType:   game2048StartClassicMessageName,
+		Msg:           msg,
+		CreatedHeight: createdHeight,
+		Time:          micros,
+		Fee:           fee,
+		NetworkId:     s.config.NetworkID,
+		ChainId:       s.config.ChainId,
+	}
+	return tx, tx.Sign(privateKey)
+}
+
+func (s *Server) buildGame2048StartWeeklyBlitzTx(
+	privateKey crypto.PrivateKeyI,
+	address []byte,
+	gameID []byte,
+	createdHeight uint64,
+	micros uint64,
+	fee uint64,
+) (lib.TransactionI, lib.ErrorI) {
+	msg, err := game2048AnyMessage("MessageStartWeeklyBlitzGame", func(message protoreflect.Message) {
+		setBytesField(message, "player_address", address)
+		setBytesField(message, "game_id", gameID)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tx := &lib.Transaction{
+		MessageType:   game2048StartWeeklyBlitzMessageName,
 		Msg:           msg,
 		CreatedHeight: createdHeight,
 		Time:          micros,
@@ -2033,9 +2077,30 @@ func deriveGame2048Session(
 		session.Seed = hex.EncodeToString(deriveDailySeed(chainID, utcDate))
 		session.UTCDate = utcDate
 		session.MaxMoves = cfg.DailyMaxMoves
+	} else if mode == game2048ModeWeeklyBlitz {
+		session.Mode = "weekly-blitz"
+		// Weekly Blitz uses player-specific seed (not shared like daily)
+		session.Seed = hex.EncodeToString(deriveClassicSeed(address, transaction))
+		session.UTCDate = utcDate
+		session.MaxMoves = 0 // No move limit, only time limit
+		
+		// Calculate week ID and expiration time (5 minutes from now)
+		currentUnix := time.Now().Unix()
+		session.WeekId = calculateWeekId(currentUnix)
+		session.ExpiresAtUnix = uint64(currentUnix + 300) // 5 minutes (300 seconds)
 	}
 
 	return session, nil
+}
+
+// calculateWeekId calculates the week ID from Unix timestamp
+// Week 0 = Monday, Jan 5, 1970 00:00 UTC
+// Each week is 604800 seconds (7 days)
+func calculateWeekId(currentUnix int64) uint64 {
+	const weekSeconds = int64(7 * 24 * 60 * 60)      // 604800 seconds
+	const epochOffset = int64(4 * 24 * 60 * 60)      // 4 days (345600 seconds)
+	weekId := (currentUnix - epochOffset) / weekSeconds
+	return uint64(weekId)
 }
 
 func defaultGame2048Config() game2048ConfigResponse {
@@ -2719,4 +2784,183 @@ func stopReasonToString(stopReason int32) string {
 	default:
 		return "player_stopped" // Default to player_stopped for backward compatibility
 	}
+}
+
+
+// Game2048WeeklyBlitzCurrent returns current week information
+func (s *Server) Game2048WeeklyBlitzCurrent(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+	currentUnix := time.Now().Unix()
+	const weekSeconds = int64(7 * 24 * 60 * 60)
+	const epochOffset = int64(4 * 24 * 60 * 60)
+	weekId := int((currentUnix - epochOffset) / weekSeconds)
+	weekStart := int64(weekId)*weekSeconds + epochOffset
+	weekEnd := int64(weekId+1)*weekSeconds + epochOffset - 1
+	currentTime := time.Unix(currentUnix, 0).UTC()
+	utcDate := currentTime.Format("2006-01-02")
+	
+	var poolBalance uint64
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		pool, poolErr := state.GetPool(game2048WeeklyBlitzPoolID)
+		if poolErr != nil {
+			poolBalance = 0
+			return nil
+		}
+		poolBalance = pool.Amount
+		return nil
+	})
+	
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	
+	response := map[string]interface{}{
+		"weekId":      weekId,
+		"weekStart":   weekStart,
+		"weekEnd":     weekEnd,
+		"utcDate":     utcDate,
+		"currentUnix": currentUnix,
+		"poolBalance": poolBalance,
+	}
+	
+	write(w, response, http.StatusOK)
+}
+
+// Game2048WeeklyBlitzWeek returns specific week information
+func (s *Server) Game2048WeeklyBlitzWeek(w http.ResponseWriter, _ *http.Request, ps httprouter.Params) {
+	weekIdStr := ps.ByName("weekId")
+	weekId, err := strconv.Atoi(weekIdStr)
+	if err != nil {
+		write(w, fmt.Errorf("invalid week ID"), http.StatusBadRequest)
+		return
+	}
+	
+	const weekSeconds = int64(7 * 24 * 60 * 60)
+	const epochOffset = int64(4 * 24 * 60 * 60)
+	weekStart := int64(weekId)*weekSeconds + epochOffset
+	weekEnd := int64(weekId+1)*weekSeconds + epochOffset - 1
+	
+	response := map[string]interface{}{
+		"weekId":    weekId,
+		"weekStart": weekStart,
+		"weekEnd":   weekEnd,
+	}
+	
+	write(w, response, http.StatusOK)
+}
+
+// Game2048WeeklyBlitzLeaderboard returns the leaderboard for a specific week
+func (s *Server) Game2048WeeklyBlitzLeaderboard(w http.ResponseWriter, _ *http.Request, ps httprouter.Params) {
+	weekIdStr := ps.ByName("weekId")
+	weekId, err := strconv.Atoi(weekIdStr)
+	if err != nil {
+		write(w, fmt.Errorf("invalid week ID"), http.StatusBadRequest)
+		return
+	}
+	
+	response := map[string]interface{}{
+		"weekId":      weekId,
+		"leaderboard": []interface{}{},
+	}
+	
+	write(w, response, http.StatusOK)
+}
+
+// Game2048WeeklyBlitzPlayerStatus returns a player's Weekly Blitz status
+func (s *Server) Game2048WeeklyBlitzPlayerStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	addressParam := ps.ByName("address")
+	var playerAddress []byte
+	if strings.HasPrefix(addressParam, "0x") || strings.HasPrefix(addressParam, "0X") {
+		decoded, err := hex.DecodeString(addressParam[2:])
+		if err != nil {
+			write(w, fmt.Errorf("invalid address format"), http.StatusBadRequest)
+			return
+		}
+		playerAddress = decoded
+	} else {
+		decoded, err := hex.DecodeString(addressParam)
+		if err != nil {
+			write(w, fmt.Errorf("invalid address format"), http.StatusBadRequest)
+			return
+		}
+		playerAddress = decoded
+	}
+	
+	currentUnix := time.Now().Unix()
+	const weekSeconds = int64(7 * 24 * 60 * 60)
+	const epochOffset = int64(4 * 24 * 60 * 60)
+	weekId := int((currentUnix - epochOffset) / weekSeconds)
+	currentTime := time.Unix(currentUnix, 0).UTC()
+	utcDate := currentTime.Format("2006-01-02")
+	
+	var officialRunsUsed int
+	var retriesUsed int
+	var cumulativeScore uint64
+	var runCount int
+	var bestSingleScore uint64
+	
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		trackingKey := []byte(fmt.Sprintf("weekly_blitz_daily_%s_%s", utcDate, hex.EncodeToString(playerAddress)))
+		trackingBytes, err := state.Get(trackingKey)
+		if err == nil && len(trackingBytes) > 0 {
+			var tracking map[string]interface{}
+			if jsonErr := json.Unmarshal(trackingBytes, &tracking); jsonErr == nil {
+				if val, ok := tracking["officialRunsUsed"].(float64); ok {
+					officialRunsUsed = int(val)
+				}
+				if val, ok := tracking["retriesUsed"].(float64); ok {
+					retriesUsed = int(val)
+				}
+			}
+		}
+		
+		scoreKey := []byte(fmt.Sprintf("weekly_blitz_score_%d_%s", weekId, hex.EncodeToString(playerAddress)))
+		scoreBytes, err := state.Get(scoreKey)
+		if err == nil && len(scoreBytes) > 0 {
+			var score map[string]interface{}
+			if jsonErr := json.Unmarshal(scoreBytes, &score); jsonErr == nil {
+				if val, ok := score["cumulativeScore"].(float64); ok {
+					cumulativeScore = uint64(val)
+				}
+				if val, ok := score["runCount"].(float64); ok {
+					runCount = int(val)
+				}
+				if val, ok := score["bestSingleScore"].(float64); ok {
+					bestSingleScore = uint64(val)
+				}
+			}
+		}
+		
+		return nil
+	})
+	
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	
+	officialRunsRemaining := 2 - officialRunsUsed
+	if officialRunsRemaining < 0 {
+		officialRunsRemaining = 0
+	}
+	
+	retriesRemaining := 3 - retriesUsed
+	if retriesRemaining < 0 {
+		retriesRemaining = 0
+	}
+	
+	response := map[string]interface{}{
+		"address":                hex.EncodeToString(playerAddress),
+		"weekId":                 weekId,
+		"utcDate":                utcDate,
+		"officialRunsUsed":       officialRunsUsed,
+		"officialRunsRemaining":  officialRunsRemaining,
+		"retriesUsed":            retriesUsed,
+		"retriesRemaining":       retriesRemaining,
+		"cumulativeScore":        cumulativeScore,
+		"runCount":               runCount,
+		"bestSingleScore":        bestSingleScore,
+	}
+	
+	write(w, response, http.StatusOK)
 }

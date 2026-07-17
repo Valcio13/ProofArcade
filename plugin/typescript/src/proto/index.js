@@ -1196,12 +1196,14 @@ $root.types = (function() {
      * @property {number} GAME_MODE_UNSPECIFIED=0 GAME_MODE_UNSPECIFIED value
      * @property {number} GAME_MODE_DAILY=1 GAME_MODE_DAILY value
      * @property {number} GAME_MODE_CLASSIC=2 GAME_MODE_CLASSIC value
+     * @property {number} GAME_MODE_WEEKLY_BLITZ=3 GAME_MODE_WEEKLY_BLITZ value
      */
     types.GameMode = (function() {
         var valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "GAME_MODE_UNSPECIFIED"] = 0;
         values[valuesById[1] = "GAME_MODE_DAILY"] = 1;
         values[valuesById[2] = "GAME_MODE_CLASSIC"] = 2;
+        values[valuesById[3] = "GAME_MODE_WEEKLY_BLITZ"] = 3;
         return values;
     })();
 
@@ -3173,6 +3175,542 @@ $root.types = (function() {
         };
 
         return MessageSetUsername;
+    })();
+
+    types.MessageStartWeeklyBlitzGame = (function() {
+
+        /**
+         * Properties of a MessageStartWeeklyBlitzGame.
+         * @memberof types
+         * @interface IMessageStartWeeklyBlitzGame
+         * @property {Uint8Array|null} [playerAddress] MessageStartWeeklyBlitzGame playerAddress
+         * @property {number|Long|null} [weekId] MessageStartWeeklyBlitzGame weekId
+         * @property {Uint8Array|null} [gameId] MessageStartWeeklyBlitzGame gameId
+         */
+
+        /**
+         * Constructs a new MessageStartWeeklyBlitzGame.
+         * @memberof types
+         * @classdesc Represents a MessageStartWeeklyBlitzGame.
+         * @implements IMessageStartWeeklyBlitzGame
+         * @constructor
+         * @param {types.IMessageStartWeeklyBlitzGame=} [properties] Properties to set
+         */
+        function MessageStartWeeklyBlitzGame(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageStartWeeklyBlitzGame playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @instance
+         */
+        MessageStartWeeklyBlitzGame.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * MessageStartWeeklyBlitzGame weekId.
+         * @member {number|Long} weekId
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @instance
+         */
+        MessageStartWeeklyBlitzGame.prototype.weekId = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessageStartWeeklyBlitzGame gameId.
+         * @member {Uint8Array} gameId
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @instance
+         */
+        MessageStartWeeklyBlitzGame.prototype.gameId = $util.newBuffer([]);
+
+        /**
+         * Creates a new MessageStartWeeklyBlitzGame instance using the specified properties.
+         * @function create
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @static
+         * @param {types.IMessageStartWeeklyBlitzGame=} [properties] Properties to set
+         * @returns {types.MessageStartWeeklyBlitzGame} MessageStartWeeklyBlitzGame instance
+         */
+        MessageStartWeeklyBlitzGame.create = function create(properties) {
+            return new MessageStartWeeklyBlitzGame(properties);
+        };
+
+        /**
+         * Encodes the specified MessageStartWeeklyBlitzGame message. Does not implicitly {@link types.MessageStartWeeklyBlitzGame.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @static
+         * @param {types.IMessageStartWeeklyBlitzGame} message MessageStartWeeklyBlitzGame message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageStartWeeklyBlitzGame.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.weekId != null && Object.hasOwnProperty.call(message, "weekId"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.weekId);
+            if (message.gameId != null && Object.hasOwnProperty.call(message, "gameId"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.gameId);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageStartWeeklyBlitzGame message, length delimited. Does not implicitly {@link types.MessageStartWeeklyBlitzGame.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @static
+         * @param {types.IMessageStartWeeklyBlitzGame} message MessageStartWeeklyBlitzGame message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageStartWeeklyBlitzGame.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageStartWeeklyBlitzGame message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageStartWeeklyBlitzGame} MessageStartWeeklyBlitzGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageStartWeeklyBlitzGame.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageStartWeeklyBlitzGame();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.weekId = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.gameId = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageStartWeeklyBlitzGame message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageStartWeeklyBlitzGame} MessageStartWeeklyBlitzGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageStartWeeklyBlitzGame.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageStartWeeklyBlitzGame message.
+         * @function verify
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageStartWeeklyBlitzGame.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.weekId != null && message.hasOwnProperty("weekId"))
+                if (!$util.isInteger(message.weekId) && !(message.weekId && $util.isInteger(message.weekId.low) && $util.isInteger(message.weekId.high)))
+                    return "weekId: integer|Long expected";
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                if (!(message.gameId && typeof message.gameId.length === "number" || $util.isString(message.gameId)))
+                    return "gameId: buffer expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessageStartWeeklyBlitzGame message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageStartWeeklyBlitzGame} MessageStartWeeklyBlitzGame
+         */
+        MessageStartWeeklyBlitzGame.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageStartWeeklyBlitzGame)
+                return object;
+            var message = new $root.types.MessageStartWeeklyBlitzGame();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.weekId != null)
+                if ($util.Long)
+                    (message.weekId = $util.Long.fromValue(object.weekId)).unsigned = true;
+                else if (typeof object.weekId === "string")
+                    message.weekId = parseInt(object.weekId, 10);
+                else if (typeof object.weekId === "number")
+                    message.weekId = object.weekId;
+                else if (typeof object.weekId === "object")
+                    message.weekId = new $util.LongBits(object.weekId.low >>> 0, object.weekId.high >>> 0).toNumber(true);
+            if (object.gameId != null)
+                if (typeof object.gameId === "string")
+                    $util.base64.decode(object.gameId, message.gameId = $util.newBuffer($util.base64.length(object.gameId)), 0);
+                else if (object.gameId.length >= 0)
+                    message.gameId = object.gameId;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageStartWeeklyBlitzGame message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @static
+         * @param {types.MessageStartWeeklyBlitzGame} message MessageStartWeeklyBlitzGame
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageStartWeeklyBlitzGame.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.weekId = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.weekId = options.longs === String ? "0" : 0;
+                if (options.bytes === String)
+                    object.gameId = "";
+                else {
+                    object.gameId = [];
+                    if (options.bytes !== Array)
+                        object.gameId = $util.newBuffer(object.gameId);
+                }
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.weekId != null && message.hasOwnProperty("weekId"))
+                if (typeof message.weekId === "number")
+                    object.weekId = options.longs === String ? String(message.weekId) : message.weekId;
+                else
+                    object.weekId = options.longs === String ? $util.Long.prototype.toString.call(message.weekId) : options.longs === Number ? new $util.LongBits(message.weekId.low >>> 0, message.weekId.high >>> 0).toNumber(true) : message.weekId;
+            if (message.gameId != null && message.hasOwnProperty("gameId"))
+                object.gameId = options.bytes === String ? $util.base64.encode(message.gameId, 0, message.gameId.length) : options.bytes === Array ? Array.prototype.slice.call(message.gameId) : message.gameId;
+            return object;
+        };
+
+        /**
+         * Converts this MessageStartWeeklyBlitzGame to JSON.
+         * @function toJSON
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageStartWeeklyBlitzGame.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageStartWeeklyBlitzGame
+         * @function getTypeUrl
+         * @memberof types.MessageStartWeeklyBlitzGame
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageStartWeeklyBlitzGame.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageStartWeeklyBlitzGame";
+        };
+
+        return MessageStartWeeklyBlitzGame;
+    })();
+
+    types.MessageClaimWeeklyBlitzReward = (function() {
+
+        /**
+         * Properties of a MessageClaimWeeklyBlitzReward.
+         * @memberof types
+         * @interface IMessageClaimWeeklyBlitzReward
+         * @property {Uint8Array|null} [playerAddress] MessageClaimWeeklyBlitzReward playerAddress
+         * @property {number|Long|null} [weekId] MessageClaimWeeklyBlitzReward weekId
+         */
+
+        /**
+         * Constructs a new MessageClaimWeeklyBlitzReward.
+         * @memberof types
+         * @classdesc Represents a MessageClaimWeeklyBlitzReward.
+         * @implements IMessageClaimWeeklyBlitzReward
+         * @constructor
+         * @param {types.IMessageClaimWeeklyBlitzReward=} [properties] Properties to set
+         */
+        function MessageClaimWeeklyBlitzReward(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MessageClaimWeeklyBlitzReward playerAddress.
+         * @member {Uint8Array} playerAddress
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @instance
+         */
+        MessageClaimWeeklyBlitzReward.prototype.playerAddress = $util.newBuffer([]);
+
+        /**
+         * MessageClaimWeeklyBlitzReward weekId.
+         * @member {number|Long} weekId
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @instance
+         */
+        MessageClaimWeeklyBlitzReward.prototype.weekId = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new MessageClaimWeeklyBlitzReward instance using the specified properties.
+         * @function create
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @static
+         * @param {types.IMessageClaimWeeklyBlitzReward=} [properties] Properties to set
+         * @returns {types.MessageClaimWeeklyBlitzReward} MessageClaimWeeklyBlitzReward instance
+         */
+        MessageClaimWeeklyBlitzReward.create = function create(properties) {
+            return new MessageClaimWeeklyBlitzReward(properties);
+        };
+
+        /**
+         * Encodes the specified MessageClaimWeeklyBlitzReward message. Does not implicitly {@link types.MessageClaimWeeklyBlitzReward.verify|verify} messages.
+         * @function encode
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @static
+         * @param {types.IMessageClaimWeeklyBlitzReward} message MessageClaimWeeklyBlitzReward message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageClaimWeeklyBlitzReward.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.playerAddress != null && Object.hasOwnProperty.call(message, "playerAddress"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.playerAddress);
+            if (message.weekId != null && Object.hasOwnProperty.call(message, "weekId"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.weekId);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MessageClaimWeeklyBlitzReward message, length delimited. Does not implicitly {@link types.MessageClaimWeeklyBlitzReward.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @static
+         * @param {types.IMessageClaimWeeklyBlitzReward} message MessageClaimWeeklyBlitzReward message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MessageClaimWeeklyBlitzReward.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MessageClaimWeeklyBlitzReward message from the specified reader or buffer.
+         * @function decode
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {types.MessageClaimWeeklyBlitzReward} MessageClaimWeeklyBlitzReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageClaimWeeklyBlitzReward.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.types.MessageClaimWeeklyBlitzReward();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.playerAddress = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.weekId = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MessageClaimWeeklyBlitzReward message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {types.MessageClaimWeeklyBlitzReward} MessageClaimWeeklyBlitzReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MessageClaimWeeklyBlitzReward.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MessageClaimWeeklyBlitzReward message.
+         * @function verify
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MessageClaimWeeklyBlitzReward.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                if (!(message.playerAddress && typeof message.playerAddress.length === "number" || $util.isString(message.playerAddress)))
+                    return "playerAddress: buffer expected";
+            if (message.weekId != null && message.hasOwnProperty("weekId"))
+                if (!$util.isInteger(message.weekId) && !(message.weekId && $util.isInteger(message.weekId.low) && $util.isInteger(message.weekId.high)))
+                    return "weekId: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a MessageClaimWeeklyBlitzReward message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {types.MessageClaimWeeklyBlitzReward} MessageClaimWeeklyBlitzReward
+         */
+        MessageClaimWeeklyBlitzReward.fromObject = function fromObject(object) {
+            if (object instanceof $root.types.MessageClaimWeeklyBlitzReward)
+                return object;
+            var message = new $root.types.MessageClaimWeeklyBlitzReward();
+            if (object.playerAddress != null)
+                if (typeof object.playerAddress === "string")
+                    $util.base64.decode(object.playerAddress, message.playerAddress = $util.newBuffer($util.base64.length(object.playerAddress)), 0);
+                else if (object.playerAddress.length >= 0)
+                    message.playerAddress = object.playerAddress;
+            if (object.weekId != null)
+                if ($util.Long)
+                    (message.weekId = $util.Long.fromValue(object.weekId)).unsigned = true;
+                else if (typeof object.weekId === "string")
+                    message.weekId = parseInt(object.weekId, 10);
+                else if (typeof object.weekId === "number")
+                    message.weekId = object.weekId;
+                else if (typeof object.weekId === "object")
+                    message.weekId = new $util.LongBits(object.weekId.low >>> 0, object.weekId.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MessageClaimWeeklyBlitzReward message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @static
+         * @param {types.MessageClaimWeeklyBlitzReward} message MessageClaimWeeklyBlitzReward
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MessageClaimWeeklyBlitzReward.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                if (options.bytes === String)
+                    object.playerAddress = "";
+                else {
+                    object.playerAddress = [];
+                    if (options.bytes !== Array)
+                        object.playerAddress = $util.newBuffer(object.playerAddress);
+                }
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, true);
+                    object.weekId = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.weekId = options.longs === String ? "0" : 0;
+            }
+            if (message.playerAddress != null && message.hasOwnProperty("playerAddress"))
+                object.playerAddress = options.bytes === String ? $util.base64.encode(message.playerAddress, 0, message.playerAddress.length) : options.bytes === Array ? Array.prototype.slice.call(message.playerAddress) : message.playerAddress;
+            if (message.weekId != null && message.hasOwnProperty("weekId"))
+                if (typeof message.weekId === "number")
+                    object.weekId = options.longs === String ? String(message.weekId) : message.weekId;
+                else
+                    object.weekId = options.longs === String ? $util.Long.prototype.toString.call(message.weekId) : options.longs === Number ? new $util.LongBits(message.weekId.low >>> 0, message.weekId.high >>> 0).toNumber(true) : message.weekId;
+            return object;
+        };
+
+        /**
+         * Converts this MessageClaimWeeklyBlitzReward to JSON.
+         * @function toJSON
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MessageClaimWeeklyBlitzReward.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MessageClaimWeeklyBlitzReward
+         * @function getTypeUrl
+         * @memberof types.MessageClaimWeeklyBlitzReward
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MessageClaimWeeklyBlitzReward.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/types.MessageClaimWeeklyBlitzReward";
+        };
+
+        return MessageClaimWeeklyBlitzReward;
     })();
 
     types.MessagePoolTransfer = (function() {
@@ -6004,6 +6542,7 @@ $root.types = (function() {
                 case 0:
                 case 1:
                 case 2:
+                case 3:
                     break;
                 }
             if (message.utcDate != null && message.hasOwnProperty("utcDate"))
@@ -6099,6 +6638,10 @@ $root.types = (function() {
             case "GAME_MODE_CLASSIC":
             case 2:
                 message.mode = 2;
+                break;
+            case "GAME_MODE_WEEKLY_BLITZ":
+            case 3:
+                message.mode = 3;
                 break;
             }
             if (object.utcDate != null)

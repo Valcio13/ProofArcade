@@ -169,3 +169,36 @@ export function splitClassicFee(amount: Long, cfg: any): { platform: Long; month
     
     return { platform, monthly, reserve, shop };
 }
+
+/**
+ * Split weekly blitz entry fee into treasury buckets
+ * 
+ * Weekly Blitz mode splits fees across platform operations, prize pool,
+ * reserve, and shop. The majority (60%) goes to the weekly prize pool
+ * for competitive rewards.
+ * 
+ * @param amount - Total fee amount to split
+ * @returns Split amounts: platform, weeklyBlitz (prize pool), reserve, shop
+ * 
+ * @remarks
+ * - Fixed split: 60% weekly prize pool, 20% shop, 15% reserve, 5% platform
+ * - If BPS don't sum to 10000, remainder goes to shop bucket
+ * - Prize pool accumulates for weekly reward distribution
+ */
+export function splitWeeklyBlitzFee(amount: Long): { platform: Long; weeklyBlitz: Long; reserve: Long; shop: Long } {
+    const platformBps = 500;   // 5% platform operations
+    const weeklyBps = 6000;    // 60% weekly prize pool
+    const reserveBps = 1500;   // 15% reserve
+    const shopBps = 2000;      // 20% shop
+    
+    const platform = calculateBpsAmount(amount, platformBps);
+    const weeklyBlitz = calculateBpsAmount(amount, weeklyBps);
+    const reserve = calculateBpsAmount(amount, reserveBps);
+    
+    // If BPS sum to exactly 10000, calculate shop; otherwise assign remainder
+    const shop = platformBps + weeklyBps + reserveBps + shopBps === 10000
+        ? calculateBpsAmount(amount, shopBps)
+        : amount.subtract(platform).subtract(weeklyBlitz).subtract(reserve);
+    
+    return { platform, weeklyBlitz, reserve, shop };
+}

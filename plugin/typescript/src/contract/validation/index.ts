@@ -13,4 +13,6 @@ export {
     checkMessageRedeemClassicPoints,
     checkMessageClaimDailyLoginReward,
     checkMessageSetUsername,
+    checkMessageStartWeeklyBlitzGame,
+    checkMessageClaimWeeklyBlitzReward
 } from './message-checks.js';

@@ -139,6 +139,7 @@ export interface Game2048Client {
   setUsername(args: SetUsernameArgs): Promise<SetUsernameResult>
   addFunds(address: string, amount?: number): Promise<FaucetResult>
   startSession(address: string, mode: GameMode, password?: string): Promise<SessionStart>
+  startWeeklyBlitzSession(address: string, password?: string): Promise<SessionStart>
   submitSession(args: SubmitSessionArgs): Promise<SubmitSessionResult>
   claimDailyReward(args: ClaimDailyRewardArgs): Promise<ClaimDailyRewardResult>
   claimDailyLoginReward(args: ClaimDailyLoginRewardArgs): Promise<ClaimDailyLoginRewardResult>
@@ -194,6 +195,16 @@ function createMockGame2048Client(): Game2048Client {
     },
     async startSession(address: string, mode: GameMode) {
       return startMockSession(address, mode)
+    },
+    async startWeeklyBlitzSession(address: string) {
+      // For mock mode, create a Weekly Blitz session
+      const session = startMockSession(address, 'daily') // Use daily as fallback
+      return {
+        ...session,
+        mode: 'weekly-blitz' as GameMode,
+        weekId: Math.floor((Date.now() / 1000 - 4 * 24 * 60 * 60) / (7 * 24 * 60 * 60)),
+        expiresAtUnix: Math.floor(Date.now() / 1000) + 300, // 5 minutes from now
+      }
     },
     async submitSession(args: SubmitSessionArgs) {
       submitMockSession(args)

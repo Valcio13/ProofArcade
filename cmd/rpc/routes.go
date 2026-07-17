@@ -77,6 +77,10 @@ const (
 	Game2048GameHistoryRoutePath       = "/v1/query/2048/game-history"
 	Game2048UsernameRoutePath          = "/v1/query/2048/username"
 	Game2048AddressByUsernameRoutePath = "/v1/query/2048/address-by-username"
+	Game2048WeeklyBlitzCurrentRoutePath = "/v1/query/2048/weekly-blitz/current"
+	Game2048WeeklyBlitzWeekRoutePath    = "/v1/query/2048/weekly-blitz/:weekId"
+	Game2048WeeklyBlitzLeaderboardRoutePath = "/v1/query/2048/weekly-blitz/:weekId/leaderboard"
+	Game2048WeeklyBlitzPlayerStatusRoutePath = "/v1/query/2048/weekly-blitz/player/:address/status"
 	SubscribeRCInfoPath                = "/v1/subscribe-rc-info"
 	// eth
 	EthereumRoutePath = "/v1/eth"
@@ -114,6 +118,7 @@ const (
 	PeerBookRoutePath            = "/v1/admin/peer-book"
 	Tx2048StartDailyRoutePath    = "/v1/admin/tx-2048-start-daily"
 	Tx2048StartClassicRoutePath  = "/v1/admin/tx-2048-start-classic"
+	Tx2048StartWeeklyBlitzRoutePath = "/v1/admin/tx-2048-start-weekly-blitz"
 	Tx2048SubmitRoutePath        = "/v1/admin/tx-2048-submit"
 	Tx2048ClaimDailyRoutePath    = "/v1/admin/tx-2048-claim-daily-reward"
 	Tx2048RedeemClassicRoutePath = "/v1/admin/tx-2048-redeem-classic-points"
@@ -203,6 +208,10 @@ const (
 	Game2048GameHistoryRouteName       = "2048-game-history"
 	Game2048UsernameRouteName          = "2048-username"
 	Game2048AddressByUsernameRouteName = "2048-address-by-username"
+	Game2048WeeklyBlitzCurrentRouteName = "2048-weekly-blitz-current"
+	Game2048WeeklyBlitzWeekRouteName    = "2048-weekly-blitz-week"
+	Game2048WeeklyBlitzLeaderboardRouteName = "2048-weekly-blitz-leaderboard"
+	Game2048WeeklyBlitzPlayerStatusRouteName = "2048-weekly-blitz-player-status"
 	// debug
 	DebugBlockedRouteName   = "blocked"
 	DebugHeapRouteName      = "heap"
@@ -244,6 +253,7 @@ const (
 	PeerBookRouteName               = "peer-book"
 	Tx2048StartDailyRouteName       = "2048-start-daily"
 	Tx2048StartClassicRouteName     = "2048-start-classic"
+	Tx2048StartWeeklyBlitzRouteName = "2048-start-weekly-blitz"
 	Tx2048SubmitRouteName           = "2048-submit"
 	Tx2048ClaimDailyRouteName       = "2048-claim-daily-reward"
 	Tx2048RedeemClassicRouteName    = "2048-redeem-classic-points"
@@ -341,6 +351,10 @@ var routePaths = routes{
 	Game2048GameHistoryRouteName:       {Method: http.MethodPost, Path: Game2048GameHistoryRoutePath},
 	Game2048UsernameRouteName:          {Method: http.MethodPost, Path: Game2048UsernameRoutePath},
 	Game2048AddressByUsernameRouteName: {Method: http.MethodPost, Path: Game2048AddressByUsernameRoutePath},
+	Game2048WeeklyBlitzCurrentRouteName: {Method: http.MethodGet, Path: Game2048WeeklyBlitzCurrentRoutePath},
+	Game2048WeeklyBlitzWeekRouteName:    {Method: http.MethodGet, Path: Game2048WeeklyBlitzWeekRoutePath},
+	Game2048WeeklyBlitzLeaderboardRouteName: {Method: http.MethodGet, Path: Game2048WeeklyBlitzLeaderboardRoutePath},
+	Game2048WeeklyBlitzPlayerStatusRouteName: {Method: http.MethodPost, Path: Game2048WeeklyBlitzPlayerStatusRoutePath},
 	// eth
 	EthereumRouteName: {Method: http.MethodPost, Path: EthereumRoutePath},
 	// admin
@@ -377,6 +391,7 @@ var routePaths = routes{
 	PeerBookRouteName:               {Method: http.MethodGet, Path: PeerBookRoutePath},
 	Tx2048StartDailyRouteName:       {Method: http.MethodPost, Path: Tx2048StartDailyRoutePath},
 	Tx2048StartClassicRouteName:     {Method: http.MethodPost, Path: Tx2048StartClassicRoutePath},
+	Tx2048StartWeeklyBlitzRouteName: {Method: http.MethodPost, Path: Tx2048StartWeeklyBlitzRoutePath},
 	Tx2048SubmitRouteName:           {Method: http.MethodPost, Path: Tx2048SubmitRoutePath},
 	Tx2048ClaimDailyRouteName:       {Method: http.MethodPost, Path: Tx2048ClaimDailyRoutePath},
 	Tx2048RedeemClassicRouteName:    {Method: http.MethodPost, Path: Tx2048RedeemClassicRoutePath},
@@ -472,6 +487,10 @@ func createRouter(s *Server) *httprouter.Router {
 		Game2048GameHistoryRouteName:       s.Game2048GameHistory,
 		Game2048UsernameRouteName:          s.Game2048Username,
 		Game2048AddressByUsernameRouteName: s.Game2048AddressByUsername,
+		Game2048WeeklyBlitzCurrentRouteName: s.Game2048WeeklyBlitzCurrent,
+		Game2048WeeklyBlitzWeekRouteName:    s.Game2048WeeklyBlitzWeek,
+		Game2048WeeklyBlitzLeaderboardRouteName: s.Game2048WeeklyBlitzLeaderboard,
+		Game2048WeeklyBlitzPlayerStatusRouteName: s.Game2048WeeklyBlitzPlayerStatus,
 		EthereumRouteName:                  s.EthereumHandler,
 		SubscribeRCInfoName:                s.WebSocket,
 	}
@@ -526,6 +545,7 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		PeerBookRouteName:               s.PeerBook,
 		Tx2048StartDailyRouteName:       s.Game2048StartDaily,
 		Tx2048StartClassicRouteName:     s.Game2048StartClassic,
+		Tx2048StartWeeklyBlitzRouteName: s.Game2048StartWeeklyBlitz,
 		Tx2048SubmitRouteName:           s.Game2048Submit,
 		Tx2048ClaimDailyRouteName:       s.Game2048ClaimDailyReward,
 		Tx2048RedeemClassicRouteName:    s.Game2048RedeemClassicPoints,

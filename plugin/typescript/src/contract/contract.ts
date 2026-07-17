@@ -26,7 +26,12 @@ import {
     ErrSessionOwnerMismatch,
     ErrTxFeeBelowStateLimit,
     ErrUsernameInvalid,
-    ErrUsernameTaken
+    ErrUsernameTaken,
+    ErrWeeklyBlitzNoOfficialRunsRemaining,
+    ErrWeeklyBlitzSessionExpired,
+    ErrWeeklyBlitzRewardNotFound,
+    ErrWeeklyBlitzRewardAlreadyClaimed,
+    ErrWeeklyBlitzWeekNotFinalized
 } from './error.js';
 
 import type { Plugin, Config } from './plugin.js';
@@ -70,6 +75,14 @@ import {
     KeyForUsernameByAddress,
     KeyForAddressByUsername,
     KeyForPlayerIdentity,
+    KeyForWeeklyBlitzPool,
+    KeyForWeeklyBlitzSession,
+    KeyForWeeklyBlitzDailyTracking,
+    KeyForWeeklyBlitzPlayerScore,
+    KeyForWeeklyBlitzLeaderboard,
+    KeyForWeeklyBlitzPrizePool,
+    KeyForWeeklyBlitzRewardAllocation,
+    KeyForWeeklyBlitzRewardClaim,
     PoolIDs
 } from './utils/state.js';
 import {
@@ -94,7 +107,9 @@ import {
     checkMessageClaimDailyReward,
     checkMessageRedeemClassicPoints,
     checkMessageClaimDailyLoginReward,
-    checkMessageSetUsername
+    checkMessageSetUsername,
+    checkMessageStartWeeklyBlitzGame,
+    checkMessageClaimWeeklyBlitzReward
 } from './validation/index.js';
 import {
     decodePlayerStats,
@@ -127,7 +142,17 @@ import {
     createLeaderboardEntry,
     decodeDailyPrizePool,
     encodeDailyPrizePool,
-    addDailyPoolEntry
+    addDailyPoolEntry,
+    createWeeklyBlitzSession,
+    isSessionWeeklyBlitz,
+    isSessionExpired,
+    getWeekId,
+    decodeWeeklyBlitzDailyTracking,
+    encodeWeeklyBlitzDailyTracking,
+    decodeWeeklyBlitzPlayerScore,
+    createWeeklyBlitzPlayerScore,
+    createWeeklyBlitzLeaderboardEntry,
+    WEEKLY_BLITZ_CONFIG
 } from './competition/index.js';
 import {
     finalizeDailyRewardPoolIfNeeded,
@@ -143,7 +168,7 @@ import {
     getConfiguredDailyPayoutBps,
     getConfiguredClassicDailyPointsCap
 } from './config/index.js';
-import { splitDailyFee, splitClassicFee } from './economy/fee-distribution.js';
+import { splitDailyFee, splitClassicFee, splitWeeklyBlitzFee } from './economy/fee-distribution.js';
 import {
     calculateNextStreak,
     calculateLoginReward,
@@ -170,7 +195,7 @@ export const ContractConfig: any = {
     name: 'game2048_contract',
     id: 1,
     version: 1,
-    supportedTransactions: ['send', 'startDailyGame', 'startClassicGame', 'submitGameResult', 'claimDailyReward', 'redeemClassicPoints', 'claimDailyLoginReward', 'setUsername', 'poolTransfer', 'poolDeposit', 'poolWithdrawal', 'banPlayer', 'unbanPlayer'],
+    supportedTransactions: ['send', 'startDailyGame', 'startClassicGame', 'submitGameResult', 'claimDailyReward', 'redeemClassicPoints', 'claimDailyLoginReward', 'setUsername', 'poolTransfer', 'poolDeposit', 'poolWithdrawal', 'startWeeklyBlitzGame', 'claimWeeklyBlitzReward'],
     transactionTypeUrls: [
         'type.googleapis.com/types.MessageSend',
         GAME2048_TYPE_URLS.startDailyGame,
@@ -183,8 +208,8 @@ export const ContractConfig: any = {
         GAME2048_TYPE_URLS.poolTransfer,
         GAME2048_TYPE_URLS.poolDeposit,
         GAME2048_TYPE_URLS.poolWithdrawal,
-        GAME2048_TYPE_URLS.banPlayer,
-        GAME2048_TYPE_URLS.unbanPlayer
+        GAME2048_TYPE_URLS.startWeeklyBlitzGame,
+        GAME2048_TYPE_URLS.claimWeeklyBlitzReward
     ],
     eventTypeUrls: [],
     fileDescriptorProtos
@@ -263,6 +288,16 @@ export class Contract {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CheckMessageSetUsername(msg: any): any {
         return checkMessageSetUsername(msg);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    CheckMessageStartWeeklyBlitzGame(msg: any): any {
+        return checkMessageStartWeeklyBlitzGame(msg);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    CheckMessageClaimWeeklyBlitzReward(msg: any): any {
+        return checkMessageClaimWeeklyBlitzReward(msg);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -443,6 +478,10 @@ export class ContractAsync {
                     return contract.CheckMessageClaimDailyLoginReward(msg);
                 case 'MessageSetUsername':
                     return contract.CheckMessageSetUsername(msg);
+                case 'MessageStartWeeklyBlitzGame':
+                    return contract.CheckMessageStartWeeklyBlitzGame(msg);
+                case 'MessageClaimWeeklyBlitzReward':
+                    return contract.CheckMessageClaimWeeklyBlitzReward(msg);
                 case 'MessagePoolTransfer':
                     return contract.CheckMessagePoolTransfer(msg);
                 case 'MessagePoolDeposit':
@@ -483,6 +522,10 @@ export class ContractAsync {
                     return ContractAsync.DeliverMessageClaimDailyLoginReward(contract, msg, request.tx);
                 case 'MessageSetUsername':
                     return ContractAsync.DeliverMessageSetUsername(contract, msg, request.tx);
+                case 'MessageStartWeeklyBlitzGame':
+                    return ContractAsync.DeliverMessageStartWeeklyBlitzGame(contract, msg, request.tx);
+                case 'MessageClaimWeeklyBlitzReward':
+                    return ContractAsync.DeliverMessageClaimWeeklyBlitzReward(contract, msg, request.tx);
                 case 'MessagePoolTransfer':
                     return ContractAsync.DeliverMessagePoolTransfer(contract, msg, request.tx);
                 case 'MessagePoolDeposit':
@@ -1163,7 +1206,76 @@ export class ContractAsync {
         
         const deletes: Array<{ key: Uint8Array }> = [];
 
-        if (isDaily) {
+        // Check if this is a Weekly Blitz session
+        const isWeeklyBlitz = isSessionWeeklyBlitz(gameSession);
+
+        if (isWeeklyBlitz) {
+            // Weekly Blitz specific logic
+            // Check timer not expired
+            if (isSessionExpired(gameSession, endedAtUnix)) {
+                return { error: ErrWeeklyBlitzSessionExpired() };
+            }
+
+            const weekId = toUint64(gameSession?.weekId as Long | number | undefined);
+            const playerScoreKey = KeyForWeeklyBlitzPlayerScore(weekId, playerAddress);
+
+            // Read player's weekly score
+            const scoreQueryId = randomQueryId();
+            const [scoreResponse, scoreReadErr] = await contract.plugin.StateRead(contract, {
+                keys: [{ queryId: scoreQueryId, key: playerScoreKey }]
+            });
+
+            if (scoreReadErr) {
+                return { error: scoreReadErr };
+            }
+
+            const scoreBytes = getQueryValue(scoreResponse, scoreQueryId);
+            const playerScore = decodeWeeklyBlitzPlayerScore(scoreBytes);
+
+            const currentCumulative = playerScore?.cumulativeScore
+                ? (Long.isLong(playerScore.cumulativeScore) ? playerScore.cumulativeScore.toNumber() : playerScore.cumulativeScore)
+                : 0;
+            const currentRunCount = playerScore?.runCount || 0;
+            const currentBestScore = playerScore?.bestSingleScore
+                ? (Long.isLong(playerScore.bestSingleScore) ? playerScore.bestSingleScore.toNumber() : playerScore.bestSingleScore)
+                : 0;
+
+            // Update cumulative score
+            const newCumulativeScore = currentCumulative + replay.score;
+            const newRunCount = currentRunCount + 1;
+            const newBestSingleScore = Math.max(currentBestScore, replay.score);
+
+            const updatedPlayerScore = createWeeklyBlitzPlayerScore(
+                weekId,
+                playerAddress,
+                newCumulativeScore,
+                newRunCount,
+                newBestSingleScore,
+                endedAtUnix
+            );
+
+            sets.push({ key: playerScoreKey, value: updatedPlayerScore });
+
+            // Add to leaderboard
+            const leaderboardKey = KeyForWeeklyBlitzLeaderboard(weekId, Long.fromNumber(newCumulativeScore), playerAddress);
+            const leaderboardEntryValue = createWeeklyBlitzLeaderboardEntry(
+                playerAddress,
+                weekId,
+                newCumulativeScore,
+                newRunCount,
+                newBestSingleScore,
+                endedAtUnix,
+                username
+            );
+
+            sets.push({ key: leaderboardKey, value: leaderboardEntryValue });
+
+            // Delete old leaderboard entry if it exists
+            if (currentCumulative > 0) {
+                const oldLeaderboardKey = KeyForWeeklyBlitzLeaderboard(weekId, Long.fromNumber(currentCumulative), playerAddress);
+                deletes.push({ key: oldLeaderboardKey });
+            }
+        } else if (isDaily) {
             sets.push({
                 key: KeyForDailyLeaderboard(
                     gameSession?.utcDate || '',
@@ -2343,6 +2455,342 @@ export class ContractAsync {
             console.error('[POOL_WITHDRAWAL] Error stack:', error?.stack);
             return { error: { code: 500, msg: error?.message || 'Pool withdrawal failed' } };
         }
+    }
+
+    // DeliverMessageStartWeeklyBlitzGame handles starting a new Weekly Blitz game
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static async DeliverMessageStartWeeklyBlitzGame(contract: Contract, msg: any, tx: any): Promise<any> {
+        const playerAddress = normalizeBytes(msg?.playerAddress);
+        const gameId = normalizeBytes(msg?.gameId);
+        const utcDate = msg?.utcDate || '';
+        const startedAtUnix = toUint64(tx?.time as Long | number | undefined);
+        const startedHeight = toUint64(tx?.blockNumber as Long | number | undefined);
+        const weekId = getWeekId(startedAtUnix);
+
+        const playerKey = KeyForAccount(playerAddress);
+        const dailyTrackingKey = KeyForWeeklyBlitzDailyTracking(utcDate, playerAddress);
+        const playerStatsKey = KeyForPlayerStats(playerAddress);
+        const weeklyBlitzPoolKey = KeyForWeeklyBlitzPool();
+        const platformPoolKey = KeyForGamePlatformPool();
+        const reservePoolKey = KeyForGameReservePool();
+        const shopPoolKey = KeyForGameShopPool();
+        const gameTreasuryKey = KeyForGameTreasury();
+
+        const playerQueryId = randomQueryId();
+        const trackingQueryId = randomQueryId();
+        const statsQueryId = randomQueryId();
+        const weeklyBlitzPoolQueryId = randomQueryId();
+        const platformPoolQueryId = randomQueryId();
+        const reservePoolQueryId = randomQueryId();
+        const shopPoolQueryId = randomQueryId();
+        const treasuryQueryId = randomQueryId();
+
+        const [response, readErr] = await contract.plugin.StateRead(contract, {
+            keys: [
+                { queryId: playerQueryId, key: playerKey },
+                { queryId: trackingQueryId, key: dailyTrackingKey },
+                { queryId: statsQueryId, key: playerStatsKey },
+                { queryId: weeklyBlitzPoolQueryId, key: weeklyBlitzPoolKey },
+                { queryId: platformPoolQueryId, key: platformPoolKey },
+                { queryId: reservePoolQueryId, key: reservePoolKey },
+                { queryId: shopPoolQueryId, key: shopPoolKey },
+                { queryId: treasuryQueryId, key: gameTreasuryKey }
+            ]
+        });
+
+        if (readErr) {
+            return { error: readErr };
+        }
+        if (response?.error) {
+            return { error: response.error };
+        }
+
+        const playerBytes = getQueryValue(response, playerQueryId);
+        const trackingBytes = getQueryValue(response, trackingQueryId);
+        const statsBytes = getQueryValue(response, statsQueryId);
+        const weeklyBlitzPoolBytes = getQueryValue(response, weeklyBlitzPoolQueryId);
+        const platformPoolBytes = getQueryValue(response, platformPoolQueryId);
+        const reservePoolBytes = getQueryValue(response, reservePoolQueryId);
+        const shopPoolBytes = getQueryValue(response, shopPoolQueryId);
+        const treasuryBytes = getQueryValue(response, treasuryQueryId);
+
+        // Check daily limits
+        const tracking = decodeWeeklyBlitzDailyTracking(trackingBytes);
+        const officialRunsUsed = tracking?.officialRunsUsed || 0;
+
+        if (officialRunsUsed >= WEEKLY_BLITZ_CONFIG.DAILY_OFFICIAL_RUNS) {
+            return { error: ErrWeeklyBlitzNoOfficialRunsRemaining() };
+        }
+
+        // Unmarshal player account and pools
+        const [playerRaw, playerErr] = Unmarshal(playerBytes || new Uint8Array(), types.Account);
+        if (playerErr) {
+            return { error: playerErr };
+        }
+        const [weeklyBlitzPoolRaw, weeklyBlitzPoolErr] = Unmarshal(weeklyBlitzPoolBytes || new Uint8Array(), types.Pool);
+        if (weeklyBlitzPoolErr) return { error: weeklyBlitzPoolErr };
+        const [platformPoolRaw, platformPoolErr] = Unmarshal(platformPoolBytes || new Uint8Array(), types.Pool);
+        if (platformPoolErr) return { error: platformPoolErr };
+        const [reservePoolRaw, reservePoolErr] = Unmarshal(reservePoolBytes || new Uint8Array(), types.Pool);
+        if (reservePoolErr) return { error: reservePoolErr };
+        const [shopPoolRaw, shopPoolErr] = Unmarshal(shopPoolBytes || new Uint8Array(), types.Pool);
+        if (shopPoolErr) return { error: shopPoolErr };
+        const [gameTreasury] = decodeGame2048State('GameTreasury', treasuryBytes || new Uint8Array());
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const player = playerRaw as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const weeklyBlitzPool = weeklyBlitzPoolRaw as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const platformPool = platformPoolRaw as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const reservePool = reservePoolRaw as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const shopPool = shopPoolRaw as any;
+        const treasury = normalizeGameTreasury(gameTreasury);
+
+        // Deduct 5 PROOF entry fee from player's account
+        const txFee = Long.fromNumber(toUint64(tx?.fee as Long | number | undefined));
+        const playerAmount = Long.isLong(player?.amount)
+            ? player.amount
+            : Long.fromNumber((player?.amount as number) || 0);
+
+        if (playerAmount.lessThan(txFee)) {
+            return { error: ErrInsufficientFunds() };
+        }
+
+        // Update player balance (subtract fee)
+        const newPlayer = types.Account.create({
+            address: player?.address,
+            amount: playerAmount.subtract(txFee)
+        });
+
+        // Split fee: 60% weekly, 20% shop, 15% reserve, 5% platform
+        const split = splitWeeklyBlitzFee(txFee);
+
+        // Update all pool balances
+        const weeklyBlitzPoolAmount = Long.isLong(weeklyBlitzPool?.amount)
+            ? weeklyBlitzPool.amount
+            : Long.fromNumber((weeklyBlitzPool?.amount as number) || 0);
+        const platformPoolAmount = Long.isLong(platformPool?.amount)
+            ? platformPool.amount
+            : Long.fromNumber((platformPool?.amount as number) || 0);
+        const reservePoolAmount = Long.isLong(reservePool?.amount)
+            ? reservePool.amount
+            : Long.fromNumber((reservePool?.amount as number) || 0);
+        const shopPoolAmount = Long.isLong(shopPool?.amount)
+            ? shopPool.amount
+            : Long.fromNumber((shopPool?.amount as number) || 0);
+        
+        const updatedWeeklyBlitzPool = types.Pool.create({
+            id: Long.fromNumber(PoolIDs.WEEKLY_BLITZ),
+            amount: weeklyBlitzPoolAmount.add(split.weeklyBlitz)
+        });
+        const updatedPlatformPool = types.Pool.create({
+            id: Long.fromNumber(PoolIDs.PLATFORM),
+            amount: platformPoolAmount.add(split.platform)
+        });
+        const updatedReservePool = types.Pool.create({
+            id: Long.fromNumber(PoolIDs.RESERVE),
+            amount: reservePoolAmount.add(split.reserve)
+        });
+        const updatedShopPool = types.Pool.create({
+            id: Long.fromNumber(PoolIDs.SHOP),
+            amount: shopPoolAmount.add(split.shop)
+        });
+
+        // Update treasury balances
+        const updatedTreasury = encodeGame2048State('GameTreasury', {
+            platformBalance: treasury.platformBalance + split.platform.toNumber(),
+            reserveBalance: treasury.reserveBalance + split.reserve.toNumber(),
+            shopBalance: treasury.shopBalance + split.shop.toNumber(),
+            updatedAtUnix: toUint64(tx?.time as Long | number | undefined)
+        });
+
+        // Create session with 5-minute timer
+        const sessionValue = createWeeklyBlitzSession(
+            gameId,
+            playerAddress,
+            weekId,
+            utcDate,
+            contract.Config.ChainId,
+            startedHeight,
+            startedAtUnix,
+            txFee // Store the entry fee for session
+        );
+
+        // Update daily tracking
+        const updatedTracking = tracking || {
+            utcDate,
+            playerAddress,
+            weekId,
+            officialRunsUsed: 0,
+            retriesUsed: 0,
+            lastPlayedAtUnix: startedAtUnix
+        };
+        updatedTracking.officialRunsUsed = officialRunsUsed + 1;
+        updatedTracking.lastPlayedAtUnix = startedAtUnix;
+
+        const trackingValue = encodeWeeklyBlitzDailyTracking(updatedTracking);
+
+        // Update player stats
+        const stats = decodePlayerStats(statsBytes);
+        const updatedStats = incrementStatsField(stats, 'gamesStarted');
+        const statsValue = encodePlayerStats(updatedStats, playerAddress);
+
+        const sets = [
+            { key: playerKey, value: types.Account.encode(newPlayer).finish() },
+            { key: weeklyBlitzPoolKey, value: types.Pool.encode(updatedWeeklyBlitzPool).finish() },
+            { key: platformPoolKey, value: types.Pool.encode(updatedPlatformPool).finish() },
+            { key: reservePoolKey, value: types.Pool.encode(updatedReservePool).finish() },
+            { key: shopPoolKey, value: types.Pool.encode(updatedShopPool).finish() },
+            { key: gameTreasuryKey, value: updatedTreasury },
+            { key: KeyForWeeklyBlitzSession(gameId), value: sessionValue },
+            { key: dailyTrackingKey, value: trackingValue },
+            { key: playerStatsKey, value: statsValue }
+        ];
+
+        const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, { sets });
+
+        if (writeErr) {
+            return { error: writeErr };
+        }
+        if (writeResp?.error) {
+            return { error: writeResp.error };
+        }
+
+        return {};
+    }
+
+    // DeliverMessageClaimWeeklyBlitzReward handles claiming Weekly Blitz rewards
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static async DeliverMessageClaimWeeklyBlitzReward(contract: Contract, msg: any, _tx: any): Promise<any> {
+        const playerAddress = normalizeBytes(msg?.playerAddress);
+        const weekId = typeof msg?.weekId === 'number' ? msg.weekId : (msg?.weekId as Long).toNumber();
+
+        const playerKey = KeyForAccount(playerAddress);
+        const rewardAllocationKey = KeyForWeeklyBlitzRewardAllocation(weekId, playerAddress);
+        const rewardClaimKey = KeyForWeeklyBlitzRewardClaim(weekId, playerAddress);
+        const weeklyPoolKey = KeyForWeeklyBlitzPool();
+        const prizePoolKey = KeyForWeeklyBlitzPrizePool(weekId);
+
+        const playerQueryId = randomQueryId();
+        const rewardQueryId = randomQueryId();
+        const claimQueryId = randomQueryId();
+        const poolQueryId = randomQueryId();
+        const prizePoolQueryId = randomQueryId();
+
+        const [response, readErr] = await contract.plugin.StateRead(contract, {
+            keys: [
+                { queryId: playerQueryId, key: playerKey },
+                { queryId: rewardQueryId, key: rewardAllocationKey },
+                { queryId: claimQueryId, key: rewardClaimKey },
+                { queryId: poolQueryId, key: weeklyPoolKey },
+                { queryId: prizePoolQueryId, key: prizePoolKey }
+            ]
+        });
+
+        if (readErr) {
+            return { error: readErr };
+        }
+        if (response?.error) {
+            return { error: response.error };
+        }
+
+        const playerBytes = getQueryValue(response, playerQueryId);
+        const rewardBytes = getQueryValue(response, rewardQueryId);
+        const claimBytes = getQueryValue(response, claimQueryId);
+        const poolBytes = getQueryValue(response, poolQueryId);
+        const prizePoolBytes = getQueryValue(response, prizePoolQueryId);
+
+        // Check if reward exists
+        if (!rewardBytes || rewardBytes.length === 0) {
+            return { error: ErrWeeklyBlitzRewardNotFound() };
+        }
+
+        // Check if already claimed
+        if (claimBytes && claimBytes.length > 0) {
+            return { error: ErrWeeklyBlitzRewardAlreadyClaimed() };
+        }
+
+        // Parse reward allocation (JSON format)
+        const rewardAllocation = JSON.parse(Buffer.from(rewardBytes).toString('utf8'));
+        const rewardAmount = Long.isLong(rewardAllocation.rewardAmount)
+            ? rewardAllocation.rewardAmount
+            : Long.fromNumber(rewardAllocation.rewardAmount || 0);
+
+        // Check week is finalized
+        if (prizePoolBytes && prizePoolBytes.length > 0) {
+            const prizePool = JSON.parse(Buffer.from(prizePoolBytes).toString('utf8'));
+            if (!prizePool.finalized) {
+                return { error: ErrWeeklyBlitzWeekNotFinalized() };
+            }
+        } else {
+            return { error: ErrWeeklyBlitzWeekNotFinalized() };
+        }
+
+        // Get player and pool accounts
+        const [playerRaw, playerErr] = Unmarshal(playerBytes || new Uint8Array(), types.Account);
+        if (playerErr) {
+            return { error: playerErr };
+        }
+        const [poolRaw, poolErr] = Unmarshal(poolBytes || new Uint8Array(), types.Pool);
+        if (poolErr) {
+            return { error: poolErr };
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const player = playerRaw as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pool = poolRaw as any;
+
+        const playerAmount = Long.isLong(player?.amount)
+            ? player.amount
+            : Long.fromNumber((player?.amount as number) || 0);
+        const poolAmount = Long.isLong(pool?.amount)
+            ? pool.amount
+            : Long.fromNumber((pool?.amount as number) || 0);
+
+        // Check pool has sufficient balance
+        if (poolAmount.lessThan(rewardAmount)) {
+            return { error: ErrInsufficientFunds() };
+        }
+
+        // Transfer from pool to player
+        const newPlayerAmount = playerAmount.add(rewardAmount);
+        const newPoolAmount = poolAmount.subtract(rewardAmount);
+
+        const updatedPlayer = types.Account.create({
+            address: player?.address,
+            amount: newPlayerAmount
+        });
+        const updatedPool = types.Pool.create({
+            id: pool?.id,
+            amount: newPoolAmount
+        });
+
+        const newPlayerBytes = types.Account.encode(updatedPlayer).finish();
+        const newPoolBytes = types.Pool.encode(updatedPool).finish();
+
+        // Mark as claimed
+        const claimRecord = Buffer.from(JSON.stringify({ claimed: true, claimedAtUnix: toUint64(_tx?.time as Long | number | undefined) }), 'utf8');
+
+        const sets = [
+            { key: playerKey, value: newPlayerBytes },
+            { key: weeklyPoolKey, value: newPoolBytes },
+            { key: rewardClaimKey, value: claimRecord }
+        ];
+
+        const [writeResp, writeErr] = await contract.plugin.StateWrite(contract, { sets });
+
+        if (writeErr) {
+            return { error: writeErr };
+        }
+        if (writeResp?.error) {
+            return { error: writeResp.error };
+        }
+
+        return {};
     }
 
     // DeliverMessageBanPlayer handles admin ban operations

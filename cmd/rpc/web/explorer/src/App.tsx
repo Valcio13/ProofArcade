@@ -33,6 +33,7 @@ const SupplyPage = lazy(() => import('./components/staking/SupplyPage'))
 const Play2048Page = lazy(() => import('./pages/Play2048'))
 const PlaytestPage = lazy(() => import('./pages/Playtest'))
 const LeaderboardPage = lazy(() => import('./pages/Leaderboard'))
+const WeeklyBlitzPage = lazy(() => import('./pages/WeeklyBlitz'))
 const AdminPage = lazy(() => import('./pages/Admin'))
 const AdminLoginPage = lazy(() => import('./pages/AdminLogin'))
 const AdminEconomyPage = lazy(() => import('./pages/AdminEconomy'))
@@ -89,6 +90,7 @@ function AnimatedRoutes() {
           <Route path="/play" element={<Play2048Page />} />
           <Route path="/playtest" element={<PlaytestPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/weekly-blitz" element={<WeeklyBlitzPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin" element={<AdminProtectedRoute><AdminPage /></AdminProtectedRoute>} />
           <Route path="/admin/economy" element={<AdminProtectedRoute><AdminEconomyPage /></AdminProtectedRoute>} />

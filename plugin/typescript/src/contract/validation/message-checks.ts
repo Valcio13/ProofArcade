@@ -126,6 +126,44 @@ export function checkMessageClaimDailyReward(msg: any): any {
 }
 
 /**
+ * Validate a StartWeeklyBlitzGame message
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function checkMessageStartWeeklyBlitzGame(msg: any): any {
+    const playerAddress = normalizeBytes(msg?.playerAddress);
+    const gameId = normalizeBytes(msg?.gameId);
+    if (playerAddress.length !== 20) {
+        return { error: ErrInvalidAddress() };
+    }
+    if (gameId.length === 0) {
+        return { error: ErrInvalidMessageCast() };
+    }
+    if (!msg.utcDate || typeof msg.utcDate !== 'string') {
+        return { error: ErrInvalidMessageCast() };
+    }
+    return {
+        authorizedSigners: [playerAddress]
+    };
+}
+
+/**
+ * Validate a ClaimWeeklyBlitzReward message
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function checkMessageClaimWeeklyBlitzReward(msg: any): any {
+    const playerAddress = normalizeBytes(msg?.playerAddress);
+    if (playerAddress.length !== 20) {
+        return { error: ErrInvalidAddress() };
+    }
+    if (typeof msg.weekId !== 'number' && !Long.isLong(msg.weekId)) {
+        return { error: ErrInvalidMessageCast() };
+    }
+    return {
+        authorizedSigners: [playerAddress]
+    };
+}
+
+/**
  * Validate a RedeemClassicPoints message
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

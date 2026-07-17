@@ -47,6 +47,7 @@ const queryAddressByUsernamePath = '/v1/query/2048/address-by-username'
 const txSetUsernamePath = '/v1/admin/tx-2048-set-username'
 const txStartDailyPath = '/v1/admin/tx-2048-start-daily'
 const txStartClassicPath = '/v1/admin/tx-2048-start-classic'
+const txStartWeeklyBlitzPath = '/v1/admin/tx-2048-start-weekly-blitz'
 const txSubmitPath = '/v1/admin/tx-2048-submit'
 const txClaimDailyRewardPath = '/v1/admin/tx-2048-claim-daily-reward'
 const txClaimDailyLoginRewardPath = '/v1/admin/tx-2048-claim-daily-login'
@@ -357,6 +358,8 @@ function toChainStopReason(reason: StopReason): number {
       return 2
     case 'max_moves':
       return 3
+    case 'timer_expired':
+      return 4
     default:
       return 0
   }
@@ -489,8 +492,24 @@ export function createRpcGame2048Client(): {
       const liveAddress = assertHexAddress(address)
       const pwd = password || getWalletPassword(liveAddress)
       
-      const path = mode === 'daily' ? txStartDailyPath : txStartClassicPath
+      const path = mode === 'daily' ? txStartDailyPath : mode === 'weekly-blitz' ? txStartWeeklyBlitzPath : txStartClassicPath
       const session = await postJson<SessionStart>(adminRPCURL, path, {
+        address: liveAddress,
+        password: pwd,
+        submit: true,
+      })
+      if (session.txHash) {
+        const tracking = await trackRpcTx(session.txHash)
+        session.txStage = tracking.stage
+        session.txDetail = tracking.detail
+      }
+      return session
+    },
+    async startWeeklyBlitzSession(address: string, password?: string) {
+      const liveAddress = assertHexAddress(address)
+      const pwd = password || getWalletPassword(liveAddress)
+      
+      const session = await postJson<SessionStart>(adminRPCURL, txStartWeeklyBlitzPath, {
         address: liveAddress,
         password: pwd,
         submit: true,

@@ -8,9 +8,9 @@ import {
 import { replayGame } from '../../../../../../plugin/typescript/src/shared/game2048-replay.js'
 import { DeterministicRng } from '../../../../../../plugin/typescript/src/shared/game2048-rng.js'
 
-export type GameMode = 'daily' | 'classic'
+export type GameMode = 'daily' | 'classic' | 'weekly-blitz'
 export type PlayMode = GameMode | 'training'
-export type StopReason = 'player_stopped' | 'no_moves' | 'max_moves'
+export type StopReason = 'player_stopped' | 'no_moves' | 'max_moves' | 'timer_expired'
 export type MoveDirection = 'up' | 'right' | 'down' | 'left'
 
 export interface SessionSeed {
@@ -23,6 +23,9 @@ export interface LocalSession {
   seed: string
   utcDate: string
   maxMoves: number
+  // Weekly Blitz specific fields
+  weekId?: number
+  expiresAtUnix?: number
 }
 
 export interface ReplayResult {
@@ -134,6 +137,8 @@ function stopReasonToInt(reason: StopReason): number {
       return 2
     case 'max_moves':
       return 3
+    case 'timer_expired':
+      return 4
     default:
       return 1
   }
@@ -145,6 +150,8 @@ function stopReasonFromInt(reason: number): StopReason {
       return 'no_moves'
     case 3:
       return 'max_moves'
+    case 4:
+      return 'timer_expired'
     default:
       return 'player_stopped'
   }

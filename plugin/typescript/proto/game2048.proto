@@ -8,6 +8,7 @@ enum GameMode {
   GAME_MODE_UNSPECIFIED = 0;
   GAME_MODE_DAILY = 1;
   GAME_MODE_CLASSIC = 2;
+  GAME_MODE_WEEKLY_BLITZ = 3;
 }
 
 // SessionStatus tracks the lifecycle of a game session.
@@ -79,6 +80,19 @@ message MessageClaimDailyLoginReward {
 message MessageSetUsername {
   bytes player_address = 1; // @gotags: json:"playerAddress"
   string username = 2;
+}
+
+// MessageStartWeeklyBlitzGame starts a weekly blitz session with 5-minute timer.
+message MessageStartWeeklyBlitzGame {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  uint64 week_id = 2; // @gotags: json:"weekId"
+  bytes game_id = 3; // @gotags: json:"gameId"
+}
+
+// MessageClaimWeeklyBlitzReward claims the finalized weekly blitz reward.
+message MessageClaimWeeklyBlitzReward {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  uint64 week_id = 2; // @gotags: json:"weekId"
 }
 
 // MessagePoolTransfer transfers funds between pools (admin-only operation).

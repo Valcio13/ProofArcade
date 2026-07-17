@@ -12,8 +12,8 @@ import type Long from 'long';
 export interface GameSession {
     gameId: Uint8Array;
     playerAddress: Uint8Array;
-    mode: number | Long; // 1 = daily, 2 = classic
-    utcDate: string; // Only for daily mode
+    mode: number | Long; // 1 = daily, 2 = classic, 3 = weekly blitz
+    utcDate: string; // Only for daily mode and weekly blitz
     seed: Uint8Array;
     status: number | Long; // 1 = active, 2 = completed
     startedHeight: number | Long;
@@ -25,6 +25,9 @@ export interface GameSession {
     finalMoveCount?: number | Long;
     stopReason?: number | Long;
     submittedAtUnix?: number | Long;
+    // Weekly Blitz specific
+    weekId?: number | Long;
+    expiresAtUnix?: number | Long; // For timed modes
 }
 
 /**
@@ -82,7 +85,8 @@ export interface LeaderboardEntry {
  */
 export enum GameMode {
     DAILY = 1,
-    CLASSIC = 2
+    CLASSIC = 2,
+    WEEKLY_BLITZ = 3
 }
 
 /**

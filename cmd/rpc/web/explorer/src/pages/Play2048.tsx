@@ -27,6 +27,7 @@ import {
   type GameSessionRecord,
 } from '../lib/gameSessionRecovery'
 import { SessionRecoveryPrompt } from '../components/SessionRecoveryPrompt'
+import { WeeklyBlitzTimer } from '../components/WeeklyBlitzTimer'
 import {
   type ChainConfig,
   type LeaderboardEntry,
@@ -104,6 +105,8 @@ function Play2048Page() {
       document.title = 'Daily Challenge | ProofArcade'
     } else if (modeParam === 'classic') {
       document.title = 'Classic Mode | ProofArcade'
+    } else if (modeParam === 'weekly-blitz') {
+      document.title = 'Weekly Blitz | ProofArcade'
     } else {
       document.title = 'Training Mode | ProofArcade'
     }
@@ -152,9 +155,10 @@ function Play2048Page() {
     async function bootstrap() {
       // Read URL mode parameter as highest priority
       const modeParam = searchParams.get('mode')
-      const urlMode: GameMode | null = 
+      const urlMode: PlayMode | null = 
         modeParam === 'daily' ? 'daily' : 
-        modeParam === 'classic' ? 'classic' : 
+        modeParam === 'classic' ? 'classic' :
+        modeParam === 'weekly-blitz' ? 'weekly-blitz' :
         null
       
       const nextClient = await createGame2048Client()
@@ -466,6 +470,39 @@ function Play2048Page() {
         return
       }
 
+      // Handle Weekly Blitz separately
+      if (mode === 'weekly-blitz') {
+        const nextSession = await client!.startWeeklyBlitzSession(address, password)
+        const initialBoard = initializeBoard(nextSession.seed)
+        const initialMaxTile = Math.max(...initialBoard)
+        
+        // Create new session record
+        const sessionRecord = createGameSession(address, nextSession, initialBoard, initialMaxTile)
+        saveGameSession(address, sessionRecord)
+        
+        setSession(nextSession)
+        setBoard(initialBoard)
+        setScore(0)
+        setMaxTile(initialMaxTile)
+        setMoves([])
+        setIsSubmitted(false)
+        setLastOutcome(null)
+        setSelectedMode('weekly-blitz')
+        setLastStartTx(nextSession.txHash ? {
+          hash: nextSession.txHash,
+          stage: nextSession.txStage ?? 'submitted',
+          detail: nextSession.txDetail ?? 'Hash returned by RPC.',
+        } : null)
+        setLastActionError(null)
+        await refreshPlayerState(client!)
+        toast.success(
+          nextSession.txHash
+            ? `Weekly Blitz started! 5 minutes on the clock. ${nextSession.txStage ?? 'submitted'}.`
+            : 'Weekly Blitz started! 5 minutes on the clock.',
+        )
+        return
+      }
+
       const nextSession = await client!.startSession(address, mode, password)
       const initialBoard = initializeBoard(nextSession.seed)
       const initialMaxTile = Math.max(...initialBoard)
@@ -582,6 +619,16 @@ function Play2048Page() {
     const activeSession = sessionRef.current
     if (!activeSession || isSubmittedRef.current) {
       return
+    }
+
+    // Check for Weekly Blitz timer expiration
+    if (activeSession.mode === 'weekly-blitz' && activeSession.expiresAtUnix) {
+      const now = Math.floor(Date.now() / 1000)
+      if (now >= activeSession.expiresAtUnix) {
+        toast.error('Time expired! Submitting your score...')
+        finishRun('timer_expired', movesRef.current)
+        return
+      }
     }
 
     const currentMoves = movesRef.current
@@ -819,6 +866,14 @@ function Play2048Page() {
           />
         )}
       </AnimatePresence>
+
+      {/* Weekly Blitz Timer Overlay */}
+      {session && session.mode === 'weekly-blitz' && session.expiresAtUnix && !isSubmitted && (
+        <WeeklyBlitzTimer
+          expiresAtUnix={session.expiresAtUnix}
+          onExpire={() => finishRun('timer_expired', moves)}
+        />
+      )}
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">

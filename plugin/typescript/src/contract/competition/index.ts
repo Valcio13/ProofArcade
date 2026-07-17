@@ -20,6 +20,35 @@ export {
     SessionStatus
 } from './types.js';
 
+// Weekly Blitz exports
+export type {
+    WeeklyBlitzSession,
+    WeeklyBlitzDailyTracking,
+    WeeklyBlitzPlayerScore,
+    WeeklyBlitzLeaderboardEntry,
+    WeeklyBlitzPrizePool,
+    WeeklyBlitzRewardAllocation
+} from './weekly-blitz.js';
+
+export {
+    WEEKLY_BLITZ_CONFIG,
+    getWeekId,
+    getWeekStart,
+    getWeekEnd,
+    getUTCDate,
+    createWeeklyBlitzSession,
+    isSessionWeeklyBlitz,
+    isSessionExpired,
+    decodeWeeklyBlitzDailyTracking,
+    encodeWeeklyBlitzDailyTracking,
+    createWeeklyBlitzDailyTracking,
+    decodeWeeklyBlitzPlayerScore,
+    encodeWeeklyBlitzPlayerScore,
+    createWeeklyBlitzPlayerScore,
+    createWeeklyBlitzPrizePool,
+    createWeeklyBlitzLeaderboardEntry
+} from './weekly-blitz.js';
+
 // Session functions
 export {
     createDailySession,

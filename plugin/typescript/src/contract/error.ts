@@ -151,3 +151,23 @@ export function ErrUsernameInvalid(): IPluginError {
 export function ErrUsernameTaken(): IPluginError {
     return NewError(34, DefaultModule, 'username is already taken');
 }
+
+export function ErrWeeklyBlitzNoOfficialRunsRemaining(): IPluginError {
+    return NewError(35, DefaultModule, 'no official runs remaining for today');
+}
+
+export function ErrWeeklyBlitzSessionExpired(): IPluginError {
+    return NewError(36, DefaultModule, 'weekly blitz session expired (5 minute timer)');
+}
+
+export function ErrWeeklyBlitzRewardNotFound(): IPluginError {
+    return NewError(37, DefaultModule, 'weekly blitz reward not found');
+}
+
+export function ErrWeeklyBlitzRewardAlreadyClaimed(): IPluginError {
+    return NewError(38, DefaultModule, 'weekly blitz reward already claimed');
+}
+
+export function ErrWeeklyBlitzWeekNotFinalized(): IPluginError {
+    return NewError(39, DefaultModule, 'weekly blitz week is not finalized yet');
+}

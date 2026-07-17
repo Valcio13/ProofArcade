@@ -6,7 +6,7 @@ import { shortAddress } from '../lib/address'
 import { getUtcDateString } from '../lib/game2048'
 import type { LeaderboardEntry } from '../lib/mockChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
-import { ArrowRight, Zap, Trophy, Target, Shield, Clock, Award } from 'lucide-react'
+import { ArrowRight, Zap, Trophy, Target, Clock, Award } from 'lucide-react'
 import { DailyFaucet } from '../components/DailyFaucet'
 
 function rankColor(rank: number): string {
@@ -125,6 +125,14 @@ const HomePage = () => {
                 </Link>
 
                 <Link
+                  to="/weekly-blitz"
+                  className="flex items-center gap-2 rounded-xl border border-[#f0cf52]/30 bg-gradient-to-br from-[#f0cf52]/20 to-[#f0cf52]/5 px-6 py-3 text-sm font-semibold text-[#f6df84] transition hover:from-[#f0cf52]/30 hover:to-[#f0cf52]/10 sm:text-base"
+                >
+                  <Zap className="h-4 w-4" />
+                  Weekly Blitz
+                </Link>
+
+                <Link
                   to="/play?mode=classic"
                   className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10 sm:text-base"
                 >
@@ -186,6 +194,12 @@ const HomePage = () => {
                 description="Compete for rewards"
               />
               <QuickActionCard
+                to="/weekly-blitz"
+                icon={<Zap className="h-6 w-6" />}
+                title="Weekly Blitz"
+                description="5-minute sprint mode"
+              />
+              <QuickActionCard
                 to="/play?mode=classic"
                 icon={<Award className="h-6 w-6" />}
                 title="Classic Mode"
@@ -196,12 +210,6 @@ const HomePage = () => {
                 icon={<Trophy className="h-6 w-6" />}
                 title="Leaderboard"
                 description="See your rank"
-              />
-              <QuickActionCard
-                to="/profile"
-                icon={<Shield className="h-6 w-6" />}
-                title="Profile"
-                description="View achievements"
               />
             </div>
           </section>
@@ -278,7 +286,7 @@ const HomePage = () => {
               <h2 className="text-2xl font-bold text-white sm:text-3xl">Choose Your Path</h2>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-3 md:auto-rows-fr items-stretch">
+            <div className="grid gap-3 md:grid-cols-4 md:auto-rows-fr items-stretch">
               <GameModeCard
                 icon={<Target className="h-8 w-8" />}
                 title="Playtest"
@@ -301,6 +309,18 @@ const HomePage = () => {
                 ]}
                 ctaText="Play Daily"
                 ctaLink="/play"
+                requiresWallet
+              />
+              <GameModeCard
+                icon={<Zap className="h-8 w-8" />}
+                title="Weekly Blitz"
+                features={[
+                  '5-minute sprint mode',
+                  'Weekly cumulative scoring',
+                  '2 runs + 3 retries per day',
+                ]}
+                ctaText="Weekly Blitz"
+                ctaLink="/weekly-blitz"
                 requiresWallet
               />
               <GameModeCard
