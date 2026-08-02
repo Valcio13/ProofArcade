@@ -10,31 +10,40 @@ import type { DailyPrizePool, LeaderboardEntry, MonthlyLeaderboard, MonthlyPool 
 import { loadStoredWalletAuth } from '../lib/walletAuth'
 import { formatCNPY, toCNPY } from '../lib/utils'
 
-type LeaderboardMode = 'daily' | 'monthly'
+type LeaderboardMode = 'daily' | 'monthly' | 'weekly-blitz'
 
 function LeaderboardPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const modeParam = searchParams.get('mode')
   const activeMode: LeaderboardMode = 
-    modeParam === 'monthly' ? 'monthly' : 
+    modeParam === 'monthly' ? 'monthly' :
+    modeParam === 'weekly-blitz' ? 'weekly-blitz' :
     'daily'
 
   const storedWallet = loadStoredWalletAuth()
-  const [leaderboards, setLeaderboards] = useState<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>({
+  const [leaderboards, setLeaderboards] = useState<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[]; weeklyBlitz: LeaderboardEntry[] }>({
     daily: [],
     classic: [],
+    weeklyBlitz: [],
   })
   const [dailyPool, setDailyPool] = useState<DailyPrizePool | null>(null)
   const [monthlyLeaderboard, setMonthlyLeaderboard] = useState<MonthlyLeaderboard | null>(null)
   const [monthlyPool, setMonthlyPool] = useState<MonthlyPool | null>(null)
+  const [previousMonthLeaderboard, setPreviousMonthLeaderboard] = useState<MonthlyLeaderboard | null>(null)
+  const [previousWeekLeaderboard, setPreviousWeekLeaderboard] = useState<LeaderboardEntry[]>([])
   const [countdown, setCountdown] = useState(() => formatUtcCountdown())
   const [isLoading, setIsLoading] = useState(true)
   const [showAllEntries, setShowAllEntries] = useState(false)
+  const [isClaimingMonthly, setIsClaimingMonthly] = useState(false)
+  const [isClaimingWeekly, setIsClaimingWeekly] = useState(false)
+  const [claimTxHash, setClaimTxHash] = useState<string | null>(null)
+  const [weeklyClaimTxHash, setWeeklyClaimTxHash] = useState<string | null>(null)
 
   // Set document title based on active mode
   useEffect(() => {
     document.title = 
       activeMode === 'daily' ? 'Daily Leaderboard | ProofArcade' :
+      activeMode === 'weekly-blitz' ? 'Weekly Blitz Leaderboard | ProofArcade' :
       'Monthly Leaderboard | ProofArcade'
   }, [activeMode])
 
@@ -47,15 +56,18 @@ function LeaderboardPage() {
         const client = await createGame2048Client()
         
         if (activeMode === 'monthly') {
-          // Load monthly data for current month
+          // Load monthly data for current month and previous month
           const currentMonth = getCurrentMonth()
-          const [nextMonthlyLeaderboard, nextMonthlyPool] = await Promise.all([
+          const previousMonth = getPreviousMonth()
+          const [nextMonthlyLeaderboard, nextMonthlyPool, nextPreviousMonthLeaderboard] = await Promise.all([
             client.getMonthlyLeaderboard(currentMonth),
             client.getMonthlyPool(currentMonth),
+            client.getMonthlyLeaderboard(previousMonth),
           ])
           if (!cancelled) {
             setMonthlyLeaderboard(nextMonthlyLeaderboard)
             setMonthlyPool(nextMonthlyPool)
+            setPreviousMonthLeaderboard(nextPreviousMonthLeaderboard)
           }
         } else {
           // Load daily/classic data
@@ -111,10 +123,101 @@ function LeaderboardPage() {
       })
   }
 
+  async function handleClaimMonthlyReward() {
+    if (!storedWallet?.address || !storedWallet?.password) {
+      toast.error('Please log in to claim rewards')
+      return
+    }
+
+    const previousMonth = getPreviousMonth()
+    
+    setIsClaimingMonthly(true)
+    setClaimTxHash(null)
+
+    try {
+      const client = await createGame2048Client()
+      const result = await client.claimMonthlyReward({
+        address: storedWallet.address,
+        password: storedWallet.password,
+        monthId: previousMonth,
+      })
+
+      if (result.txHash) {
+        setClaimTxHash(result.txHash)
+        toast.success(`Reward claim submitted! TX: ${result.txHash.slice(0, 8)}...`)
+        
+        // Reload current month data after a delay
+        setTimeout(async () => {
+          const currentMonth = getCurrentMonth()
+          const [nextMonthlyLeaderboard, nextMonthlyPool] = await Promise.all([
+            client.getMonthlyLeaderboard(currentMonth),
+            client.getMonthlyPool(currentMonth),
+          ])
+          setMonthlyLeaderboard(nextMonthlyLeaderboard)
+          setMonthlyPool(nextMonthlyPool)
+        }, 3000)
+      } else {
+        toast.error('Failed to claim reward')
+      }
+    } catch (error: any) {
+      console.error('Claim error:', error)
+      toast.error(error?.message || 'Failed to claim monthly reward')
+    } finally {
+      setIsClaimingMonthly(false)
+    }
+  }
+
+  async function handleClaimWeeklyBlitzReward() {
+    if (!storedWallet?.address || !storedWallet?.password) {
+      toast.error('Please log in to claim rewards')
+      return
+    }
+
+    const previousWeekId = getPreviousWeek()
+    
+    setIsClaimingWeekly(true)
+    setWeeklyClaimTxHash(null)
+
+    try {
+      const client = await createGame2048Client()
+      const result = await client.claimWeeklyBlitzReward({
+        address: storedWallet.address,
+        password: storedWallet.password,
+        weekId: previousWeekId,
+      })
+
+      if (result.txHash) {
+        setWeeklyClaimTxHash(result.txHash)
+        toast.success(`Reward claim submitted! TX: ${result.txHash.slice(0, 8)}...`)
+        
+        // Reload leaderboard data after a delay
+        setTimeout(async () => {
+          const [nextLeaderboards] = await Promise.all([
+            client.getLeaderboards(),
+          ])
+          setLeaderboards(nextLeaderboards)
+        }, 3000)
+      } else {
+        toast.error('Failed to claim reward')
+      }
+    } catch (error: any) {
+      console.error('Claim error:', error)
+      toast.error(error?.message || 'Failed to claim weekly reward')
+    } finally {
+      setIsClaimingWeekly(false)
+    }
+  }
+
   const activeLeaderboard = 
     activeMode === 'monthly' ? (monthlyLeaderboard?.entries ?? []) :
+    activeMode === 'weekly-blitz' ? leaderboards.weeklyBlitz :
     leaderboards.daily
   const userRank = activeLeaderboard.findIndex((entry) => entry.address === storedWallet?.address)
+  
+  // Check previous month rank for claiming
+  const previousMonthUserRank = previousMonthLeaderboard?.entries.findIndex(
+    (entry) => entry.address === storedWallet?.address
+  ) ?? -1
 
   return (
     <motion.div
@@ -151,6 +254,16 @@ function LeaderboardPage() {
                 Daily Challenge
               </button>
               <button
+                onClick={() => switchMode('weekly-blitz')}
+                className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
+                  activeMode === 'weekly-blitz'
+                    ? 'bg-[#ff6b9d] text-white'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                Weekly Blitz
+              </button>
+              <button
                 onClick={() => switchMode('monthly')}
                 className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
                   activeMode === 'monthly'
@@ -166,6 +279,8 @@ function LeaderboardPage() {
             <p className="text-sm text-slate-400 max-w-2xl">
               {activeMode === 'daily' 
                 ? "Today's Daily Challenge rankings. Resets every UTC day."
+                : activeMode === 'weekly-blitz'
+                ? "Weekly Blitz cumulative scores. Rankings reset every Monday at midnight UTC."
                 : "Best Classic scores of all time. Does not reset."}
             </p>
           </div>
@@ -252,23 +367,135 @@ function LeaderboardPage() {
       {/* Monthly Prize Pool - Only show for monthly mode */}
       {activeMode === 'monthly' ? (
         <section className="mt-4 rounded-2xl border border-[#a78bfa]/20 bg-card p-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[#c4b5fd]">Monthly Prize Pool</p>
-              <h2 className="mt-1 text-2xl font-bold text-white">
-                {formatCNPY(toCNPY(monthlyPool?.balance ?? 0))} PROOF
-              </h2>
-              <p className="mt-1 max-w-xl text-xs leading-5 text-slate-300">
-                Accumulated pool for {formatMonthDisplay(getCurrentMonth())}. 30% of Classic game fees contribute to this reward.
-              </p>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex-1">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#c4b5fd]">Monthly Prize Pool</p>
+                <h2 className="mt-1 text-2xl font-bold text-white">
+                  {formatCNPY(toCNPY(monthlyPool?.balance ?? 0))} PROOF
+                </h2>
+                <p className="mt-1 max-w-xl text-xs leading-5 text-slate-300">
+                  Accumulated pool for {formatMonthDisplay(getCurrentMonth())}. 30% of Classic game fees contribute to this reward.
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-white/10 bg-black/20 px-4 py-3">
+                <PoolStat label="Cumulative Scoring" value="Top 50" />
+              </div>
             </div>
 
-            <div className="rounded-lg border border-white/10 bg-black/20 px-4 py-3">
-              <PoolStat label="Cumulative Scoring" value="Top 50" />
-            </div>
+            {/* Claim Button - Show if player was ranked in previous month */}
+            {storedWallet?.address && previousMonthUserRank !== -1 && previousMonthUserRank < 50 && (
+              <div className="rounded-xl border border-[#a78bfa]/30 bg-[#a78bfa]/10 p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-[#c4b5fd]">
+                      🏆 Last Month: Rank #{previousMonthUserRank + 1}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      You finished {formatMonthDisplay(getPreviousMonth())} in the top 50. Claim your reward!
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleClaimMonthlyReward}
+                    disabled={isClaimingMonthly}
+                    className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+                      isClaimingMonthly
+                        ? 'cursor-not-allowed bg-slate-700 text-slate-400'
+                        : 'bg-[#a78bfa] text-white hover:bg-[#a78bfa]/90'
+                    }`}
+                  >
+                    {isClaimingMonthly ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Claiming...
+                      </>
+                    ) : claimTxHash ? (
+                      '✓ Claimed'
+                    ) : (
+                      'Claim Reward'
+                    )}
+                  </button>
+                </div>
+                {claimTxHash && (
+                  <div className="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+                    <p className="text-xs text-emerald-400">
+                      ✓ Transaction: {claimTxHash.slice(0, 12)}...{claimTxHash.slice(-8)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
       ) : null}
+
+      {/* Weekly Blitz Prize Pool - Only show for weekly-blitz mode */}
+      {activeMode === 'weekly-blitz' ? (
+        <section className="mt-4 rounded-2xl border border-[#ff6b9d]/20 bg-card p-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex-1">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#ffb3cd]">Weekly Blitz Prize Pool</p>
+                <h2 className="mt-1 text-2xl font-bold text-white">
+                  Current Week
+                </h2>
+                <p className="mt-1 max-w-xl text-xs leading-5 text-slate-300">
+                  Week {getCurrentWeek()} ({formatWeekDisplay(getCurrentWeek())}). 60% of entry fees contribute to the weekly prize pool.
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-white/10 bg-black/20 px-4 py-3">
+                <PoolStat label="Competitive" value="Top 30%" />
+              </div>
+            </div>
+
+            {/* Claim Button - Show if player was ranked in previous week (top 30%) */}
+            {storedWallet?.address && userRank !== -1 && userRank < Math.ceil(activeLeaderboard.length * 0.3) && activeLeaderboard.length >= 20 && (
+              <div className="rounded-xl border border-[#ff6b9d]/30 bg-[#ff6b9d]/10 p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-[#ffb3cd]">
+                      🏆 Last Week: Rank #{userRank + 1}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      You finished Week {getPreviousWeek()} ({formatWeekDisplay(getPreviousWeek())}) in the top 30%. Claim your reward!
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleClaimWeeklyBlitzReward}
+                    disabled={isClaimingWeekly}
+                    className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+                      isClaimingWeekly
+                        ? 'cursor-not-allowed bg-slate-700 text-slate-400'
+                        : 'bg-[#ff6b9d] text-white hover:bg-[#ff6b9d]/90'
+                    }`}
+                  >
+                    {isClaimingWeekly ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Claiming...
+                      </>
+                    ) : weeklyClaimTxHash ? (
+                      '✓ Claimed'
+                    ) : (
+                      'Claim Reward'
+                    )}
+                  </button>
+                </div>
+                {weeklyClaimTxHash && (
+                  <div className="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+                    <p className="text-xs text-emerald-400">
+                      ✓ Transaction: {weeklyClaimTxHash.slice(0, 12)}...{weeklyClaimTxHash.slice(-8)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
 
       {/* Leaderboard Table */}
       <section className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
@@ -520,6 +747,35 @@ function pad2(value: number): string {
 
 function getCurrentMonth(): string {
   return new Date().toISOString().slice(0, 7) // "YYYY-MM"
+}
+
+function getPreviousMonth(): string {
+  const now = new Date()
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  return prev.toISOString().slice(0, 7) // "YYYY-MM"
+}
+
+function getCurrentWeek(): number {
+  const now = Math.floor(Date.now() / 1000) // Current Unix timestamp in seconds
+  const WEEK_SECONDS = 7 * 24 * 60 * 60
+  const EPOCH_OFFSET = 4 * 24 * 60 * 60 // Thursday offset for Monday week start
+  return Math.floor((now - EPOCH_OFFSET) / WEEK_SECONDS)
+}
+
+function getPreviousWeek(): number {
+  return getCurrentWeek() - 1
+}
+
+function formatWeekDisplay(weekId: number): string {
+  const WEEK_SECONDS = 7 * 24 * 60 * 60
+  const EPOCH_OFFSET = 4 * 24 * 60 * 60
+  const weekStartUnix = (weekId * WEEK_SECONDS) + EPOCH_OFFSET
+  const weekStart = new Date(weekStartUnix * 1000)
+  const weekEnd = new Date((weekStartUnix + WEEK_SECONDS - 1) * 1000)
+  
+  const formatDate = (date: Date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return `${formatDate(weekStart)} - ${formatDate(weekEnd)}`
+  // e.g., "Jul 28 - Aug 3"
 }
 
 function formatMonthDisplay(monthId: string): string {

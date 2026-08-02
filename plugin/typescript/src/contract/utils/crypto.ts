@@ -19,6 +19,19 @@ export function deriveDailySeed(chainId: number, utcDate: string): Uint8Array {
 }
 
 /**
+ * Derives a deterministic seed for a Weekly Blitz week.
+ *
+ * MUST stay byte-identical to the Go backend's deriveWeeklyBlitzSeed() in
+ * cmd/rpc/game2048.go — the backend hands this seed to the frontend to draw the
+ * board, while the contract replays the submitted moves against the seed stored
+ * in the session. If the two derivations differ, every submission fails with
+ * ErrReplayMismatch.
+ */
+export function deriveWeeklyBlitzSeed(chainId: number, weekId: number): Uint8Array {
+    return sha256Bytes('weekly-blitz-seed', chainId, weekId);
+}
+
+/**
  * Derives a deterministic seed for classic mode game
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

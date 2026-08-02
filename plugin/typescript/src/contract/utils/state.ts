@@ -16,8 +16,9 @@ export const PoolIDs = {
     PLATFORM: 131072,
     RESERVE: 131073,
     SHOP: 131074,
-    DAILY_REWARD: 131075,
-    MONTHLY_REWARD: 131076,
+    DAILY: 131075,
+    MONTHLY: 131076,
+    WEEKLY: 131077,
 } as const;
 
 // State key prefixes
@@ -67,12 +68,16 @@ export function KeyForGameShopPool(): Uint8Array {
     return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(PoolIDs.SHOP)));
 }
 
-export function KeyForGameDailyRewardPool(): Uint8Array {
-    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(PoolIDs.DAILY_REWARD)));
+export function KeyForGameDailyPool(): Uint8Array {
+    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(PoolIDs.DAILY)));
 }
 
-export function KeyForGameMonthlyRewardPool(): Uint8Array {
-    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(PoolIDs.MONTHLY_REWARD)));
+export function KeyForGameMonthlyPool(): Uint8Array {
+    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(PoolIDs.MONTHLY)));
+}
+
+export function KeyForGameWeeklyPool(): Uint8Array {
+    return JoinLenPrefix(poolPrefix, formatUint64(Long.fromNumber(PoolIDs.WEEKLY)));
 }
 
 export function KeyForDaoPool(): Uint8Array {
@@ -173,6 +178,14 @@ export function KeyForClassicPointRedemptionPrefix(playerAddress: Uint8Array): U
 
 // ==================== Monthly Competition ====================
 
+export function KeyForMonthlyRewardClaim(monthId: string, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('monthly-claim'), Buffer.from(monthId, 'utf8'), Buffer.from(playerAddress));
+}
+
+export function KeyForMonthlyRewardAllocation(monthId: string, rank: number, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('monthly-reward'), Buffer.from(monthId, 'utf8'), formatUint64(Long.fromNumber(rank)), Buffer.from(playerAddress));
+}
+
 export function KeyForMonthlyLeaderboard(monthId: string, score: Long, gameId: Uint8Array): Uint8Array {
     const invertedScore = invertUint64(score);
     return JoinLenPrefix(
@@ -184,6 +197,14 @@ export function KeyForMonthlyLeaderboard(monthId: string, score: Long, gameId: U
     );
 }
 
+export function KeyForMonthlyLeaderboardPrefix(monthId: string): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('monthly-leaderboard'),
+        Buffer.from(monthId, 'utf8')
+    );
+}
+
 export function KeyForMonthlyPlayerEntry(monthId: string, playerAddress: Uint8Array): Uint8Array {
     return JoinLenPrefix(
         gamePrefix,
@@ -191,6 +212,64 @@ export function KeyForMonthlyPlayerEntry(monthId: string, playerAddress: Uint8Ar
         Buffer.from(monthId, 'utf8'),
         playerAddress
     );
+}
+
+// ==================== Weekly Blitz Competition ====================
+
+export function KeyForWeeklyBlitzPool(weekId: string): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('weekly-blitz-pool'), Buffer.from(weekId, 'utf8'));
+}
+
+export function KeyForWeeklyBlitzDailyTracking(utcDate: string, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-tracking'),
+        Buffer.from(utcDate, 'utf8'),
+        Buffer.from(playerAddress)
+    );
+}
+
+export function KeyForWeeklyBlitzPlayerScore(weekId: string, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-score'),
+        Buffer.from(weekId, 'utf8'),
+        Buffer.from(playerAddress)
+    );
+}
+
+/**
+ * Weekly Blitz leaderboard entry, ranked by CUMULATIVE weekly score.
+ *
+ * Mirrors KeyForMonthlyLeaderboard: the score is inverted so a forward range scan
+ * returns highest-first. Keyed by playerAddress (not gameId) because Weekly Blitz
+ * keeps one running entry per player per week rather than one entry per game.
+ */
+export function KeyForWeeklyBlitzLeaderboard(weekId: string, score: Long, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(
+        gamePrefix,
+        Buffer.from('weekly-blitz-leaderboard'),
+        Buffer.from(weekId, 'utf8'),
+        invertUint64(score),
+        Buffer.from(playerAddress)
+    );
+}
+
+export function KeyForWeeklyBlitzLeaderboardPrefix(weekId: string): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('weekly-blitz-leaderboard'), Buffer.from(weekId, 'utf8'));
+}
+
+export function KeyForWeeklyBlitzSession(gameId: Uint8Array): Uint8Array {
+    // Uses generic session key (same as daily/classic)
+    return KeyForGameSession(gameId);
+}
+
+export function KeyForWeeklyBlitzRewardClaim(weekId: string, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('weekly-claim'), Buffer.from(weekId, 'utf8'), Buffer.from(playerAddress));
+}
+
+export function KeyForWeeklyBlitzRewardAllocation(weekId: string, rank: number, playerAddress: Uint8Array): Uint8Array {
+    return JoinLenPrefix(gamePrefix, Buffer.from('weekly-reward'), Buffer.from(weekId, 'utf8'), formatUint64(Long.fromNumber(rank)), Buffer.from(playerAddress));
 }
 
 // ==================== Player ====================

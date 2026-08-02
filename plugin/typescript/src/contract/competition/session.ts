@@ -135,6 +135,22 @@ export function isSessionClassic(session: any): boolean {
 }
 
 /**
+ * Check if a session is Weekly Blitz mode (GAME_MODE_WEEKLY_BLITZ = 3)
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isSessionWeeklyBlitz(session: any): boolean {
+    return toUint64(session?.mode as Long | number | undefined) === 3;
+}
+
+/**
+ * Get the numeric week id recorded on a Weekly Blitz session
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getSessionWeekId(session: any): number {
+    return toUint64(session?.weekId as Long | number | undefined);
+}
+
+/**
  * Get session max moves
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

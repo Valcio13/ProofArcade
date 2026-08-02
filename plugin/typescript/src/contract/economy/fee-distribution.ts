@@ -169,3 +169,38 @@ export function splitClassicFee(amount: Long, cfg: any): { platform: Long; month
     
     return { platform, monthly, reserve, shop };
 }
+
+/**
+ * Split Weekly Blitz entry fee into treasury buckets
+ * 
+ * Weekly Blitz uses a timer-based competition (5 minutes) with daily limits (2 runs/day).
+ * Fee distribution prioritizes the weekly prize pool while maintaining shop, reserve, and platform.
+ * 
+ * @param amount - Total fee amount to split (5 PROOF = 5,000,000 uproof)
+ * @returns Split amounts: poolCut (weekly prize), shopCut, reserveCut, platformCut
+ * 
+ * @remarks
+ * - Split: 60% weekly pool, 20% shop, 15% reserve, 5% platform
+ * - If BPS don't sum to 10000, remainder goes to platform bucket
+ * - Uses integer division with remainder assignment for exact totals
+ */
+export function splitWeeklyBlitzFee(amount: Long | number): { poolCut: Long; shopCut: Long; reserveCut: Long; platformCut: Long } {
+    const fee = Long.isLong(amount) ? amount : Long.fromNumber(amount);
+    
+    // Fee split in basis points (10000 = 100%)
+    const poolBps = 6000;     // 60%
+    const shopBps = 2000;     // 20%
+    const reserveBps = 1500;  // 15%
+    const platformBps = 500;  // 5%
+    
+    const poolCut = calculateBpsAmount(fee, poolBps);
+    const shopCut = calculateBpsAmount(fee, shopBps);
+    const reserveCut = calculateBpsAmount(fee, reserveBps);
+    
+    // If BPS sum to exactly 10000, calculate platform; otherwise assign remainder
+    const platformCut = poolBps + shopBps + reserveBps + platformBps === 10000
+        ? calculateBpsAmount(fee, platformBps)
+        : fee.subtract(poolCut).subtract(shopCut).subtract(reserveCut);
+    
+    return { poolCut, shopCut, reserveCut, platformCut };
+}

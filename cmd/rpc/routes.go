@@ -112,13 +112,16 @@ const (
 	PeerInfoRoutePath            = "/v1/admin/peer-info"
 	ConsensusInfoRoutePath       = "/v1/admin/consensus-info"
 	PeerBookRoutePath            = "/v1/admin/peer-book"
-	Tx2048StartDailyRoutePath    = "/v1/admin/tx-2048-start-daily"
-	Tx2048StartClassicRoutePath  = "/v1/admin/tx-2048-start-classic"
-	Tx2048SubmitRoutePath        = "/v1/admin/tx-2048-submit"
-	Tx2048ClaimDailyRoutePath    = "/v1/admin/tx-2048-claim-daily-reward"
-	Tx2048RedeemClassicRoutePath = "/v1/admin/tx-2048-redeem-classic-points"
-	Tx2048ClaimLoginRoutePath    = "/v1/admin/tx-2048-claim-daily-login"
-	Tx2048SetUsernameRoutePath   = "/v1/admin/tx-2048-set-username"
+	Tx2048StartDailyRoutePath       = "/v1/admin/tx-2048-start-daily"
+	Tx2048StartClassicRoutePath     = "/v1/admin/tx-2048-start-classic"
+	Tx2048StartWeeklyBlitzRoutePath = "/v1/admin/tx-2048-start-weekly-blitz"
+	Tx2048SubmitRoutePath                = "/v1/admin/tx-2048-submit"
+	Tx2048ClaimDailyRoutePath            = "/v1/admin/tx-2048-claim-daily-reward"
+	Tx2048ClaimMonthlyRoutePath          = "/v1/admin/tx-2048-claim-monthly-reward"
+	Tx2048ClaimWeeklyBlitzRoutePath      = "/v1/admin/tx-2048-claim-weekly-blitz-reward"
+	Tx2048RedeemClassicRoutePath         = "/v1/admin/tx-2048-redeem-classic-points"
+	Tx2048ClaimLoginRoutePath            = "/v1/admin/tx-2048-claim-daily-login"
+	Tx2048SetUsernameRoutePath           = "/v1/admin/tx-2048-set-username"
 	DevFaucetRoutePath           = "/v1/admin/dev-faucet"
 	ConfigRoutePath              = "/v1/admin/config"
 	LogsRoutePath                = "/v1/admin/log"
@@ -244,11 +247,14 @@ const (
 	PeerBookRouteName               = "peer-book"
 	Tx2048StartDailyRouteName       = "2048-start-daily"
 	Tx2048StartClassicRouteName     = "2048-start-classic"
-	Tx2048SubmitRouteName           = "2048-submit"
-	Tx2048ClaimDailyRouteName       = "2048-claim-daily-reward"
-	Tx2048RedeemClassicRouteName    = "2048-redeem-classic-points"
-	Tx2048ClaimLoginRouteName       = "2048-claim-daily-login"
-	Tx2048SetUsernameRouteName      = "2048-set-username"
+	Tx2048StartWeeklyBlitzRouteName = "2048-start-weekly-blitz"
+	Tx2048SubmitRouteName                = "2048-submit"
+	Tx2048ClaimDailyRouteName            = "2048-claim-daily-reward"
+	Tx2048ClaimMonthlyRouteName          = "2048-claim-monthly-reward"
+	Tx2048ClaimWeeklyBlitzRouteName      = "2048-claim-weekly-blitz-reward"
+	Tx2048RedeemClassicRouteName         = "2048-redeem-classic-points"
+	Tx2048ClaimLoginRouteName            = "2048-claim-daily-login"
+	Tx2048SetUsernameRouteName           = "2048-set-username"
 	DevFaucetRouteName              = "dev-faucet"
 	ConfigRouteName                 = "config"
 	LogsRouteName                   = "logs"
@@ -377,11 +383,14 @@ var routePaths = routes{
 	PeerBookRouteName:               {Method: http.MethodGet, Path: PeerBookRoutePath},
 	Tx2048StartDailyRouteName:       {Method: http.MethodPost, Path: Tx2048StartDailyRoutePath},
 	Tx2048StartClassicRouteName:     {Method: http.MethodPost, Path: Tx2048StartClassicRoutePath},
-	Tx2048SubmitRouteName:           {Method: http.MethodPost, Path: Tx2048SubmitRoutePath},
-	Tx2048ClaimDailyRouteName:       {Method: http.MethodPost, Path: Tx2048ClaimDailyRoutePath},
-	Tx2048RedeemClassicRouteName:    {Method: http.MethodPost, Path: Tx2048RedeemClassicRoutePath},
-	Tx2048ClaimLoginRouteName:       {Method: http.MethodPost, Path: Tx2048ClaimLoginRoutePath},
-	Tx2048SetUsernameRouteName:      {Method: http.MethodPost, Path: Tx2048SetUsernameRoutePath},
+	Tx2048StartWeeklyBlitzRouteName: {Method: http.MethodPost, Path: Tx2048StartWeeklyBlitzRoutePath},
+	Tx2048SubmitRouteName:                {Method: http.MethodPost, Path: Tx2048SubmitRoutePath},
+	Tx2048ClaimDailyRouteName:            {Method: http.MethodPost, Path: Tx2048ClaimDailyRoutePath},
+	Tx2048ClaimMonthlyRouteName:          {Method: http.MethodPost, Path: Tx2048ClaimMonthlyRoutePath},
+	Tx2048ClaimWeeklyBlitzRouteName:      {Method: http.MethodPost, Path: Tx2048ClaimWeeklyBlitzRoutePath},
+	Tx2048RedeemClassicRouteName:         {Method: http.MethodPost, Path: Tx2048RedeemClassicRoutePath},
+	Tx2048ClaimLoginRouteName:            {Method: http.MethodPost, Path: Tx2048ClaimLoginRoutePath},
+	Tx2048SetUsernameRouteName:           {Method: http.MethodPost, Path: Tx2048SetUsernameRoutePath},
 	DevFaucetRouteName:              {Method: http.MethodPost, Path: DevFaucetRoutePath},
 	ConfigRouteName:                 {Method: http.MethodGet, Path: ConfigRoutePath},
 	LogsRouteName:                   {Method: http.MethodGet, Path: LogsRoutePath},
@@ -526,11 +535,14 @@ func createAdminRouter(s *Server) *httprouter.Router {
 		PeerBookRouteName:               s.PeerBook,
 		Tx2048StartDailyRouteName:       s.Game2048StartDaily,
 		Tx2048StartClassicRouteName:     s.Game2048StartClassic,
-		Tx2048SubmitRouteName:           s.Game2048Submit,
-		Tx2048ClaimDailyRouteName:       s.Game2048ClaimDailyReward,
-		Tx2048RedeemClassicRouteName:    s.Game2048RedeemClassicPoints,
-		Tx2048ClaimLoginRouteName:       s.Game2048ClaimDailyLoginReward,
-		Tx2048SetUsernameRouteName:      s.Game2048SetUsername,
+		Tx2048StartWeeklyBlitzRouteName: s.Game2048StartWeeklyBlitz,
+		Tx2048SubmitRouteName:                s.Game2048Submit,
+		Tx2048ClaimDailyRouteName:            s.Game2048ClaimDailyReward,
+		Tx2048ClaimMonthlyRouteName:          s.Game2048ClaimMonthlyReward,
+		Tx2048ClaimWeeklyBlitzRouteName:      s.Game2048ClaimWeeklyBlitzReward,
+		Tx2048RedeemClassicRouteName:         s.Game2048RedeemClassicPoints,
+		Tx2048ClaimLoginRouteName:            s.Game2048ClaimDailyLoginReward,
+		Tx2048SetUsernameRouteName:           s.Game2048SetUsername,
 		DevFaucetRouteName:              s.DevFaucet,
 		ConfigRouteName:                 s.Config,
 		LogsRouteName:                   logsHandler(s),

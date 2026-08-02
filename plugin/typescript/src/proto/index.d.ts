@@ -452,7 +452,8 @@ export namespace types {
     enum GameMode {
         GAME_MODE_UNSPECIFIED = 0,
         GAME_MODE_DAILY = 1,
-        GAME_MODE_CLASSIC = 2
+        GAME_MODE_CLASSIC = 2,
+        GAME_MODE_WEEKLY_BLITZ = 3
     }
 
     /** SessionStatus enum. */
@@ -468,7 +469,8 @@ export namespace types {
         STOP_REASON_UNSPECIFIED = 0,
         STOP_REASON_PLAYER_STOPPED = 1,
         STOP_REASON_NO_MOVES = 2,
-        STOP_REASON_MAX_MOVES = 3
+        STOP_REASON_MAX_MOVES = 3,
+        STOP_REASON_TIMER_EXPIRED = 4
     }
 
     /** MoveDirection enum. */
@@ -686,6 +688,109 @@ export namespace types {
 
         /**
          * Gets the default type url for MessageStartClassicGame
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageStartWeeklyBlitzGame. */
+    interface IMessageStartWeeklyBlitzGame {
+
+        /** MessageStartWeeklyBlitzGame playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** MessageStartWeeklyBlitzGame gameId */
+        gameId?: (Uint8Array|null);
+    }
+
+    /** Represents a MessageStartWeeklyBlitzGame. */
+    class MessageStartWeeklyBlitzGame implements IMessageStartWeeklyBlitzGame {
+
+        /**
+         * Constructs a new MessageStartWeeklyBlitzGame.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageStartWeeklyBlitzGame);
+
+        /** MessageStartWeeklyBlitzGame playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** MessageStartWeeklyBlitzGame gameId. */
+        public gameId: Uint8Array;
+
+        /**
+         * Creates a new MessageStartWeeklyBlitzGame instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageStartWeeklyBlitzGame instance
+         */
+        public static create(properties?: types.IMessageStartWeeklyBlitzGame): types.MessageStartWeeklyBlitzGame;
+
+        /**
+         * Encodes the specified MessageStartWeeklyBlitzGame message. Does not implicitly {@link types.MessageStartWeeklyBlitzGame.verify|verify} messages.
+         * @param message MessageStartWeeklyBlitzGame message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageStartWeeklyBlitzGame, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageStartWeeklyBlitzGame message, length delimited. Does not implicitly {@link types.MessageStartWeeklyBlitzGame.verify|verify} messages.
+         * @param message MessageStartWeeklyBlitzGame message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageStartWeeklyBlitzGame, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageStartWeeklyBlitzGame message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageStartWeeklyBlitzGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageStartWeeklyBlitzGame;
+
+        /**
+         * Decodes a MessageStartWeeklyBlitzGame message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageStartWeeklyBlitzGame
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageStartWeeklyBlitzGame;
+
+        /**
+         * Verifies a MessageStartWeeklyBlitzGame message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageStartWeeklyBlitzGame message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageStartWeeklyBlitzGame
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageStartWeeklyBlitzGame;
+
+        /**
+         * Creates a plain object from a MessageStartWeeklyBlitzGame message. Also converts values to other types if specified.
+         * @param message MessageStartWeeklyBlitzGame
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageStartWeeklyBlitzGame, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageStartWeeklyBlitzGame to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageStartWeeklyBlitzGame
          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
          * @returns The default type url
          */
@@ -916,6 +1021,212 @@ export namespace types {
 
         /**
          * Gets the default type url for MessageClaimDailyReward
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageClaimMonthlyReward. */
+    interface IMessageClaimMonthlyReward {
+
+        /** MessageClaimMonthlyReward playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** MessageClaimMonthlyReward monthId */
+        monthId?: (string|null);
+    }
+
+    /** Represents a MessageClaimMonthlyReward. */
+    class MessageClaimMonthlyReward implements IMessageClaimMonthlyReward {
+
+        /**
+         * Constructs a new MessageClaimMonthlyReward.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageClaimMonthlyReward);
+
+        /** MessageClaimMonthlyReward playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** MessageClaimMonthlyReward monthId. */
+        public monthId: string;
+
+        /**
+         * Creates a new MessageClaimMonthlyReward instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageClaimMonthlyReward instance
+         */
+        public static create(properties?: types.IMessageClaimMonthlyReward): types.MessageClaimMonthlyReward;
+
+        /**
+         * Encodes the specified MessageClaimMonthlyReward message. Does not implicitly {@link types.MessageClaimMonthlyReward.verify|verify} messages.
+         * @param message MessageClaimMonthlyReward message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageClaimMonthlyReward, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageClaimMonthlyReward message, length delimited. Does not implicitly {@link types.MessageClaimMonthlyReward.verify|verify} messages.
+         * @param message MessageClaimMonthlyReward message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageClaimMonthlyReward, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageClaimMonthlyReward message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageClaimMonthlyReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageClaimMonthlyReward;
+
+        /**
+         * Decodes a MessageClaimMonthlyReward message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageClaimMonthlyReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageClaimMonthlyReward;
+
+        /**
+         * Verifies a MessageClaimMonthlyReward message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageClaimMonthlyReward message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageClaimMonthlyReward
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageClaimMonthlyReward;
+
+        /**
+         * Creates a plain object from a MessageClaimMonthlyReward message. Also converts values to other types if specified.
+         * @param message MessageClaimMonthlyReward
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageClaimMonthlyReward, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageClaimMonthlyReward to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageClaimMonthlyReward
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a MessageClaimWeeklyBlitzReward. */
+    interface IMessageClaimWeeklyBlitzReward {
+
+        /** MessageClaimWeeklyBlitzReward playerAddress */
+        playerAddress?: (Uint8Array|null);
+
+        /** MessageClaimWeeklyBlitzReward weekId */
+        weekId?: (number|Long|null);
+    }
+
+    /** Represents a MessageClaimWeeklyBlitzReward. */
+    class MessageClaimWeeklyBlitzReward implements IMessageClaimWeeklyBlitzReward {
+
+        /**
+         * Constructs a new MessageClaimWeeklyBlitzReward.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: types.IMessageClaimWeeklyBlitzReward);
+
+        /** MessageClaimWeeklyBlitzReward playerAddress. */
+        public playerAddress: Uint8Array;
+
+        /** MessageClaimWeeklyBlitzReward weekId. */
+        public weekId: (number|Long);
+
+        /**
+         * Creates a new MessageClaimWeeklyBlitzReward instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns MessageClaimWeeklyBlitzReward instance
+         */
+        public static create(properties?: types.IMessageClaimWeeklyBlitzReward): types.MessageClaimWeeklyBlitzReward;
+
+        /**
+         * Encodes the specified MessageClaimWeeklyBlitzReward message. Does not implicitly {@link types.MessageClaimWeeklyBlitzReward.verify|verify} messages.
+         * @param message MessageClaimWeeklyBlitzReward message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: types.IMessageClaimWeeklyBlitzReward, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified MessageClaimWeeklyBlitzReward message, length delimited. Does not implicitly {@link types.MessageClaimWeeklyBlitzReward.verify|verify} messages.
+         * @param message MessageClaimWeeklyBlitzReward message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: types.IMessageClaimWeeklyBlitzReward, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a MessageClaimWeeklyBlitzReward message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MessageClaimWeeklyBlitzReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): types.MessageClaimWeeklyBlitzReward;
+
+        /**
+         * Decodes a MessageClaimWeeklyBlitzReward message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns MessageClaimWeeklyBlitzReward
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): types.MessageClaimWeeklyBlitzReward;
+
+        /**
+         * Verifies a MessageClaimWeeklyBlitzReward message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a MessageClaimWeeklyBlitzReward message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns MessageClaimWeeklyBlitzReward
+         */
+        public static fromObject(object: { [k: string]: any }): types.MessageClaimWeeklyBlitzReward;
+
+        /**
+         * Creates a plain object from a MessageClaimWeeklyBlitzReward message. Also converts values to other types if specified.
+         * @param message MessageClaimWeeklyBlitzReward
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: types.MessageClaimWeeklyBlitzReward, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this MessageClaimWeeklyBlitzReward to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MessageClaimWeeklyBlitzReward
          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
          * @returns The default type url
          */
@@ -2046,6 +2357,12 @@ export namespace types {
 
         /** GameSession submittedAtUnix */
         submittedAtUnix?: (number|Long|null);
+
+        /** GameSession expiresAtUnix */
+        expiresAtUnix?: (number|Long|null);
+
+        /** GameSession weekId */
+        weekId?: (number|Long|null);
     }
 
     /** Represents a GameSession. */
@@ -2101,6 +2418,12 @@ export namespace types {
 
         /** GameSession submittedAtUnix. */
         public submittedAtUnix: (number|Long);
+
+        /** GameSession expiresAtUnix. */
+        public expiresAtUnix: (number|Long);
+
+        /** GameSession weekId. */
+        public weekId: (number|Long);
 
         /**
          * Creates a new GameSession instance using the specified properties.

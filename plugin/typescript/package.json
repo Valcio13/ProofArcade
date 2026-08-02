@@ -10,7 +10,7 @@
         "copy:proto": "node scripts/copy-proto.cjs",
         "start": "node dist/main.js",
         "dev": "nodemon --exec 'node --loader ts-node/esm src/main.ts'",
-        "test": "npm run build && node --test dist/contract/game2048-replay.test.js dist/contract/game2048-contract.test.js",
+        "test": "npm run build && node --test dist/contract/game2048-replay.test.js dist/contract/game2048-contract.test.js dist/contract/registration.test.js",
         "build:proto": "pbjs -t static-module -w commonjs -o src/proto/index.js proto/*.proto && pbts -o src/proto/index.d.ts src/proto/index.js && node -e \"require('fs').copyFileSync('src/proto/index.js','src/proto/index.cjs')\"",
         "build:descriptors": "node scripts/generate-descriptors.cjs",
         "build:all": "npm run build"

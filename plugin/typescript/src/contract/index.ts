@@ -28,8 +28,8 @@ export {
     KeyForGamePlatformPool,
     KeyForGameReservePool,
     KeyForGameShopPool,
-    KeyForGameDailyRewardPool,
-    KeyForGameMonthlyRewardPool,
+    KeyForGameDailyPool as KeyForGameDailyRewardPool,
+    KeyForGameMonthlyPool as KeyForGameMonthlyRewardPool,
     KeyForDaoPool,
     KeyForGameConfig,
     KeyForGameTreasury,
@@ -63,6 +63,7 @@ export {
     checkMessageStartClassicGame,
     checkMessageSubmitGameResult,
     checkMessageClaimDailyReward,
+    checkMessageClaimMonthlyReward,
     checkMessageRedeemClassicPoints,
     checkMessageClaimDailyLoginReward,
     checkMessageSetUsername

@@ -156,6 +156,26 @@ async function startClassicGame(contract: Contract, entryFee: Long) {
 }
 ```
 
+### Starting a Weekly Blitz Game
+
+```typescript
+import { splitWeeklyBlitzFee, PoolIDs } from './economy';
+
+async function startWeeklyBlitzGame(contract: Contract, entryFee: Long) {
+    // Split the fee (60% pool, 20% shop, 15% reserve, 5% platform)
+    const split = splitWeeklyBlitzFee(entryFee);
+    
+    // Update pools
+    await updatePoolBalance(contract, PoolIDs.PLATFORM, split.platformCut);
+    await updatePoolBalance(contract, PoolIDs.RESERVE, split.reserveCut);
+    await updatePoolBalance(contract, PoolIDs.SHOP, split.shopCut);
+    
+    // Weekly pool is separate (not a standard pool ID)
+    const weekId = getWeekId(tx.time);
+    await updateWeeklyBlitzPool(contract, weekId, split.poolCut);
+}
+```
+
 ### Claiming Rewards (with Fallback)
 
 ```typescript

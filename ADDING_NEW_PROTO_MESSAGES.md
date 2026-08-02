@@ -112,6 +112,34 @@ export const messageHandlers: MessageHandlers = {
 };
 ```
 
+### ⚠️ CRITICAL: Register the Transaction Type in `ContractConfig`
+
+**This is the step most easily missed — especially when adding a feature to refactored code — and it produces a confusing failure: the transaction is rejected at the node's mempool *before* it ever reaches your Check/Deliver handlers, so the code "looks correct" but nothing lands on chain (400 Bad Request at submit, no tx).**
+
+The plugin declares which transaction types it accepts when it registers with the node. If your message type is not in this list, the node drops the tx. Edit `ContractConfig` in `plugin/typescript/src/contract/contract.ts` and add your message to **both** lists:
+
+```typescript
+export const ContractConfig: any = {
+    // ...
+    supportedTransactions: [
+        // ... existing short names ...
+        'yourFeature',                       // <-- ADD (must match the Go MessageName constant)
+    ],
+    transactionTypeUrls: [
+        // ... existing type URLs ...
+        GAME2048_TYPE_URLS.yourFeature,      // <-- ADD
+    ],
+    // ...
+};
+```
+
+Notes:
+- The short name in `supportedTransactions` must exactly match the `MessageName` constant used by the Go backend in `cmd/rpc/game2048.go` (e.g. `game2048...MessageName = "yourFeature"`).
+- `transactionTypeUrls` entries come from `GAME2048_TYPE_URLS` in `plugin/typescript/src/contract/game2048.ts`.
+- You must **also** route the type in the `CheckTx` and `DeliverTx` switch statements in `contract.ts` — those are what execute it once the node accepts it.
+
+> **Real example:** Weekly Blitz (`startWeeklyBlitzGame` / `claimWeeklyBlitzReward`) had proto, descriptors, and Check/Deliver handlers all correct, but was omitted from `ContractConfig`. Every start attempt returned 400 with no on-chain tx until both lists were updated.
+
 ### 5. Add Backend RPC Endpoint (Optional)
 
 If you need an HTTP endpoint to create this message:
@@ -209,9 +237,19 @@ Test the new message:
 **Error**: Fields decode as wrong values or zero values  
 **Fix**: Match field numbers exactly between proto definition and Go descriptor
 
+### ❌ Not registering the tx type in `ContractConfig`
+**Error**: 400 Bad Request at submit, "no tx on chain" — the message never reaches your Check/Deliver handlers  
+**Cause**: The node rejects the tx at the mempool because the plugin didn't declare it as supported  
+**Fix**: Add the message to `supportedTransactions` **and** `transactionTypeUrls` in `ContractConfig` (`contract.ts`). See the ⚠️ CRITICAL step above.
+
 ### ❌ Not rebuilding backend
 **Error**: Old backend still running without new descriptors  
 **Fix**: Rebuild `canopy.exe` and restart the process
+
+### ❌ Rebuilt the plugin but it still runs old code
+**Error**: Your `npm run build` succeeds but behavior doesn't change  
+**Cause**: `pluginctl start` does **not** replace an already-running plugin process — it prints "already running" and keeps the stale one  
+**Fix**: Run `pluginctl.cmd stop` (or kill the plugin's `node.exe`) **before** restarting the node, so it spawns a fresh plugin from the new `dist/`
 
 ## Checklist
 
@@ -221,11 +259,12 @@ Before testing your new message:
 - [ ] Ran `npm run build:descriptors` in `plugin/typescript/`
 - [ ] Ran `npm run build` in `plugin/typescript/`
 - [ ] Added message descriptor to `MessageType` array in `cmd/rpc/game2048.go`
-- [ ] Added Check handler in `plugin/typescript/src/contract/contract.ts`
-- [ ] Added Deliver handler in `plugin/typescript/src/contract/contract.ts`
-- [ ] Registered handlers in `messageHandlers` export
+- [ ] Added Check handler + routed the type in the `CheckTx` switch in `contract.ts`
+- [ ] Added Deliver handler + routed the type in the `DeliverTx` switch in `contract.ts`
+- [ ] **Registered the tx in `ContractConfig.supportedTransactions` AND `transactionTypeUrls`** (else the node drops it at the mempool)
 - [ ] Added RPC endpoint (if needed)
 - [ ] Rebuilt Go backend with `go build`
+- [ ] Stopped the running plugin (`pluginctl.cmd stop`) before restart, so the new `dist/` loads
 - [ ] Restarted backend process
 - [ ] Tested message creation and execution
 
@@ -329,4 +368,4 @@ func (s *Server) AdminPoolTransfer(w http.ResponseWriter, r *http.Request, _ htt
 
 ---
 
-**Summary**: Adding new proto messages requires updates to 2 descriptor systems (TypeScript auto-generated + Go manual), contract handlers, and optionally RPC endpoints. Follow all steps to avoid "message not found" errors.
+**Summary**: Adding new proto messages requires updates to 2 descriptor systems (TypeScript auto-generated + Go manual), contract handlers, **registration in `ContractConfig` (`supportedTransactions` + `transactionTypeUrls`)**, and optionally RPC endpoints. Follow all steps to avoid "message not found" errors and silently-dropped transactions. When adding to already-refactored code, the `ContractConfig` registration is the step most often missed — see the ⚠️ CRITICAL section.

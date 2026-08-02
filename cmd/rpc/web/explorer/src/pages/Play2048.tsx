@@ -37,7 +37,7 @@ import {
   type Game2048Client,
   type Game2048ClientStatus,
 } from '../lib/chain2048'
-import { fetchRpcKeystoreAccounts, type RpcKeystoreAccount } from '../lib/rpcChain2048'
+import { fetchRpcKeystoreAccounts, trackRpcTx, type RpcKeystoreAccount } from '../lib/rpcChain2048'
 import {
   clearStoredWalletAuth,
   loadStoredWalletAuth,
@@ -104,6 +104,8 @@ function Play2048Page() {
       document.title = 'Daily Challenge | ProofArcade'
     } else if (modeParam === 'classic') {
       document.title = 'Classic Mode | ProofArcade'
+    } else if (modeParam === 'weekly-blitz') {
+      document.title = 'Weekly Blitz | ProofArcade'
     } else {
       document.title = 'Training Mode | ProofArcade'
     }
@@ -121,7 +123,7 @@ function Play2048Page() {
   const [config, setConfig] = useState<ChainConfig>({ dailyFee: 25, classicFee: 2, dailyMaxMoves: 80 })
   const [isLoadingClient, setIsLoadingClient] = useState(true)
   const [player, setPlayer] = useState<PlayerStats | null>(null)
-  const [leaderboards, setLeaderboards] = useState<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>({ daily: [], classic: [] })
+  const [leaderboards, setLeaderboards] = useState<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[]; weeklyBlitz: LeaderboardEntry[] }>({ daily: [], classic: [], weeklyBlitz: [] })
   const [dailyPrizePool, setDailyPrizePool] = useState<number>(0)
   const [session, setSession] = useState<LocalSession | null>(null)
   const [board, setBoard] = useState<number[]>(() => initializeBoard(createSeedFromText('demo')))
@@ -136,6 +138,7 @@ function Play2048Page() {
   const [lastSubmitTx, setLastSubmitTx] = useState<TxStatusView | null>(null)
   const [lastFaucetTx, setLastFaucetTx] = useState<TxStatusView | null>(null)
   const [lastActionError, setLastActionError] = useState<string | null>(null)
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null)
   const [classicPointsEarnedToday, setClassicPointsEarnedToday] = useState(0)
   const [pendingRecoverySession, setPendingRecoverySession] = useState<GameSessionRecord | null>(null)
   const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false)
@@ -155,6 +158,7 @@ function Play2048Page() {
       const urlMode: GameMode | null = 
         modeParam === 'daily' ? 'daily' : 
         modeParam === 'classic' ? 'classic' : 
+        modeParam === 'weekly-blitz' ? 'weekly-blitz' :
         null
       
       const nextClient = await createGame2048Client()
@@ -339,6 +343,53 @@ function Play2048Page() {
     isSubmittedRef.current = isSubmitted
   }, [session, moves, board, score, maxTile, isSubmitted])
 
+  // Weekly Blitz 5-minute countdown. expiresAtUnix is in MICROSECONDS (matches tx.time and
+  // the on-chain session), so convert to ms before comparing with Date.now().
+  useEffect(() => {
+    if (session?.mode !== 'weekly-blitz' || !session.expiresAtUnix || isSubmitted) {
+      setSecondsRemaining(null)
+      return
+    }
+
+    const expiresAtMs = session.expiresAtUnix / 1000
+    let expired = false
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((expiresAtMs - Date.now()) / 1000))
+      setSecondsRemaining(remaining)
+
+      if (remaining <= 0 && !expired) {
+        // Guard against double-firing: the interval keeps running until React tears it down.
+        expired = true
+        toast("Time's up! Choose to submit your score or retry.", { icon: 'ℹ️' })
+        // Just stop the game, don't auto-submit - let player choose Submit or Retry
+        const currentMoves = movesRef.current
+        const finalReplay = replaySession(
+          sessionRef.current!.seed,
+          currentMoves,
+          sessionRef.current!.maxMoves,
+          'player_stopped'
+        )
+        setBoard(finalReplay.board)
+        setScore(finalReplay.score)
+        setMaxTile(finalReplay.maxTile)
+        setLastOutcome({ 
+          stopReason: finalReplay.endedReason, 
+          score: finalReplay.score, 
+          maxTile: finalReplay.maxTile 
+        })
+        // Mark as ended but NOT submitted - player can still choose
+        setIsSubmitted(false)
+      }
+    }
+
+    tick()
+    const interval = window.setInterval(tick, 250)
+    return () => window.clearInterval(interval)
+    // finishRun reads live values from refs, so it does not need to be a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, isSubmitted])
+
   useEffect(() => {
     persistRunState({
       address,
@@ -382,10 +433,10 @@ function Play2048Page() {
   }, [session, isSubmitted, board, moves, score, maxTile])
 
   const dailyWindowLabel = `${getUtcDateString()} UTC`
-  const activeBoard = leaderboardMode === 'daily' ? leaderboards.daily : leaderboards.classic
+  const activeBoard = leaderboardMode === 'daily' ? leaderboards.daily : leaderboardMode === 'weekly-blitz' ? leaderboards.weeklyBlitz : leaderboards.classic
   const canStart = !session || isSubmitted
   const canUseLiveWallet = selectedMode === 'training' || clientStatus.mode !== 'rpc' || (/^[0-9a-f]{40}$/.test(address.trim().toLowerCase()) && password.length > 0)
-  const currentFee = session?.mode === 'daily' ? config.dailyFee : session?.mode === 'classic' ? config.classicFee : 0
+  const currentFee = session?.mode === 'daily' ? config.dailyFee : session?.mode === 'weekly-blitz' ? 5000000 : session?.mode === 'classic' ? config.classicFee : 0
   
   // Check if player has already completed today's Daily Challenge
   const todayUtcDate = getUtcDateString()
@@ -673,14 +724,40 @@ function Play2048Page() {
         return
       }
 
+      // For Weekly Blitz, when player stops manually just show the outcome
+      // Don't auto-submit - let them choose Submit or Retry
+      if (activeSession.mode === 'weekly-blitz' && stopIntent === 'player_stopped') {
+        const expected = replaySession(activeSession.seed, finalMoves, activeSession.maxMoves, stopIntent)
+        setLastOutcome({ stopReason: expected.endedReason, score: expected.score, maxTile: expected.maxTile })
+        setBoard(expected.board)
+        setScore(expected.score)
+        setMaxTile(expected.maxTile)
+        toast(`Run stopped. Score: ${expected.score}. Choose to Submit or Retry.`, { icon: 'ℹ️' })
+        return
+      }
+
       if (!client) {
         return
       }
 
       const chainSession = activeSession as LocalSession & { mode: GameMode }
-      const liveSession = chainSession as LocalSession & { txStage?: 'submitted' | 'pending' | 'indexed' }
+      const liveSession = chainSession as LocalSession & {
+        txStage?: 'submitted' | 'pending' | 'indexed'
+        txHash?: string
+      }
+      // txStage is captured once when the run starts, and trackRpcTx only polls for ~12s.
+      // A run that lasts longer than that (every Weekly Blitz run does) would otherwise stay
+      // stamped 'pending' forever and be permanently blocked from submitting. Re-check the
+      // start transaction now instead of trusting the stale value.
       if (clientStatus.mode === 'rpc' && liveSession.txStage && liveSession.txStage !== 'indexed') {
-        throw new Error('Wait for the start transaction to finish indexing before submitting the score.')
+        let stillNotIndexed = true
+        if (liveSession.txHash) {
+          const tracking = await trackRpcTx(liveSession.txHash)
+          stillNotIndexed = tracking.stage !== 'indexed'
+        }
+        if (stillNotIndexed) {
+          throw new Error('Wait for the start transaction to finish indexing before submitting the score.')
+        }
       }
 
       const expected = replaySession(chainSession.seed, finalMoves, chainSession.maxMoves, stopIntent)
@@ -875,7 +952,7 @@ function Play2048Page() {
               </div>
 
               {/* Compact Mode Cards - Single Row on Desktop */}
-              <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3 items-stretch lg:auto-rows-fr">
+              <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4 items-stretch lg:auto-rows-fr">
                 {/* Daily Challenge Card - Featured */}
                 <CompactModeCard
                   icon="🏆"
@@ -898,6 +975,27 @@ function Play2048Page() {
                   onStart={() => {
                     if (!hasCompletedDailyToday) start('daily')
                   }}
+                />
+
+                {/* Weekly Blitz Card - NEW */}
+                <CompactModeCard
+                  icon="⚡"
+                  title="Weekly Blitz"
+                  specs={[
+                    '5 PROOF entry',
+                    '5 minute timer',
+                  ]}
+                  infoBadges={[
+                    '🔥 2 runs + 3 retries/day',
+                    '📊 Cumulative scoring',
+                    '🗓️ Monday-Sunday',
+                  ]}
+                  ctaLabel="Play Blitz"
+                  tone="classic"
+                  selected={selectedMode === 'weekly-blitz'}
+                  disabled={!canStart || isLoadingClient || !canUseLiveWallet}
+                  onSelect={() => setSelectedMode('weekly-blitz')}
+                  onStart={() => start('weekly-blitz')}
                 />
 
                 {/* Classic Mode Card */}
@@ -998,6 +1096,32 @@ function Play2048Page() {
                           </div>
                         )}
                         
+                        {/* Countdown Timer - Weekly Blitz Only */}
+                        {session?.mode === 'weekly-blitz' && secondsRemaining !== null && (
+                          <div
+                            className={`rounded-lg border px-3 py-2 ${
+                              secondsRemaining <= 10
+                                ? 'border-red-500/40 bg-red-500/10'
+                                : secondsRemaining <= 30
+                                  ? 'border-amber-400/40 bg-amber-400/10'
+                                  : 'border-[#53a6ff]/20 bg-[#53a6ff]/10'
+                            }`}
+                          >
+                            <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Time Left</p>
+                            <p
+                              className={`mt-1 text-3xl font-black tabular-nums ${
+                                secondsRemaining <= 10
+                                  ? 'text-red-400'
+                                  : secondsRemaining <= 30
+                                    ? 'text-amber-300'
+                                    : 'text-[#53a6ff]'
+                              }`}
+                            >
+                              {Math.floor(secondsRemaining / 60)}:{String(secondsRemaining % 60).padStart(2, '0')}
+                            </p>
+                          </div>
+                        )}
+
                         {/* Prize Pool - Daily Only */}
                         {session?.mode === 'daily' && (
                           <div className="rounded-lg border border-[#53d7a6]/20 bg-[#53d7a6]/10 px-3 py-2">
@@ -1024,11 +1148,24 @@ function Play2048Page() {
                         </motion.button>
                         <motion.button
                           onClick={() => finishRun('player_stopped')}
-                          disabled={!session || isSubmitted || (session.mode !== 'training' && !canUseLiveWallet)}
+                          disabled={!session || isSubmitted || lastOutcome !== null || (session.mode !== 'training' && !canUseLiveWallet)}
                           className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {session?.mode === 'training' ? 'Stop' : 'Submit'}
+                          {session?.mode === 'training' ? 'Stop' : 'Submit Score'}
                         </motion.button>
+                        
+                        {/* Retry button for Weekly Blitz after game ends */}
+                        {session?.mode === 'weekly-blitz' && lastOutcome && !isSubmitted && (
+                          <motion.button
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            onClick={() => start('weekly-blitz')}
+                            disabled={!canUseLiveWallet}
+                            className="rounded-xl border border-[#f0cf52]/30 bg-[#f0cf52]/10 px-3 py-3 text-sm font-semibold text-[#f0cf52] transition hover:bg-[#f0cf52]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Retry
+                          </motion.button>
+                        )}
                       </div>
 
                       {/* Daily Challenge Completed Notice */}

@@ -91,6 +91,24 @@ export function checkMessageStartClassicGame(msg: any): any {
 }
 
 /**
+ * Validate a StartWeeklyBlitzGame message
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function checkMessageStartWeeklyBlitzGame(msg: any): any {
+    const playerAddress = normalizeBytes(msg?.playerAddress);
+    const gameId = normalizeBytes(msg?.gameId);
+    if (playerAddress.length !== 20) {
+        return { error: ErrInvalidAddress() };
+    }
+    if (gameId.length === 0) {
+        return { error: ErrInvalidMessageCast() };
+    }
+    return {
+        authorizedSigners: [playerAddress]
+    };
+}
+
+/**
  * Validate a SubmitGameResult message
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -118,6 +136,45 @@ export function checkMessageClaimDailyReward(msg: any): any {
         return { error: ErrInvalidAddress() };
     }
     if (!msg.utcDate || typeof msg.utcDate !== 'string') {
+        return { error: ErrInvalidMessageCast() };
+    }
+    return {
+        authorizedSigners: [playerAddress]
+    };
+}
+
+/**
+ * Validate a ClaimMonthlyReward message
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function checkMessageClaimMonthlyReward(msg: any): any {
+    const playerAddress = normalizeBytes(msg?.playerAddress);
+    if (playerAddress.length !== 20) {
+        return { error: ErrInvalidAddress() };
+    }
+    if (!msg.monthId || typeof msg.monthId !== 'string') {
+        return { error: ErrInvalidMessageCast() };
+    }
+    // Validate monthId format (YYYY-MM)
+    const monthIdPattern = /^\d{4}-\d{2}$/;
+    if (!monthIdPattern.test(msg.monthId)) {
+        return { error: ErrInvalidMessageCast() };
+    }
+    return {
+        authorizedSigners: [playerAddress]
+    };
+}
+
+/**
+ * Validate a ClaimWeeklyBlitzReward message
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function checkMessageClaimWeeklyBlitzReward(msg: any): any {
+    const playerAddress = normalizeBytes(msg?.playerAddress);
+    if (playerAddress.length !== 20) {
+        return { error: ErrInvalidAddress() };
+    }
+    if (!msg.weekId || typeof msg.weekId !== 'number') {
         return { error: ErrInvalidMessageCast() };
     }
     return {

@@ -82,6 +82,32 @@ export interface ClaimDailyRewardResult {
   submitted: boolean
 }
 
+export interface ClaimMonthlyRewardArgs {
+  address: string
+  password?: string
+  monthId: string // Format: "YYYY-MM"
+}
+
+export interface ClaimMonthlyRewardResult {
+  txHash?: string
+  txStage?: 'submitted' | 'pending' | 'indexed'
+  txDetail?: string
+  submitted: boolean
+}
+
+export interface ClaimWeeklyBlitzRewardArgs {
+  address: string
+  password?: string
+  weekId: number // Numeric week ID
+}
+
+export interface ClaimWeeklyBlitzRewardResult {
+  txHash?: string
+  txStage?: 'submitted' | 'pending' | 'indexed'
+  txDetail?: string
+  submitted: boolean
+}
+
 export interface ClaimDailyLoginRewardArgs {
   address: string
   password?: string
@@ -126,7 +152,7 @@ export interface Game2048Client {
   status: Game2048ClientStatus
   getConfig(): Promise<ChainConfig>
   getPlayer(address: string): Promise<PlayerStats>
-  getLeaderboards(): Promise<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>
+  getLeaderboards(): Promise<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[]; weeklyBlitz: LeaderboardEntry[] }>
   getDailyPrizePool(utcDate?: string): Promise<DailyPrizePool>
   getMonthlyLeaderboard(monthId?: string): Promise<MonthlyLeaderboard>
   getMonthlyPool(monthId?: string): Promise<MonthlyPool>
@@ -141,6 +167,8 @@ export interface Game2048Client {
   startSession(address: string, mode: GameMode, password?: string): Promise<SessionStart>
   submitSession(args: SubmitSessionArgs): Promise<SubmitSessionResult>
   claimDailyReward(args: ClaimDailyRewardArgs): Promise<ClaimDailyRewardResult>
+  claimMonthlyReward(args: ClaimMonthlyRewardArgs): Promise<ClaimMonthlyRewardResult>
+  claimWeeklyBlitzReward(args: ClaimWeeklyBlitzRewardArgs): Promise<ClaimWeeklyBlitzRewardResult>
   claimDailyLoginReward(args: ClaimDailyLoginRewardArgs): Promise<ClaimDailyLoginRewardResult>
   redeemClassicPoints(args: RedeemClassicPointsArgs): Promise<RedeemClassicPointsResult>
   reset(): Promise<void>
@@ -201,6 +229,14 @@ function createMockGame2048Client(): Game2048Client {
     },
     async claimDailyReward() {
       return claimMockDailyReward()
+    },
+    async claimMonthlyReward() {
+      // Mock implementation - always succeeds
+      return { submitted: true }
+    },
+    async claimWeeklyBlitzReward() {
+      // Mock implementation - always succeeds
+      return { submitted: true }
     },
     async claimDailyLoginReward(args: ClaimDailyLoginRewardArgs) {
       return claimMockDailyLoginReward(args.address)

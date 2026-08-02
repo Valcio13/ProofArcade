@@ -30,6 +30,8 @@ export interface SessionStart {
   txHash?: string
   txStage?: 'submitted' | 'pending' | 'indexed'
   txDetail?: string
+  weekId?: number
+  expiresAtUnix?: number
 }
 
 export interface LeaderboardEntry {
@@ -238,7 +240,12 @@ export function startSession(address: string, mode: GameMode): SessionStart {
   const player = state.players[address] ?? createPlayer(address)
   const utcDate = getUtcDateString()
 
-  const fee = mode === 'daily' ? state.config.dailyFee : state.config.classicFee
+  const fee = mode === 'daily' 
+    ? state.config.dailyFee 
+    : mode === 'weekly-blitz' 
+    ? 5000000 // 5 PROOF for weekly blitz
+    : state.config.classicFee
+  
   if (player.balance < fee) {
     throw new Error(`Not enough mock balance to pay the ${mode} fee.`)
   }
@@ -254,14 +261,32 @@ export function startSession(address: string, mode: GameMode): SessionStart {
   player.balance -= fee
   if (mode === 'daily') {
     player.dailyGamesStarted += 1
+  } else if (mode === 'weekly-blitz') {
+    player.dailyGamesStarted += 1 // Count weekly blitz in daily games for now
   } else {
     player.classicGamesStarted += 1
   }
   state.players[address] = player
 
-  const seed = mode === 'daily'
-    ? createSeedFromText(`daily:${utcDate}`)
-    : randomSeed()
+  // Calculate seed based on mode
+  let seed: string
+  let weekId: number | undefined
+  let expiresAtUnix: number | undefined
+  
+  if (mode === 'daily') {
+    seed = createSeedFromText(`daily:${utcDate}`)
+  } else if (mode === 'weekly-blitz') {
+    // Calculate week ID (epoch: 2025-01-01 00:00:00 UTC)
+    const epochTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0) / 1000
+    const currentTimestamp = Math.floor(Date.now() / 1000)
+    const weekSeconds = 7 * 24 * 60 * 60
+    weekId = Math.floor((currentTimestamp - epochTimestamp) / weekSeconds)
+    seed = createSeedFromText(`week:${weekId}`)
+    // 5 minute timer
+    expiresAtUnix = (Date.now() * 1000) + (5 * 60 * 1000000) // Convert to microseconds
+  } else {
+    seed = randomSeed()
+  }
 
   const session: SessionStart = {
     gameId: createSeedFromText(`${address}:${mode}:${Date.now()}:${Math.random()}`),
@@ -269,6 +294,8 @@ export function startSession(address: string, mode: GameMode): SessionStart {
     seed,
     utcDate,
     maxMoves: mode === 'daily' ? state.config.dailyMaxMoves : 0,
+    weekId,
+    expiresAtUnix,
   }
 
   saveState(state)
@@ -372,6 +399,7 @@ export function getLeaderboards() {
   return {
     daily: state.dailyLeaderboard,
     classic: state.classicLeaderboard,
+    weeklyBlitz: [], // Mock: weekly blitz leaderboard
   }
 }
 

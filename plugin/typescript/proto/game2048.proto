@@ -8,6 +8,7 @@ enum GameMode {
   GAME_MODE_UNSPECIFIED = 0;
   GAME_MODE_DAILY = 1;
   GAME_MODE_CLASSIC = 2;
+  GAME_MODE_WEEKLY_BLITZ = 3;
 }
 
 // SessionStatus tracks the lifecycle of a game session.
@@ -24,6 +25,7 @@ enum StopReason {
   STOP_REASON_PLAYER_STOPPED = 1;
   STOP_REASON_NO_MOVES = 2;
   STOP_REASON_MAX_MOVES = 3;
+  STOP_REASON_TIMER_EXPIRED = 4;
 }
 
 // MoveDirection is used for deterministic replay.
@@ -48,6 +50,12 @@ message MessageStartClassicGame {
   bytes game_id = 2; // @gotags: json:"gameId"
 }
 
+// MessageStartWeeklyBlitzGame starts a weekly blitz session.
+message MessageStartWeeklyBlitzGame {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  bytes game_id = 2; // @gotags: json:"gameId"
+}
+
 // MessageSubmitGameResult submits the final move list for replay verification.
 message MessageSubmitGameResult {
   bytes player_address = 1; // @gotags: json:"playerAddress"
@@ -62,6 +70,18 @@ message MessageSubmitGameResult {
 message MessageClaimDailyReward {
   bytes player_address = 1; // @gotags: json:"playerAddress"
   string utc_date = 2; // @gotags: json:"utcDate"
+}
+
+// MessageClaimMonthlyReward claims the finalized reward for a month.
+message MessageClaimMonthlyReward {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  string month_id = 2; // @gotags: json:"monthId" (format: "2026-07")
+}
+
+// MessageClaimWeeklyBlitzReward claims the finalized reward for one week.
+message MessageClaimWeeklyBlitzReward {
+  bytes player_address = 1; // @gotags: json:"playerAddress"
+  uint64 week_id = 2; // @gotags: json:"weekId"
 }
 
 // MessageRedeemClassicPoints burns classic points to redeem CNPY from treasury.
@@ -160,6 +180,8 @@ message GameSession {
   uint64 final_move_count = 13; // @gotags: json:"finalMoveCount"
   StopReason stop_reason = 14; // @gotags: json:"stopReason"
   uint64 submitted_at_unix = 15; // @gotags: json:"submittedAtUnix"
+  uint64 expires_at_unix = 16; // @gotags: json:"expiresAtUnix" - For timed modes
+  uint64 week_id = 17; // @gotags: json:"weekId" - For weekly blitz
 }
 
 // DailyAttempt prevents more than one daily start per address per UTC day.

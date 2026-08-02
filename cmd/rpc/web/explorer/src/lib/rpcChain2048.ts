@@ -4,6 +4,10 @@ import type {
   ClaimDailyLoginRewardArgs,
   ClaimDailyLoginRewardResult,
   ClaimDailyRewardResult,
+  ClaimMonthlyRewardArgs,
+  ClaimMonthlyRewardResult,
+  ClaimWeeklyBlitzRewardArgs,
+  ClaimWeeklyBlitzRewardResult,
   FaucetResult,
   Game2048Client,
   RedeemClassicPointsArgs,
@@ -47,8 +51,11 @@ const queryAddressByUsernamePath = '/v1/query/2048/address-by-username'
 const txSetUsernamePath = '/v1/admin/tx-2048-set-username'
 const txStartDailyPath = '/v1/admin/tx-2048-start-daily'
 const txStartClassicPath = '/v1/admin/tx-2048-start-classic'
+const txStartWeeklyBlitzPath = '/v1/admin/tx-2048-start-weekly-blitz'
 const txSubmitPath = '/v1/admin/tx-2048-submit'
 const txClaimDailyRewardPath = '/v1/admin/tx-2048-claim-daily-reward'
+const txClaimMonthlyRewardPath = '/v1/admin/tx-2048-claim-monthly-reward'
+const txClaimWeeklyBlitzRewardPath = '/v1/admin/tx-2048-claim-weekly-blitz-reward'
 const txClaimDailyLoginRewardPath = '/v1/admin/tx-2048-claim-daily-login'
 const txRedeemClassicPointsPath = '/v1/admin/tx-2048-redeem-classic-points'
 const devFaucetPath = '/v1/admin/dev-faucet'
@@ -357,6 +364,8 @@ function toChainStopReason(reason: StopReason): number {
       return 2
     case 'max_moves':
       return 3
+    case 'timer_expired':
+      return 4
     default:
       return 0
   }
@@ -426,7 +435,7 @@ export function createRpcGame2048Client(): {
       return result
     },
     async getLeaderboards() {
-      return getJson<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[] }>(queryLeaderboardsPath)
+      return getJson<{ daily: LeaderboardEntry[]; classic: LeaderboardEntry[]; weeklyBlitz: LeaderboardEntry[] }>(queryLeaderboardsPath)
     },
     async getDailyPrizePool(utcDate?: string) {
       const suffix = utcDate ? `?utcDate=${encodeURIComponent(utcDate)}` : ''
@@ -489,7 +498,7 @@ export function createRpcGame2048Client(): {
       const liveAddress = assertHexAddress(address)
       const pwd = password || getWalletPassword(liveAddress)
       
-      const path = mode === 'daily' ? txStartDailyPath : txStartClassicPath
+      const path = mode === 'daily' ? txStartDailyPath : mode === 'weekly-blitz' ? txStartWeeklyBlitzPath : txStartClassicPath
       const session = await postJson<SessionStart>(adminRPCURL, path, {
         address: liveAddress,
         password: pwd,
@@ -531,6 +540,40 @@ export function createRpcGame2048Client(): {
         address: liveAddress,
         password: pwd,
         utcDate: args.utcDate,
+        submit: true,
+      })
+      if (result.txHash) {
+        const tracking = await trackRpcTx(result.txHash)
+        result.txStage = tracking.stage
+        result.txDetail = tracking.detail
+      }
+      return result
+    },
+    async claimMonthlyReward(args: ClaimMonthlyRewardArgs): Promise<ClaimMonthlyRewardResult> {
+      const liveAddress = assertHexAddress(args.address)
+      const pwd = args.password || getWalletPassword(liveAddress)
+      
+      const result = await postJson<ClaimMonthlyRewardResult>(adminRPCURL, txClaimMonthlyRewardPath, {
+        address: liveAddress,
+        password: pwd,
+        monthId: args.monthId,
+        submit: true,
+      })
+      if (result.txHash) {
+        const tracking = await trackRpcTx(result.txHash)
+        result.txStage = tracking.stage
+        result.txDetail = tracking.detail
+      }
+      return result
+    },
+    async claimWeeklyBlitzReward(args: ClaimWeeklyBlitzRewardArgs): Promise<ClaimWeeklyBlitzRewardResult> {
+      const liveAddress = assertHexAddress(args.address)
+      const pwd = args.password || getWalletPassword(liveAddress)
+      
+      const result = await postJson<ClaimWeeklyBlitzRewardResult>(adminRPCURL, txClaimWeeklyBlitzRewardPath, {
+        address: liveAddress,
+        password: pwd,
+        weekId: args.weekId,
         submit: true,
       })
       if (result.txHash) {

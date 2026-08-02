@@ -23,6 +23,11 @@ import {
     KeyForGameTreasury,
     KeyForPlayerStats
 } from './index.js';
+import {
+    KeyForWeeklyBlitzPlayerScore,
+    KeyForWeeklyBlitzLeaderboard,
+    decodeWeeklyBlitzPlayerScore
+} from './competition/index.js';
 import { encodeGame2048State, decodeGame2048State } from './game2048.js';
 import { replayGame } from './game2048-replay.js';
 import { types } from '../proto/types.js';
@@ -1411,6 +1416,181 @@ test('claimDailyReward renormalizes payouts when fewer than 10 players are ranke
     );
     assert.equal(toNumber((pool as { distributedRewards: number | Long }).distributedRewards), 228);
     assert.equal(toNumber((pool as { treasuryLeftover: number | Long }).treasuryLeftover), 0);
+});
+
+test('submitGameResult accumulates Weekly Blitz score across runs and re-ranks the leaderboard', async () => {
+    const playerAddress = addressOf(0xdb);
+    const weekId = 2893;
+    const weekIdString = `week_${weekId}`;
+
+    const plugin = new FakePlugin();
+    const contract = new Contract(
+        { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
+        {},
+        plugin as never,
+        Long.ZERO
+    );
+
+    plugin.state.set(
+        keyHex(KeyForPlayerStats(playerAddress)),
+        encodeGame2048State('PlayerStats', {
+            playerAddress,
+            dailyGamesStarted: 0,
+            classicGamesStarted: 0,
+            gamesCompleted: 0,
+            wins: 0,
+            losses: 0,
+            bestDailyScore: 0,
+            bestClassicScore: 0,
+            bestTile: 0,
+            totalScore: 0,
+            classicPointsBalance: 0,
+            classicPointsEarned: 0
+        })
+    );
+
+    // Play two separate Weekly Blitz runs in the same week.
+    const runs = [
+        { gameId: Uint8Array.from([1, 1, 1, 1]), seed: Uint8Array.from([10, 11, 12, 13, 14, 15, 16, 17]), moves: [4, 1, 2, 4, 3, 4, 1, 2] },
+        { gameId: Uint8Array.from([2, 2, 2, 2]), seed: Uint8Array.from([20, 21, 22, 23, 24, 25, 26, 27]), moves: [1, 2, 3, 4, 1, 2] }
+    ];
+
+    let expectedTotal = 0;
+    let expectedBest = 0;
+
+    for (const [index, run] of runs.entries()) {
+        const replay = replayGame({ seed: run.seed, moves: run.moves, maxMoves: 0, stopReason: 1 });
+
+        plugin.state.set(
+            keyHex(KeyForGameSession(run.gameId)),
+            encodeGame2048State('GameSession', {
+                gameId: run.gameId,
+                playerAddress,
+                mode: 3, // GAME_MODE_WEEKLY_BLITZ
+                utcDate: '2026-07-22',
+                seed: run.seed,
+                status: 1,
+                startedHeight: 10 + index,
+                startedAtUnix: 1721692800,
+                feePaid: 5_000_000,
+                maxMoves: 0,
+                weekId
+            })
+        );
+
+        const result = await ContractAsync.DeliverMessageSubmitGameResult(
+            contract,
+            {
+                playerAddress,
+                gameId: run.gameId,
+                moves: run.moves,
+                declaredScore: replay.score,
+                declaredMaxTile: replay.maxTile,
+                stopReason: replay.endedReason
+            },
+            { time: 1721692800_000000 + index }
+        );
+        assert.equal(result.error, undefined);
+
+        const previousTotal = expectedTotal;
+        expectedTotal += replay.score;
+        expectedBest = Math.max(expectedBest, replay.score);
+
+        const scoreBytes = plugin.state.get(keyHex(KeyForWeeklyBlitzPlayerScore(weekIdString, playerAddress)));
+        assert.ok(scoreBytes, 'weekly blitz player score record should be written');
+        const score = decodeWeeklyBlitzPlayerScore(scoreBytes as Uint8Array);
+        assert.ok(score);
+
+        // Cumulative: every run adds to the weekly total (spec: "all games count", no "best of").
+        assert.equal(score!.totalScore, expectedTotal);
+        assert.equal(score!.bestSingleRunScore, expectedBest);
+        assert.equal(score!.officialRunsCompleted, index + 1);
+        assert.equal(score!.weekId, weekIdString);
+
+        // The leaderboard is ranked by cumulative score, so the stale entry must be removed.
+        if (previousTotal > 0) {
+            const deletedStale = plugin.lastWriteDeletes.some((d) =>
+                keyHex(d.key) === keyHex(KeyForWeeklyBlitzLeaderboard(weekIdString, Long.fromNumber(previousTotal), playerAddress))
+            );
+            assert.ok(deletedStale, 'previous weekly leaderboard entry should be deleted before re-ranking');
+        }
+        assert.ok(
+            plugin.state.get(keyHex(KeyForWeeklyBlitzLeaderboard(weekIdString, Long.fromNumber(expectedTotal), playerAddress))),
+            'leaderboard entry should exist at the new cumulative score'
+        );
+    }
+
+    assert.ok(expectedTotal > expectedBest, 'two runs should accumulate beyond any single run');
+
+    // Weekly Blitz pays out from its own prize pool: it must not mint Classic Points
+    // nor overwrite the Classic best-score stat.
+    const [statsRaw] = decodeGame2048State(
+        'PlayerStats',
+        plugin.state.get(keyHex(KeyForPlayerStats(playerAddress))) as Uint8Array
+    );
+    const stats = statsRaw as { classicPointsBalance: number | Long; bestClassicScore: number | Long; gamesCompleted: number | Long };
+    assert.equal(toNumber(stats.classicPointsBalance), 0);
+    assert.equal(toNumber(stats.bestClassicScore), 0);
+    assert.equal(toNumber(stats.gamesCompleted), 2);
+});
+
+test('submitGameResult enforces the Weekly Blitz timer on-chain', async () => {
+    const playerAddress = addressOf(0xac);
+    const seed = Uint8Array.from([10, 11, 12, 13, 14, 15, 16, 17]);
+    const moves = [4, 1, 2, 4, 3, 4, 1, 2];
+    const replay = replayGame({ seed, moves, maxMoves: 0, stopReason: 4 });
+
+    const MICROS = 1_000_000;
+    const startedAtUnix = 1721692800 * MICROS;
+    const expiresAtUnix = startedAtUnix + 300 * MICROS; // 5-minute timer
+    const submitDeadline = expiresAtUnix + 120 * MICROS; // + grace window
+
+    async function submitAt(endedAtUnix: number, gameId: Uint8Array) {
+        const plugin = new FakePlugin();
+        const contract = new Contract(
+            { ChainId: 1, DataDirPath: '/tmp/plugin/', rpcAddress: 'localhost:8080' },
+            {},
+            plugin as never,
+            Long.ZERO
+        );
+        plugin.state.set(
+            keyHex(KeyForGameSession(gameId)),
+            encodeGame2048State('GameSession', {
+                gameId,
+                playerAddress,
+                mode: 3,
+                utcDate: '2026-07-22',
+                seed,
+                status: 1,
+                startedHeight: 10,
+                startedAtUnix,
+                feePaid: 5_000_000,
+                maxMoves: 0,
+                weekId: 2893,
+                expiresAtUnix
+            })
+        );
+        return ContractAsync.DeliverMessageSubmitGameResult(
+            contract,
+            {
+                playerAddress,
+                gameId,
+                moves,
+                declaredScore: replay.score,
+                declaredMaxTile: replay.maxTile,
+                stopReason: replay.endedReason
+            },
+            { time: endedAtUnix }
+        );
+    }
+
+    // An honest full-length run submits just after the timer ends — must still be accepted.
+    const inGrace = await submitAt(expiresAtUnix + 5 * MICROS, Uint8Array.from([3, 3, 3, 3]));
+    assert.equal(inGrace.error, undefined, 'submission within the grace window should be accepted');
+
+    // Holding the session open far past expiry must be rejected.
+    const tooLate = await submitAt(submitDeadline + MICROS, Uint8Array.from([4, 4, 4, 4]));
+    assert.ok(tooLate.error, 'submission past the grace window should be rejected');
 });
 
 function keyHex(key: Uint8Array): string {

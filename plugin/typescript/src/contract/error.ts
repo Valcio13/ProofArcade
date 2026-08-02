@@ -151,3 +151,44 @@ export function ErrUsernameInvalid(): IPluginError {
 export function ErrUsernameTaken(): IPluginError {
     return NewError(34, DefaultModule, 'username is already taken');
 }
+
+// Weekly Blitz errors
+export function ErrWeeklyBlitzNoOfficialRunsRemaining(): IPluginError {
+    return NewError(35, DefaultModule, 'no official runs remaining today');
+}
+
+export function ErrWeeklyBlitzNoRunsRemaining(): IPluginError {
+    return NewError(40, DefaultModule, 'no runs remaining today (2 paid + 3 free retries used)');
+}
+
+export function ErrWeeklyBlitzSessionExpired(): IPluginError {
+    return NewError(36, DefaultModule, 'weekly blitz session expired');
+}
+
+export function ErrWeeklyBlitzRewardNotFound(): IPluginError {
+    return NewError(37, DefaultModule, 'weekly blitz reward not found');
+}
+
+export function ErrWeeklyBlitzRewardAlreadyClaimed(): IPluginError {
+    return NewError(38, DefaultModule, 'weekly blitz reward already claimed');
+}
+
+export function ErrWeeklyBlitzWeekNotFinalized(): IPluginError {
+    return NewError(39, DefaultModule, 'weekly blitz week not finalized');
+}
+
+export function ErrMonthlyRewardNotFound(): IPluginError {
+    return NewError(41, DefaultModule, 'monthly reward not found');
+}
+
+export function ErrMonthlyRewardAlreadyClaimed(): IPluginError {
+    return NewError(42, DefaultModule, 'monthly reward already claimed');
+}
+
+export function ErrMonthlyRewardNotFinalized(): IPluginError {
+    return NewError(43, DefaultModule, 'monthly reward not finalized');
+}
+
+export function ErrInvalidMonthId(): IPluginError {
+    return NewError(44, DefaultModule, 'invalid month ID format (expected YYYY-MM)');
+}

@@ -753,11 +753,11 @@ export async function collectAndDistributeFee(
     ];
     
     if (feeSplit.reward && !feeSplit.reward.isZero()) {
-        updates.push({ poolId: PoolIDs.DAILY_REWARD, amount: feeSplit.reward, operation: 'add' });
+        updates.push({ poolId: PoolIDs.DAILY, amount: feeSplit.reward, operation: 'add' });
     }
     
     if (feeSplit.monthly && !feeSplit.monthly.isZero()) {
-        updates.push({ poolId: PoolIDs.MONTHLY_REWARD, amount: feeSplit.monthly, operation: 'add' });
+        updates.push({ poolId: PoolIDs.MONTHLY, amount: feeSplit.monthly, operation: 'add' });
     }
     
     await applyPoolUpdates(contract, updates);

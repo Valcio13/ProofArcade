@@ -17,8 +17,11 @@ const game2048Root = protobuf.loadSync(game2048ProtoPath);
 export const GAME2048_TYPE_URLS = {
     startDailyGame: 'type.googleapis.com/types.MessageStartDailyGame',
     startClassicGame: 'type.googleapis.com/types.MessageStartClassicGame',
+    startWeeklyBlitzGame: 'type.googleapis.com/types.MessageStartWeeklyBlitzGame',
     submitGameResult: 'type.googleapis.com/types.MessageSubmitGameResult',
     claimDailyReward: 'type.googleapis.com/types.MessageClaimDailyReward',
+    claimMonthlyReward: 'type.googleapis.com/types.MessageClaimMonthlyReward',
+    claimWeeklyBlitzReward: 'type.googleapis.com/types.MessageClaimWeeklyBlitzReward',
     redeemClassicPoints: 'type.googleapis.com/types.MessageRedeemClassicPoints',
     claimDailyLoginReward: 'type.googleapis.com/types.MessageClaimDailyLoginReward',
     setUsername: 'type.googleapis.com/types.MessageSetUsername',
@@ -32,8 +35,11 @@ export const GAME2048_TYPE_URLS = {
 export type Game2048MessageType =
     | 'MessageStartDailyGame'
     | 'MessageStartClassicGame'
+    | 'MessageStartWeeklyBlitzGame'
     | 'MessageSubmitGameResult'
     | 'MessageClaimDailyReward'
+    | 'MessageClaimMonthlyReward'
+    | 'MessageClaimWeeklyBlitzReward'
     | 'MessageRedeemClassicPoints'
     | 'MessageClaimDailyLoginReward'
     | 'MessageSetUsername'
@@ -81,11 +87,20 @@ export function decodeGame2048Any(any: any): [any | null, Game2048MessageType | 
         if (typeUrl.includes('MessageStartClassicGame')) {
             return [lookupType('MessageStartClassicGame').decode(any.value), 'MessageStartClassicGame', null];
         }
+        if (typeUrl.includes('MessageStartWeeklyBlitzGame')) {
+            return [lookupType('MessageStartWeeklyBlitzGame').decode(any.value), 'MessageStartWeeklyBlitzGame', null];
+        }
         if (typeUrl.includes('MessageSubmitGameResult')) {
             return [lookupType('MessageSubmitGameResult').decode(any.value), 'MessageSubmitGameResult', null];
         }
         if (typeUrl.includes('MessageClaimDailyReward')) {
             return [lookupType('MessageClaimDailyReward').decode(any.value), 'MessageClaimDailyReward', null];
+        }
+        if (typeUrl.includes('MessageClaimMonthlyReward')) {
+            return [lookupType('MessageClaimMonthlyReward').decode(any.value), 'MessageClaimMonthlyReward', null];
+        }
+        if (typeUrl.includes('MessageClaimWeeklyBlitzReward')) {
+            return [lookupType('MessageClaimWeeklyBlitzReward').decode(any.value), 'MessageClaimWeeklyBlitzReward', null];
         }
         if (typeUrl.includes('MessageRedeemClassicPoints')) {
             return [lookupType('MessageRedeemClassicPoints').decode(any.value), 'MessageRedeemClassicPoints', null];
