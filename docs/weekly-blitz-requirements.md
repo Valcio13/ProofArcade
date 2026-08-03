@@ -325,24 +325,105 @@ ErrWeeklyBlitzWeekNotFinalized()
 
 ## Success Criteria
 
-✅ **Must Have (V1):**
+✅ **V1 Complete:**
 1. Game starts with 5 PROOF fee deducted
-2. Timer counts down from 5:00 to 0:00
+2. Timer counts down from 3:00 to 0:00 (reduced from 5 minutes)
 3. Game auto-submits when timer expires
-4. Daily limits enforced (2 official runs)
+4. Daily limits enforced (2 runs per day, retries removed)
 5. Cumulative score updates correctly
 6. Leaderboard ranks by cumulative score
 7. Fee split works (60/20/15/5)
 8. Week rollover works (Monday 00:00 UTC)
 
-🎯 **Nice to Have (V2):**
-1. Reward claiming mechanism
-2. Week finalization logic
-3. Admin tools for pool management
-4. Historical week browsing
-5. Animated timer warnings
-6. Sound effects
-7. Mobile optimization
+✅ **V2 Complete (Reward Claims):**
+1. Reward claiming mechanism implemented
+2. Dynamic tier-based distribution (Elite/Champion/Challenger)
+3. Top 30% winners (min 20 participants)
+4. One-time claim enforcement
+5. Frontend claim UI with transaction tracking
+6. Week calculation and date display
+
+🎯 **Future Enhancements:**
+1. Admin tools for pool management
+2. Historical week browsing
+3. Animated timer warnings
+4. Sound effects
+5. Mobile optimization
+
+## Reward System (V2)
+
+### Overview
+
+The Weekly Blitz Reward System allows players who finish in the top 30% of a weekly competition to claim their rewards from Pool 131077.
+
+### Eligibility
+
+- **Minimum Participants**: 20 players required
+- **Winner Percentage**: Top 30%
+- **Min Winners**: 5
+- **Max Winners**: 50
+
+### Tier System
+
+**Elite Tier** (Top 5%, 40% of pool, Exponential distribution)
+- Heavily rewards top performers
+- Exponential decay from rank #1
+
+**Champion Tier** (Next 10%, 35% of pool, Linear distribution)
+- Linear decline across ranks
+- Balanced mid-tier rewards
+
+**Challenger Tier** (Next 15%, 25% of pool, Equal distribution)
+- Equal share for all Challenger players
+- Consistent baseline rewards
+
+### Claiming Process
+
+1. **Week Ends**: Rankings freeze at Sunday 23:59 UTC
+2. **Reward Calculation**: Reward engine calculates tier distributions
+3. **Claim Available**: Players visit `/leaderboard?mode=weekly-blitz`
+4. **Claim Button**: Appears if player ranked in top 30% previous week
+5. **Submit Transaction**: Click "Claim Reward" to submit claim transaction
+6. **Receive Rewards**: Tokens transfer from Pool 131077 to player wallet
+7. **One-Time Only**: Duplicate claims are rejected
+
+### RPC Endpoints
+
+**Claim Transaction**:
+```
+POST /v1/admin/tx-2048-claim-weekly-blitz-reward
+Request: { address, password, weekId, submit }
+Response: { txHash, weekId, submitted }
+```
+
+### Proto Message
+
+```protobuf
+message MessageClaimWeeklyBlitzReward {
+  bytes player_address = 1;
+  uint64 week_id = 2;
+}
+```
+
+### Implementation Files
+
+**Plugin**:
+- `plugin/typescript/src/contract/competition/reward-engine.ts` - Reward calculation
+- `plugin/typescript/src/contract/contract.ts` - Claim handler
+- `plugin/typescript/src/contract/utils/state.ts` - State keys
+- `plugin/typescript/src/contract/error.ts` - Error types
+- `plugin/typescript/src/contract/validation/message-checks.ts` - Validation
+
+**Backend**:
+- `cmd/rpc/game2048.go` - RPC handler and transaction builder
+- `cmd/rpc/routes.go` - Route registration
+
+**Frontend**:
+- `cmd/rpc/web/explorer/src/pages/Leaderboard.tsx` - Claim UI
+- `cmd/rpc/web/explorer/src/lib/chain2048.ts` - TypeScript interfaces
+- `cmd/rpc/web/explorer/src/lib/rpcChain2048.ts` - RPC client implementation
+
+See `docs/REWARDS.md` for complete reward system documentation.
 
 ## Open Questions
 

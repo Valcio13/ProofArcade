@@ -370,15 +370,90 @@ Add contract errors for:
 ✅ Migration support for old entries  
 ✅ Full bug fixes and testing  
 
-### Deferred to V2
+### Added in V2 ✅
 
-⏳ Winner determination logic  
-⏳ End-of-month reward distribution  
-⏳ Claimable rewards system  
-⏳ Month-scoped pool balances  
-⏳ Historical month selection in UI  
-⏳ Reward claiming transactions  
-⏳ Pool finalization mechanics  
+✅ Winner determination logic (reward engine)  
+✅ Claimable rewards system  
+✅ Reward claiming transactions  
+✅ Dynamic tier-based distribution (Elite/Champion/Challenger)  
+✅ Top 20% win system (min 50, max 100 winners)  
+✅ One-time claim enforcement  
+✅ Frontend claim UI with transaction tracking
+
+## Reward System (V2)
+
+### Overview
+
+The Monthly Reward System allows players who finish in the top 20% of the monthly leaderboard to claim their rewards from Pool 131076.
+
+### Eligibility
+
+- **Minimum Participants**: 50 players required
+- **Winner Percentage**: Top 20%
+- **Min Winners**: 50 (if enough participants)
+- **Max Winners**: 100
+
+### Tier System
+
+**Elite Tier** (Top 2%, 50% of pool, Exponential distribution)
+- Heavily rewards top performers
+- Exponential decay from rank #1
+
+**Champion Tier** (Next 8%, 30% of pool, Linear distribution)
+- Linear decline across ranks
+- Balanced mid-tier rewards
+
+**Challenger Tier** (Next 10%, 20% of pool, Equal distribution)
+- Equal share for all Challenger players
+- Consistent baseline rewards
+
+### Claiming Process
+
+1. **Month Ends**: Rankings freeze at UTC midnight on last day of month
+2. **Reward Calculation**: Reward engine calculates tier distributions
+3. **Claim Available**: Players visit `/leaderboard?mode=monthly`
+4. **Claim Button**: Appears if player ranked in top 50 previous month
+5. **Submit Transaction**: Click "Claim Reward" to submit claim transaction
+6. **Receive Rewards**: Tokens transfer from Pool 131076 to player wallet
+7. **One-Time Only**: Duplicate claims are rejected
+
+### RPC Endpoints
+
+**Claim Transaction**:
+```
+POST /v1/admin/tx-2048-claim-monthly-reward
+Request: { address, password, monthId, submit }
+Response: { txHash, monthId, submitted }
+```
+
+### Proto Message
+
+```protobuf
+message MessageClaimMonthlyReward {
+  bytes player_address = 1;
+  string month_id = 2;  // Format: "YYYY-MM"
+}
+```
+
+### Implementation Files
+
+**Plugin**:
+- `plugin/typescript/src/contract/competition/reward-engine.ts` - Reward calculation
+- `plugin/typescript/src/contract/contract.ts` - Claim handler
+- `plugin/typescript/src/contract/utils/state.ts` - State keys
+- `plugin/typescript/src/contract/error.ts` - Error types
+- `plugin/typescript/src/contract/validation/message-checks.ts` - Validation
+
+**Backend**:
+- `cmd/rpc/game2048.go` - RPC handler and transaction builder
+- `cmd/rpc/routes.go` - Route registration
+
+**Frontend**:
+- `cmd/rpc/web/explorer/src/pages/Leaderboard.tsx` - Claim UI
+- `cmd/rpc/web/explorer/src/lib/chain2048.ts` - TypeScript interfaces
+- `cmd/rpc/web/explorer/src/lib/rpcChain2048.ts` - RPC client implementation
+
+See `docs/REWARDS.md` for complete reward system documentation.  
 
 ## Recommendation
 

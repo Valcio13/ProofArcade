@@ -2,6 +2,87 @@
 
 All notable changes to ProofArcade will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **Weekly Blitz Competition Mode**: Fast-paced 3-minute timed 2048 games
+  - Entry fee: 5 PROOF per game
+  - Daily limit: 2 runs per UTC day
+  - Cumulative weekly scoring (Monday-Sunday UTC)
+  - Fee distribution: 60% prize pool, 20% shop, 15% reserve, 5% platform
+  - Pool ID 131077 for weekly prize pool
+  - On-chain timer enforcement with auto-submit
+  - Weekly leaderboard with real-time rankings
+
+- **Monthly Reward Claim System**: Claimable rewards for monthly competition winners
+  - Dynamic tier-based distribution (Elite/Champion/Challenger)
+  - Top 20% of participants win (minimum 50 players, maximum 100 winners)
+  - Elite Tier: Top 2% receive 50% of pool (exponential distribution)
+  - Champion Tier: Next 8% receive 30% of pool (linear distribution)
+  - Challenger Tier: Next 10% receive 20% of pool (equal distribution)
+  - One-time claim enforcement with on-chain validation
+  - Frontend claim UI with transaction tracking
+  - RPC endpoint: `POST /v1/admin/tx-2048-claim-monthly-reward`
+  - Proto message: `MessageClaimMonthlyReward`
+
+- **Weekly Blitz Reward Claim System**: Claimable rewards for Weekly Blitz winners
+  - Dynamic tier-based distribution (Elite/Champion/Challenger)
+  - Top 30% of participants win (minimum 20 players, maximum 50 winners)
+  - Elite Tier: Top 5% receive 40% of pool (exponential distribution)
+  - Champion Tier: Next 10% receive 35% of pool (linear distribution)
+  - Challenger Tier: Next 15% receive 25% of pool (equal distribution)
+  - Week calculation: Monday 00:00 UTC to Sunday 23:59 UTC
+  - Frontend claim UI with week display and rank information
+  - RPC endpoint: `POST /v1/admin/tx-2048-claim-weekly-blitz-reward`
+  - Proto message: `MessageClaimWeeklyBlitzReward`
+
+- **Reward Engine**: Unified reward calculation system
+  - Configurable competition parameters (min participants, winner %, tier structure)
+  - Dynamic winner count scaling based on actual participants
+  - Three-tier distribution system with different algorithms per tier
+  - Fallback to DAO pool if competition pool insufficient
+  - Shared logic for Monthly and Weekly Blitz rewards
+  - Implementation: `plugin/typescript/src/contract/competition/reward-engine.ts`
+
+- **Complete Reward Documentation**: New `docs/REWARDS.md`
+  - Comprehensive reward system guide
+  - Tier calculation examples
+  - Eligibility requirements
+  - Claiming instructions
+  - Pool information and money flow
+
+### Changed
+
+- **Pool Name Simplification**: Renamed pool constants for consistency
+  - `DAILY_REWARD` → `DAILY`
+  - `MONTHLY_REWARD` → `MONTHLY`
+  - `WEEKLY_BLITZ` (new) → `WEEKLY`
+
+- **Weekly Blitz Simplified**: Removed free retry system
+  - Before: 2 paid runs + 3 free retries
+  - After: 2 paid runs only
+  - Cleaner daily limit enforcement
+  - All games contribute to prize pool
+
+- **Weekly Blitz Timer Reduced**: Changed from 5 minutes to 3 minutes
+  - Faster-paced gameplay
+  - More accessible for casual sessions
+
+- **Weekly Blitz Pool Architecture**: Fixed to use real Pool ID 131077
+  - Before: Tracked as metadata without backing tokens
+  - After: Uses dedicated Pool 131077 for actual token storage
+  - Proper money flow: 60% of entry fees → Pool 131077
+
+### Documentation
+
+- Updated `README.md` with Weekly Blitz mode and reward systems
+- Updated `docs/2048-monthly-competition-v1.md` with V2 reward claim section
+- Updated `docs/weekly-blitz-requirements.md` with V2 reward claim section
+- Updated `docs/ARCHITECTURE.md` with pool information
+- Created `docs/REWARDS.md` with comprehensive reward system guide
+- Removed 20 redundant implementation/status documentation files
+
 ## [0.2.0] - 2026-06-14
 
 ### Added

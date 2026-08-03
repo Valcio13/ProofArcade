@@ -6,7 +6,9 @@ Players can:
 - play free in `Playtest`
 - run paid `Classic` games to earn spendable points and compete in monthly rankings
 - enter `Daily Challenge` for leaderboard rewards
+- compete in `Weekly Blitz` timed competitions for weekly rewards
 - claim daily `Check-In` streak rewards
+- claim competitive rewards from Monthly and Weekly Blitz leaderboards
 - redeem points in the shop
 - manage wallet backup/import from the product UI
 
@@ -32,16 +34,18 @@ ProofArcade is built around a simple idea:
 - attach a real reward loop to verified runs
 
 Instead of trusting a client-reported score directly, ProofArcade records a seeded game session and validates the submitted move list with deterministic replay. That lets the product support:
-- monthly Classic competition leaderboard with cumulative scoring
+- monthly Classic competition leaderboard with cumulative scoring and claimable rewards
+- weekly Blitz competition with timed gameplay and weekly reward claims
 - daily Challenge competition with verified results
 - classic progression and points
 - claimable daily rewards
 - shop redemption
 
-The product is intentionally split into two lanes:
+The product is intentionally split into lanes:
 - `Playtest` for frictionless free local practice
-- onchain `Classic` for verified runs, points, and monthly competition
+- onchain `Classic` for verified runs, points, and monthly competition with rewards
 - onchain `Daily Challenge` for verified daily competition and rewards
+- onchain `Weekly Blitz` for fast-paced timed competition with weekly reward claims
 
 ## How ProofArcade Uses The Blockchain
 
@@ -72,6 +76,20 @@ That means:
 - reward distribution is finalized from onchain daily results
 
 This is what makes daily mode feel like a real shared contest instead of just isolated single-player runs.
+
+### Weekly Blitz
+
+For `Weekly Blitz`, the chain enforces timed competitive gameplay.
+
+That means:
+- each game has a 3-minute timer enforced on-chain
+- the game uses a weekly deterministic seed
+- players get 2 runs per day to build cumulative weekly scores
+- scores accumulate Monday through Sunday (UTC)
+- top 30% of participants (minimum 20 players) win rewards
+- rewards are claimable from Pool 131077 after the week ends
+
+This creates a fast-paced weekly competition with real stakes and verifiable results.
 
 ### Session ownership
 
@@ -164,12 +182,16 @@ Core gameplay/economy systems:
 The current beta economy and chain timing are configured as:
 - `Classic` entry fee: `2 PROOF`
 - `Daily Challenge` entry fee: `25 PROOF`
+- `Weekly Blitz` entry fee: `5 PROOF`
+- `Weekly Blitz` timer: `3 minutes` per game
+- `Weekly Blitz` daily limit: `2 runs` per UTC day
 - shop redemption: `500 classic points = 1 PROOF`
 - classic daily earn cap: `2000` points per wallet per UTC day
 - target block time: `5 seconds`
 
 This means:
-- `Classic` is the lower-friction progression lane
+- `Classic` is the lower-friction progression lane with monthly competition
+- `Weekly Blitz` is the fast-paced timed competition lane with weekly rewards
 - `Daily Challenge` remains the premium competitive lane
 - chain-backed confirmations and game actions are expected to settle against a faster `5s` block target instead of the older `20s` defaults
 
@@ -277,17 +299,28 @@ This layer handles:
 - no points or rewards
 
 ### Classic
-- paid entry
+- paid entry (2 PROOF)
 - deterministic seeded session
 - successful submits earn spendable points
 - points can later be redeemed in the shop
+- cumulative monthly leaderboard
+- top 20% win monthly rewards (min 50 participants)
 
 ### Daily Challenge
 - one run per wallet per UTC day
-- paid entry
+- paid entry (25 PROOF)
 - leaderboard-ranked
 - daily reward pool shared across actual ranked players
 - rewards become claimable after the UTC day ends
+
+### Weekly Blitz
+- 2 runs per day per wallet
+- paid entry (5 PROOF per run)
+- 3-minute timer per game
+- cumulative weekly scoring (Monday-Sunday UTC)
+- weekly leaderboard competition
+- top 30% win weekly rewards (min 20 participants)
+- rewards claimable after week ends
 
 ### Classic points
 - earned from successful classic submits
@@ -420,7 +453,10 @@ Underlying protocol modules still live here too:
 - [store/README.md](store/README.md)
 
 Helpful product docs:
+- [docs/REWARDS.md](docs/REWARDS.md) - Complete reward system documentation
 - [docs/2048-daily-prize-pool-v1.md](docs/2048-daily-prize-pool-v1.md)
+- [docs/2048-monthly-competition-v1.md](docs/2048-monthly-competition-v1.md)
+- [docs/weekly-blitz-requirements.md](docs/weekly-blitz-requirements.md)
 - [docs/2048-shop-redemption-v1.md](docs/2048-shop-redemption-v1.md)
 - [docs/2048-treasury-v1.md](docs/2048-treasury-v1.md)
 - [docs/proofarcade-launch-checklist.md](docs/proofarcade-launch-checklist.md)
