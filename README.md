@@ -9,8 +9,9 @@ Blockchain-based 2048 game platform built on Canopy Network with competitive gam
 
 ### Quick Links
 - **[docs/README.md](docs/README.md)** - Documentation hub
+- **[docs/setup/START_HERE.md](docs/setup/START_HERE.md)** - Quick setup guide
 - **[docs/guides/DEPLOYER_HANDOFF.md](docs/guides/DEPLOYER_HANDOFF.md)** - Deployment guide  
-- **[docs/guides/COMPLETE_UPDATE_HISTORY.md](docs/guides/COMPLETE_UPDATE_HISTORY.md)** - Full changelog
+- **[docs/RELEASE_NOTES_v0.2.0.md](docs/RELEASE_NOTES_v0.2.0.md)** - Latest release notes
 
 ### Developer Guides
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Complete architecture analysis

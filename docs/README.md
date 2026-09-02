@@ -9,14 +9,33 @@ docs/
 ├── README.md              # This file - documentation hub
 ├── ARCHITECTURE.md        # 🎯 START HERE - Complete system architecture
 ├── QUICK_REFERENCE.md     # Quick reference for common tasks
+├── RELEASE_NOTES_v0.2.0.md # Latest release notes
+├── CLEANUP_SUMMARY.md     # Documentation reorganization summary
+│
+├── admin/                 # Admin features documentation
+│   ├── ADMIN_AUTHORIZATION_FLOW.md
+│   ├── ADMIN_FEATURES_SUMMARY.md
+│   ├── ADMIN_MULTI_USER_GUIDE.md
+│   └── ADMIN_TOOLS_ROADMAP.md
+│
+├── setup/                 # Setup and installation guides
+│   ├── START_HERE.md              # Quick setup guide
+│   ├── EASIEST_SETUP.md           # Simplest setup path
+│   ├── MANUAL_SETUP_GUIDE.md      # Detailed manual setup
+│   └── SIMPLE_SETUP_VALIDATOR_KEY.md
 │
 ├── guides/                # User and deployment guides
 │   ├── DEPLOYER_HANDOFF.md         # Production deployment guide
 │   ├── COMPLETE_UPDATE_HISTORY.md  # Full changelog
 │   └── CURRENT_STATE_ANALYSIS.md   # Current system state
 │
-└── features/              # Feature specifications
-    └── (feature spec docs)
+├── development/           # Developer documentation
+│   └── ADDING_NEW_PROTO_MESSAGES.md
+│
+└── [technical specs]      # Feature specifications
+    ├── 2048-daily-prize-pool-v1.md
+    ├── 2048-treasury-v1.md
+    └── [other specs]
 ```
 
 ## 🎯 Start Here
@@ -24,13 +43,30 @@ docs/
 ### New to the Project?
 1. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Read this first! Complete system overview.
 2. **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick commands and common tasks.
-3. **[guides/CURRENT_STATE_ANALYSIS.md](guides/CURRENT_STATE_ANALYSIS.md)** - Current system capabilities.
+3. **[setup/START_HERE.md](setup/START_HERE.md)** - Quick setup guide.
+4. **[guides/CURRENT_STATE_ANALYSIS.md](guides/CURRENT_STATE_ANALYSIS.md)** - Current system capabilities.
+
+### Setting Up?
+- **[setup/EASIEST_SETUP.md](setup/EASIEST_SETUP.md)** - Simplest setup path
+- **[setup/MANUAL_SETUP_GUIDE.md](setup/MANUAL_SETUP_GUIDE.md)** - Detailed manual setup
+- **[setup/SIMPLE_SETUP_VALIDATOR_KEY.md](setup/SIMPLE_SETUP_VALIDATOR_KEY.md)** - Validator key setup
 
 ### Deploying?
 - **[guides/DEPLOYER_HANDOFF.md](guides/DEPLOYER_HANDOFF.md)** - Production deployment guide
 
+### Admin Features?
+- **[admin/ADMIN_FEATURES_SUMMARY.md](admin/ADMIN_FEATURES_SUMMARY.md)** - Admin capabilities overview
+- **[admin/ADMIN_AUTHORIZATION_FLOW.md](admin/ADMIN_AUTHORIZATION_FLOW.md)** - Authorization system
+- **[admin/ADMIN_MULTI_USER_GUIDE.md](admin/ADMIN_MULTI_USER_GUIDE.md)** - Multi-user setup
+- **[admin/ADMIN_TOOLS_ROADMAP.md](admin/ADMIN_TOOLS_ROADMAP.md)** - Planned admin features
+
+### Developing?
+- **[development/ADDING_NEW_PROTO_MESSAGES.md](development/ADDING_NEW_PROTO_MESSAGES.md)** - Add new proto messages
+
 ### Looking for History?
+- **[RELEASE_NOTES_v0.2.0.md](RELEASE_NOTES_v0.2.0.md)** - Latest release notes
 - **[guides/COMPLETE_UPDATE_HISTORY.md](guides/COMPLETE_UPDATE_HISTORY.md)** - Full changelog
+- **[CLEANUP_SUMMARY.md](CLEANUP_SUMMARY.md)** - Documentation reorganization
 
 ## 📚 Module Documentation
 
