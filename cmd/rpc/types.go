@@ -164,6 +164,20 @@ type usernameRequest struct {
 	Username string `json:"username"`
 }
 
+type weeklyBlitzTrackingRequest struct {
+	Address lib.HexBytes `json:"address"`
+	UtcDate string       `json:"utcDate"` // YYYY-MM-DD format
+}
+
+type weeklyBlitzTrackingResponse struct {
+	Address          lib.HexBytes `json:"address"`
+	UtcDate          string       `json:"utcDate"`
+	WeekId           string       `json:"weekId"`
+	OfficialRunsUsed int          `json:"officialRunsUsed"`
+	RunsRemaining    int          `json:"runsRemaining"`
+	LastPlayedAtUnix uint64       `json:"lastPlayedAtUnix"`
+}
+
 type faucetRequest struct {
 	addressRequest
 	Amount uint64 `json:"amount"`

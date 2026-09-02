@@ -107,7 +107,6 @@ export interface WeeklyBlitzDailyTracking {
     playerAddress: Uint8Array;
     weekId: string;
     officialRunsUsed: number;
-    retriesUsed: number;
     lastPlayedAtUnix: number;
 }
 
@@ -145,7 +144,6 @@ export function decodeWeeklyBlitzDailyTracking(bytes: Uint8Array | null | undefi
             playerAddress: Buffer.from(json.playerAddress, 'hex'),
             weekId: json.weekId,
             officialRunsUsed: json.officialRunsUsed || 0,
-            retriesUsed: json.retriesUsed || 0,
             lastPlayedAtUnix: json.lastPlayedAtUnix || 0,
         };
     } catch (e) {
@@ -162,7 +160,6 @@ export function encodeWeeklyBlitzDailyTracking(tracking: WeeklyBlitzDailyTrackin
         playerAddress: Buffer.from(tracking.playerAddress).toString('hex'),
         weekId: tracking.weekId,
         officialRunsUsed: tracking.officialRunsUsed,
-        retriesUsed: tracking.retriesUsed,
         lastPlayedAtUnix: tracking.lastPlayedAtUnix,
     };
     return Buffer.from(JSON.stringify(json), 'utf8');

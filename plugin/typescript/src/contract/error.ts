@@ -158,7 +158,7 @@ export function ErrWeeklyBlitzNoOfficialRunsRemaining(): IPluginError {
 }
 
 export function ErrWeeklyBlitzNoRunsRemaining(): IPluginError {
-    return NewError(40, DefaultModule, 'no runs remaining today (2 paid + 3 free retries used)');
+    return NewError(40, DefaultModule, 'no runs remaining today (2 runs per day)');
 }
 
 export function ErrWeeklyBlitzSessionExpired(): IPluginError {

@@ -1207,7 +1207,7 @@ export class ContractAsync {
             return { error: ErrWeeklyBlitzNoRunsRemaining() };
         }
 
-        // All runs are paid (no free retries)
+        // All runs are paid (no retries)
         const txFee = Long.fromNumber(WEEKLY_BLITZ_FEE);
 
         // Check player balance
@@ -1305,7 +1305,6 @@ export class ContractAsync {
             playerAddress,
             weekId: weekIdString, // String format matches interface
             officialRunsUsed: (tracking?.officialRunsUsed || 0) + 1,
-            retriesUsed: 0, // No longer used
             lastPlayedAtUnix: startedAtUnix
         };
         const trackingValue = encodeWeeklyBlitzDailyTracking(updatedTracking);
