@@ -142,6 +142,9 @@ function Play2048Page() {
   const [classicPointsEarnedToday, setClassicPointsEarnedToday] = useState(0)
   const [pendingRecoverySession, setPendingRecoverySession] = useState<GameSessionRecord | null>(null)
   const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false)
+  const [showAutoSubmitCountdown, setShowAutoSubmitCountdown] = useState(false)
+  const [autoSubmitCountdown, setAutoSubmitCountdown] = useState(5)
+  const [weeklyBlitzTracking, setWeeklyBlitzTracking] = useState<{ runsRemaining: number; officialRunsUsed: number } | null>(null)
   const sessionRef = useRef<LocalSession | null>(null)
   const movesRef = useRef<MoveDirection[]>([])
   const boardRef = useRef<number[]>(board)
@@ -361,25 +364,24 @@ function Play2048Page() {
       if (remaining <= 0 && !expired) {
         // Guard against double-firing: the interval keeps running until React tears it down.
         expired = true
-        toast("Time's up! Choose to submit your score or retry.", { icon: 'ℹ️' })
-        // Just stop the game, don't auto-submit - let player choose Submit or Retry
-        const currentMoves = movesRef.current
-        const finalReplay = replaySession(
-          sessionRef.current!.seed,
-          currentMoves,
-          sessionRef.current!.maxMoves,
-          'player_stopped'
-        )
-        setBoard(finalReplay.board)
-        setScore(finalReplay.score)
-        setMaxTile(finalReplay.maxTile)
-        setLastOutcome({ 
-          stopReason: finalReplay.endedReason, 
-          score: finalReplay.score, 
-          maxTile: finalReplay.maxTile 
-        })
-        // Mark as ended but NOT submitted - player can still choose
-        setIsSubmitted(false)
+        // Show countdown modal for 5 seconds before auto-submit
+        setShowAutoSubmitCountdown(true)
+        setAutoSubmitCountdown(5)
+        
+        let countdown = 5
+        const countdownInterval = window.setInterval(() => {
+          countdown--
+          setAutoSubmitCountdown(countdown)
+          
+          if (countdown <= 0) {
+            window.clearInterval(countdownInterval)
+            setShowAutoSubmitCountdown(false)
+            toast("Submitting your score...", { icon: '⏱️' })
+            // Auto-submit when countdown reaches 0
+            const currentMoves = movesRef.current
+            finishRun('timer_expired', currentMoves)
+          }
+        }, 1000)
       }
     }
 
@@ -479,6 +481,26 @@ function Play2048Page() {
       setLeaderboards(nextLeaderboards)
       setDailyPrizePool(nextDailyPool?.rewardPool ?? 0)
     })
+    
+    // Also refresh Weekly Blitz tracking if we have an address
+    if (nextAddress && activeClient) {
+      try {
+        console.log('🎯 Fetching Weekly Blitz tracking for:', nextAddress)
+        const tracking = await activeClient.getWeeklyBlitzTracking(nextAddress)
+        console.log('✅ Weekly Blitz tracking received:', tracking)
+        setWeeklyBlitzTracking({
+          runsRemaining: tracking.runsRemaining,
+          officialRunsUsed: tracking.officialRunsUsed
+        })
+        console.log('✅ Weekly Blitz tracking state updated:', {
+          runsRemaining: tracking.runsRemaining,
+          officialRunsUsed: tracking.officialRunsUsed
+        })
+      } catch (error) {
+        console.error('❌ Failed to load Weekly Blitz tracking:', error)
+        // Don't fail the whole refresh, just log the error
+      }
+    }
   }
 
   async function start(mode: PlayMode) {
@@ -724,17 +746,9 @@ function Play2048Page() {
         return
       }
 
-      // For Weekly Blitz, when player stops manually just show the outcome
-      // Don't auto-submit - let them choose Submit or Retry
-      if (activeSession.mode === 'weekly-blitz' && stopIntent === 'player_stopped') {
-        const expected = replaySession(activeSession.seed, finalMoves, activeSession.maxMoves, stopIntent)
-        setLastOutcome({ stopReason: expected.endedReason, score: expected.score, maxTile: expected.maxTile })
-        setBoard(expected.board)
-        setScore(expected.score)
-        setMaxTile(expected.maxTile)
-        toast(`Run stopped. Score: ${expected.score}. Choose to Submit or Retry.`, { icon: 'ℹ️' })
-        return
-      }
+      // For Weekly Blitz, always submit when player explicitly clicks Submit
+      // The button is only shown when game has ended or player stopped
+      // No early return - let it submit normally
 
       if (!client) {
         return
@@ -897,6 +911,82 @@ function Play2048Page() {
         )}
       </AnimatePresence>
 
+      {/* Auto-Submit Countdown Modal */}
+      <AnimatePresence>
+        {showAutoSubmitCountdown && (
+          <>
+            {/* Modal Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+            />
+
+            {/* Modal Content */}
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="relative w-full max-w-md overflow-hidden rounded-3xl border border-red-500/40 bg-red-500/10 backdrop-blur-xl shadow-2xl"
+              >
+                <div className="p-6 sm:p-8">
+                  {/* Header with Icon */}
+                  <div className="mb-6 flex items-start gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-red-500/20 text-3xl">
+                      ⏱️
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-2xl leading-tight text-red-400">
+                        Time's Up!
+                      </h3>
+                      <p className="mt-2 text-sm text-slate-400">
+                        Your 3-minute Weekly Blitz has ended
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Final Score Display */}
+                  <div className="mb-6 rounded-xl border border-white/10 bg-black/30 px-6 py-4 text-center">
+                    <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
+                      Final Score
+                    </div>
+                    <div className="font-bold text-4xl text-white">
+                      {score.toLocaleString()}
+                    </div>
+                  </div>
+
+                  {/* Countdown Display */}
+                  <div className="mb-6 text-center">
+                    <div className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-red-400/30 bg-red-500/20 px-8 py-6">
+                      <div className="font-bold text-6xl text-red-400 tabular-nums">
+                        {autoSubmitCountdown}
+                      </div>
+                    </div>
+                    <p className="mt-4 text-sm text-slate-300">
+                      Auto-submitting to leaderboard...
+                    </p>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                    <motion.div
+                      initial={{ width: '100%' }}
+                      animate={{ opacity: 1, width: '0%' }}
+                      transition={{ duration: 5, ease: 'linear' }}
+                      className="h-full bg-gradient-to-r from-red-500 to-orange-500"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <Link
@@ -983,17 +1073,22 @@ function Play2048Page() {
                   title="Weekly Blitz"
                   specs={[
                     '5 PROOF entry',
-                    '5 minute timer',
+                    '3 minute timer',
                   ]}
-                  infoBadges={[
-                    '🔥 2 runs + 3 retries/day',
-                    '📊 Cumulative scoring',
-                    '🗓️ Monday-Sunday',
-                  ]}
+                  infoBadges={
+                    weeklyBlitzTracking
+                      ? [`${weeklyBlitzTracking.runsRemaining}/2 runs left today`]
+                      : ['2 runs/day max', '📊 Cumulative scoring', '🗓️ Monday-Sunday']
+                  }
                   ctaLabel="Play Blitz"
                   tone="classic"
                   selected={selectedMode === 'weekly-blitz'}
-                  disabled={!canStart || isLoadingClient || !canUseLiveWallet}
+                  disabled={
+                    !canStart ||
+                    isLoadingClient ||
+                    !canUseLiveWallet ||
+                    (weeklyBlitzTracking !== null && weeklyBlitzTracking.runsRemaining <= 0)
+                  }
                   onSelect={() => setSelectedMode('weekly-blitz')}
                   onStart={() => start('weekly-blitz')}
                 />
@@ -1154,18 +1249,6 @@ function Play2048Page() {
                           {session?.mode === 'training' ? 'Stop' : 'Submit Score'}
                         </motion.button>
                         
-                        {/* Retry button for Weekly Blitz after game ends */}
-                        {session?.mode === 'weekly-blitz' && lastOutcome && !isSubmitted && (
-                          <motion.button
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            onClick={() => start('weekly-blitz')}
-                            disabled={!canUseLiveWallet}
-                            className="rounded-xl border border-[#f0cf52]/30 bg-[#f0cf52]/10 px-3 py-3 text-sm font-semibold text-[#f0cf52] transition hover:bg-[#f0cf52]/20 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            Retry
-                          </motion.button>
-                        )}
                       </div>
 
                       {/* Daily Challenge Completed Notice */}

@@ -112,7 +112,7 @@ const HomePage = () => {
               </div>
 
               <p className="mt-4 text-base leading-7 text-slate-300">
-                Ready to play? Start a daily challenge or continue your classic run.
+                Ready to play? Choose from daily challenges, classic progression, or fast-paced weekly blitz.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -122,6 +122,14 @@ const HomePage = () => {
                 >
                   <Clock className="h-4 w-4" />
                   Daily Challenge
+                </Link>
+
+                <Link
+                  to="/play?mode=weekly-blitz"
+                  className="flex items-center gap-2 rounded-xl border border-[#ff6b9d]/30 bg-[#ff6b9d]/10 px-6 py-3 text-sm font-semibold text-[#ff6b9d] transition hover:bg-[#ff6b9d]/20 sm:text-base"
+                >
+                  <Zap className="h-4 w-4" />
+                  Weekly Blitz
                 </Link>
 
                 <Link
@@ -186,6 +194,12 @@ const HomePage = () => {
                 description="Compete for rewards"
               />
               <QuickActionCard
+                to="/play?mode=weekly-blitz"
+                icon={<Zap className="h-6 w-6" />}
+                title="Weekly Blitz"
+                description="3-min timed runs"
+              />
+              <QuickActionCard
                 to="/play?mode=classic"
                 icon={<Award className="h-6 w-6" />}
                 title="Classic Mode"
@@ -196,12 +210,6 @@ const HomePage = () => {
                 icon={<Trophy className="h-6 w-6" />}
                 title="Leaderboard"
                 description="See your rank"
-              />
-              <QuickActionCard
-                to="/profile"
-                icon={<Shield className="h-6 w-6" />}
-                title="Profile"
-                description="View achievements"
               />
             </div>
           </section>
@@ -278,7 +286,7 @@ const HomePage = () => {
               <h2 className="text-2xl font-bold text-white sm:text-3xl">Choose Your Path</h2>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-3 md:auto-rows-fr items-stretch">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:auto-rows-fr items-stretch">
               <GameModeCard
                 icon={<Target className="h-8 w-8" />}
                 title="Playtest"
@@ -295,24 +303,36 @@ const HomePage = () => {
                 icon={<Clock className="h-8 w-8" />}
                 title="Daily Challenge"
                 features={[
-                  'One competitive run per day',
+                  'One run per day',
                   'Shared reward pool',
                   'Daily leaderboard',
                 ]}
                 ctaText="Play Daily"
-                ctaLink="/play"
+                ctaLink="/play?mode=daily"
+                requiresWallet
+              />
+              <GameModeCard
+                icon={<Zap className="h-8 w-8" />}
+                title="Weekly Blitz"
+                features={[
+                  '3-minute timer',
+                  '2 runs per day',
+                  'Weekly competition',
+                ]}
+                ctaText="Play Blitz"
+                ctaLink="/play?mode=weekly-blitz"
                 requiresWallet
               />
               <GameModeCard
                 icon={<Award className="h-8 w-8" />}
                 title="Classic Mode"
                 features={[
-                  'Unlimited progression',
-                  'Persistent stats',
-                  'Long-term play',
+                  'Unlimited games',
+                  'Earn points',
+                  'Monthly leaderboard',
                 ]}
                 ctaText="Play Classic"
-                ctaLink="/play"
+                ctaLink="/play?mode=classic"
                 requiresWallet
               />
             </div>

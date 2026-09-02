@@ -6,7 +6,7 @@ All notable changes to ProofArcade will be documented in this file.
 
 ### Added
 
-- **Weekly Blitz Competition Mode**: Fast-paced 3-minute timed 2048 games
+- **Weekly Blitz**: Fast-paced 3-minute timed 2048 games
   - Entry fee: 5 PROOF per game
   - Daily limit: 2 runs per UTC day
   - Cumulative weekly scoring (Monday-Sunday UTC)
@@ -63,7 +63,7 @@ All notable changes to ProofArcade will be documented in this file.
   - Before: 2 paid runs + 3 free retries
   - After: 2 paid runs only
   - Cleaner daily limit enforcement
-  - All games contribute to prize pool
+  - All games count toward leaderboard
 
 - **Weekly Blitz Timer Reduced**: Changed from 5 minutes to 3 minutes
   - Faster-paced gameplay
