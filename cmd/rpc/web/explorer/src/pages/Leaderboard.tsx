@@ -6,7 +6,7 @@ import { Trophy } from 'lucide-react'
 import { createGame2048Client } from '../lib/chain2048'
 import { shortAddress } from '../lib/address'
 import { getUtcDateString } from '../lib/game2048'
-import type { DailyPrizePool, LeaderboardEntry, MonthlyLeaderboard, MonthlyPool } from '../lib/mockChain2048'
+import type { DailyPrizePool, LeaderboardEntry, MonthlyLeaderboard, MonthlyPool, WeeklyBlitzReward, WeeklyBlitzPool } from '../lib/mockChain2048'
 import { loadStoredWalletAuth } from '../lib/walletAuth'
 import { formatCNPY, toCNPY } from '../lib/utils'
 
@@ -31,6 +31,8 @@ function LeaderboardPage() {
   const [monthlyPool, setMonthlyPool] = useState<MonthlyPool | null>(null)
   const [previousMonthLeaderboard, setPreviousMonthLeaderboard] = useState<MonthlyLeaderboard | null>(null)
   const [previousWeekLeaderboard, setPreviousWeekLeaderboard] = useState<LeaderboardEntry[]>([])
+  const [weeklyBlitzReward, setWeeklyBlitzReward] = useState<WeeklyBlitzReward | null>(null)
+  const [weeklyBlitzPool, setWeeklyBlitzPool] = useState<WeeklyBlitzPool | null>(null)
   const [countdown, setCountdown] = useState(() => formatUtcCountdown())
   const [isLoading, setIsLoading] = useState(true)
   const [showAllEntries, setShowAllEntries] = useState(false)
@@ -70,7 +72,7 @@ function LeaderboardPage() {
             setPreviousMonthLeaderboard(nextPreviousMonthLeaderboard)
           }
         } else {
-          // Load daily/classic data
+          // Load daily/classic/weekly-blitz data
           const [nextLeaderboards, nextDailyPool] = await Promise.all([
             client.getLeaderboards(),
             client.getDailyPrizePool(getUtcDateString()),
@@ -78,6 +80,34 @@ function LeaderboardPage() {
           if (!cancelled) {
             setLeaderboards(nextLeaderboards)
             setDailyPool(nextDailyPool)
+          }
+          
+          // Load previous week's reward eligibility for weekly-blitz mode
+          if (activeMode === 'weekly-blitz' && storedWallet?.address) {
+            try {
+              const previousWeekId = getPreviousWeek()
+              const reward = await client.getWeeklyBlitzReward(storedWallet.address, previousWeekId)
+              if (!cancelled) {
+                setWeeklyBlitzReward(reward)
+              }
+            } catch (error) {
+              console.error('Failed to load weekly blitz reward:', error)
+              // Not a fatal error, just means no reward data
+            }
+          }
+
+          // Load current week pool balance
+          if (activeMode === 'weekly-blitz') {
+            try {
+              const currentWeekId = getCurrentWeek()
+              const pool = await client.getWeeklyBlitzPool(currentWeekId)
+              if (!cancelled) {
+                setWeeklyBlitzPool(pool)
+              }
+            } catch (error) {
+              console.error('Failed to load weekly blitz pool:', error)
+              // Not a fatal error, just means no pool data
+            }
           }
         }
       } catch (error) {
@@ -438,10 +468,11 @@ function LeaderboardPage() {
               <div className="flex-1">
                 <p className="text-xs uppercase tracking-[0.18em] text-[#ffb3cd]">Weekly Blitz Prize Pool</p>
                 <h2 className="mt-1 text-2xl font-bold text-white">
-                  Current Week
+                  {weeklyBlitzPool ? formatCNPY(toCNPY(weeklyBlitzPool.poolBalance)) : '---'}
                 </h2>
                 <p className="mt-1 max-w-xl text-xs leading-5 text-slate-300">
-                  Week {getCurrentWeek()} ({formatWeekDisplay(getCurrentWeek())}). 60% of entry fees contribute to the weekly prize pool.
+                  Week {getCurrentWeek()} ({formatWeekDisplay(getCurrentWeek())}). 
+                  {weeklyBlitzPool ? ` ${weeklyBlitzPool.entryCount} entries • ${formatCNPY(toCNPY(weeklyBlitzPool.grossFees))} total fees` : ' Loading...'}
                 </p>
               </div>
 
@@ -450,16 +481,19 @@ function LeaderboardPage() {
               </div>
             </div>
 
-            {/* Claim Button - Show if player was ranked in previous week (top 30%) */}
-            {storedWallet?.address && userRank !== -1 && userRank < Math.ceil(activeLeaderboard.length * 0.3) && activeLeaderboard.length >= 20 && (
+            {/* Claim Button - Show if player is eligible based on reward query */}
+            {storedWallet?.address && weeklyBlitzReward?.eligible && !weeklyBlitzReward.alreadyClaimed && (
               <div className="rounded-xl border border-[#ff6b9d]/30 bg-[#ff6b9d]/10 p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold text-[#ffb3cd]">
-                      🏆 Last Week: Rank #{userRank + 1}
+                      🏆 Last Week: Rank #{weeklyBlitzReward.rank} ({weeklyBlitzReward.tier})
                     </p>
                     <p className="mt-1 text-xs text-slate-400">
-                      You finished Week {getPreviousWeek()} ({formatWeekDisplay(getPreviousWeek())}) in the top 30%. Claim your reward!
+                      You finished Week {getPreviousWeek()} ({formatWeekDisplay(getPreviousWeek())}) eligible for rewards.
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-[#ffb3cd]">
+                      Reward: {formatCNPY(toCNPY(weeklyBlitzReward.rewardAmount))}
                     </p>
                   </div>
                   <button

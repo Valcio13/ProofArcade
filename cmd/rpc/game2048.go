@@ -2,6 +2,7 @@ package rpc
 
 // Game 2048 RPC handlers and utilities
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
@@ -287,6 +288,58 @@ type game2048ClaimWeeklyBlitzRewardResponse struct {
 	TxHash    string `json:"txHash"`
 	WeekID    uint64 `json:"weekId"`
 	Submitted bool   `json:"submitted"`
+}
+
+type weeklyBlitzRewardRequest struct {
+	Address string `json:"address"`
+	WeekID  uint64 `json:"weekId"`
+}
+
+type weeklyBlitzRewardResponse struct {
+	Eligible          bool   `json:"eligible"`
+	Rank              uint64 `json:"rank"`
+	RewardAmount      uint64 `json:"rewardAmount"`
+	Tier              string `json:"tier"`
+	AlreadyClaimed    bool   `json:"alreadyClaimed"`
+	TotalParticipants uint64 `json:"totalParticipants"`
+	MinParticipants   uint64 `json:"minParticipants"`
+	RolledOver        bool   `json:"rolledOver"`
+}
+
+type weeklyBlitzAllocationsRequest struct {
+	WeekID uint64 `json:"weekId"`
+}
+
+type weeklyBlitzAllocationEntry struct {
+	Rank         uint64 `json:"rank"`
+	Address      string `json:"address"`
+	Username     string `json:"username"`
+	Score        uint64 `json:"score"`
+	Tier         string `json:"tier"`
+	RewardAmount uint64 `json:"rewardAmount"`
+	Claimed      bool   `json:"claimed"`
+}
+
+type weeklyBlitzAllocationsResponse struct {
+	WeekID            uint64                        `json:"weekId"`
+	TotalParticipants uint64                        `json:"totalParticipants"`
+	TotalWinners      uint64                        `json:"totalWinners"`
+	TotalPool         uint64                        `json:"totalPool"`
+	TotalDistributed  uint64                        `json:"totalDistributed"`
+	RolledOver        bool                          `json:"rolledOver"`
+	Allocations       []weeklyBlitzAllocationEntry  `json:"allocations"`
+}
+
+type weeklyBlitzPoolRequest struct {
+	WeekID uint64 `json:"weekId"`
+}
+
+type weeklyBlitzPoolResponse struct {
+	WeekID       uint64 `json:"weekId"`
+	PoolBalance  uint64 `json:"poolBalance"`
+	EntryCount   uint64 `json:"entryCount"`
+	GrossFees    uint64 `json:"grossFees"`
+	Finalized    bool   `json:"finalized"`
 }
 
 type game2048ClaimDailyLoginRewardResponse struct {
@@ -661,6 +714,78 @@ func (s *Server) Game2048AddressByUsername(w http.ResponseWriter, r *http.Reques
 	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
 		var gameErr lib.ErrorI
 		response, gameErr = loadGame2048AddressByUsername(state, req.Username)
+		return gameErr
+	})
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	write(w, response, http.StatusOK)
+}
+
+func (s *Server) Game2048WeeklyBlitzTracking(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(weeklyBlitzTrackingRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+	var response weeklyBlitzTrackingResponse
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		var gameErr lib.ErrorI
+		response, gameErr = loadWeeklyBlitzTracking(state, req.Address, req.UtcDate)
+		return gameErr
+	})
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	write(w, response, http.StatusOK)
+}
+
+func (s *Server) Game2048WeeklyBlitzReward(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(weeklyBlitzRewardRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+	var response weeklyBlitzRewardResponse
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		var gameErr lib.ErrorI
+		response, gameErr = checkWeeklyBlitzReward(state, lib.HexBytes(req.Address), req.WeekID)
+		return gameErr
+	})
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	write(w, response, http.StatusOK)
+}
+
+func (s *Server) Game2048WeeklyBlitzAllocations(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(weeklyBlitzAllocationsRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+	var response weeklyBlitzAllocationsResponse
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		var gameErr lib.ErrorI
+		response, gameErr = loadWeeklyBlitzAllocations(state, req.WeekID)
+		return gameErr
+	})
+	if err != nil {
+		write(w, err, http.StatusBadRequest)
+		return
+	}
+	write(w, response, http.StatusOK)
+}
+
+func (s *Server) Game2048WeeklyBlitzPool(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	req := new(weeklyBlitzPoolRequest)
+	if !unmarshal(w, r, req) {
+		return
+	}
+	var response weeklyBlitzPoolResponse
+	err := s.readOnlyState(0, func(state *fsm.StateMachine) lib.ErrorI {
+		var gameErr lib.ErrorI
+		response, gameErr = loadWeeklyBlitzPool(state, req.WeekID)
 		return gameErr
 	})
 	if err != nil {
@@ -2082,6 +2207,64 @@ func loadGame2048AddressByUsername(state *fsm.StateMachine, username string) (ga
 	}, nil
 }
 
+func loadWeeklyBlitzTracking(state *fsm.StateMachine, address lib.HexBytes, utcDate string) (weeklyBlitzTrackingResponse, lib.ErrorI) {
+	// If no utcDate provided, use current UTC date
+	if utcDate == "" {
+		now := time.Now().UTC()
+		utcDate = now.Format("2006-01-02")
+	}
+
+	bz, err := state.Get(keyForWeeklyBlitzDailyTracking(utcDate, address))
+	if err != nil {
+		return weeklyBlitzTrackingResponse{}, err
+	}
+
+	// If no tracking record exists, return zeros (no runs used)
+	if len(bz) == 0 {
+		// Calculate weekId for the given date
+		dateTime, parseErr := time.Parse("2006-01-02", utcDate)
+		if parseErr != nil {
+			return weeklyBlitzTrackingResponse{}, lib.ErrInvalidArgument()
+		}
+		unixSeconds := dateTime.Unix()
+		weekIdString := calculateWeekId(unixSeconds)
+
+		return weeklyBlitzTrackingResponse{
+			Address:          address,
+			UtcDate:          utcDate,
+			WeekId:           weekIdString,
+			OfficialRunsUsed: 0,
+			RunsRemaining:    2,
+			LastPlayedAtUnix: 0,
+		}, nil
+	}
+
+	// Decode tracking data
+	message, decodeErr := decodeGame2048State("WeeklyBlitzDailyTracking", bz)
+	if decodeErr != nil {
+		return weeklyBlitzTrackingResponse{}, decodeErr
+	}
+
+	officialRunsUsed := int(uint64Field(message, "official_runs_used", 0))
+	runsRemaining := max(0, 2-officialRunsUsed)
+
+	return weeklyBlitzTrackingResponse{
+		Address:          address,
+		UtcDate:          stringField(message, "utc_date", utcDate),
+		WeekId:           stringField(message, "week_id", ""),
+		OfficialRunsUsed: officialRunsUsed,
+		RunsRemaining:    runsRemaining,
+		LastPlayedAtUnix: uint64Field(message, "last_played_at_unix", 0),
+	}, nil
+}
+
+func calculateWeekId(unixSeconds int64) string {
+	const WEEK_SECONDS = 7 * 24 * 60 * 60
+	const EPOCH_OFFSET = 4 * 24 * 60 * 60 // Thursday offset to make Monday week start
+	weekNumber := (unixSeconds - EPOCH_OFFSET) / WEEK_SECONDS
+	return fmt.Sprintf("week_%d", weekNumber)
+}
+
 func loadGame2048Player(state *fsm.StateMachine, address []byte) (game2048PlayerResponse, lib.ErrorI) {
 	account, err := state.GetAccount(crypto.NewAddress(address))
 	if err != nil {
@@ -2431,6 +2614,10 @@ func keyForPlayerIdentity(address []byte) []byte {
 	return lib.JoinLenPrefix(game2048Prefix, []byte("player-identity"), address)
 }
 
+func keyForWeeklyBlitzDailyTracking(utcDate string, address []byte) []byte {
+	return lib.JoinLenPrefix(game2048Prefix, []byte("weekly-blitz-tracking"), []byte(utcDate), address)
+}
+
 func keyForMonthlyLeaderboardPrefix(monthID string) []byte {
 	return lib.JoinLenPrefix(game2048Prefix, []byte("monthly-leaderboard"), []byte(monthID))
 }
@@ -2477,6 +2664,18 @@ func keyForClassicLeaderboardPrefix() []byte {
 
 func keyForWeeklyBlitzLeaderboardPrefix(weekId string) []byte {
 	return lib.JoinLenPrefix(game2048Prefix, []byte("weekly-blitz-leaderboard"), []byte(weekId))
+}
+
+func keyForWeeklyBlitzRewardClaim(weekId string, address []byte) []byte {
+	return lib.JoinLenPrefix(game2048Prefix, []byte("weekly-blitz-claim"), []byte(weekId), address)
+}
+
+func keyForGameWeeklyPool() []byte {
+	// Weekly prize pool is stored at Pool ID 131077
+	// poolPrefix is [2], then we append the uint64 pool ID in big-endian
+	poolIdBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(poolIdBytes, 131077)
+	return lib.JoinLenPrefix([]byte{2}, poolIdBytes)
 }
 
 func defaultDailyPayoutBps() []uint64 {
@@ -2856,6 +3055,13 @@ func game2048FileDescriptor() (protoreflect.FileDescriptor, lib.ErrorI) {
 				stringFieldDescriptor("last_login_claim_utc_date", 14),
 				stringFieldDescriptor("classic_points_bonus_utc_date", 15),
 			}),
+			messageDescriptor("WeeklyBlitzDailyTracking", []*descriptorpb.FieldDescriptorProto{
+				stringFieldDescriptor("utc_date", 1),
+				bytesFieldDescriptor("player_address", 2),
+				stringFieldDescriptor("week_id", 3),
+				uint64FieldDescriptor("official_runs_used", 4),
+				uint64FieldDescriptor("last_played_at_unix", 5),
+			}),
 			messageDescriptor("PlayerBan", []*descriptorpb.FieldDescriptorProto{
 				bytesFieldDescriptor("player_address", 1),
 				stringFieldDescriptor("reason", 2),
@@ -3048,4 +3254,424 @@ func stopReasonToString(stopReason int32) string {
 	default:
 		return "player_stopped" // Default to player_stopped for backward compatibility
 	}
+}
+
+func checkWeeklyBlitzReward(state *fsm.StateMachine, address lib.HexBytes, weekNumber uint64) (weeklyBlitzRewardResponse, lib.ErrorI) {
+	weekId := fmt.Sprintf("week_%d", weekNumber)
+	
+	// Check if already claimed
+	claimKey := keyForWeeklyBlitzRewardClaim(weekId, address)
+	claimBytes, claimErr := state.Get(claimKey)
+	if claimErr != nil {
+		return weeklyBlitzRewardResponse{}, claimErr
+	}
+	
+	alreadyClaimed := len(claimBytes) > 0
+	
+	// Load leaderboard for this week
+	prefix := keyForWeeklyBlitzLeaderboardPrefix(weekId)
+	iterator, iterErr := state.Iterator(prefix)
+	if iterErr != nil {
+		return weeklyBlitzRewardResponse{}, iterErr
+	}
+	defer iterator.Close()
+	
+	// Parse leaderboard entries
+	type leaderboardEntry struct {
+		rank          int
+		playerAddress []byte
+		score         uint64
+	}
+	
+	leaderboard := make([]leaderboardEntry, 0, 500)
+	rank := 1
+	playerRank := 0
+	
+	for iterator.Valid() && len(leaderboard) < 500 {
+		// Leaderboard entry format: 20 bytes (address) + 8 bytes (score big-endian)
+		value := iterator.Value()
+		if len(value) < 28 {
+			iterator.Next()
+			continue
+		}
+		
+		entryAddress := value[0:20]
+		scoreBuf := value[20:28]
+		score := binary.BigEndian.Uint64(scoreBuf)
+		
+		leaderboard = append(leaderboard, leaderboardEntry{
+			rank:          rank,
+			playerAddress: entryAddress,
+			score:         score,
+		})
+		
+		if bytes.Equal(entryAddress, address) {
+			playerRank = rank
+		}
+		
+		rank++
+		iterator.Next()
+	}
+	
+	totalParticipants := uint64(len(leaderboard))
+	
+	// Check minimum participants (20)
+	const minParticipants = 20
+	if totalParticipants < minParticipants {
+		return weeklyBlitzRewardResponse{
+			Eligible:          false,
+			Rank:              uint64(playerRank),
+			RewardAmount:      0,
+			Tier:              "",
+			AlreadyClaimed:    alreadyClaimed,
+			TotalParticipants: totalParticipants,
+			MinParticipants:   minParticipants,
+			RolledOver:        true,
+		}, nil
+	}
+	
+	// Check if player is on leaderboard
+	if playerRank == 0 {
+		return weeklyBlitzRewardResponse{
+			Eligible:          false,
+			Rank:              0,
+			RewardAmount:      0,
+			Tier:              "",
+			AlreadyClaimed:    false,
+			TotalParticipants: totalParticipants,
+			MinParticipants:   minParticipants,
+			RolledOver:        false,
+		}, nil
+	}
+	
+	// Check if player is in top 30% (reward percentage from WEEKLY_BLITZ_CONFIG)
+	const rewardPercentage = 0.30
+	maxWinnerRank := int(float64(totalParticipants) * rewardPercentage)
+	if maxWinnerRank < 5 { // minWinners
+		maxWinnerRank = 5
+	}
+	if maxWinnerRank > 50 { // maxWinners
+		maxWinnerRank = 50
+	}
+	
+	if playerRank > maxWinnerRank {
+		return weeklyBlitzRewardResponse{
+			Eligible:          false,
+			Rank:              uint64(playerRank),
+			RewardAmount:      0,
+			Tier:              "",
+			AlreadyClaimed:    false,
+			TotalParticipants: totalParticipants,
+			MinParticipants:   minParticipants,
+			RolledOver:        false,
+		}, nil
+	}
+	
+	// Get weekly prize pool
+	weeklyPoolKey := keyForGameWeeklyPool()
+	weeklyPoolBytes, poolErr := state.Get(weeklyPoolKey)
+	if poolErr != nil {
+		return weeklyBlitzRewardResponse{}, poolErr
+	}
+	
+	if len(weeklyPoolBytes) == 0 {
+		return weeklyBlitzRewardResponse{
+			Eligible:          false,
+			Rank:              uint64(playerRank),
+			RewardAmount:      0,
+			Tier:              "",
+			AlreadyClaimed:    alreadyClaimed,
+			TotalParticipants: totalParticipants,
+			MinParticipants:   minParticipants,
+			RolledOver:        false,
+		}, nil
+	}
+	
+	// Unmarshal Pool (lib.types.Pool) - has id (uint64) and amount (uint64)
+	// Simple format: 8 bytes for id + 8 bytes for amount
+	if len(weeklyPoolBytes) < 16 {
+		return weeklyBlitzRewardResponse{}, lib.ErrInvalidArgument()
+	}
+	
+	// Read the amount (second uint64)
+	totalPool := binary.BigEndian.Uint64(weeklyPoolBytes[8:16])
+	if totalPool == 0 {
+		return weeklyBlitzRewardResponse{
+			Eligible:          false,
+			Rank:              uint64(playerRank),
+			RewardAmount:      0,
+			Tier:              "",
+			AlreadyClaimed:    alreadyClaimed,
+			TotalParticipants: totalParticipants,
+			MinParticipants:   minParticipants,
+			RolledOver:        false,
+		}, nil
+	}
+	
+	// Calculate reward distribution using the tier system
+	tier, rewardAmount := calculatePlayerWeeklyBlitzReward(playerRank, maxWinnerRank, totalPool, totalParticipants)
+	
+	return weeklyBlitzRewardResponse{
+		Eligible:          true,
+		Rank:              uint64(playerRank),
+		RewardAmount:      rewardAmount,
+		Tier:              tier,
+		AlreadyClaimed:    alreadyClaimed,
+		TotalParticipants: totalParticipants,
+		MinParticipants:   minParticipants,
+		RolledOver:        false,
+	}, nil
+}
+
+func calculatePlayerWeeklyBlitzReward(playerRank int, maxWinners int, totalPool uint64, totalParticipants uint64) (string, uint64) {
+	// Tier boundaries based on WEEKLY_BLITZ_CONFIG
+	// Elite: Top 5% (40% of pool, exponential)
+	// Champion: Next 10% (35% of pool, linear)
+	// Challenger: Next 15% (25% of pool, equal)
+	
+	eliteBoundary := int(float64(totalParticipants) * 0.05)
+	if eliteBoundary < 1 {
+		eliteBoundary = 1
+	}
+	championBoundary := int(float64(totalParticipants) * 0.15)
+	if championBoundary < 2 {
+		championBoundary = 2
+	}
+	
+	var tier string
+	var tierPool uint64
+	var tierStartRank int
+	var tierEndRank int
+	var distributionType string
+	
+	if playerRank <= eliteBoundary {
+		tier = "Elite"
+		tierPool = (totalPool * 40) / 100
+		tierStartRank = 1
+		tierEndRank = eliteBoundary
+		distributionType = "exponential"
+	} else if playerRank <= championBoundary {
+		tier = "Champion"
+		tierPool = (totalPool * 35) / 100
+		tierStartRank = eliteBoundary + 1
+		tierEndRank = championBoundary
+		distributionType = "linear"
+	} else {
+		tier = "Challenger"
+		tierPool = (totalPool * 25) / 100
+		tierStartRank = championBoundary + 1
+		tierEndRank = maxWinners
+		distributionType = "equal"
+	}
+	
+	tierSize := tierEndRank - tierStartRank + 1
+	if tierSize <= 0 {
+		return tier, 0
+	}
+	
+	positionInTier := playerRank - tierStartRank + 1
+	
+	var reward uint64
+	
+	switch distributionType {
+	case "exponential":
+		// Higher ranks get exponentially more
+		// Use 2^(tierSize - position) weighting
+		totalWeight := uint64(0)
+		for i := 0; i < tierSize; i++ {
+			weight := uint64(1 << uint(tierSize-i-1))
+			totalWeight += weight
+		}
+		playerWeight := uint64(1 << uint(tierSize-positionInTier))
+		reward = (tierPool * playerWeight) / totalWeight
+		
+	case "linear":
+		// Linear decrease from top to bottom
+		totalWeight := uint64((tierSize * (tierSize + 1)) / 2)
+		playerWeight := uint64(tierSize - positionInTier + 1)
+		reward = (tierPool * playerWeight) / totalWeight
+		
+	case "equal":
+		// Equal distribution
+		reward = tierPool / uint64(tierSize)
+	}
+	
+	return tier, reward
+}
+
+func loadWeeklyBlitzAllocations(state *fsm.StateMachine, weekNumber uint64) (weeklyBlitzAllocationsResponse, lib.ErrorI) {
+	weekId := fmt.Sprintf("week_%d", weekNumber)
+	
+	// Load leaderboard for this week
+	prefix := keyForWeeklyBlitzLeaderboardPrefix(weekId)
+	iterator, iterErr := state.Iterator(prefix)
+	if iterErr != nil {
+		return weeklyBlitzAllocationsResponse{}, iterErr
+	}
+	defer iterator.Close()
+	
+	// Parse leaderboard entries
+	type leaderboardEntry struct {
+		rank          int
+		playerAddress []byte
+		score         uint64
+	}
+	
+	leaderboard := make([]leaderboardEntry, 0, 500)
+	rank := 1
+	
+	for iterator.Valid() && len(leaderboard) < 500 {
+		// Leaderboard entry format: 20 bytes (address) + 8 bytes (score big-endian)
+		value := iterator.Value()
+		if len(value) < 28 {
+			iterator.Next()
+			continue
+		}
+		
+		entryAddress := value[0:20]
+		scoreBuf := value[20:28]
+		score := binary.BigEndian.Uint64(scoreBuf)
+		
+		leaderboard = append(leaderboard, leaderboardEntry{
+			rank:          rank,
+			playerAddress: entryAddress,
+			score:         score,
+		})
+		
+		rank++
+		iterator.Next()
+	}
+	
+	totalParticipants := uint64(len(leaderboard))
+	
+	// Check minimum participants (20)
+	const minParticipants = 20
+	if totalParticipants < minParticipants {
+		return weeklyBlitzAllocationsResponse{
+			WeekID:            weekNumber,
+			TotalParticipants: totalParticipants,
+			TotalWinners:      0,
+			TotalPool:         0,
+			TotalDistributed:  0,
+			RolledOver:        true,
+			Allocations:       []weeklyBlitzAllocationEntry{},
+		}, nil
+	}
+	
+	// Get weekly prize pool
+	weeklyPoolKey := keyForGameWeeklyPool()
+	weeklyPoolBytes, poolErr := state.Get(weeklyPoolKey)
+	if poolErr != nil {
+		return weeklyBlitzAllocationsResponse{}, poolErr
+	}
+	
+	var totalPool uint64
+	if len(weeklyPoolBytes) >= 16 {
+		totalPool = binary.BigEndian.Uint64(weeklyPoolBytes[8:16])
+	}
+	
+	// Calculate reward eligibility (top 30%)
+	const rewardPercentage = 0.30
+	maxWinnerRank := int(float64(totalParticipants) * rewardPercentage)
+	if maxWinnerRank < 5 { // minWinners
+		maxWinnerRank = 5
+	}
+	if maxWinnerRank > 50 { // maxWinners
+		maxWinnerRank = 50
+	}
+	
+	// Calculate rewards for each winner
+	allocations := make([]weeklyBlitzAllocationEntry, 0, maxWinnerRank)
+	totalDistributed := uint64(0)
+	
+	for i := 0; i < maxWinnerRank && i < len(leaderboard); i++ {
+		entry := leaderboard[i]
+		tier, rewardAmount := calculatePlayerWeeklyBlitzReward(entry.rank, maxWinnerRank, totalPool, totalParticipants)
+		
+		// Check if claimed
+		claimKey := keyForWeeklyBlitzRewardClaim(weekId, entry.playerAddress)
+		claimBytes, _ := state.Get(claimKey)
+		claimed := len(claimBytes) > 0
+		
+		// Look up username
+		username := ""
+		identityKey := keyForPlayerIdentity(entry.playerAddress)
+		identityBytes, identityErr := state.Get(identityKey)
+		if identityErr == nil && identityBytes != nil && len(identityBytes) > 0 {
+			identityMsg, identityDecodeErr := decodeGame2048State("PlayerIdentity", identityBytes)
+			if identityDecodeErr == nil {
+				username = stringField(identityMsg, "username", "")
+			}
+		}
+		
+		allocations = append(allocations, weeklyBlitzAllocationEntry{
+			Rank:         uint64(entry.rank),
+			Address:      hex.EncodeToString(entry.playerAddress),
+			Username:     username,
+			Score:        entry.score,
+			Tier:         tier,
+			RewardAmount: rewardAmount,
+			Claimed:      claimed,
+		})
+		
+		totalDistributed += rewardAmount
+	}
+	
+	return weeklyBlitzAllocationsResponse{
+		WeekID:            weekNumber,
+		TotalParticipants: totalParticipants,
+		TotalWinners:      uint64(len(allocations)),
+		TotalPool:         totalPool,
+		TotalDistributed:  totalDistributed,
+		RolledOver:        false,
+		Allocations:       allocations,
+	}, nil
+}
+
+func loadWeeklyBlitzPool(state *fsm.StateMachine, weekNumber uint64) (weeklyBlitzPoolResponse, lib.ErrorI) {
+	weekId := fmt.Sprintf("week_%d", weekNumber)
+	
+	// Get main weekly prize pool balance (Pool ID 131077)
+	weeklyPoolKey := keyForGameWeeklyPool()
+	weeklyPoolBytes, poolErr := state.Get(weeklyPoolKey)
+	if poolErr != nil {
+		return weeklyBlitzPoolResponse{}, poolErr
+	}
+	
+	var poolBalance uint64
+	if len(weeklyPoolBytes) >= 16 {
+		poolBalance = binary.BigEndian.Uint64(weeklyPoolBytes[8:16])
+	}
+	
+	// Get weekly metadata pool (entryCount, grossFees, finalized)
+	metadataKey := keyForWeeklyBlitzPool(weekId)
+	metadataBytes, metadataErr := state.Get(metadataKey)
+	
+	var entryCount uint64
+	var grossFees uint64
+	var finalized bool
+	
+	if metadataErr == nil && metadataBytes != nil && len(metadataBytes) > 0 {
+		// Decode WeeklyBlitzPool protobuf message
+		metadataMsg, decodeErr := decodeGame2048State("WeeklyBlitzPool", metadataBytes)
+		if decodeErr == nil {
+			entryCount = uint64Field(metadataMsg, "entryCount", 0)
+			grossFees = uint64Field(metadataMsg, "grossFees", 0)
+			finalized = boolField(metadataMsg, "finalized")
+		}
+	}
+	
+	return weeklyBlitzPoolResponse{
+		WeekID:      weekNumber,
+		PoolBalance: poolBalance,
+		EntryCount:  entryCount,
+		GrossFees:   grossFees,
+		Finalized:   finalized,
+	}, nil
+}
+
+func keyForWeeklyBlitzPool(weekId string) []byte {
+	// Weekly metadata pool: gamePrefix + "weekly-blitz-pool" + weekId
+	gamePrefix := []byte{5}
+	return lib.JoinLenPrefix(gamePrefix, []byte("weekly-blitz-pool"), []byte(weekId))
 }

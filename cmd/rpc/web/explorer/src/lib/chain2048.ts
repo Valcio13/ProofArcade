@@ -19,6 +19,9 @@ import {
   claimDailyLoginReward as claimMockDailyLoginReward,
   getUsernameByAddress as getMockUsernameByAddress,
   getAddressByUsername as getMockAddressByUsername,
+  getWeeklyBlitzTracking as getMockWeeklyBlitzTracking,
+  getWeeklyBlitzReward as getMockWeeklyBlitzReward,
+  getWeeklyBlitzPool as getMockWeeklyBlitzPool,
   setUsername as setMockUsername,
   validateUsername as validateMockUsername,
   type ChainConfig,
@@ -34,6 +37,9 @@ import {
   type SessionStart,
   type UsernameResponse,
   type AddressByUsernameResponse,
+  type WeeklyBlitzTracking,
+  type WeeklyBlitzReward,
+  type WeeklyBlitzPool,
 } from './mockChain2048'
 import { createRpcGame2048Client } from './rpcChain2048'
 
@@ -162,6 +168,9 @@ export interface Game2048Client {
   getRecentRuns(address?: string): Promise<RecentRun[]>
   getUsernameByAddress(address: string): Promise<UsernameResponse>
   getAddressByUsername(username: string): Promise<AddressByUsernameResponse>
+  getWeeklyBlitzTracking(address: string, utcDate?: string): Promise<WeeklyBlitzTracking>
+  getWeeklyBlitzReward(address: string, weekId: number): Promise<WeeklyBlitzReward>
+  getWeeklyBlitzPool(weekId: number): Promise<WeeklyBlitzPool>
   setUsername(args: SetUsernameArgs): Promise<SetUsernameResult>
   addFunds(address: string, amount?: number): Promise<FaucetResult>
   startSession(address: string, mode: GameMode, password?: string): Promise<SessionStart>
@@ -216,6 +225,15 @@ function createMockGame2048Client(): Game2048Client {
     },
     async getAddressByUsername(username: string) {
       return getMockAddressByUsername(username)
+    },
+    async getWeeklyBlitzTracking(address: string, utcDate?: string) {
+      return getMockWeeklyBlitzTracking(address, utcDate)
+    },
+    async getWeeklyBlitzReward(address: string, weekId: number) {
+      return getMockWeeklyBlitzReward(address, weekId)
+    },
+    async getWeeklyBlitzPool(weekId: number) {
+      return getMockWeeklyBlitzPool(weekId)
     },
     async addFunds(address: string, amount?: number) {
       return { player: addMockFunds(address, amount) }

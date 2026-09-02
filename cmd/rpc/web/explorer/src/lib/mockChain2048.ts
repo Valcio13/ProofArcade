@@ -171,6 +171,34 @@ export interface AddressByUsernameResponse {
   address?: string
 }
 
+export interface WeeklyBlitzTracking {
+  address: string
+  utcDate: string
+  weekId: string
+  officialRunsUsed: number
+  runsRemaining: number
+  lastPlayedAtUnix: number
+}
+
+export interface WeeklyBlitzReward {
+  eligible: boolean
+  rank: number
+  rewardAmount: number
+  tier: string
+  alreadyClaimed: boolean
+  totalParticipants: number
+  minParticipants: number
+  rolledOver: boolean
+}
+
+export interface WeeklyBlitzPool {
+  weekId: number
+  poolBalance: number
+  entryCount: number
+  grossFees: number
+  finalized: boolean
+}
+
 interface MockChainState {
   config: ChainConfig
   players: Record<string, PlayerStats>
@@ -576,6 +604,56 @@ export function getAddressByUsername(username: string): AddressByUsernameRespons
   return {
     username,
     address: address || undefined,
+  }
+}
+
+export function getWeeklyBlitzTracking(address: string, utcDate?: string): WeeklyBlitzTracking {
+  // Mock: Weekly Blitz tracking
+  // FOR TESTING: Set runsUsed to test button disable logic
+  const date = utcDate || getUtcDateString()
+  const epochTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0) / 1000
+  const dateTimestamp = new Date(date).getTime() / 1000
+  const weekSeconds = 7 * 24 * 60 * 60
+  const weekId = Math.floor((dateTimestamp - epochTimestamp) / weekSeconds)
+  
+  // Test scenario: Change runsUsed to 2 to test button disabling
+  const runsUsed = 0 // Set to 2 to test "no more plays" scenario
+  const maxRuns = 2
+  
+  return {
+    address,
+    utcDate: date,
+    weekId: `week_${weekId}`,
+    officialRunsUsed: runsUsed,
+    runsRemaining: Math.max(0, maxRuns - runsUsed),
+    lastPlayedAtUnix: runsUsed > 0 ? Date.now() / 1000 : 0,
+  }
+}
+
+export function getWeeklyBlitzReward(address: string, weekId: number): WeeklyBlitzReward {
+  // Mock: Weekly Blitz reward checking
+  // Returns not eligible by default for testing
+  return {
+    eligible: false,
+    rank: 0,
+    rewardAmount: 0,
+    tier: '',
+    alreadyClaimed: false,
+    totalParticipants: 0,
+    minParticipants: 20,
+    rolledOver: false,
+  }
+}
+
+export function getWeeklyBlitzPool(weekId: number): WeeklyBlitzPool {
+  // Mock: Weekly Blitz pool balance
+  // Returns mock pool data for testing
+  return {
+    weekId,
+    poolBalance: 500000000, // 500 PROOF (in micro-denomination)
+    entryCount: 45,
+    grossFees: 625000000, // 625 PROOF
+    finalized: false,
   }
 }
 

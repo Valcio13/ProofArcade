@@ -32,6 +32,9 @@ import type {
   SessionStart,
   UsernameResponse,
   AddressByUsernameResponse,
+  WeeklyBlitzTracking,
+  WeeklyBlitzReward,
+  WeeklyBlitzPool,
 } from './mockChain2048'
 import { getWalletPassword } from './walletAuth'
 
@@ -48,6 +51,9 @@ const queryRedemptionsPath = '/v1/query/2048/redemptions'
 const queryGameHistoryPath = '/v1/query/2048/game-history'
 const queryUsernamePath = '/v1/query/2048/username'
 const queryAddressByUsernamePath = '/v1/query/2048/address-by-username'
+const queryWeeklyBlitzTrackingPath = '/v1/query/2048/weekly-blitz-tracking'
+const queryWeeklyBlitzRewardPath = '/v1/query/2048/weekly-blitz-reward'
+const queryWeeklyBlitzPoolPath = '/v1/query/2048/weekly-blitz-pool'
 const txSetUsernamePath = '/v1/admin/tx-2048-set-username'
 const txStartDailyPath = '/v1/admin/tx-2048-start-daily'
 const txStartClassicPath = '/v1/admin/tx-2048-start-classic'
@@ -468,6 +474,26 @@ export function createRpcGame2048Client(): {
     },
     async getAddressByUsername(username: string) {
       return postJson<AddressByUsernameResponse>(rpcURL, queryAddressByUsernamePath, { username })
+    },
+    async getWeeklyBlitzTracking(address: string, utcDate?: string) {
+      const liveAddress = assertHexAddress(address)
+      const date = utcDate || new Date().toISOString().split('T')[0]
+      return postJson<WeeklyBlitzTracking>(rpcURL, queryWeeklyBlitzTrackingPath, { 
+        address: liveAddress,
+        utcDate: date
+      })
+    },
+    async getWeeklyBlitzReward(address: string, weekId: number) {
+      const liveAddress = assertHexAddress(address)
+      return postJson<WeeklyBlitzReward>(rpcURL, queryWeeklyBlitzRewardPath, {
+        address: liveAddress,
+        weekId
+      })
+    },
+    async getWeeklyBlitzPool(weekId: number) {
+      return postJson<WeeklyBlitzPool>(rpcURL, queryWeeklyBlitzPoolPath, {
+        weekId
+      })
     },
     async getRecentRuns(address?: string) {
       if (!address) {

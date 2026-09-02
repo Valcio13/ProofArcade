@@ -77,6 +77,10 @@ const (
 	Game2048GameHistoryRoutePath       = "/v1/query/2048/game-history"
 	Game2048UsernameRoutePath          = "/v1/query/2048/username"
 	Game2048AddressByUsernameRoutePath = "/v1/query/2048/address-by-username"
+	Game2048WeeklyBlitzTrackingRoutePath = "/v1/query/2048/weekly-blitz-tracking"
+	Game2048WeeklyBlitzRewardRoutePath   = "/v1/query/2048/weekly-blitz-reward"
+	Game2048WeeklyBlitzAllocationsRoutePath = "/v1/query/2048/weekly-blitz-allocations"
+	Game2048WeeklyBlitzPoolRoutePath     = "/v1/query/2048/weekly-blitz-pool"
 	SubscribeRCInfoPath                = "/v1/subscribe-rc-info"
 	// eth
 	EthereumRoutePath = "/v1/eth"
@@ -206,6 +210,10 @@ const (
 	Game2048GameHistoryRouteName       = "2048-game-history"
 	Game2048UsernameRouteName          = "2048-username"
 	Game2048AddressByUsernameRouteName = "2048-address-by-username"
+	Game2048WeeklyBlitzTrackingRouteName = "2048-weekly-blitz-tracking"
+	Game2048WeeklyBlitzRewardRouteName   = "2048-weekly-blitz-reward"
+	Game2048WeeklyBlitzAllocationsRouteName = "2048-weekly-blitz-allocations"
+	Game2048WeeklyBlitzPoolRouteName     = "2048-weekly-blitz-pool"
 	// debug
 	DebugBlockedRouteName   = "blocked"
 	DebugHeapRouteName      = "heap"
@@ -347,6 +355,10 @@ var routePaths = routes{
 	Game2048GameHistoryRouteName:       {Method: http.MethodPost, Path: Game2048GameHistoryRoutePath},
 	Game2048UsernameRouteName:          {Method: http.MethodPost, Path: Game2048UsernameRoutePath},
 	Game2048AddressByUsernameRouteName: {Method: http.MethodPost, Path: Game2048AddressByUsernameRoutePath},
+	Game2048WeeklyBlitzTrackingRouteName: {Method: http.MethodPost, Path: Game2048WeeklyBlitzTrackingRoutePath},
+	Game2048WeeklyBlitzRewardRouteName:   {Method: http.MethodPost, Path: Game2048WeeklyBlitzRewardRoutePath},
+	Game2048WeeklyBlitzAllocationsRouteName: {Method: http.MethodPost, Path: Game2048WeeklyBlitzAllocationsRoutePath},
+	Game2048WeeklyBlitzPoolRouteName:     {Method: http.MethodPost, Path: Game2048WeeklyBlitzPoolRoutePath},
 	// eth
 	EthereumRouteName: {Method: http.MethodPost, Path: EthereumRoutePath},
 	// admin
@@ -481,6 +493,10 @@ func createRouter(s *Server) *httprouter.Router {
 		Game2048GameHistoryRouteName:       s.Game2048GameHistory,
 		Game2048UsernameRouteName:          s.Game2048Username,
 		Game2048AddressByUsernameRouteName: s.Game2048AddressByUsername,
+		Game2048WeeklyBlitzTrackingRouteName: s.Game2048WeeklyBlitzTracking,
+		Game2048WeeklyBlitzRewardRouteName:   s.Game2048WeeklyBlitzReward,
+		Game2048WeeklyBlitzAllocationsRouteName: s.Game2048WeeklyBlitzAllocations,
+		Game2048WeeklyBlitzPoolRouteName:     s.Game2048WeeklyBlitzPool,
 		EthereumRouteName:                  s.EthereumHandler,
 		SubscribeRCInfoName:                s.WebSocket,
 	}
